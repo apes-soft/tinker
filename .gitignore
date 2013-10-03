@@ -4,7 +4,7 @@
 ####################
 # TINKER specifics #
 ####################
-*.x     # Executables produced.
+*.x
 
 #################
 # Library Files #
