@@ -61,4 +61,6 @@ tests/bench
 tools/fftw-wisdom
 tools/fftw-wisdom-to-conf
 tools/fftw_wisdom.1
-
+.libs/
+threads/.libs/
+fftw3.pc
