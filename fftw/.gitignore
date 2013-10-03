@@ -45,4 +45,20 @@ tests/Makefile
 threads/Makefile
 tools/.deps/
 tools/Makefile
-no changes added to commit (use "git add" and/or "git commit -a")
+api/fftw3.f03
+doc/FAQ/fftw-faq.ascii
+doc/FAQ/fftw-faq.html/index.html
+doc/FAQ/fftw-faq.html/section1.html
+doc/FAQ/fftw-faq.html/section2.html
+doc/FAQ/fftw-faq.html/section3.html
+doc/FAQ/fftw-faq.html/section4.html
+doc/FAQ/fftw-faq.html/section5.html
+doc/fftw3.pdf
+mpi/fftw3-mpi.f03
+mpi/fftw3l-mpi.f03
+stamp-h1
+tests/bench
+tools/fftw-wisdom
+tools/fftw-wisdom-to-conf
+tools/fftw_wisdom.1
+
