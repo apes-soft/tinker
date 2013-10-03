@@ -52,11 +52,11 @@ c
 c
 c     cores, thread count and options for OpenMP
 c
-      nproc = 1
-      nthread = 1
-!$    nproc = omp_get_num_procs ()
-!$    nthread = nproc
-!$    call omp_set_num_threads (nthread)
+c      nproc = 1
+c      nthread = 1
+c!$    nproc = omp_get_num_procs ()
+c!$    nthread = nproc
+c!$    call omp_set_num_threads (nthread)
 !$    call omp_set_nested (.true.)
 c
 c     Intel compiler extensions to OpenMP standard
