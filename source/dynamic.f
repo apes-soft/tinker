@@ -299,7 +299,7 @@ c
       end do
 	  else
 	    write(*,*) 'Number of Atoms for rank: ',rank,' is ',n
-		call start_work_nodes(n)
+c		call start_work_nodes(n)
 	  end if
 c
 c     perform any final tasks before program exit
