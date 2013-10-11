@@ -40,7 +40,7 @@ c
       character*120 record
       character*120 string
 
-	  integer rank
+c	  integer rank
 c
 c
 c     set up the structure and molecular mechanics calculation
@@ -51,8 +51,8 @@ c	  call mpi_get_rank(rank)
 
       call getxyz
 
-	  if ( rank .eq. 0) then
-      call mechanic
+c	  if ( rank .eq. 0) then
+c      call mechanic
 c
 c     initialize the temperature, pressure and coupling baths
 c
@@ -298,7 +298,7 @@ c
          end if
       end do
 	  else
-	    write(*,*) 'Number of Atoms for rank: ',rank,' is ',n
+c	    write(*,*) 'Number of Atoms for rank: ',rank,' is ',n
 c		call start_work_nodes(n)
 	  end if
 c
