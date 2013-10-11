@@ -52,7 +52,7 @@ c	  call mpi_get_rank(rank)
       call getxyz
 
 c	  if ( rank .eq. 0) then
-c      call mechanic
+      call mechanic
 c
 c     initialize the temperature, pressure and coupling baths
 c
@@ -194,7 +194,7 @@ c
   240          continue
             end do
          end if
-      end if
+c     end if
 c
 c     use constant energy or temperature for nonperiodic system
 c
