@@ -4845,7 +4845,8 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(shared) firstprivate(f) 
+!$OMP PARALLEL DO schedule(dynamic,16)
+!$OMP& default(shared) firstprivate(f) 
 !$OMP& private(i,j,k,ii,kk,kkk,e,ei,bfac,damp,expdamp,
 !$OMP& pdi,pti,pgamma,scale3,scale5,scale7,temp3,temp5,temp7,
 !$OMP& dsc3,dsc5,dsc7,psc3,psc5,psc7,usc3,usc5,alsq2,alsq2n,
@@ -4864,7 +4865,7 @@ c
 !$OMP& gfr,gfri,gti,gtri,dorl,dorli)
 !$OMP& firstprivate(mscale,pscale,dscale,uscale)
 !$OMP DO reduction(+:emtt,eptt,viri,demi,depi,demk,depk)
-!$OMP& schedule(dynamic,16)
+cc!$OMP& schedule(dynamic,16)
 c
 c     compute the real space portion of the Ewald summation
 c
@@ -5727,8 +5728,8 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP END DO
-!$OMP END PARALLEL
+cc!$OMP END DO
+!$OMP END PARALLEL DO
 c
 c     add local copies to global variables for OpenMP calculation
 c
