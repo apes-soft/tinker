@@ -396,12 +396,11 @@ c
 !$OMP& private(i,j,k,m,ii,jj,kk,ichk,
 !$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
 !$OMP& offsetz,v0,u0,term,t0) 
-ccc!$OMP DO schedule(static,16)
+!$OMP DO schedule(static,16)
 c
 c     put the permanent multipole moments onto the grid
 c
       do ichk = 1, nchunk
-c         print *, 'nchunk is ', nchunk
          cid(1) = mod(ichk-1,nchk1)
          cid(2) = mod(((ichk-1-cid(1))/nchk1),nchk2)
          cid(3) = mod((ichk-1)/(nchk1*nchk2),nchk3)
@@ -411,7 +410,7 @@ c         print *, 'nchunk is ', nchunk
          cbound(4) = cbound(3) + ngrd2 - 1
          cbound(5) = cid(3)*ngrd3 + 1
          cbound(6) = cbound(5) + ngrd3 - 1
-!$OMP DO schedule(static)        
+c!$OMP DO schedule(static,1)        
          do isite = 1, nion
             iatm = iion(isite)
             if (pmetable(iatm,ichk) .eq. 1) then
@@ -446,19 +445,19 @@ c         print *, 'nchunk is ', nchunk
                         m = i + offsetx
                         if (i .lt. 1)  i = i + nfft1
                         t0 = thetai1(1,m,iatm)
-!$OMP ATOMIC
+c!$OMP ATOMIC
                         qgrid(1,i,j,k) = qgrid(1,i,j,k) + term*t0
                      end do
                   end do
                end do
             end if
          end do
-!$OMP END DO
+c!$OMP END DO
       end do
 c
 c     end OpenMP directive for the major loop structure
 c
-c!$OMP END DO 
+!$OMP END DO NOWAIT
 !$OMP END PARALLEL 
       return
       end
@@ -515,7 +514,7 @@ c
 !$OMP& default(shared) private(i,j,k,m,ii,jj,kk,ichk,
 !$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
 !$OMP& offsetz,v0,v1,v2,u0,u1,u2,term0,term1,term2,t0,t1,t2)
-cc!$OMP DO schedule(static,16)
+!$OMP DO schedule(static,16)
 c
 c     put the permanent multipole moments onto the grid
 c
@@ -530,7 +529,7 @@ c
          cbound(5) = cid(3)*ngrd3 + 1
          cbound(6) = cbound(5) + ngrd3 - 1
 
-!$OMP DO schedule(static)
+c!$OMP DO schedule(static,1)
          do isite = 1, npole
             iatm = ipole(isite)
             if (pmetable(iatm,ichk) .eq. 1) then
@@ -576,7 +575,7 @@ c
                         t0 = thetai1(1,m,iatm)
                         t1 = thetai1(2,m,iatm)
                         t2 = thetai1(3,m,iatm)
-!$OMP ATOMIC
+c!$OMP ATOMIC
                         qgrid(1,i,j,k) = qgrid(1,i,j,k) + term0*t0
      &                                      + term1*t1 + term2*t2
                      end do
@@ -584,12 +583,12 @@ c
                end do
             end if
          end do
-!$OMP END DO 
+c!$OMP END DO 
       end do
 c
 c     end OpenMP directive for the major loop structure
 c
-c!$OMP END DO 
+!$OMP END DO NOWAIT 
 !$OMP END PARALLEL 
       return
       end
@@ -649,7 +648,7 @@ c
 !$OMP& default(shared) private(i,j,k,m,ii,jj,kk,ichk,
 !$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
 !$OMP& offsetz,v0,v1,u0,u1,term01,term11,term02,term12,t0,t1)
-cc!$OMP DO schedule(static,16)
+!$OMP DO schedule(static,16)
 c
 c     put the induced dipole moments onto the grid
 c
@@ -664,7 +663,7 @@ c
          cbound(5) = cid(3)*ngrd3 + 1
          cbound(6) = cbound(5) + ngrd3 - 1
 
-!$OMP DO schedule(static)         
+c!$OMP DO schedule(static,1)         
          do isite = 1, npole
             iatm = ipole(isite)
             if (pmetable(iatm,ichk) .eq. 1) then
@@ -710,11 +709,11 @@ c
 
 
 
-!$OMP ATOMIC
+c!$OMP ATOMIC
 
                         qgrid(1,i,j,k) = qgrid(1,i,j,k) + term01*t0
      &                                      + term11*t1
-!$OMP ATOMIC
+c!$OMP ATOMIC
                         qgrid(2,i,j,k) = qgrid(2,i,j,k) + term02*t0
      &                                      + term12*t1
 
@@ -723,12 +722,12 @@ c
                end do
             end if
          end do
-!$OMP END DO
+c!$OMP END DO
       end do
 c     
 c     end OpenMP directive for the major loop structure
 c     
-c!$OMP END DO 
+!$OMP END DO NOWAIT 
 !$OMP END PARALLEL
 
       return
