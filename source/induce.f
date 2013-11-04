@@ -2345,7 +2345,7 @@ c
 !$OMP& alsq2,alsq2n,exp2a,bfac,scale3,scale5,scale7,damp,pgamma,
 !$OMP& dsc3,dsc5,dsc7,psc3,psc5,psc7,drr3,drr5,drr7,prr3,prr5,prr7,
 !$OMP& dir,qix,qiy,qiz,qir,dkr,qkx,qky,qkz,qkr,fim,fkm,fid,fkd,fip,
-!$OMP& fkp,expdamp) firstprivate(dscale,pscale)
+!$OMP& fkp,expdamp) firstprivate(dscale, pscale) 
 !$OMP DO reduction(+:fieldt,fieldtp) schedule(dynamic,16)
 c
 c     compute the real space portion of the Ewald summation
@@ -2553,7 +2553,7 @@ c
             fieldp(j,i) = fieldtp(j,i) + fieldp(j,i)
          end do
       end do
-!$OMP END DO
+!$OMP END DO NOWAIT
 !$OMP END PARALLEL
 c
 c     perform deallocation of some local arrays
@@ -3126,8 +3126,8 @@ c
 !$OMP& bfac,exp2a,duir,dukr,puir,pukr,pdi,pti,expdamp,
 !$OMP& duix,duiy,duiz,puix,puiy,puiz,dukx,duky,dukz,pukx,puky,pukz,
 !$OMP& ralpha,damp,alsq2,alsq2n,scale3,scale5,bn,fimd,fkmd,
-!$OMP& fimp,fkmp,fid,fkd,fip,fkp,i,j,k,ii,kk,kkk)
-!$OMP& firstprivate(dscale)
+!$OMP& fimp,fkmp,fid,fkd,fip,fkp,i,j,k,ii,kk,kkk, pgamma)
+!$OMP& firstprivate(dscale) 
 !$OMP DO reduction(+:fieldt,fieldtp) schedule(dynamic,16)
 c
 c     compute the real space portion of the Ewald summation
@@ -3268,7 +3268,7 @@ c
             fieldp(j,i) = fieldtp(j,i) + fieldp(j,i)
          end do
       end do
-!$OMP END DO
+!$OMP END DO NOWAIT
 !$OMP END PARALLEL
 c
 c     perform deallocation of some local arrays
@@ -5695,7 +5695,7 @@ c
                zrsdp(j,i) = zrsdtp(j,i) + zrsdp(j,i)
             end do
          end do
-!$OMP END DO
+!$OMP END DO NOWAIT 
 !$OMP END PARALLEL
 c
 c     perform deallocation of some local arrays
@@ -5724,10 +5724,12 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(shared) private(xr,yr,zr,r,r2,rr3,rr5,pdi,pti,
+!$OMP PARALLEL DO schedule(dynamic, 16) 
+!$OMP& default(shared) private(xr,yr,zr,r,r2,rr3,rr5,pdi,pti,
 !$OMP& poli,polik,pgamma,damp,expdamp,scale3,scale5,i,j,k,m,ii,kk,kkk)
 !$OMP& firstprivate(dscale)
-!$OMP DO schedule(dynamic,16)
+c!$OMP DO schedule(dynamic,16)
+
          do i = 1, npole
             ii = ipole(i)
             pdi = pdamp(i)
@@ -5794,8 +5796,8 @@ c
                dscale(ip14(j,ii)) = 1.0d0
             end do
          end do
-!$OMP END DO
-!$OMP END PARALLEL
+c!$OMP END DO 
+!$OMP END PARALLEL DO
 c
 c     perform deallocation of some local arrays
 c
