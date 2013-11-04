@@ -4864,7 +4864,7 @@ c
 !$OMP& ddsc3,ddsc5,ddsc7,bn,sc,gl,sci,scip,gli,glip,gf,gfi,
 !$OMP& gfr,gfri,gti,gtri,dorl,dorli)
 !$OMP& firstprivate(mscale,pscale,dscale,uscale)
-!$OMP DO reduction(+:emtt,eptt,viri,demi,depi,demk,depk)
+!$OMP& reduction(+:emtt,eptt,viri,demi,depi,demk,depk)
 cc!$OMP& schedule(dynamic,16)
 c
 c     compute the real space portion of the Ewald summation
