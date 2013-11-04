@@ -395,7 +395,7 @@ c
 !$OMP PARALLEL default(shared) private(i,j,k,m,ii,jj,kk,ichk,
 !$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
 !$OMP& offsetz,v0,u0,term,t0)
-!$OMP DO
+!$OMP DO schedule(static,16)
 c
 c     put the permanent multipole moments onto the grid
 c
@@ -454,7 +454,7 @@ c
 c     end OpenMP directive for the major loop structure
 c
 !$OMP END DO
-!$OMP END PARALLEL
+!$OMP END PARALLEL 
       return
       end
 c
@@ -509,7 +509,7 @@ c
 !$OMP PARALLEL default(shared) private(i,j,k,m,ii,jj,kk,ichk,
 !$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
 !$OMP& offsetz,v0,v1,v2,u0,u1,u2,term0,term1,term2,t0,t1,t2)
-!$OMP DO
+!$OMP DO schedule(static,16)
 c
 c     put the permanent multipole moments onto the grid
 c
@@ -636,7 +636,7 @@ c
 !$OMP PARALLEL default(shared) private(i,j,k,m,ii,jj,kk,ichk,
 !$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
 !$OMP& offsetz,v0,v1,u0,u1,term01,term11,term02,term12,t0,t1)
-!$OMP DO
+!$OMP DO schedule(static,16)
 c
 c     put the induced dipole moments onto the grid
 c
@@ -796,7 +796,7 @@ c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(private) shared(npole,ipole,igrid,bsorder,
 !$OMP& nfft3,thetai3,nfft2,thetai2,nfft1,thetai1,qgrid,fphi)
-!$OMP DO
+!$OMP DO schedule(static,16)
 c
 c     extract the permanent multipole field at each site
 c
@@ -980,7 +980,7 @@ c
 !$OMP PARALLEL default(private) shared(npole,ipole,
 !$OMP& igrid,bsorder,nfft3,thetai3,nfft2,thetai2,nfft1,
 !$OMP& thetai1,qgrid,fdip_phi1,fdip_phi2,fdip_sum_phi)
-!$OMP DO
+!$OMP DO schedule(static,16)
 c
 c     extract the induced dipole field at each site
 c

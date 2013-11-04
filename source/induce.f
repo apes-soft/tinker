@@ -2346,7 +2346,7 @@ c
 !$OMP& dsc3,dsc5,dsc7,psc3,psc5,psc7,drr3,drr5,drr7,prr3,prr5,prr7,
 !$OMP& dir,qix,qiy,qiz,qir,dkr,qkx,qky,qkz,qkr,fim,fkm,fid,fkd,fip,
 !$OMP& fkp,expdamp) firstprivate(dscale,pscale)
-!$OMP DO reduction(+:fieldt,fieldtp) schedule(dynamic)
+!$OMP DO reduction(+:fieldt,fieldtp) schedule(dynamic,16)
 c
 c     compute the real space portion of the Ewald summation
 c
@@ -2546,7 +2546,7 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP DO
+!$OMP DO schedule(dynamic,16)
       do i = 1, npole
          do j = 1, 3
             field(j,i) = fieldt(j,i) + field(j,i)
@@ -3128,7 +3128,7 @@ c
 !$OMP& ralpha,damp,alsq2,alsq2n,scale3,scale5,bn,fimd,fkmd,
 !$OMP& fimp,fkmp,fid,fkd,fip,fkp,i,j,k,ii,kk,kkk)
 !$OMP& firstprivate(dscale)
-!$OMP DO reduction(+:fieldt,fieldtp) schedule(dynamic)
+!$OMP DO reduction(+:fieldt,fieldtp) schedule(dynamic,16)
 c
 c     compute the real space portion of the Ewald summation
 c
@@ -3261,7 +3261,7 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP DO
+!$OMP DO schedule(dynamic,16)
       do i = 1, npole
          do j = 1, 3
             field(j,i) = fieldt(j,i) + field(j,i)
@@ -5646,7 +5646,7 @@ c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(shared) private(i,k,m,kk,m1,m2,m3,m4,m5,m6)
 !$OMP& firstprivate(dscale)
-!$OMP DO reduction(+:zrsdt,zrsdtp) schedule(dynamic)
+!$OMP DO reduction(+:zrsdt,zrsdtp) schedule(dynamic,16)
          do i = 1, npole
             m = mindex(i)
             do kk = 1, nulst(i)
@@ -5688,7 +5688,7 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP DO
+!$OMP DO schedule(dynamic,16)
          do i = 1, npole
             do j = 1, 3
                zrsd(j,i) = zrsdt(j,i) + zrsd(j,i)
@@ -5727,7 +5727,7 @@ c
 !$OMP PARALLEL default(shared) private(xr,yr,zr,r,r2,rr3,rr5,pdi,pti,
 !$OMP& poli,polik,pgamma,damp,expdamp,scale3,scale5,i,j,k,m,ii,kk,kkk)
 !$OMP& firstprivate(dscale)
-!$OMP DO schedule(dynamic)
+!$OMP DO schedule(dynamic,16)
          do i = 1, npole
             ii = ipole(i)
             pdi = pdamp(i)
