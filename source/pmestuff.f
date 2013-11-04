@@ -454,7 +454,7 @@ c
 c     end OpenMP directive for the major loop structure
 c
 !$OMP END DO
-!$OMP END PARALLEL 
+!$OMP END PARALLEL
       return
       end
 c
