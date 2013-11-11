@@ -1063,13 +1063,13 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(private) shared(nvdw,ivdw,ired,kred,
+!$OMP PARALLEL DO default(private) shared(nvdw,ivdw,ired,kred,
 !$OMP& jvdw,xred,yred,zred,use,nvlst,vlst,n12,n13,n14,n15,
 !$OMP& i12,i13,i14,i15,v2scale,v3scale,v4scale,v5scale,
 !$OMP& use_group,off2,radmin,epsilon,radmin4,epsilon4,ghal,dhal,
 !$OMP& cut2,vlambda,scalpha,scexp,mut,c0,c1,c2,c3,c4,c5,molcule)
 !$OMP& firstprivate(vscale,iv14) shared(evt,devt,virt,eintert)
-!$OMP DO reduction(+:evt,devt,virt,eintert) schedule(dynamic)
+!$OMP&  reduction(+:evt,devt,virt,eintert) schedule(dynamic,16)
 c
 c     find van der Waals energy and derivatives via neighbor list
 c
@@ -1266,8 +1266,8 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP END DO
-!$OMP END PARALLEL
+c!$OMP END DO 
+!$OMP END PARALLEL DO
 c
 c     transfer local to global copies for OpenMP calculation
 c
