@@ -376,7 +376,13 @@ c
       integer abound(6)
       integer cbound(6)
       real*8 v0,u0,t0
-      real*8 term
+      real*8 term 
+     
+     
+
+c      SUBROUTINE OMP_INIT_LOCK(lck)
+c      integer(kind = omp_lock_kind), intent(out) :: lck(:,:,:,:)
+c      END SUBROUTINE OMP_INIT_LOCK
 c
 c
 c     zero out the particle mesh Ewald charge grid
@@ -389,14 +395,17 @@ c
             end do
          end do
       end do
+
+
+c   call OMP_INIT_LOCK(lck(2,nfft1,nfft2,nfft3)) 
+
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL  default(shared) 
-!$OMP& private(i,j,k,m,ii,jj,kk,ichk,
+!$OMP PARALLEL DO schedule(dynamic) default(shared) 
+!$OMP& private(i,j,k,m,ii,jj,kk,ichk, 
 !$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
 !$OMP& offsetz,v0,u0,term,t0) 
-!$OMP DO schedule(static,16)
 c
 c     put the permanent multipole moments onto the grid
 c
@@ -410,7 +419,6 @@ c
          cbound(4) = cbound(3) + ngrd2 - 1
          cbound(5) = cid(3)*ngrd3 + 1
          cbound(6) = cbound(5) + ngrd3 - 1
-c!$OMP DO schedule(static,1)        
          do isite = 1, nion
             iatm = iion(isite)
             if (pmetable(iatm,ichk) .eq. 1) then
@@ -445,20 +453,22 @@ c!$OMP DO schedule(static,1)
                         m = i + offsetx
                         if (i .lt. 1)  i = i + nfft1
                         t0 = thetai1(1,m,iatm)
-c!$OMP ATOMIC
+!$OMP ATOMIC UPDATE
                         qgrid(1,i,j,k) = qgrid(1,i,j,k) + term*t0
+                          
                      end do
                   end do
                end do
             end if
          end do
-c!$OMP END DO
       end do
+
 c
 c     end OpenMP directive for the major loop structure
 c
-!$OMP END DO NOWAIT
-!$OMP END PARALLEL 
+
+!$OMP END PARALLEL DO
+
       return
       end
 c
@@ -495,6 +505,8 @@ c
       real*8 v2,u2,t2
       real*8 term0,term1,term2
       real*8 fmp(10,*)
+     
+     
 c
 c
 c     zero out the particle mesh Ewald charge grid
@@ -510,11 +522,10 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL 
-!$OMP& default(shared) private(i,j,k,m,ii,jj,kk,ichk,
+!$OMP PARALLEL DO schedule (dynamic)
+!$OMP& default(shared) private(i,j,k,m,ii,jj,kk,ichk, 
 !$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
 !$OMP& offsetz,v0,v1,v2,u0,u1,u2,term0,term1,term2,t0,t1,t2)
-!$OMP DO schedule(static,16)
 c
 c     put the permanent multipole moments onto the grid
 c
@@ -528,9 +539,7 @@ c
          cbound(4) = cbound(3) + ngrd2 - 1
          cbound(5) = cid(3)*ngrd3 + 1
          cbound(6) = cbound(5) + ngrd3 - 1
-
-c!$OMP DO schedule(static,1)
-         do isite = 1, npole
+        do isite = 1, npole
             iatm = ipole(isite)
             if (pmetable(iatm,ichk) .eq. 1) then
                nearpt(1) = igrid(1,iatm) + grdoff
@@ -575,21 +584,27 @@ c!$OMP DO schedule(static,1)
                         t0 = thetai1(1,m,iatm)
                         t1 = thetai1(2,m,iatm)
                         t2 = thetai1(3,m,iatm)
-c!$OMP ATOMIC
-                        qgrid(1,i,j,k) = qgrid(1,i,j,k) + term0*t0
-     &                                      + term1*t1 + term2*t2
+
+
+!$OMP ATOMIC UPDATE
+                        qgrid(1,i,j,k) = qgrid(1,i,j,k) + term0*t0 
+     &                       + term1*t1 + term2*t2
+
+ 
+
                      end do
                   end do
                end do
             end if
          end do
-c!$OMP END DO 
       end do
+
+
 c
 c     end OpenMP directive for the major loop structure
 c
-!$OMP END DO NOWAIT 
-!$OMP END PARALLEL 
+
+!$OMP END PARALLEL DO
       return
       end
 c
@@ -627,10 +642,9 @@ c
       real*8 term02,term12
       real*8 fuind(3,*)
       real*8 fuinp(3,*)
-    
+c      integer omp_get_thread_num
 
-c
-c
+c     
 c     zero out the particle mesh Ewald charge grid
 c
       do k = 1, nfft3
@@ -641,14 +655,19 @@ c
             end do
          end do
       end do
+
+c      print *, "thread id followed by i,j and k"
+
+
+
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL 
-!$OMP& default(shared) private(i,j,k,m,ii,jj,kk,ichk,
+!$OMP PARALLEL DO schedule(dynamic)
+!$OMP& default(shared) private(i,j,k,m,ii,jj,kk,ichk, 
 !$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
 !$OMP& offsetz,v0,v1,u0,u1,term01,term11,term02,term12,t0,t1)
-!$OMP DO schedule(static,16)
+
 c
 c     put the induced dipole moments onto the grid
 c
@@ -662,8 +681,6 @@ c
          cbound(4) = cbound(3) + ngrd2 - 1
          cbound(5) = cid(3)*ngrd3 + 1
          cbound(6) = cbound(5) + ngrd3 - 1
-
-c!$OMP DO schedule(static,1)         
          do isite = 1, npole
             iatm = ipole(isite)
             if (pmetable(iatm,ichk) .eq. 1) then
@@ -707,28 +724,36 @@ c!$OMP DO schedule(static,1)
                         t0 = thetai1(1,m,iatm)
                         t1 = thetai1(2,m,iatm)
 
+                       
+c                        print *,  omp_get_thread_num(), i,j,k
 
 
-c!$OMP ATOMIC
+!$OMP ATOMIC UPDATE
+                        qgrid(1,i,j,k) = qgrid(1,i,j,k) + term01*t0  
+     &                       + term11*t1
 
-                        qgrid(1,i,j,k) = qgrid(1,i,j,k) + term01*t0
-     &                                      + term11*t1
-c!$OMP ATOMIC
-                        qgrid(2,i,j,k) = qgrid(2,i,j,k) + term02*t0
-     &                                      + term12*t1
+                        
+
+!$OMP ATOMIC UPDATE
+                        qgrid(2,i,j,k) = qgrid(2,i,j,k) + term02*t0 
+     &                       + term12*t1
+
+
 
                      end do
                   end do
                end do
             end if
          end do
-c!$OMP END DO
       end do
+
+
+
 c     
 c     end OpenMP directive for the major loop structure
 c     
-!$OMP END DO NOWAIT 
-!$OMP END PARALLEL
+
+!$OMP END PARALLEL DO
 
       return
       end
