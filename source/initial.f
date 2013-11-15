@@ -47,22 +47,31 @@ c      include 'mpi.i'
       include 'warp.i'
       include 'zclose.i'
 !$    integer omp_get_num_procs
+      integer omp_get_num_threads
       real*8 precise
 c
 c
 c     cores, thread count and options for OpenMP
 c
-c      nproc = 1
-c      nthread = 1
-c!$    nproc = omp_get_num_procs ()
+c      nproc = 1 
+     
+       nthread = 1
+!$OMP PARALLEL shared(nthread) 
+!$OMP MASTER 
+       nthread = omp_get_num_threads()
+!$OMP END MASTER
+!$OMP END PARALLEL 
+
+
+c      nproc = omp_get_num_procs ()
 c!$    nthread = nproc
 c!$    call omp_set_num_threads (nthread)
 !$    call omp_set_nested (.true.)
 c
 c     Intel compiler extensions to OpenMP standard
 c
-!$    call kmp_set_stacksize (2**28)
-!$    call kmp_set_blocktime (0)
+c !$    call kmp_set_stacksize (2**28)
+c !$    call kmp_set_blocktime (0)
 c
 c
 c
