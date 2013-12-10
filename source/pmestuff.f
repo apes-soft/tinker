@@ -378,12 +378,8 @@ c
       real*8 v0,u0,t0
       real*8 term 
      
-     
+   
 
-c      SUBROUTINE OMP_INIT_LOCK(lck)
-c      integer(kind = omp_lock_kind), intent(out) :: lck(:,:,:,:)
-c      END SUBROUTINE OMP_INIT_LOCK
-c
 c
 c     zero out the particle mesh Ewald charge grid
 c
@@ -397,7 +393,6 @@ c
       end do
 
 
-c   call OMP_INIT_LOCK(lck(2,nfft1,nfft2,nfft3)) 
 
 c
 c     set OpenMP directives for the major loop structure
@@ -845,7 +840,6 @@ c
 !$OMP PARALLEL DO schedule(static, 16)
 !$OMP& default(private) shared(npole,ipole,igrid,bsorder,
 !$OMP& nfft3,thetai3,nfft2,thetai2,nfft1,thetai1,qgrid,fphi)
-ccc!$OMP DO schedule(static,16)
 c
 c     extract the permanent multipole field at each site
 c
@@ -970,7 +964,6 @@ c
 c
 c     end OpenMP directive for the major loop structure
 c
-cc!$OMP END DO 
 !$OMP END PARALLEL DO
       return
       end
@@ -1030,7 +1023,6 @@ c
 !$OMP& default(private) shared(npole,ipole,
 !$OMP& igrid,bsorder,nfft3,thetai3,nfft2,thetai2,nfft1,
 !$OMP& thetai1,qgrid,fdip_phi1,fdip_phi2,fdip_sum_phi)
-ccc!$OMP DO schedule(static,16)
 c
 c     extract the induced dipole field at each site
 c
@@ -1243,7 +1235,6 @@ c
 c
 c     end OpenMP directive for the major loop structure
 c
-ccc!$OMP END DO 
 !$OMP END PARALLEL DO
       return
       end
