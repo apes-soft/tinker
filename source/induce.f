@@ -2547,7 +2547,7 @@ c
 c     end OpenMP directives for the major loop structure
 c
 !$OMP DO schedule(dynamic,16)
-      do i = 1, npole
+      do i = 1, npole    
          do j = 1, 3
             field(j,i) = fieldt(j,i) + field(j,i)
             fieldp(j,i) = fieldtp(j,i) + fieldp(j,i)
@@ -3261,9 +3261,9 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP DO schedule(dynamic,16)
+!$OMP DO schedule(dynamic,16) 
       do i = 1, npole
-         do j = 1, 3
+          do j = 1, 3
             field(j,i) = fieldt(j,i) + field(j,i)
             fieldp(j,i) = fieldtp(j,i) + fieldp(j,i)
          end do
@@ -5647,6 +5647,7 @@ c
 !$OMP PARALLEL default(shared) private(i,k,m,kk,m1,m2,m3,m4,m5,m6)
 !$OMP& firstprivate(dscale)
 !$OMP DO reduction(+:zrsdt,zrsdtp) schedule(dynamic,16)
+
          do i = 1, npole
             m = mindex(i)
             do kk = 1, nulst(i)
@@ -5724,11 +5725,10 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL DO schedule(dynamic, 16) 
+!$OMP PARALLEL DO schedule(dynamic,16) 
 !$OMP& default(shared) private(xr,yr,zr,r,r2,rr3,rr5,pdi,pti,
 !$OMP& poli,polik,pgamma,damp,expdamp,scale3,scale5,i,j,k,m,ii,kk,kkk)
 !$OMP& firstprivate(dscale)
-c!$OMP DO schedule(dynamic,16)
 
          do i = 1, npole
             ii = ipole(i)
@@ -5796,7 +5796,7 @@ c
                dscale(ip14(j,ii)) = 1.0d0
             end do
          end do
-c!$OMP END DO 
+
 !$OMP END PARALLEL DO
 c
 c     perform deallocation of some local arrays
