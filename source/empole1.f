@@ -4865,7 +4865,6 @@ c
 !$OMP& gfr,gfri,gti,gtri,dorl,dorli)
 !$OMP& firstprivate(mscale,pscale,dscale,uscale)
 !$OMP& reduction(+:emtt,eptt,viri,demi,depi,demk,depk)
-cc!$OMP& schedule(dynamic,16)
 c
 c     compute the real space portion of the Ewald summation
 c
@@ -5728,7 +5727,7 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-cc!$OMP END DO
+
 !$OMP END PARALLEL DO
 c
 c     add local copies to global variables for OpenMP calculation
