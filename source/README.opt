@@ -13,7 +13,6 @@ The following optimisations have been applied to the OpenMP implementation of Ti
 
 2) Inside induce.f
 
-
      #subroutines udirect2b and umutual2b:
         - OMP DO schedule(dynamic,16) for both DO loops
         - OMP END DO NOWAIT after the second DO loop   
@@ -25,8 +24,19 @@ The following optimisations have been applied to the OpenMP implementation of Ti
 
  3) Inside empole1.f
 
-
      #subroutine ereal1d:
          - OMP PARALLEL DO shedule(dynamic,16)
 
-4) Inside ehall
+4) Inside ehall.f
+
+     #subroutine ehal1c
+
+         - OMP DO schedule(dynamic,16)
+         - OMP DO NOWAIT
+
+5) Inside initial.f
+
+     #subroutine initial:
+
+         - OMP PARALLEL shared(nthread)
+         - OMP MASTER to get number of thread using omp_get_num_threads() 
