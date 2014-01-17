@@ -68,19 +68,20 @@ def RunSystem(name):
 # to CompareFiles and attach a 2 to the other, i.e.
 # CompareFiles2 to not use that routine.
 #########################################################
-def CompareFiles2(name):
-    """
-     Compare output from program and a canonical .log file
-     using the unix diff utility.
-    """
-    command = "diff -q "+name+".out "+name+".log"
-    fh = open(logfile,"a") # Silence output from diff
-    diffs = subprocess.call(command.split(),stderr=fh,stdout=fh)
-    fh.close()
-    if diffs == 0:
-       return True
-    else:
-       return False
+
+# def CompareFiles2(name):
+#     """
+#      Compare output from program and a canonical .log file
+#      using the unix diff utility.
+#     """
+#     command = "diff -q "+name+".out "+name+".log"
+#     fh = open(logfile,"a") # Silence output from diff
+#     diffs = subprocess.call(command.split(),stderr=fh,stdout=fh)
+#     fh.close()
+#     if diffs == 0:
+#        return True
+#     else:
+#        return False
 
 def CompareFiles(name):
     """
