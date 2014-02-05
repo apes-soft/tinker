@@ -89,10 +89,7 @@ c
       iarc = freeunit ()
       open (unit=iarc,file=arcfile,status='old')
       call readxyz (iarc)
-<<<<<<< HEAD
-      rewind (unit=iarc)
-=======
->>>>>>> db3c417fffe79a3dc6a9ef47725e55fe45c6799b
+
 c
 c     get the unitcell parameters and number of molecules
 c
@@ -111,15 +108,9 @@ c
 c
 c     get numbers of the coordinate frames to be processed
 c
-<<<<<<< HEAD
-      start = 0
-      stop = 0
-      step = 0
-=======
       start = 1
       stop = 100000
       step = 1
->>>>>>> db3c417fffe79a3dc6a9ef47725e55fe45c6799b
       query = .true.
       call nextarg (string,exist)
       if (exist) then
@@ -140,11 +131,6 @@ c
          read (record,*,err=60,end=60)  start,stop,step
    60    continue
       end if
-<<<<<<< HEAD
-      if (stop .eq. 0)  stop = start
-      if (step .eq. 0)  step = 1
-=======
->>>>>>> db3c417fffe79a3dc6a9ef47725e55fe45c6799b
 c
 c     get the names of the atoms to be used in rdf computation
 c
@@ -200,17 +186,11 @@ c
          if (rmax .le. 0.0d0)  rmax = 10.0d0
       else if (octahedron) then
          rmax = (sqrt(3.0d0)/4.0d0) * xbox
-<<<<<<< HEAD
-      else
-         rmax = min(xbox2*beta_sin*gamma_sin,ybox2*gamma_sin,
-     &                         zbox2*beta_sin)
-=======
          rmax = 0.95d0 * rmax
       else
          rmax = min(xbox2*beta_sin*gamma_sin,ybox2*gamma_sin,
      &                         zbox2*beta_sin)
          rmax = 0.95d0 * rmax
->>>>>>> db3c417fffe79a3dc6a9ef47725e55fe45c6799b
       end if
 c
 c     get the desired width of the radial distance bins
@@ -247,11 +227,6 @@ c
       call upcase (answer)
       if (answer .eq. 'Y')  intramol = .true.
 c
-<<<<<<< HEAD
-c     set the number of distance bins to be accumulated
-c
-      nbin = int(rmax/width)
-=======
 c     count the number of coordinate frames in the archive file
 c
       abort = .false.
@@ -273,7 +248,7 @@ c
       nbin = int(rmax/width)
       write (*,200)  nbin
   200 format (' Number of Distance Bins :',i18)
->>>>>>> db3c417fffe79a3dc6a9ef47725e55fe45c6799b
+
 c
 c     perform dynamic allocation of some local arrays
 c
@@ -291,29 +266,15 @@ c
 c
 c     get the archived coordinates for each frame in turn
 c
-<<<<<<< HEAD
-      write (iout,190)
-  190 format (/,' Reading the Coordinates Archive File :',/)
-=======
       write (iout,210)
   210 format (/,' Reading the Coordinates Archive File :',/)
->>>>>>> db3c417fffe79a3dc6a9ef47725e55fe45c6799b
       nframe = 0
       iframe = start
       skip = start
       do while (iframe.ge.start .and. iframe.le.stop)
-<<<<<<< HEAD
-         skip = (skip-1) * (n+1)
-         do j = 1, skip
-            read (iarc,200,err=210,end=210)
-  200       format ()
-         end do
-  210    continue
-=======
          do j = 1, skip-1
             call readxyz (iarc)
          end do
->>>>>>> db3c417fffe79a3dc6a9ef47725e55fe45c6799b
          iframe = iframe + step
          skip = step
          call readxyz (iarc)
@@ -331,17 +292,6 @@ c
                   molj = molcule(j)
                   do k = 1, n
                      if (name(k).eq.namek .or. type(k).eq.typek) then
-<<<<<<< HEAD
-                        molk = molcule(k)
-                        if (intramol .or. molj.ne.molk) then
-                           dx = x(k) - xj
-                           dy = y(k) - yj
-                           dz = z(k) - zj
-                           call image (dx,dy,dz)
-                           rjk = sqrt(dx*dx + dy*dy + dz*dz)
-                           bin = int(rjk/width) + 1
-                           hist(bin) = hist(bin) + 1
-=======
                         if (j .ne. k) then
                            molk = molcule(k)
                            if (intramol .or. molj.ne.molk) then
@@ -353,7 +303,6 @@ c
                               bin = int(rjk/width) + 1
                               hist(bin) = hist(bin) + 1
                            end if
->>>>>>> db3c417fffe79a3dc6a9ef47725e55fe45c6799b
                         end if
                      end if
                   end do
@@ -369,19 +318,12 @@ c
          call readxyz (iarc)
       end if
       close (unit=iarc)
-<<<<<<< HEAD
-      write (iout,230)  nframe
-  230 format (/,' Total Number of Coordinate Frames :',i8)
-c
-c     count the number of occurences of each atom type
-=======
       if (mod(nframe,100) .ne. 0) then
          write (iout,230)  nframe
   230    format (4x,'Processing Coordinate Frame',i13)
       end if
 c
 c     count the number of occurrences of each atom type
->>>>>>> db3c417fffe79a3dc6a9ef47725e55fe45c6799b
 c
       numj = 0
       numk = 0
@@ -445,15 +387,9 @@ c
 c
 c     perform deallocation of some local arrays
 c
-<<<<<<< HEAD
-      deallocate (hist)
-      deallocate (gr)
-      deallocate (gs)
-=======
 c     deallocate (hist)
 c     deallocate (gr)
 c     deallocate (gs)
->>>>>>> db3c417fffe79a3dc6a9ef47725e55fe45c6799b
 c
 c     perform any final tasks before program exit
 c
