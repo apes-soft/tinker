@@ -1917,7 +1917,7 @@ c
 !$OMP& aewald,molcule,ebuffer) firstprivate(cscale)
 !$OMP& shared(ect,eintrat,dect1,dect2,virt)
 !$OMP DO reduction(+:ect,eintrat,dect1,dect2,virt)
-!$OMP& schedule(dynamic)
+!$OMP& schedule(guided)
 c
 c     compute the real space Ewald energy and first derivatives
 c	  

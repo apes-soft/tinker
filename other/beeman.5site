@@ -16,7 +16,7 @@ c     "beeman" performs a single molecular dynamics time step
 c     via the Beeman multistep recursion formula; uses original
 c     coefficients or Bernie Brooks' "Better Beeman" values
 c
-c     literature reference :
+c     literature reference:
 c
 c     D. Beeman, "Some Multistep Methods for Use in Molecular
 c     Dynamics Calculations", Journal of Computational Physics,
@@ -25,12 +25,12 @@ c
 c     B. R. Brooks, "Algorithms for Molecular Dynamics at Constant
 c     Temperature and Pressure", DCRT Report, NIH, April 1988
 c
-c     THIS IS A SPECIAL VERSION FOR THE RIGID 5-SITE WATER MODEL
-c     OF KEN JORDAN WHICH IS A MODIFIED DANG-CHANG MODEL WITH THE
-c     POLARIZATION SITE M* SLIGHTLY CLOSER TO OXYGEN THAN THE
-c     CHARGE SITE M
+c     this is a special version for the rigid 5-site water model
+c     of Ken Jordan, which is a modified Dang-Chang model with the
+c     polarization site M* slightly closer to oxygen than the
+c     change site M
 c
-c     LITERATURE REFERENCE :
+c     literature reference:
 c
 c     G. Ciccotti, M. Ferrario and J. P. Ryckaert, "Molecular Dynamics
 c     of Rigid Systems in Cartesian Coordinates. A General Formulation",
@@ -48,7 +48,7 @@ c
       include 'moldyn.i'
       include 'units.i'
       include 'usage.i'
-      integer i,j,istep
+      integer i,j,istep,nm
       real*8 dt,dt_x,factor
       real*8 etot,eksum,epot
       real*8 temp,pres
@@ -57,22 +57,18 @@ c
       real*8 oterm2,hterm2
       real*8 ekin(3,3)
       real*8 stress(3,3)
-      real*8 xold(maxatm)
-      real*8 yold(maxatm)
-      real*8 zold(maxatm)
-      real*8 derivs(3,maxatm)
+      real*8, allocatable :: xold(:)
+      real*8, allocatable :: yold(:)
+      real*8, allocatable :: zold(:)
+      real*8, allocatable :: derivs(:,:)
 c
 c
-c     SET LINEAR COMBINATION FACTORS FOR MODIFIED DANG-CHANG WATER
+c     set linear combination factors for modified Dang-Chang water
 c
-      if (story(1)(1:6) .eq. 'JORDAN') then
-         oterm1 = 0.6330320807091532d0
-         hterm1 = 0.1834839596454234d0
-         oterm2 = 0.7781124208939066d0
-         hterm2 = 0.1109437895530467d0
-      else
-         call fatal
-      end if
+      oterm1 = 0.6330320807091532d0
+      hterm1 = 0.1834839596454234d0
+      oterm2 = 0.7781124208939066d0
+      hterm2 = 0.1109437895530467d0
 c
 c     set time values and coefficients for Beeman integration
 c
@@ -84,6 +80,13 @@ c
 c     make half-step temperature and pressure corrections
 c
       call temper (dt)
+c
+c     perform dynamic allocation of some local arrays
+c
+      allocate (xold(n))
+      allocate (yold(n))
+      allocate (zold(n))
+      allocate (derivs(3,n))
 c
 c     store the current atom positions, then find half-step
 c     velocities and full-step positions via Beeman recursion
@@ -106,7 +109,7 @@ c     get constraint-corrected positions and half-step velocities
 c
       if (use_rattle)  call rattle (dt,xold,yold,zold)
 c
-c     MOVE M CENTERS TO LINEAR COMBINATION OF H-O-H COORDINATES
+c     move M center to linear combination of H-O-H coordinates
 c
       do i = 1, n
          if (atomic(i) .eq. -1) then
@@ -124,7 +127,7 @@ c     get the potential energy and atomic forces
 c
       call gradient (epot,derivs)
 c
-c     TRANSFER THE FORCES ON THE M CENTERS TO THE H-O-H SITES
+c     transfer the forces on the M center to the H-O-H sites
 c
       do i = 1, n
          if (atomic(i) .eq. -1) then
@@ -146,7 +149,12 @@ c     use Newton's second law to get the next accelerations;
 c     find the full-step velocities using the Beeman recursion
 c
       do i = 1, n
-         if (use(i)) then
+         if (atomic(i) .le. 0) then
+            do j = 1, 3
+               v(j,i) = 0.0d0
+               a(j,i) = 0.0d0
+            end do
+         else if (use(i)) then
             do j = 1, 3
                aalt(j,i) = a(j,i)
                a(j,i) = -convert * derivs(j,i) / mass(i)
@@ -155,24 +163,25 @@ c
          end if
       end do
 c
+c     perform deallocation of some local arrays
+c
+      deallocate (xold)
+      deallocate (yold)
+      deallocate (zold)
+      deallocate (derivs)
+c
 c     find the constraint-corrected full-step velocities
 c
       if (use_rattle)  call rattle2 (dt)
 c
-c     ZERO THE VELOCITIES AND ACCELERATIONS ON THE M CENTERS
+c     modify degrees of freedom to account for rigid 4-site water;
+c     assumes that only the 5-site waters are to be held rigid
 c
+      nm = 0
       do i = 1, n
-         if (atomic(i) .le. 0) then
-            do j = 1, 3
-               v(j,i) = 0.0d0
-               a(j,i) = 0.0d0
-            end do
-         end if
+         if (atomic(i) .le. 0)  nm = nm + 1
       end do
-c
-c     USE ALTERED NUMBER OF DEGREES OF FREEDOM FOR 5-SITE WATER
-c
-      nfree = 6*(n/5) - 6
+      nfree = 3*n - 9*nm/2 - 6
       if (use_bounds)  nfree = nfree + 3
 c
 c     make full-step temperature and pressure corrections

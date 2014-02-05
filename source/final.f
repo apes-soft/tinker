@@ -29,6 +29,7 @@ c
       include 'pme.i'
       include 'socket.i'
       include 'solute.i'
+      include 'tarray.i'
       include 'uprior.i'
       include 'usage.i'
       include 'usolve.i'
@@ -67,6 +68,8 @@ c
       if (associated(elst))  deallocate (elst)
       if (associated(nulst))  deallocate (nulst)
       if (associated(ulst))  deallocate (ulst)
+      if (associated(tindex))  deallocate (tindex)
+      if (associated(tdipdip))  deallocate (tdipdip)
       if (associated(pc0))  deallocate (pc0)
       if (associated(pc1))  deallocate (pc1)
       if (associated(pvect))  deallocate (pvect)
@@ -97,11 +100,6 @@ c
    10    format (/,' TINKER is Exiting following Normal Termination',
      &              ' of the Program',/)
       end if
-c
-c     gracious exit from MPI
-c
-c      call cleanup_nlist_builder
-c      call mpi_cleanup
 c
 c     may need a pause to avoid closing the execution window
 c

@@ -34,7 +34,8 @@ c
       logical dosystem,doparam
       logical doenergy,doatom
       logical dolarge,dodetail
-      logical doprops,doconect
+      logical domoment,dovirial
+      logical doconect
       logical exist
       logical, allocatable :: active(:)
       character*1 letter
@@ -61,12 +62,13 @@ c
      &           /,' Energy Breakdown over Each of the Atoms [A]',
      &           /,' List of the Large Individual Interactions [L]',
      &           /,' Details for All Individual Interactions [D]',
-     &           /,' Electrostatic, Inertial & Virial Properties [M]',
+     &           /,' Electrostatic Moments and Principle Axes [M]',
+     &           /,' Internal Virial, dE/dV Values & Pressure [V]',
      &           /,' Connectivity Lists for Each of the Atoms [C]')
    20    continue
          write (iout,30)
    30    format (/,' Enter the Desired Analysis Types',
-     &              ' [G,P,E,A,L,D,M,C] :  ',$)
+     &              ' [G,P,E,A,L,D,M,V,C] :  ',$)
          read (input,40,err=20)  string
    40    format (a120)
       end if
@@ -79,7 +81,8 @@ c
       doatom = .false.
       dolarge = .false.
       dodetail = .false.
-      doprops = .false.
+      domoment = .false.
+      dovirial = .false.
       doconect = .false.
       call upcase (string)
       do i = 1, trimtext(string)
@@ -90,7 +93,8 @@ c
          if (letter .eq. 'A')  doatom = .true.
          if (letter .eq. 'L')  dolarge = .true.
          if (letter .eq. 'D')  dodetail = .true.
-         if (letter .eq. 'M')  doprops = .true.
+         if (letter .eq. 'M')  domoment = .true.
+         if (letter .eq. 'V')  dovirial = .true.
          if (letter .eq. 'C')  doconect = .true.
       end do
 c
@@ -203,11 +207,19 @@ c
             call partyze
          end if
 c
-c     get various electrostatic and inertial properties
+c     get the various electrostatic and inertial moments
 c
-         if (doprops) then
+         if (domoment) then
             debug = .false.
-            call propyze
+            call momyze
+            if (dodetail)  debug = .true.
+         end if
+c
+c     get and test the internal virial and pressure values
+c
+         if (dovirial) then
+            debug = .false.
+            call viriyze
             if (dodetail)  debug = .true.
          end if
 c
@@ -1395,27 +1407,23 @@ c
       end
 c
 c
-c     #################################################################
-c     ##                                                             ##
-c     ##  subroutine propyze  --  electrostatic & inertial analysis  ##
-c     ##                                                             ##
-c     #################################################################
+c     ################################################################
+c     ##                                                            ##
+c     ##  subroutine momyze  --  electrostatic & inertial analysis  ##
+c     ##                                                            ##
+c     ################################################################
 c
 c
-c     "propyze" finds and prints the total charge, dipole moment
-c     components, radius of gyration, moments of inertia, internal
-c     virial and pressure
+c     "momyze" finds and prints the total charge, dipole moment
+c     components, radius of gyration and moments of inertia
 c
 c
-      subroutine propyze
+      subroutine momyze
       include 'sizes.i'
-      include 'atoms.i'
       include 'chgpot.i'
       include 'iounit.i'
       include 'moment.i'
-      include 'virial.i'
-      real*8 rg,energy
-      real*8, allocatable :: derivs(:,:)
+      real*8 rg
 c
 c
 c     get the total charge, dipole and quadrupole moments
@@ -1448,14 +1456,40 @@ c
       write (iout,80)  rg
    80 format (/,' Radius of Gyration :',16x,f12.3,' Angstroms')
       call inertia (1)
+      return
+      end
 c
-c     get the internal virial tensor via gradient calculation
+c
+c     #################################################################
+c     ##                                                             ##
+c     ##  subroutine viriyze  --  inertial virial & pressure values  ##
+c     ##                                                             ##
+c     #################################################################
+c
+c
+c     "propyze" finds and prints the internal virial, analytical and
+c     numerical dE/dV values, and the pressure
+c
+c
+      subroutine viriyze
+      include 'sizes.i'
+      include 'atoms.i'
+      include 'iounit.i'
+      include 'virial.i'
+      real*8 energy
+      real*8, allocatable :: derivs(:,:)
+c
+c
+c     perform a gradient calculation in order to find virial
 c
       allocate (derivs(3,n))
       call gradient (energy,derivs)
       deallocate (derivs)
-      write (iout,90)  (vir(1,i),vir(2,i),vir(3,i),i=1,3)
-   90 format (/,' Internal Virial Tensor :',12x,3f12.3,
+c
+c     print out the components of the internal virial
+c
+      write (iout,10)  (vir(1,i),vir(2,i),vir(3,i),i=1,3)
+   10 format (/,' Internal Virial Tensor :',12x,3f12.3,
      &        /,37x,3f12.3,/,37x,3f12.3)
 c
 c     get two alternative dE/dV values and a pressure estimate

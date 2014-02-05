@@ -24,19 +24,24 @@ c
       subroutine evcorr (elrc)
       implicit none
       include 'sizes.i'
+      include 'atoms.i'
       include 'bound.i'
       include 'boxes.i'
       include 'cutoff.i'
       include 'math.i'
+      include 'mutant.i'
       include 'shunt.i'
       include 'vdw.i'
       include 'vdwpot.i'
       integer i,j,k,it,kt
-      integer nstep,ndelta
+      integer nstep,ndelta,nvt
+      integer, allocatable :: ivt(:)
+      integer, allocatable :: jvt(:)
+      integer, allocatable :: mvt(:)
       real*8 elrc,etot
       real*8 range,rdelta
-      real*8 termi,termik
-      real*8 e,eps
+      real*8 fi,fk,fim,fkm,fik
+      real*8 e,eps,vlam1
       real*8 offset,taper
       real*8 rv,rv2,rv6,rv7
       real*8 r,r2,r3,r4
@@ -62,21 +67,51 @@ c
 c
 c     set number of steps and range for numerical integration
 c
-      nstep = 20
-      range = 200.0d0
+      nstep = 2
+      range = 100.0d0
       ndelta = int(dble(nstep)*(range-cut))
       rdelta = (range-cut) / dble(ndelta)
       offset = cut - 0.5d0*rdelta
+      vlam1 = 1.0d0 - vlambda
+c
+c     perform dynamic allocation of some local arrays
+c
+      allocate (ivt(n))
+      allocate (jvt(n))
+      allocate (mvt(n))
+c
+c     count the number of vdw types and their frequencies
+c
+      nvt = 0
+      do i = 1, n
+         it = jvdw(i)
+         do k = 1, nvt
+            if (ivt(k) .eq. it) then
+               jvt(k) = jvt(k) + 1
+               if (mut(i))  mvt(k) = mvt(k) + 1
+               goto 10
+            end if
+         end do
+         nvt = nvt + 1
+         ivt(nvt) = it
+         jvt(nvt) = 1
+         mvt(nvt) = 0
+         if (mut(i))  mvt(nvt) = 1
+   10    continue
+      end do
 c
 c     find the van der Waals energy via double loop search
 c
-      elrc = 0.0d0
       do i = 1, nvt
          it = ivt(i)
-         termi = 2.0d0 * pi * dble(jvt(i))
-         do k = 1, nvt
+         fi = 4.0d0 * pi * dble(jvt(i))
+         fim = 4.0d0 * pi * dble(mvt(i))
+         do k = i, nvt
             kt = ivt(k)
-            termik = termi * dble(jvt(k))
+            fk = dble(jvt(k))
+            fkm = dble(mvt(k))
+            fik = fi*fk - vlam1*(fim*fk+(fi-fim)*fkm)
+            if (k .eq. i)  fik = 0.5d0 * fik
 	    rv = radmin(kt,it) 
 	    eps = epsilon(kt,it)
             rv2 = rv * rv
@@ -114,10 +149,16 @@ c
                end if
                etot = etot + e*rdelta*r2
             end do
-            elrc = elrc + termik*etot
+            elrc = elrc + fik*etot
          end do
       end do
       elrc = elrc / volbox
+c
+c     perform deallocation of some local arrays
+c
+      deallocate (ivt)
+      deallocate (jvt)
+      deallocate (mvt)
       return
       end
 c
@@ -141,21 +182,26 @@ c
       subroutine evcorr1 (elrc,vlrc)
       implicit none
       include 'sizes.i'
+      include 'atoms.i'
       include 'bound.i'
       include 'boxes.i'
       include 'cutoff.i'
       include 'math.i'
+      include 'mutant.i'
       include 'shunt.i'
       include 'vdw.i'
       include 'vdwpot.i'
       integer i,j,k,it,kt
-      integer nstep,ndelta
+      integer nstep,ndelta,nvt
+      integer, allocatable :: ivt(:)
+      integer, allocatable :: jvt(:)
+      integer, allocatable :: mvt(:)
       real*8 elrc,vlrc
       real*8 etot,vtot
       real*8 range,rdelta
-      real*8 termi,termik
+      real*8 fi,fk,fim,fkm,fik
       real*8 e,de,eps
-      real*8 offset
+      real*8 offset,vlam1
       real*8 taper,dtaper
       real*8 rv,rv2,rv6,rv7
       real*8 r,r2,r3,r4
@@ -183,20 +229,51 @@ c
 c
 c     set number of steps and range for numerical integration
 c
-      nstep = 20
-      range = 200.0d0
+      nstep = 2
+      range = 100.0d0
       ndelta = int(dble(nstep)*(range-cut))
       rdelta = (range-cut) / dble(ndelta)
       offset = cut - 0.5d0*rdelta
+      vlam1 = 1.0d0 - vlambda
+c
+c     perform dynamic allocation of some local arrays
+c
+      allocate (ivt(n))
+      allocate (jvt(n))
+      allocate (mvt(n))
+c
+c     count the number of vdw types and their frequencies
+c
+      nvt = 0
+      do i = 1, n
+         it = jvdw(i)
+         do k = 1, nvt
+            if (ivt(k) .eq. it) then
+               jvt(k) = jvt(k) + 1
+               if (mut(i))  mvt(k) = mvt(k) + 1
+               goto 10
+            end if
+         end do
+         nvt = nvt + 1
+         ivt(nvt) = it
+         jvt(nvt) = 1
+         mvt(nvt) = 0
+         if (mut(i))  mvt(nvt) = 1
+   10    continue
+      end do
 c
 c     find the van der Waals energy via double loop search
 c
       do i = 1, nvt
          it = ivt(i)
-         termi = 2.0d0 * pi * dble(jvt(i))
-         do k = 1, nvt
+         fi = 4.0d0 * pi * dble(jvt(i))
+         fim = 4.0d0 * pi * dble(mvt(i))
+         do k = i, nvt
             kt = ivt(k)
-            termik = termi * dble(jvt(k))
+            fk = dble(jvt(k))
+            fkm = dble(mvt(k))
+            fik = fi*fk - vlam1*(fim*fk+(fi-fim)*fkm)
+            if (k .eq. i)  fik = 0.5d0 * fik
 	    rv = radmin(kt,it) 
 	    eps = epsilon(kt,it)
             rv2 = rv * rv
@@ -246,11 +323,17 @@ c
                etot = etot + e*rdelta*r2
                vtot = vtot + de*rdelta*r3
             end do
-            elrc = elrc + termik*etot
-            vlrc = vlrc + termik*vtot
+            elrc = elrc + fik*etot
+            vlrc = vlrc + fik*vtot
          end do
       end do
       elrc = elrc / volbox
       vlrc = vlrc / (3.0d0*volbox)
+c
+c     perform deallocation of some local arrays
+c
+      deallocate (ivt)
+      deallocate (jvt)
+      deallocate (mvt)
       return
       end

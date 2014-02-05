@@ -5,7 +5,7 @@
 
       This directory contains FFTW-3.3.3 which is required by the OpenMP
       version of TINKER. In particular, TINKER needs the two fftw static
-      object libraries, libfftw3.a and libfftw3_omp.a. To build fftw
+      object libraries, libfftw3.a and libfftw3_threads.a. To build fftw
       using the Intel compilers, issue the following set of commands as
       shown below. Note that the 'setenv" syntax is for csh/tcsh shells,
       and should be modified for other shells. Also. the --prefix in the
@@ -15,7 +15,7 @@
       setenv CC gcc          (or use "export CC=gcc" for bash)
       setenv F77 gfortran    (or use "export F77=gfortran" for bash)
       make distclean
-      configure --prefix=/Users/ponder/tinker/fftw --enable-openmp
+      configure --prefix=/Users/ponder/tinker/fftw --enable-threads
       make
       make install
 
@@ -31,4 +31,9 @@
       and linux versions for the Intel compiler that use  -axssse3 and
       -axsse3, respectively, along with other optimization flags. The
       original file is available as "configure-orig".
+
+      Note that the configure option --enable-threads can be replaced by
+      --enable-omp, creating a libfftw3_omp.a library. Under OSX with
+      recent version of the Intel compilers, this library seems to give
+      poorer performance under OpenMP on large numbers of cores.
 

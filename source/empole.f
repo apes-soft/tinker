@@ -1725,7 +1725,7 @@ c
 !$OMP& bn,sc,gl,sci,gli)
 !$OMP& firstprivate(mscale,pscale)
 !$OMP DO reduction(+:emtt,eptt)
-!$OMP& schedule(dynamic)
+!$OMP& schedule(guided)
 c
 c     compute the real space portion of the Ewald summation
 c

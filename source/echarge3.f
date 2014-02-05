@@ -1725,7 +1725,7 @@ c
 !$OMP& aewald,molcule,ebuffer,name,verbose,debug,header,iout)
 !$OMP& firstprivate(cscale) shared(ect,eintrat,nect,aect)
 !$OMP DO reduction(+:ect,eintrat,nect,aect)
-!$OMP& schedule(dynamic)
+!$OMP& schedule(guided)
 c
 c     compute the real space portion of the Ewald summation
 c

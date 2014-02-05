@@ -1069,7 +1069,7 @@ c
 !$OMP& use_group,off2,radmin,epsilon,radmin4,epsilon4,ghal,dhal,
 !$OMP& cut2,vlambda,scalpha,scexp,mut,c0,c1,c2,c3,c4,c5,molcule)
 !$OMP& firstprivate(vscale,iv14) shared(evt,devt,virt,eintert)
-!$OMP DO reduction(+:evt,devt,virt,eintert) schedule(dynamic)
+!$OMP DO reduction(+:evt,devt,virt,eintert) schedule(guided)
 c
 c     find van der Waals energy and derivatives via neighbor list
 c

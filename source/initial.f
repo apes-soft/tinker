@@ -23,6 +23,7 @@ c
       include 'atoms.i'
       include 'bath.i'
       include 'bound.i'
+      include 'boxes.i'
       include 'cell.i'
       include 'files.i'
       include 'group.i'
@@ -32,7 +33,6 @@ c
       include 'linmin.i'
       include 'minima.i'
       include 'molcul.i'
-c      include 'mpi.i'
       include 'mutant.i'
       include 'neigh.i'
       include 'openmp.i'
@@ -93,12 +93,6 @@ c
 c     command line arguments to the program
 c
       call command
-c
-c     setup OpenMPI
-c
-c      nrank = 0
-c      nnode = 0
-c      call mpi_setup (nrank,nnode)
 c
 c     values of machine precision constants
 c
@@ -169,6 +163,15 @@ c
       use_replica = .false.
       use_polymer = .false.
 c
+c     default values for unitcell dimensions
+c
+      xbox = 0.0d0
+      ybox = 0.0d0
+      zbox = 0.0d0
+      alpha = 0.0d0
+      beta = 0.0d0
+      gamma = 0.0d0
+c
 c     flags for temperature and pressure baths
 c
       isothermal = .false.
@@ -214,7 +217,7 @@ c     names of biopolymer residue types
 c
       call initres
 c
-c     default parameters used by optimizations
+c     default values used by optimizations
 c
       fctmin = 0.0d0
       maxiter = 0
