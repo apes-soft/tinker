@@ -91,7 +91,7 @@ c
 c     process individual atoms from the Protein Data Bank file
 c
       do while (.true.)
-         read (ipdb,20,err=190,end=190)  record
+         read (ipdb,20,err=230,end=230)  record
    20    format (a120)
          call upcase (record)
          remark = record(1:6)
@@ -131,12 +131,21 @@ c
             read (string,80)  insert
    80       format (a1)
             string = record(next+1:120)
-            read (string,*)  xx,yy,zz
+            read (string,*,err=90,end=90)  xx,yy,zz
+            goto 100
+   90       continue
+            string = record(31:38)
+            read (string,*)  xx
+            string = record(39:46)
+            read (string,*)  yy
+            string = record(47:54)
+            read (string,*)  zz
+  100       continue
             if (resname(1:2) .eq. '  ')  resname = resname(3:3)
             if (resname(1:1) .eq. ' ')  resname = resname(2:3)
-            if (chain.ne.' ' .and. index(chnsym,chain).eq.0)  goto 100
-            if (altloc.ne.' ' .and. altloc.ne.altsym)  goto 100
-            if (insert.ne.' ' .and. index(instyp,insert).eq.0)  goto 100
+            if (chain.ne.' ' .and. index(chnsym,chain).eq.0)  goto 120
+            if (altloc.ne.' ' .and. altloc.ne.altsym)  goto 120
+            if (insert.ne.' ' .and. index(instyp,insert).eq.0)  goto 120
             call fixpdb (resname,atmname)
             if (resname .eq. 'HOH') then
                remark = 'HETATM'
@@ -148,8 +157,8 @@ c
                chnlast = chain
                inslast = insert
                if (nres .gt. maxres) then
-                  write (iout,90)  maxres
-   90             format (/,' READPDB  --  The Maximum of',i6,
+                  write (iout,110)  maxres
+  110             format (/,' READPDB  --  The Maximum of',i6,
      &                       ' Residues has been Exceeded')
                   call fatal
                end if
@@ -166,40 +175,49 @@ c
             resnum(npdb) = nres
             if (resname .eq. 'HOH')  resnum(npdb) = 0
             chnatm(npdb) = chain
-  100       continue
+  120       continue
          else if (remark .eq. 'HETATM') then
             next = 7
             call getnumb (record,serial,next)
             string = record(next+1:next+4)
-            read (string,110)  atmname
-  110       format (a4)
+            read (string,130)  atmname
+  130       format (a4)
             string = record(next+5:next+5)
-            read (string,120)  altloc
-  120       format (a1)
-            string = record(next+6:next+8)
-            read (string,130)  resname
-  130       format (a3)
-            string = record(next+10:next+10)
-            read (string,140)  chain
+            read (string,140)  altloc
   140       format (a1)
+            string = record(next+6:next+8)
+            read (string,150)  resname
+  150       format (a3)
+            string = record(next+10:next+10)
+            read (string,160)  chain
+  160       format (a1)
             next = next + 11
             call getnumb (record,residue,next)
             if (next .eq. nxtlast) then
                string = record(next:next+3)
-               read (string,150)  residue
-  150          format (i4)
+               read (string,170)  residue
+  170          format (i4)
                next = next + 4
             end if
             string = record(next:next)
-            read (string,160)  insert
-  160       format (a1)
+            read (string,180)  insert
+  180       format (a1)
             string = record(next+1:120)
-            read (string,*)  xx,yy,zz
+            read (string,*,err=190,end=190)  xx,yy,zz
+            goto 200
+  190       continue
+            string = record(31:38)
+            read (string,*)  xx
+            string = record(39:46)
+            read (string,*)  yy
+            string = record(47:54)
+            read (string,*)  zz
+  200       continue
             if (resname(1:2) .eq. '  ')  resname = resname(3:3)
             if (resname(1:1) .eq. ' ')  resname = resname(2:3)
-            if (chain.ne.' ' .and. index(chnsym,chain).eq.0)  goto 170
-            if (altloc.ne.' ' .and. altloc.ne.altsym)  goto 170
-            if (insert.ne.' ' .and. index(instyp,insert).eq.0)  goto 170
+            if (chain.ne.' ' .and. index(chnsym,chain).eq.0)  goto 210
+            if (altloc.ne.' ' .and. altloc.ne.altsym)  goto 210
+            if (insert.ne.' ' .and. index(instyp,insert).eq.0)  goto 210
             call fixpdb (resname,atmname)
             npdb = npdb + 1
             xpdb(npdb) = xx
@@ -210,20 +228,20 @@ c
             resnam(npdb) = resname
             resnum(npdb) = 0
             chnatm(npdb) = chain
-  170       continue
+  210       continue
          else if (remark .eq. 'ENDMDL') then
-            goto 190
+            goto 230
          else if (remark .eq. 'END   ') then
-            goto 190
+            goto 230
          end if
          if (npdb .gt. maxatm) then
-            write (iout,180)  maxatm
-  180       format (/,' READPDB  --  The Maximum of',i6,
+            write (iout,220)  maxatm
+  220       format (/,' READPDB  --  The Maximum of',i6,
      &                 ' Atoms has been Exceeded')
             call fatal
          end if
       end do
-  190 continue
+  230 continue
 c
 c     set the total sequence length and chain terminus sites
 c
@@ -259,27 +277,27 @@ c
             do k = 1, maxamino
                if (seq(j) .eq. amino(k)) then
                   chntyp(i) = 'PEPTIDE'
-                  goto 200
+                  goto 240
                end if
             end do
             chntyp(i) = 'GENERIC'
-            goto 210
-  200       continue
+            goto 250
+  240       continue
          end do
-  210    continue
+  250    continue
          if (chntyp(i) .eq. 'GENERIC') then
             do j = start, stop
                do k = 1, maxnuc
                   if (seq(j) .eq. nuclz(k)) then
                      chntyp(i) = 'NUCLEIC'
-                     goto 220
+                     goto 260
                   end if
                end do
                chntyp(i) = 'GENERIC'
-               goto 230
-  220          continue
+               goto 270
+  260          continue
             end do
-  230       continue
+  270       continue
          end if
       end do
 c
@@ -292,20 +310,20 @@ c
             do k = 1, maxamino
                if (seq(j) .eq. amino(k)) then
                   seqtyp(j) = k
-                  goto 240
+                  goto 280
                end if
             end do
             do k = 1, maxnuc
                if (seq(j) .eq. nuclz(k)) then
                   seqtyp(j) = k
-                  goto 240
+                  goto 280
                end if
             end do
             seq(j) = 'UNK'
             seqtyp(j) = 0
             if (chntyp(i) .eq. 'PEPTIDE')  seqtyp(j) = maxamino
             if (chntyp(i) .eq. 'NUCLEIC')  seqtyp(j) = maxnuc
-  240       continue
+  280       continue
          end do
       end do
 c
@@ -593,6 +611,11 @@ c
       if (resname .eq. 'HSH')  resname = 'HIS'
       if (resname .eq. 'HIP')  resname = 'HIS'
       if (resname .eq. 'HIH')  resname = 'HIS'
+c
+c     convert unusual names for other amino acid residues
+c
+      if (resname .eq. 'CYN')  resname = 'CYS'
+      if (resname .eq. 'LYP')  resname = 'LYS'
 c
 c     convert unusual names for terminal capping residues
 c

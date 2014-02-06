@@ -51,7 +51,7 @@ c
       call getpdb
       call field
 c
-c     decide whether the system contains only biopolymers
+c     decide whether the system has only biopolymers and water
 c
       biopoly = .false.
       reslast = '***'
@@ -72,17 +72,28 @@ c
                      goto 10
                   end if
                end do
-               if (resname .eq. 'HOH') then
+               biopoly = .false.
+               goto 30
+   10          continue
+            end if
+         else if (pdbtyp(i) .eq. 'HETATM') then
+            resname = resnam(i)
+            if (resname .ne. reslast) then
+               reslast = resname
+               if (resname.eq.'HOH' .or. resname.eq.'NA ' .or.
+     &             resname.eq.'K  ' .or. resname.eq.'MG ' .or.
+     &             resname.eq.'CA ' .or. resname.eq.'CL ') then
+                  biopoly = .true.
                   pdbtyp(i) = 'HETATM'
-                  goto 10
+                  goto 20
                end if
                biopoly = .false.
-               goto 20
-   10          continue
+               goto 30
+   20          continue
             end if
          end if
       end do
-   20 continue
+   30 continue
 c
 c     open the TINKER coordinates file to be used for output
 c

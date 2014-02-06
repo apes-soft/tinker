@@ -1385,7 +1385,7 @@ c
 !$OMP& c3scale,c4scale,c5scale,use_group,off2,aewald,ebuffer)
 !$OMP& firstprivate(cscale) shared(ect)
 !$OMP DO reduction(+:ect)
-!$OMP& schedule(dynamic)
+!$OMP& schedule(guided)
 c
 c     compute the real space portion of the Ewald summation
 c

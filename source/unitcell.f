@@ -38,12 +38,6 @@ c
 c
 c     set the default values for the unitcell variables
 c
-      xbox = 0.0d0
-      ybox = 0.0d0
-      zbox = 0.0d0
-      alpha = 0.0d0
-      beta = 0.0d0
-      gamma = 0.0d0
       orthogonal = .false.
       monoclinic = .false.
       triclinic = .false.
@@ -60,23 +54,23 @@ c
          call upcase (keyword)
          string = record(next:120)
          if (keyword(1:7) .eq. 'X-AXIS ') then
-            read (string,*,err=10,end=10)  xbox
+            if (xbox .eq. 0.0d0)  read (string,*,err=10,end=10)  xbox
          else if (keyword(1:7) .eq. 'Y-AXIS ') then
-            read (string,*,err=10,end=10)  ybox
+            if (ybox .eq. 0.0d0)  read (string,*,err=10,end=10)  ybox
          else if (keyword(1:7) .eq. 'Z-AXIS ') then
-            read (string,*,err=10,end=10)  zbox
+            if (zbox .eq. 0.0d0)  read (string,*,err=10,end=10)  zbox
          else if (keyword(1:7) .eq. 'A-AXIS ') then
-            read (string,*,err=10,end=10)  xbox
+            if (xbox .eq. 0.0d0)  read (string,*,err=10,end=10)  xbox
          else if (keyword(1:7) .eq. 'B-AXIS ') then
-            read (string,*,err=10,end=10)  ybox
+            if (ybox .eq. 0.0d0)  read (string,*,err=10,end=10)  ybox
          else if (keyword(1:7) .eq. 'C-AXIS ') then
-            read (string,*,err=10,end=10)  zbox
+            if (zbox .eq. 0.0d0)  read (string,*,err=10,end=10)  zbox
          else if (keyword(1:6) .eq. 'ALPHA ') then
-            read (string,*,err=10,end=10)  alpha
+            if (alpha .eq. 0.0d0)  read (string,*,err=10,end=10)  alpha
          else if (keyword(1:5) .eq. 'BETA ') then
-            read (string,*,err=10,end=10)  beta
+            if (beta .eq. 0.0d0)  read (string,*,err=10,end=10)  beta
          else if (keyword(1:6) .eq. 'GAMMA ') then
-            read (string,*,err=10,end=10)  gamma
+            if (gamma .eq. 0.0d0)  read (string,*,err=10,end=10)  gamma
          else if (keyword(1:11) .eq. 'OCTAHEDRON ') then
             octahedron = .true.
          else if (keyword(1:11) .eq. 'SPACEGROUP ') then
