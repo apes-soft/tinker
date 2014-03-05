@@ -4801,51 +4801,33 @@ c
 c
 c     perform dynamic allocation of some local arrays
 c
-      allocate (mscale(n))
-      allocate (pscale(n))
-      allocate (dscale(n))
-      allocate (uscale(n))
+
+
       allocate (demi(3,n))
       allocate (demk(3,n))
       allocate (depi(3,n))
       allocate (depk(3,n))
-c
-c     set arrays needed to scale connected atom interactions
-c
-      do i = 1, n
-         mscale(i) = 1.0d0
-         pscale(i) = 1.0d0
-         dscale(i) = 1.0d0
-         uscale(i) = 1.0d0
-      end do
+
+
+
 c
 c     set conversion factor, cutoff and switching coefficients
 c
       f = electric / dielec
       mode = 'EWALD'
       call switch (mode)
-c
-c     initialize local variables for OpenMP calculation
-c
+
       emtt = 0.0d0
       eptt = 0.0d0
-      do i = 1, n
-         do j = 1, 3
-            demi(j,i) = 0.0d0
-            demk(j,i) = 0.0d0
-            depi(j,i) = 0.0d0
-            depk(j,i) = 0.0d0
-         end do
-      end do
+      
       do i = 1, 3
          do j = 1, 3
             viri(j,i) = 0.0d0
          end do
       end do
-c
-c     set OpenMP directives for the major loop structure
-c
-!$OMP PARALLEL DO schedule(dynamic,16)
+
+
+!$OMP PARALLEL 
 !$OMP& default(shared) firstprivate(f) 
 !$OMP& private(i,j,k,ii,kk,kkk,e,ei,bfac,damp,expdamp,
 !$OMP& pdi,pti,pgamma,scale3,scale5,scale7,temp3,temp5,temp7,
@@ -4862,9 +4844,45 @@ c
 !$OMP& qidk,qkdi,qir,qkr,qiqkr,qkqir,qixqk,rxqir,dixr,dkxr,
 !$OMP& dixqkr,dkxqir,rxqkr,qkrxqir,rxqikr,rxqkir,rxqidk,rxqkdi,
 !$OMP& ddsc3,ddsc5,ddsc7,bn,sc,gl,sci,scip,gli,glip,gf,gfi,
-!$OMP& gfr,gfri,gti,gtri,dorl,dorli)
-!$OMP& firstprivate(mscale,pscale,dscale,uscale)
-!$OMP& reduction(+:emtt,eptt,viri,demi,depi,demk,depk)
+!$OMP& gfr,gfri,gti,gtri,dorl,dorli,mscale,pscale,dscale,uscale)
+
+      allocate (mscale(n))
+      allocate (pscale(n))
+      allocate (dscale(n))
+      allocate (uscale(n))
+     
+c
+c     set arrays needed to scale connected atom interactions
+c
+      do i = 1, n
+         mscale(i) = 1.0d0
+         pscale(i) = 1.0d0
+         dscale(i) = 1.0d0
+         uscale(i) = 1.0d0
+      end do
+
+c
+c     initialize local variables for OpenMP calculation
+c
+
+!$OMP DO schedule(dynamic,16)      
+      do i = 1, n
+         do j = 1, 3
+            demi(j,i) = 0.0d0
+            demk(j,i) = 0.0d0
+            depi(j,i) = 0.0d0
+            depk(j,i) = 0.0d0
+         end do
+      end do
+!$OMP END DO
+     
+c
+c     set OpenMP directives for the major loop structure
+c
+
+
+!$OMP DO reduction(+:emtt,eptt,viri,demi,depi,demk,depk)
+!$OMP& schedule(dynamic,16)
 c
 c     compute the real space portion of the Ewald summation
 c
@@ -5724,11 +5742,17 @@ c
             uscale(ip14(j,ii)) = 1.0d0
          end do
       end do
+!$OMP END DO 
+
+      deallocate (mscale)
+      deallocate (pscale)
+      deallocate (dscale)
+      deallocate (uscale)
 c
 c     end OpenMP directives for the major loop structure
 c
 
-!$OMP END PARALLEL DO
+!$OMP END PARALLEL
 c
 c     add local copies to global variables for OpenMP calculation
 c
@@ -5748,10 +5772,7 @@ c
 c
 c     perform deallocation of some local arrays
 c
-      deallocate (mscale)
-      deallocate (pscale)
-      deallocate (dscale)
-      deallocate (uscale)
+     
       deallocate (demi)
       deallocate (demk)
       deallocate (depi)
