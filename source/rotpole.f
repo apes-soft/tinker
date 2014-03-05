@@ -27,7 +27,7 @@ c
 c     rotate the atomic multipoles at each site in turn
 c
 
-!$OMP PARALLEL DO default(shared) private(i,a)
+!$OMP PARALLEL DO default(shared) private(i,a) schedule(static,16)
       do i = 1, npole
          call rotmat (i,a)
          call rotsite (i,a)
