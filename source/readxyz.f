@@ -112,6 +112,9 @@ c
 c
 c     initialize coordinates and connectivities for each atom
 c
+
+!$OMP PARALLEL DO schedule(static,16) 
+!$OMP$ default(shared) private(i,j)
       do i = 1, n
          tag(i) = 0
          name(i) = '   '
@@ -123,6 +126,7 @@ c
             i12(j,i) = 0
          end do
       end do
+!$OMP END PARALLEL DO
 c
 c     read the coordinates and connectivities for each atom
 c
