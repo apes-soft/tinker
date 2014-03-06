@@ -3095,7 +3095,7 @@ c
 c
 c     perform dynamic allocation of some local arrays
 c
-      allocate (dscale(n))
+    
       allocate (fieldt(3,npole))
       allocate (fieldtp(3,npole))
 c
@@ -3107,18 +3107,7 @@ c
 c
 c     set array needed to scale connected atom interactions
 c
-      do i = 1, n
-         dscale(i) = 1.0d0
-      end do
-c
-c     initialize local variables for OpenMP calculation
-c
-      do i = 1, npole
-         do j = 1, 3
-            fieldt(j,i) = 0.0d0
-            fieldtp(j,i) = 0.0d0
-         end do
-      end do
+     
 c
 c     set OpenMP directives for the major loop structure
 c
@@ -3126,8 +3115,28 @@ c
 !$OMP& bfac,exp2a,duir,dukr,puir,pukr,pdi,pti,expdamp,
 !$OMP& duix,duiy,duiz,puix,puiy,puiz,dukx,duky,dukz,pukx,puky,pukz,
 !$OMP& ralpha,damp,alsq2,alsq2n,scale3,scale5,bn,fimd,fkmd,
-!$OMP& fimp,fkmp,fid,fkd,fip,fkp,i,j,k,ii,kk,kkk, pgamma)
-!$OMP& firstprivate(dscale) 
+!$OMP& fimp,fkmp,fid,fkd,fip,fkp,i,j,k,ii,kk,kkk, pgamma, dscale)
+
+
+      allocate (dscale(n))
+
+      do i = 1, n
+         dscale(i) = 1.0d0
+      end do
+c
+c     initialize local variables for OpenMP calculation
+c
+!$OMP DO schedule(dynamic,16)
+      do i = 1, npole
+         do j = 1, 3
+            fieldt(j,i) = 0.0d0
+            fieldtp(j,i) = 0.0d0
+         end do
+      end do
+!$OMP END DO
+
+
+
 !$OMP DO reduction(+:fieldt,fieldtp) schedule(dynamic,16)
 c
 c     compute the real space portion of the Ewald summation
@@ -3269,11 +3278,14 @@ c
          end do
       end do
 !$OMP END DO NOWAIT
+
+      deallocate (dscale)
+
 !$OMP END PARALLEL
 c
 c     perform deallocation of some local arrays
 c
-      deallocate (dscale)
+     
       deallocate (fieldt)
       deallocate (fieldtp)
       return
