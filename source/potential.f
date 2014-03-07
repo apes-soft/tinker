@@ -1299,10 +1299,15 @@ c
 c
 c     find and assign induced dipole moment parameters
 c
+
+!$OMP PARALLEL DO private(i) schedule(static,16)
       do i = 1, n
          polarity(i) = polr(type(i))
          thole(i) = athl(type(i))
       end do
+!$OMP END PARALLEL DO
+
+
 c
 c     post-processing of polarizable multipole parameters
 c
