@@ -331,12 +331,14 @@ c
             mode = 'APPLY'
             call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
          end if
+!$OMP PARALLEL DO schedule(static,16) default(shared) private(i,j)
          do i = 1, npole
             do j = 1, 3
                conj(j,i) = zrsd(j,i)
                conjp(j,i) = zrsdp(j,i)
             end do
          end do
+!$OMP END PARALLEL DO
 c
 c     conjugate gradient iteration of the mutual induced dipoles
 c
