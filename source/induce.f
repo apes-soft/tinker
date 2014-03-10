@@ -308,6 +308,8 @@ c
 c
 c     set initial conjugate gradient residual and conjugate vector
 c
+
+!$OMP PARALLEL DO schedule(static,16) default(shared) private(i,j)
          do i = 1, npole
             poli(i) = max(polmin,polarity(i))
             do j = 1, 3
@@ -317,6 +319,8 @@ c
      &                       + fieldp(j,i)
             end do
          end do
+!$OMP END PARALLEL DO
+
          mode = 'BUILD'
          if (use_mlist) then
             call uscale0b (mode,rsd,rsdp,zrsd,zrsdp)
