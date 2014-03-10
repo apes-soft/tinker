@@ -244,6 +244,8 @@ c
 c
 c     set induced dipoles to polarizability times direct field
 c
+
+!$OMP PARALLEL DO schedule(static,16) default(shared) private(i,j)
       do i = 1, npole
          do j = 1, 3
             udir(j,i) = polarity(i) * field(j,i)
@@ -252,6 +254,8 @@ c
             uinp(j,i) = udirp(j,i)
          end do
       end do
+!$OMP END PARALLEL DO
+
 c
 c     set tolerances for computation of mutual induced dipoles
 c
