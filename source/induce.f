@@ -344,6 +344,8 @@ c     conjugate gradient iteration of the mutual induced dipoles
 c
          do while (.not. done)
             iter = iter + 1
+
+!$OMP PARALLEL DO schedule(static,16) default(shared) private(i,j)
             do i = 1, npole
                do j = 1, 3
                   vec(j,i) = uind(j,i)
@@ -352,6 +354,8 @@ c
                   uinp(j,i) = conjp(j,i)
                end do
             end do
+!$OMP END PARALLEL DO
+
             if (use_ewald) then
                call ufield0c (field,fieldp)
             else if (use_mlist) then
@@ -359,6 +363,8 @@ c
             else
                call ufield0a (field,fieldp)
             end if
+
+!$OMP PARALLEL DO schedule(static,16) default(shared) private(i,j)
             do i = 1, npole
                do j = 1, 3
                   uind(j,i) = vec(j,i)
@@ -367,6 +373,8 @@ c
                   vecp(j,i) = conjp(j,i)/poli(i) - fieldp(j,i)
                end do
             end do
+!$OMP END PARALLEL DO
+
             a = 0.0d0
             ap = 0.0d0
             sum = 0.0d0
