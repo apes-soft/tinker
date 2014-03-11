@@ -1778,6 +1778,9 @@ c
 c
 c     complete the transformation of the PME grid
 c
+
+!$OMP PARALLEL DO schedule(static,16) 
+!$OMP&private(k,j,i,term) default(shared)
       do k = 1, nfft3
          do j = 1, nfft2
             do i = 1, nfft1
@@ -1787,6 +1790,8 @@ c
             end do
          end do
       end do
+!$OMP END PARALLEL DO
+
 c
 c     perform 3-D FFT backward transform and get field
 c
