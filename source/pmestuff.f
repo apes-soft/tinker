@@ -383,6 +383,14 @@ c
 c
 c     zero out the particle mesh Ewald charge grid
 c
+
+
+!$OMP PARALLEL  default(shared) 
+!$OMP& private(i,j,k,m,ii,jj,kk,ichk, 
+!$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
+!$OMP& offsetz,v0,u0,term,t0) 
+
+!$OMP DO schedule(static,1)
       do k = 1, nfft3
          do j = 1, nfft2
             do i = 1, nfft1
@@ -391,16 +399,14 @@ c
             end do
          end do
       end do
-
+!$OMP END DO 
 
 
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL DO schedule(dynamic) default(shared) 
-!$OMP& private(i,j,k,m,ii,jj,kk,ichk, 
-!$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
-!$OMP& offsetz,v0,u0,term,t0) 
+
+!$OMP DO schedule(static,1)
 c
 c     put the permanent multipole moments onto the grid
 c
@@ -457,12 +463,13 @@ c
             end if
          end do
       end do
+!$OMP END DO NOWAIT
 
 c
 c     end OpenMP directive for the major loop structure
 c
 
-!$OMP END PARALLEL DO
+!$OMP END PARALLEL 
 
       return
       end
@@ -506,6 +513,14 @@ c
 c
 c     zero out the particle mesh Ewald charge grid
 c
+
+
+!$OMP PARALLEL
+!$OMP& default(shared) private(i,j,k,m,ii,jj,kk,ichk, 
+!$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
+!$OMP& offsetz,v0,v1,v2,u0,u1,u2,term0,term1,term2,t0,t1,t2)
+
+!$OMP DO schedule(static,1)
       do k = 1, nfft3
          do j = 1, nfft2
             do i = 1, nfft1
@@ -514,13 +529,14 @@ c
             end do
          end do
       end do
+!$OMP END DO
+
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL DO schedule (dynamic)
-!$OMP& default(shared) private(i,j,k,m,ii,jj,kk,ichk, 
-!$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
-!$OMP& offsetz,v0,v1,v2,u0,u1,u2,term0,term1,term2,t0,t1,t2)
+
+
+!$OMP DO schedule(static,1)
 c
 c     put the permanent multipole moments onto the grid
 c
@@ -593,13 +609,12 @@ c
             end if
          end do
       end do
-
-
+!$OMP END DO
 c
 c     end OpenMP directive for the major loop structure
 c
 
-!$OMP END PARALLEL DO
+!$OMP END PARALLEL 
       return
       end
 c
@@ -642,6 +657,13 @@ c      integer omp_get_thread_num
 c     
 c     zero out the particle mesh Ewald charge grid
 c
+
+!$OMP PARALLEL
+!$OMP& default(shared) private(i,j,k,m,ii,jj,kk,ichk, 
+!$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
+!$OMP& offsetz,v0,v1,u0,u1,term01,term11,term02,term12,t0,t1)
+
+!$OMP DO schedule(static,1)
       do k = 1, nfft3
          do j = 1, nfft2
             do i = 1, nfft1
@@ -650,19 +672,14 @@ c
             end do
          end do
       end do
-
-c      print *, "thread id followed by i,j and k"
-
-
+!$OMP END DO
 
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL DO schedule(dynamic)
-!$OMP& default(shared) private(i,j,k,m,ii,jj,kk,ichk, 
-!$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
-!$OMP& offsetz,v0,v1,u0,u1,term01,term11,term02,term12,t0,t1)
 
+
+!$OMP  DO schedule(static,1)
 c
 c     put the induced dipole moments onto the grid
 c
@@ -741,14 +758,14 @@ c                        print *,  omp_get_thread_num(), i,j,k
             end if
          end do
       end do
-
+!$OMP END DO
 
 
 c     
 c     end OpenMP directive for the major loop structure
 c     
 
-!$OMP END PARALLEL DO
+!$OMP END PARALLEL
 
       return
       end
