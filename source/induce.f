@@ -244,8 +244,6 @@ c
 c
 c     set induced dipoles to polarizability times direct field
 c
-
-!$OMP PARALLEL DO schedule(static,16) default(shared) private(i,j)
       do i = 1, npole
          do j = 1, 3
             udir(j,i) = polarity(i) * field(j,i)
@@ -254,8 +252,6 @@ c
             uinp(j,i) = udirp(j,i)
          end do
       end do
-!$OMP END PARALLEL DO
-
 c
 c     set tolerances for computation of mutual induced dipoles
 c
@@ -308,8 +304,6 @@ c
 c
 c     set initial conjugate gradient residual and conjugate vector
 c
-
-!$OMP PARALLEL DO schedule(static,16) default(shared) private(i,j)
          do i = 1, npole
             poli(i) = max(polmin,polarity(i))
             do j = 1, 3
@@ -319,8 +313,6 @@ c
      &                       + fieldp(j,i)
             end do
          end do
-!$OMP END PARALLEL DO
-
          mode = 'BUILD'
          if (use_mlist) then
             call uscale0b (mode,rsd,rsdp,zrsd,zrsdp)
@@ -331,21 +323,17 @@ c
             mode = 'APPLY'
             call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
          end if
-!$OMP PARALLEL DO schedule(static,16) default(shared) private(i,j)
          do i = 1, npole
             do j = 1, 3
                conj(j,i) = zrsd(j,i)
                conjp(j,i) = zrsdp(j,i)
             end do
          end do
-!$OMP END PARALLEL DO
 c
 c     conjugate gradient iteration of the mutual induced dipoles
 c
          do while (.not. done)
             iter = iter + 1
-
-!$OMP PARALLEL DO schedule(static,16) default(shared) private(i,j)
             do i = 1, npole
                do j = 1, 3
                   vec(j,i) = uind(j,i)
@@ -354,8 +342,6 @@ c
                   uinp(j,i) = conjp(j,i)
                end do
             end do
-!$OMP END PARALLEL DO
-
             if (use_ewald) then
                call ufield0c (field,fieldp)
             else if (use_mlist) then
@@ -363,8 +349,6 @@ c
             else
                call ufield0a (field,fieldp)
             end if
-
-!$OMP PARALLEL DO schedule(static,16) default(shared) private(i,j)
             do i = 1, npole
                do j = 1, 3
                   uind(j,i) = vec(j,i)
@@ -373,8 +357,6 @@ c
                   vecp(j,i) = conjp(j,i)/poli(i) - fieldp(j,i)
                end do
             end do
-!$OMP END PARALLEL DO
-
             a = 0.0d0
             ap = 0.0d0
             sum = 0.0d0
@@ -1507,15 +1489,12 @@ c
 c     get the self-energy portion of the electrostatic field
 c
       term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
-
       do i = 1, npole
          do j = 1, 3
             field(j,i) = field(j,i) + term*rpole(j+1,i)
             fieldp(j,i) = fieldp(j,i) + term*rpole(j+1,i)
          end do
       end do
-
-
 c
 c     compute the cell dipole boundary correction to field
 c
@@ -1523,26 +1502,19 @@ c
          do i = 1, 3
             ucell(i) = 0.0d0
          end do
-!$OMP PARALLEL default(shared) private(i,j) firstprivate(term) 
-!$OMP DO schedule(static,16)
          do i = 1, npole
             ii = ipole(i)
             ucell(1) = ucell(1) + rpole(2,i) + rpole(1,i)*x(ii)
             ucell(2) = ucell(2) + rpole(3,i) + rpole(1,i)*y(ii)
             ucell(3) = ucell(3) + rpole(4,i) + rpole(1,i)*z(ii)
          end do
-!$OMP END DO 
          term = (4.0d0/3.0d0) * pi/volbox
-!$OMP DO schedule(static,16)
          do i = 1, npole
             do j = 1, 3
                field(j,i) = field(j,i) - term*ucell(j)
                fieldp(j,i) = fieldp(j,i) - term*ucell(j)
             end do
          end do
-!$OMP END DO NOWAIT
-!$OMP END PARALLEL
-
       end if
       return
       end
@@ -1778,9 +1750,6 @@ c
 c
 c     complete the transformation of the PME grid
 c
-
-!$OMP PARALLEL DO schedule(static,16) 
-!$OMP&private(k,j,i,term) default(shared)
       do k = 1, nfft3
          do j = 1, nfft2
             do i = 1, nfft1
@@ -1790,8 +1759,6 @@ c
             end do
          end do
       end do
-!$OMP END PARALLEL DO
-
 c
 c     perform 3-D FFT backward transform and get field
 c

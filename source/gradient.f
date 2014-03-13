@@ -64,8 +64,6 @@ c
 c
 c     zero out each of the first derivative components
 c
-!$OMP PARALLEL DO schedule(static,16)
-!$OMP& private(i,j) default(shared)
       do i = 1, n
          do j = 1, 3
             deb(j,i) = 0.0d0
@@ -94,7 +92,6 @@ c
             dex(j,i) = 0.0d0
          end do
       end do
-!$OMP END PARALLEL DO
 c
 c     zero out the virial and the intermolecular energy
 c
