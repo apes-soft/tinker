@@ -70,6 +70,9 @@ c
 c     store the current atom positions, then find half-step
 c     velocities and full-step positions via Beeman recursion
 c
+
+!$OMP PARALLEL DO schedule(static,16)
+!$OMP& private(i,j) default(shared)
       do i = 1, n
          if (use(i)) then
             do j = 1, 3
@@ -83,6 +86,7 @@ c
             z(i) = z(i) + v(3,i)*dt
          end if
       end do
+!$OMP END PARALLEL DO 
 c
 c     get constraint-corrected positions and half-step velocities
 c
