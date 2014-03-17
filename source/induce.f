@@ -212,17 +212,12 @@ c
 c
 c     zero out the induced dipoles at each site
 c
-
-!$OMP PARALLEL DO default(shared) private(i,j)
       do i = 1, npole
          do j = 1, 3
             uind(j,i) = 0.0d0
             uinp(j,i) = 0.0d0
          end do
       end do
-
-!$OMP END PARALLEL DO 
-
       if (.not. use_polar)  return
 c
 c     perform dynamic allocation of some local arrays
@@ -1453,30 +1448,21 @@ c
 c
 c     zero out the value of the field at each site
 c
-!$OMP PARALLEL default(shared) private(i,j)
-!$OMP DO schedule(static,16)
       do i = 1, npole
          do j = 1, 3
             field(j,i) = 0.0d0
             fieldp(j,i) = 0.0d0
          end do
       end do
-!$OMP END DO
 c
 c     get the reciprocal space part of the electrostatic field
 c
-!$OMP SINGLE
       call udirect1 (field)
-!$OMP END SINGLE
-!$OMP DO schedule(static,16)
       do i = 1, npole
          do j = 1, 3
             fieldp(j,i) = field(j,i)
          end do
       end do
-!$OMP END DO NOWAIT
-!$OMP END PARALLEL
-
 c
 c     get the real space portion of the electrostatic field
 c
@@ -1551,16 +1537,12 @@ c
 c
 c     zero out the electrostatic field at each site
 c
-
-!$OMP PARALLEL DO schedule(static,16) default(shared) private(i,j)
       do i = 1, npole
          do j = 1, 3
             field(j,i) = 0.0d0
             fieldp(j,i) = 0.0d0
          end do
       end do
-!$OMP END PARALLEL DO
- 
 c
 c     get the reciprocal space part of the electrostatic field
 c
@@ -1577,16 +1559,12 @@ c
 c     get the self-energy portion of the electrostatic field
 c
       term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
-
-!$OMP PARALLEL DO schedule(static,16) default(shared) private(i,j) 
       do i = 1, npole
          do j = 1, 3
             field(j,i) = field(j,i) + term*uind(j,i)
             fieldp(j,i) = fieldp(j,i) + term*uinp(j,i)
          end do
       end do
-!$OMP END PARALLEL DO 
-
 c
 c     compute the cell dipole boundary correction to the field
 c
@@ -1595,25 +1573,19 @@ c
             ucell(i) = 0.0d0
             ucellp(i) = 0.0d0
          end do
-!$OMP PARALLEL default(shared) private(i,j) firstprivate(term)
-!$OMP DO schedule(static,16)
          do i = 1, npole
             do j = 1, 3
                ucell(j) = ucell(j) + uind(j,i)
                ucellp(j) = ucellp(j) + uinp(j,i)
             end do
          end do
-!$OMP END DO
          term = (4.0d0/3.0d0) * pi/volbox
-!$OMP DO schedule(static,16)
          do i = 1, npole
             do j = 1, 3
                field(j,i) = field(j,i) - term*ucell(j)
                fieldp(j,i) = fieldp(j,i) - term*ucellp(j)
             end do
          end do
-!$OMP END DO NOWAIT
-!$OMP END PARALLEL 
       end if
       return
       end
@@ -1668,8 +1640,6 @@ c
 c
 c     copy multipole moments and coordinates to local storage
 c
-
-!$OMP PARALLEL DO schedule(static,16) default(shared) private(i)
       do i = 1, npole
          cmp(1,i) = rpole(1,i)
          cmp(2,i) = rpole(2,i)
@@ -1682,7 +1652,6 @@ c
          cmp(9,i) = 2.0d0 * rpole(7,i)
          cmp(10,i) = 2.0d0 * rpole(10,i)
       end do
-!$OMP END PARALLEL DO
 c
 c     compute B-spline coefficients and spatial decomposition
 c
@@ -1771,14 +1740,11 @@ c
 c
 c     increment the field at each multipole site
 c
-!$OMP PARALLEL DO schedule(static,16) default(shared) private(i,j)
       do i = 1, npole
          field(1,i) = field(1,i) - cphi(2,i)
          field(2,i) = field(2,i) - cphi(3,i)
          field(3,i) = field(3,i) - cphi(4,i)
       end do
-!$OMP END PARALLEL DO
-
 c
 c     perform deallocation of some local arrays
 c
@@ -2364,30 +2330,23 @@ c
 c
 c     initialize local variables for OpenMP calculation
 c
-
-
-!$OMP PARALLEL default(shared) private(i,j,k,ii,pdi,pti,
-!$OMP& ci,dix,diy,diz,qixx,qixy,qixz,qiyy,qiyz,qizz,kkk,kk,xr,yr,zr,
-!$OMP& r2,r,ck,dkx,dky,dkz,qkxx,qkxy,qkxz,qkyy,qkyz,qkzz,ralpha,bn,
-!$OMP& alsq2,alsq2n,exp2a,bfac,scale3,scale5,scale7,damp,pgamma,
-!$OMP& dsc3,dsc5,dsc7,psc3,psc5,psc7,drr3,drr5,drr7,prr3,prr5,prr7,
-!$OMP& dir,qix,qiy,qiz,qir,dkr,qkx,qky,qkz,qkr,fim,fkm,fid,fkd,fip,
-!$OMP& fkp,expdamp) firstprivate(dscale, pscale)
-
-!$OMP DO schedule(static,16)
       do i = 1, npole
          do j = 1, 3
             fieldt(j,i) = 0.0d0
             fieldtp(j,i) = 0.0d0
          end do
       end do
-!$OMP END DO
-
 c
 c     set OpenMP directives for the major loop structure
 c
- 
-!$OMP DO reduction(+:fieldt,fieldtp) schedule(static,16)
+!$OMP PARALLEL default(shared) private(i,j,k,ii,pdi,pti,
+!$OMP& ci,dix,diy,diz,qixx,qixy,qixz,qiyy,qiyz,qizz,kkk,kk,xr,yr,zr,
+!$OMP& r2,r,ck,dkx,dky,dkz,qkxx,qkxy,qkxz,qkyy,qkyz,qkzz,ralpha,bn,
+!$OMP& alsq2,alsq2n,exp2a,bfac,scale3,scale5,scale7,damp,pgamma,
+!$OMP& dsc3,dsc5,dsc7,psc3,psc5,psc7,drr3,drr5,drr7,prr3,prr5,prr7,
+!$OMP& dir,qix,qiy,qiz,qir,dkr,qkx,qky,qkz,qkr,fim,fkm,fid,fkd,fip,
+!$OMP& fkp,expdamp) firstprivate(dscale, pscale) 
+!$OMP DO reduction(+:fieldt,fieldtp) schedule(dynamic,16)
 c
 c     compute the real space portion of the Ewald summation
 c
@@ -2587,7 +2546,7 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP DO schedule(static,16)
+!$OMP DO schedule(dynamic,16)
       do i = 1, npole    
          do j = 1, 3
             field(j,i) = fieldt(j,i) + field(j,i)
@@ -3154,27 +3113,22 @@ c
 c
 c     initialize local variables for OpenMP calculation
 c
-
-!$OMP PARALLEL default(shared) private(xr,yr,zr,r,r2,rr3,rr5,
-!$OMP& bfac,exp2a,duir,dukr,puir,pukr,pdi,pti,expdamp,
-!$OMP& duix,duiy,duiz,puix,puiy,puiz,dukx,duky,dukz,pukx,puky,pukz,
-!$OMP& ralpha,damp,alsq2,alsq2n,scale3,scale5,bn,fimd,fkmd,
-!$OMP& fimp,fkmp,fid,fkd,fip,fkp,i,j,k,ii,kk,kkk, pgamma)
-!$OMP& firstprivate(dscale) 
-
-!$OMP DO schedule(static,16)
       do i = 1, npole
          do j = 1, 3
             fieldt(j,i) = 0.0d0
             fieldtp(j,i) = 0.0d0
          end do
       end do
-!$OMP END DO
 c
 c     set OpenMP directives for the major loop structure
 c
-
-!$OMP DO reduction(+:fieldt,fieldtp) schedule(static,16)
+!$OMP PARALLEL default(shared) private(xr,yr,zr,r,r2,rr3,rr5,
+!$OMP& bfac,exp2a,duir,dukr,puir,pukr,pdi,pti,expdamp,
+!$OMP& duix,duiy,duiz,puix,puiy,puiz,dukx,duky,dukz,pukx,puky,pukz,
+!$OMP& ralpha,damp,alsq2,alsq2n,scale3,scale5,bn,fimd,fkmd,
+!$OMP& fimp,fkmp,fid,fkd,fip,fkp,i,j,k,ii,kk,kkk, pgamma)
+!$OMP& firstprivate(dscale) 
+!$OMP DO reduction(+:fieldt,fieldtp) schedule(dynamic,16)
 c
 c     compute the real space portion of the Ewald summation
 c
@@ -3307,7 +3261,7 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP DO schedule(static,16) 
+!$OMP DO schedule(dynamic,16) 
       do i = 1, npole
           do j = 1, 3
             field(j,i) = fieldt(j,i) + field(j,i)

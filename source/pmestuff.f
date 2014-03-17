@@ -1284,6 +1284,7 @@ c
 c
 c     apply the transformation to get the fractional multipoles
 c
+!$OMP PARALLEL DO schedule(static,16) private(i,j) default(shared)
       do i = 1, npole
          fmp(1,i) = ctf(1,1) * cmp(1,i)
          do j = 2, 4
@@ -1299,6 +1300,7 @@ c
             end do
          end do
       end do
+!$OMP END PARALLEL DO
       return
       end
 c
@@ -1401,6 +1403,8 @@ c
 c
 c     apply the transformation to get the Cartesian potential
 c
+
+!$OMP PARALLEL DO schedule(static,16) private(i,j) default(shared)
       do i = 1, npole
          cphi(1,i) = ftc(1,1) * fphi(1,i)
          do j = 2, 4
@@ -1416,6 +1420,7 @@ c
             end do
          end do
       end do
+!$OMP END PARALLEL DO
       return
       end
 c
