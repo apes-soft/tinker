@@ -212,6 +212,9 @@ c
 c    initialize prior values of induced dipole moments
 c
          nualt = 0
+
+!$OMP PARALLEL DO schedule(static,16)
+!$OMP& private(i,j,k) default(shared)
          do i = 1, npole
             do j = 1, 3
                do k = 1, maxualt
@@ -222,6 +225,7 @@ c
                end do
             end do
          end do
+!$OMP END PARALLEL DO
       end if
 c
 c     enforce use of velocity Verlet with Andersen thermostat

@@ -1037,6 +1037,9 @@ c
 c
 c     apply any reduction factor to the atomic coordinates
 c
+
+!$OMP PARALLEL private(k,i,iv,rdn) default(shared)
+!$OMP DO schedule(static,16)
       do k = 1, nvdw
          i = ivdw(k)
          iv = ired(i)
@@ -1045,16 +1048,21 @@ c
          yred(i) = rdn*(y(i)-y(iv)) + y(iv)
          zred(i) = rdn*(z(i)-z(iv)) + z(iv)
       end do
+!$OMP END DO
 c
 c     transfer global to local copies for OpenMP calculation
 c
       evt = ev
       eintert = einter
+!$OMP DO schedule(static,16)
       do i = 1, n
          devt(1,i) = dev(1,i)
          devt(2,i) = dev(2,i)
          devt(3,i) = dev(3,i)
       end do
+!$OMP END DO NOWAIT
+!$OMP END PARALLEL 
+
       do i = 1, 3
          virt(1,i) = vir(1,i)
          virt(2,i) = vir(2,i)
@@ -1070,7 +1078,7 @@ c
 !$OMP& cut2,vlambda,scalpha,scexp,mut,c0,c1,c2,c3,c4,c5,molcule,
 !$OMP& evt, devt, virt, eintert)
 !$OMP& firstprivate(vscale,iv14) 
-!$OMP DO reduction(+:evt,devt,virt,eintert) schedule(dynamic,16)
+!$OMP DO reduction(+:evt,devt,virt,eintert) schedule(static,16)
 c
 c     find van der Waals energy and derivatives via neighbor list
 c
