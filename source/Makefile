@@ -30,7 +30,7 @@
 ##  LINKDIR      Linked Copies of TINKER Executables
 ##
 
-TINKERDIR = /home/w02/filinger/tinker
+TINKERDIR = /home/h019/filinger/tinker-dev/tinker
 BINDIR = $(TINKERDIR)/bin
 LINKDIR =  /home/w02/filinger/tinker
 
@@ -59,7 +59,7 @@ LINKDIR =  /home/w02/filinger/tinker
 #F77 = skin gfortran 
 #F77 =  /home/w02/mario/ompp/bin/kinst-ompp-papi gfortran 
 F77 = gfortran
-LIBS = -L$(TINKERDIR)/fftw/lib -lfftw3_omp -lfftw3
+LIBS = -L$(TINKERDIR)/fftw/lib -lfftw3_omp -lfftw3 
 F77FLAGS = -c  
 OPTFLAGS = -fno-align-commons -fopenmp  -O3  
 LIBFLAGS = -crusv
