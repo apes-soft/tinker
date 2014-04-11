@@ -6,6 +6,7 @@
 #######################
 bin*/
 profile/
+testdecomp/
 
 ####################
 # TINKER specifics #
@@ -66,3 +67,10 @@ profile/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+#########################
+# Other files to ignore #
+#########################
+
+source/TAGS
+
