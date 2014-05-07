@@ -12,21 +12,25 @@ c     ##                                                      ##
 c     ##########################################################
 c
 c
-c     "bitors" finds the total number of bitorsions, pairs of
-c     overlapping dihedral angles, and the numbers of the five
+c     "bitors" finds the total number of bitorsions as pairs
+c     of adjacent dihedral angles, and the numbers of the five
 c     atoms defining each bitorsion
 c
 c
       subroutine bitors
+      use sizes
+      use angbnd
+      use bitor
+      use couple
+      use iounit
       implicit none
-      include 'sizes.i'
-      include 'angle.i'
-      include 'bitor.i'
-      include 'couple.i'
-      include 'iounit.i'
       integer i,j,k
       integer ia,ib,ic,id,ie
 c
+c
+c     perform dynamic allocation of some global arrays
+c
+      if (.not. allocated(ibitor))  allocate (ibitor(5,maxbitor))
 c
 c     loop over all angles, storing the atoms in each bitorsion
 c

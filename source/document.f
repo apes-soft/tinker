@@ -24,6 +24,7 @@ c     under MediaWiki
 c
 c
       program document
+      use iounit
       implicit none
       integer maxline
       integer maxunit
@@ -32,8 +33,7 @@ c
       parameter (maxline=100)
       parameter (maxunit=1000)
       parameter (maxword=1000)
-      parameter (maxfunc=71)
-      include 'iounit.i'
+      parameter (maxfunc=73)
       integer i,j,k,mode
       integer idoc,isrc
       integer nkey,nunit
@@ -76,9 +76,10 @@ c
      &             'PSS1',      'PSSRGD1',   'PSSROT1',   'PTINCY',
      &             'RANDOM',    'RMSFIT',    'ROTANG',    'ROTCHECK',
      &             'SADDLE1',   'SCAN1',     'SIGMOID',   'SNIFFER1',
-     &             'TORSER',    'TOTERR',    'TRANSIT',   'TRIMTEXT',
-     &             'TRIPLE',    'VALFIT1',   'VALRMS',    'VDWERR',
-     &             'VECANG',    'WATSON1',   'XTALLAT1' /
+     &             'TORFIT1',   'TORSER',    'TOTERR',    'TRANSIT',
+     &             'TRIMTEXT',  'TRIPLE',    'URYGUESS',  'VALFIT1',
+     &             'VALRMS',    'VDWERR',    'VECANG',    'WATSON1',
+     &             'XTALMIN1' /
 c
 c
 c     set flag to format for TINKER User's Guide under MediaWiki
@@ -94,7 +95,7 @@ c
      &        /,4x,'(2) List of Calls made by each Routine',
      &        /,4x,'(3) List of Common Blocks from Source',
      &        /,4x,'(4) List of the TINKER Option Keywords',
-     &        /,4x,'(5) List of Include File Dependencies',
+     &        /,4x,'(5) List of Used Module Dependencies',
      &        /,4x,'(6) Documentation from a Parameter File')
       mode = 0
       call nextarg (string,exist)
@@ -429,7 +430,7 @@ c
   360    format (/,' Keyword Listing Written To:  ',a)
       end if
 c
-c     get the included files from the source code listing
+c     get the used modules from the source code listing
 c
       if (mode .eq. 5) then
          nkey = 0
@@ -438,9 +439,9 @@ c
   370       format (a120)
             next = 1
             call getword (record,keyword,next)
-            if (keyword .eq. 'include') then
+            if (keyword .eq. 'use') then
                call gettext (record,keyword,next)
-               keyword = keyword(2:trimtext(keyword)-1)
+               keyword = keyword(1:trimtext(keyword))//'.o'
                nkey = nkey + 1
                key(nkey) = keyword
             end if
