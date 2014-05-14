@@ -49,6 +49,7 @@ testdecomp/
 *.rar
 *.tar
 *.zip
+*.mod
 
 ######################
 # Logs and databases #
