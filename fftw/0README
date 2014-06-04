@@ -33,7 +33,7 @@
       original file is available as "configure-orig".
 
       Note that the configure option --enable-threads can be replaced by
-      --enable-omp, creating a libfftw3_omp.a library. Under OSX with
+      --enable-openmp, creating a libfftw3_omp.a library. Under OSX with
       recent version of the Intel compilers, this library seems to give
       poorer performance under OpenMP on large numbers of cores.
 
