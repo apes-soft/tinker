@@ -26,6 +26,9 @@ the `configure` script):
       make
       make install
 
+You can also use `--enable-openmp` instead of `--enable-thread` for an
+OpenMP version of the libaries.
+
 Modify the included `Makefile` to your desired paths and compilers, just
 like with base Tinker.  The `make` command will then create a single 
 executable called `dynamic.x`.
