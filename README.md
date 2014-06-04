@@ -1,17 +1,31 @@
 # Tinker Lite
 
-This is a stripped down version of Tinker created mostly for the purpose
-of readability and simplification, but also for small performance gains.
-This software is taken from Tinker 7.0 off of Jay Ponder's GitHub [tinker repository](https://github.com/jayponder/tinker).
+This is a stripped down version of Tinker created mostly for the
+purpose of readability and simplification, but also for small
+performance gains.  This software is taken from Tinker 7.0 off of Jay
+Ponder's GitHub [tinker repository](https://github.com/jayponder/tinker).  
 This software will only perform the Tinker executable `dynamic` and
-most options within `dynamic` are already made (see below for details).
-Using GNU compilers and 12 cores Alex Albaugh was able to achieve ~5%
-speedups from the base Tinker for a system of 32000 water molecules
-and for the JAC benchmark.  Any comments, questions, or concerns can be
-direction to [Alex Albaugh](mailto:aalbaugh@berkeley.edu).
+most options within `dynamic` are already made (see below for
+details).  Using GNU compilers and 12 cores Alex Albaugh was able to
+achieve ~5% speedups from the base Tinker for a system of 32000 water
+molecules and for the JAC benchmark.  Any comments, questions, or
+concerns can be direction to [Alex
+Albaugh](mailto:aalbaugh@berkeley.edu).
 
 
 # Compiling
+
+If you do not have a compiled version of `fftw` then you will need to
+compile this first. You should be able to do this by just running the
+commands in the `fftw` directory (note the backticks that surround 
+the `pwd` command should execute the command before being passed to 
+the `configure` script):
+
+      make distclean
+      configure --prefix=`pwd`/fftw --enable-threads
+      make
+      make install
+
 Modify the included `Makefile` to your desired paths and compilers, just
 like with base Tinker.  The `make` command will then create a single 
 executable called `dynamic.x`.
