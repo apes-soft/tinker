@@ -42,17 +42,21 @@ c
       use zclose
       implicit none
 !$    integer omp_get_num_procs
+      integer omp_get_num_threads
       real*8 precise
 c
 c
 c     cores, thread count and options for OpenMP
 c
-      nproc = 1
-      nthread = 1
-!$    nproc = omp_get_num_procs ()
-!$    nthread = nproc
-!!$    call omp_set_num_threads (nthread)
-!$    call omp_set_nested (.true.)
+c      nproc = 1 
+     
+       nthread = 1
+!$OMP PARALLEL shared(nthread) 
+!$OMP MASTER 
+       nthread = omp_get_num_threads()
+!$OMP END MASTER
+!$OMP END PARALLEL 
+
 c
 c     Intel compiler extensions to OpenMP standard
 c
