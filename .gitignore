@@ -2,6 +2,7 @@
 *.mod
 *.o
 *~
+*.a
 
 # Ignore a bin directory and its contents
 bin/
