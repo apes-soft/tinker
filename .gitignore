@@ -1,5 +1,6 @@
 # git files to be ignored
 *.mod
+*.o
 *~
 
 # Ignore a bin directory and its contents
