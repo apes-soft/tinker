@@ -16,7 +16,7 @@ mkdir -p $outdir
 
 
 # Loop over number of threads.
-for numthreads in 1 2 4 6 8 10 12 14 16
+for numthreads in 1 2 4 6 8 10 12 14 16 32
 do
 
   # Vanity prepend a 0 to nubmers less than 10.
@@ -54,7 +54,7 @@ do
      # $resultfile ; } &>> $resultfile
 
      # This works on BASH_VERSION 3 (and hopefully 4 as well)
-     { $timecom ../../bin/dynamic bench7 100 1.0 10.0 2 298.0 >> \
+     { $timecom ../bin/dynamic bench7 100 1.0 10.0 2 298.0 >> \
        $resultfile ; } >> $resultfile 2>&1
      
   done
