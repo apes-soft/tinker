@@ -2,13 +2,13 @@
 
 This is a stripped down version of Tinker created mostly for the purpose
 of readability and simplification, but also for small performance gains.
-This software is taken from Tinker 7.0 off of Jay Ponder's GitHub.
+This software is taken from Tinker 7.0 off of Jay Ponder's GitHub [tinker repository](https://github.com/jayponder/tinker).
 This software will only perform the Tinker executable `dynamic` and
 most options within `dynamic` are already made (see below for details).
 Using GNU compilers and 12 cores Alex Albaugh was able to achieve ~5%
 speedups from the base Tinker for a system of 32000 water molecules
 and for the JAC benchmark.  Any comments, questions, or concerns can be
-direction to Alex Albaugh at aalbaugh@berkeley.edu.
+direction to [Alex Albaugh](mailto:aalbaugh@berkeley.edu).
 
 
 # Compiling
@@ -21,7 +21,7 @@ executable called `dynamic.x`.
 `dynamic.x` can be run from the command line or within a script in the 
 following way:
 
-   [path]/dynamic.x [file] [nstep] [dt] [dtdump] [temp] [pres]
+    [path]/dynamic.x [file] [nstep] [dt] [dtdump] [temp] [pres]
 
 where 
 
@@ -47,12 +47,12 @@ following is a list of these features:
 * periodic boundaries, tinfoil, no replicas (specify a box length)
 * neighbor lists (no need for any list keywords)
 * Nose-Hoover themostat (no need for 'thermostat' keyword)
-* Berendsen barostat (no need for 'barostat' keywork)
-* particle-mesh Ewald (no need for 'ewald' keyword)
+* Berendsen barostat (no need for `barostat` keywork)
+* particle-mesh Ewald (no need for `ewald` keyword)
 * Verlet integrator (no need for 'integrator keyword)
-* mutual polarization (no need for 'polarization' keyword)
+* mutual polarization (no need for `polarization` keyword)
 * no energy/gradient calls to functions that don't correspond directly to 
-   the amoebapro13 or amoebabio09 force field, will only call:
+   the `amoebapro13` or a`moebabio09` force field, will only call:
   * bonds
   * angles
   * angle-bending
@@ -80,8 +80,8 @@ Notable removals from 'dynamic' include the following:
 * inactive atoms (all atoms are active)
 * unused thermostats and barostats
   
-In general most keywords that require a number value such as OpenMP 
-threads, box sizes, cutoffs values, etc. are still valid and active.  
+In general most keywords that require a number value such as 
+`openmp-threads`, box sizes, cutoffs values, etc. are still valid and active.  
 Most keywords that specify certain features such as barostats, 
 integrators, etc. are not.
 
@@ -102,7 +102,7 @@ integrators, etc. are not.
  original.  Most sections Alex removed have been completely deleted, but 
  some are commented out.
 
-Original README from the Tinker distribution:
+Original `README` from the Tinker distribution:
 
                    ------------------------------------------
                    Fortran Source Code for the TINKER Package
