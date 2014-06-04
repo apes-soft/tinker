@@ -421,6 +421,8 @@ clean:
 listing:
 	cat *.i *.f *.c > tinker.txt
 
+install: rename
+
 rename:
 	mkdir -p $(BINDIR)
 	mv  dynamic.x    $(BINDIR)/dynamic
