@@ -60,10 +60,10 @@ LINKDIR = /usr/local/bin
 ##  Parallel: OpenMP
 
 F77 = gfortran
-LIBS =
+LIBS = -L ../fftw/lib/ -lfftw3_threads -lfftw3
 F77FLAGS = -c
 OPTFLAGS = -O3 -ffast-math -fopenmp
-LIBFLAGS = -crusv
+LIBFLAGS = -crusv 
 RANLIB =
 LINKFLAGS = $(OPTFLAGS) -static-libgcc
 
