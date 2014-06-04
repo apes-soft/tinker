@@ -422,6 +422,7 @@ listing:
 	cat *.i *.f *.c > tinker.txt
 
 rename:
+	mkdir -p $(BINDIR)
 	mv  dynamic.x    $(BINDIR)/dynamic
 
 remove_links:
