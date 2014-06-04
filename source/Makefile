@@ -59,13 +59,13 @@ LINKDIR = /usr/local/bin
 ##  Compiler: GNU gfortran
 ##  Parallel: OpenMP
 
-#F77 = /usr/local/bin/gfortran
-#LIBS =
-#F77FLAGS = -c
-#OPTFLAGS = -O3 -ffast-math -fopenmp
-#LIBFLAGS = -crusv
-#RANLIB =
-#LINKFLAGS = $(OPTFLAGS) -static-libgcc
+F77 = gfortran
+LIBS =
+F77FLAGS = -c
+OPTFLAGS = -O3 -ffast-math -fopenmp
+LIBFLAGS = -crusv
+RANLIB =
+LINKFLAGS = $(OPTFLAGS) -static-libgcc
 
 ##  Machine:  Generic Linux
 ##  CPU Type: Intel x86 Compatible (also AMD)
