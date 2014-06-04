@@ -3,6 +3,10 @@
 *.o
 *~
 *.a
+*.lo
+*.la
+*.log
 
 # Ignore a bin directory and its contents
 bin/
+.deps/
