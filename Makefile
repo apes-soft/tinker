@@ -33,7 +33,7 @@
 ##  BINDIR       Hard Copies of TINKER Executables
 ##  LINKDIR      Linked Copies of TINKER Executables
 
-TINKERDIR = /[your path here]
+TINKERDIR = /home/w02/mario/tinkerLite
 BINDIR = $(TINKERDIR)/bin
 LINKDIR = /usr/local/bin
 
