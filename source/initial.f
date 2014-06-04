@@ -56,8 +56,8 @@ c
 c
 c     Intel compiler extensions to OpenMP standard
 c
-!$    call kmp_set_stacksize_s (2**28)
-!$    call kmp_set_blocktime (0)
+!!$    call kmp_set_stacksize_s (2**28)
+!!$    call kmp_set_blocktime (0)
 c
 c     default unit numbers for input and output
 c
