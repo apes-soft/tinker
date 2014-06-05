@@ -6,7 +6,7 @@
 #
 
 # Name the output directory.
-outdir="results"
+outdir="results2"
 
 # time command to use
 timecom="/usr/bin/time -v"
@@ -27,8 +27,6 @@ do
        num=$numthreads
   fi
 
-
-
   # Create an output file specifying how many threads are being used.
   echo "Running on $numthreads thread(s)." > $resultfile
 
@@ -39,8 +37,16 @@ do
   for run in 1 2 
   do  
 
+     # Label for the run.
+     if [ $rum -le 9 ]
+     then
+          num2="0"$rum
+     else
+          num2=$rum
+     fi
+
      # Output files
-     resultfile=$outdir/bench7-$num-$run".txt"
+     resultfile=$outdir/bench7-$num-$num2".txt"
 
      # Print which run we are doing.
      printf "\n\nRun $run\n"   >> $resultfile
