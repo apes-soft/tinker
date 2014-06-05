@@ -27,8 +27,6 @@ do
        num=$numthreads
   fi
 
-  # Create an output file specifying how many threads are being used.
-  echo "Running on $numthreads thread(s)." > $resultfile
 
   # Set the number of threads that are to be used.
   export OMP_NUM_THREADS=$numthreads
@@ -47,6 +45,9 @@ do
 
      # Output files
      resultfile=$outdir/bench7-$num-$num2".txt"
+
+     # Create an output file specifying how many threads are being used.
+     echo "Running on $numthreads thread(s)." > $resultfile
 
      # Print which run we are doing.
      printf "\n\nRun $run\n"   >> $resultfile
