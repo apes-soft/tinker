@@ -27,8 +27,7 @@ do
        num=$numthreads
   fi
 
-  # Output files
-  resultfile=$outdir/bench7-$num".txt"
+
 
   # Create an output file specifying how many threads are being used.
   echo "Running on $numthreads thread(s)." > $resultfile
@@ -39,6 +38,9 @@ do
   # Repeat the loop a number of times.
   for run in 1 2 
   do  
+
+     # Output files
+     resultfile=$outdir/bench7-$num-$run".txt"
 
      # Print which run we are doing.
      printf "\n\nRun $run\n"   >> $resultfile
