@@ -25,6 +25,9 @@ my @files = `ls -1 $outdir/*.txt`;
 my $runlabel    = "0Run";
 my $threadlabel = "00Thread(s)";
 
+# Variable to count the number of runs per thread done.
+my $numruns = 0;
+
 ####################################################
 # Read the data from various files and store in an #
 # associative array.                               #
@@ -48,6 +51,11 @@ foreach my $file (@files){
     # Strip a leading 0 if there is one.
     $results{$id}{$threadlabel} =~ s/^0//;
     $results{$id}{$runlabel}    =~ s/^0//;
+
+    # Count the number of runs per thread
+    if($results{$id}{$runlabel} > $numruns ){
+	$numruns = $results{$id}{$runlabel};
+    }
 
     # Set flag for when we want to start parsing.
     my $start=0;
@@ -100,6 +108,8 @@ foreach my $file (@files){
 
 }
 
+print "Number of runs $numruns.\n";
+
 ###############################################
 # Now output the data into a csv file format. #
 ###############################################
@@ -123,13 +133,18 @@ open(OUT,">" ,$outfile) or
 # Print out the column headings.
 print OUT join(",",sort @labels),"\n";
 
-# Loop round the run ids
-foreach my $id (sort @ids){
-
-    for(my $i=0; $i < $numitems-1;$i++){
-        print OUT "$results{$id}{$labels[$i]},";
+# Want the different run data to be printed in sequence.
+# This is a clunky way of doing it but could not come up
+# with a better way of doign it.
+for(my $r=1; $r <= $numruns; $r++){
+    # Loop round the run ids
+    foreach my $id (sort @ids){
+        next if(not $results{$id}{$runlabel} == $r);
+	for(my $i=0; $i < $numitems-1;$i++){
+	    print OUT "$results{$id}{$labels[$i]},";
+	}
+	print OUT "$results{$id}{$labels[$numitems-1]}\n";
     }
-    print OUT "$results{$id}{$labels[$numitems-1]}\n";
 }
 
 # Close the output file.
