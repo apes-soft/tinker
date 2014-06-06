@@ -124,7 +124,7 @@ open(OUT,">" ,$outfile) or
 print OUT join(",",sort @labels),"\n";
 
 # Loop round the run ids
-foreach my $id (@ids){
+foreach my $id (sort @ids){
 
     for(my $i=0; $i < $numitems-1;$i++){
         print OUT "$results{$id}{$labels[$i]},";
@@ -136,3 +136,4 @@ foreach my $id (@ids){
 close(OUT) or die("Could not close the output file $outfile: $!.\n");
 
 print "Output has been placed in $outfile.\n";
+
