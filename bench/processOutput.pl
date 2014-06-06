@@ -31,10 +31,11 @@ foreach my $file (@files){
 
     # Grab the number of threads and run number
     # from the file name.
-    $file  =~ /\w+\-(\d+)\-(\d+)\.txt/;
-    my $threads = $1;
-    my $run     = $2;
-    #print $threads," - ",$run," - ",$file,"\n";
+    $file  =~ /\w+\-((\d+)\-(\d+))\.txt/;
+    my $id                     = $1;
+    $results{$id}{"00Thread(s)"} = $2;
+    $results{$id}{"0Run"}       = $3;
+    #print $id," - ",$threads," - ",$run," - ",$file,"\n";
 
     # Set flag for when we want to start parsing.
     my $start=0;
@@ -78,8 +79,7 @@ foreach my $file (@files){
         $value =~ s/^\s+|\s+$//g;
 
         # Store the results.
-        $results{$threads}{$run}{$label}=$value;
-
+        $results{$id}{"$label"}=$value;
 	#print "\t",$label," --- ",$value,"\n";
     }
 
@@ -90,15 +90,18 @@ foreach my $file (@files){
 
 # Now output the data into a csv file format.
 
-# Get the number of threads used.
-my @threads = keys(%results);
+# Get the run ids
+my @ids = keys(%results);
 
-# Now get the number of runs per thread used.
-my @runs = keys(%{$results{$threads[0]}});
+# Now get the labels
+my @labels = sort keys(%{$results{$ids[0]}});
 
+print join(" -- ",@labels),"\n";
 
-# Now get the column titles.
-my @titles = keys(%{$results{$threads[0]}{$runs[0]}});
+# Number of items
+my $numitems = scalar @labels;
+
+#print join("\n",@titles),"\n";
 
 # Output file based on the outdir
 my $outfile = $outdir.".csv";
@@ -108,15 +111,18 @@ open(OUT,">" ,$outfile) or
                       die("Could not open the output file $outfile: $!.\n");
 
 # Print out the column headings.
-print OUT "Threads,Run,",join(",",@titles),"\n";
+print OUT join(",",sort @labels),"\n";
 
-# Loop round the threads
-foreach my $thread (@threads){
-    print OUT "$thread,";
-    foreach my $run (@runs){
-	print OUT "$run,",join(",",values(%{$results{$thread}{$run}})),"\n";
+# Loop round the run ids
+foreach my $id (@ids){
+    print "Processing $id.\n";
+   # Elegant but gives little control of the output order
+   #print OUT join(",",values(%{$results{$id}})),"\n";
+    for(my $i=0; $i < $numitems-1;$i++){
+        print "\t",$labels[$i],"\n";
+        print OUT "$results{$id}{$labels[$i]},";
     }
-    
+    print OUT "$results{$id}{$labels[$numitems-1]}\n";
 }
 
 # Close the output file.
