@@ -36,11 +36,11 @@ do
   do  
 
      # Label for the run.
-     if [ $rum -le 9 ]
+     if [ $run -le 9 ]
      then
-          num2="0"$rum
+          num2="0"$run
      else
-          num2=$rum
+          num2=$run
      fi
 
      # Output files
