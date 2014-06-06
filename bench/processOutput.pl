@@ -115,11 +115,8 @@ print OUT join(",",sort @labels),"\n";
 
 # Loop round the run ids
 foreach my $id (@ids){
-    print "Processing $id.\n";
-   # Elegant but gives little control of the output order
-   #print OUT join(",",values(%{$results{$id}})),"\n";
+
     for(my $i=0; $i < $numitems-1;$i++){
-        print "\t",$labels[$i],"\n";
         print OUT "$results{$id}{$labels[$i]},";
     }
     print OUT "$results{$id}{$labels[$numitems-1]}\n";
