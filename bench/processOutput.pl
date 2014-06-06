@@ -21,6 +21,15 @@ my %results;
 # Get a list of the output files with the timings.
 my @files = `ls -1 $outdir/*.txt`;
 
+# Some keynames
+my $runlabel    = "0Run";
+my $threadlabel = "00Thread(s)";
+
+####################################################
+# Read the data from various files and store in an #
+# associative array.                               #
+####################################################
+
 # First read the data from the separate files.
 # Loop over the files. Open each in turn and take the
 # time stuff we want from them.
@@ -32,10 +41,13 @@ foreach my $file (@files){
     # Grab the number of threads and run number
     # from the file name.
     $file  =~ /\w+\-((\d+)\-(\d+))\.txt/;
-    my $id                     = $1;
-    $results{$id}{"00Thread(s)"} = $2;
-    $results{$id}{"0Run"}       = $3;
-    #print $id," - ",$threads," - ",$run," - ",$file,"\n";
+    my $id                      = $1;
+    $results{$id}{$threadlabel} = $2;
+    $results{$id}{$runlabel}    = $3;
+
+    # Strip a leading 0 if there is one.
+    $results{$id}{$threadlabel} =~ s/^0//;
+    $results{$id}{$runlabel}    =~ s/^0//;
 
     # Set flag for when we want to start parsing.
     my $start=0;
@@ -88,7 +100,9 @@ foreach my $file (@files){
 
 }
 
-# Now output the data into a csv file format.
+###############################################
+# Now output the data into a csv file format. #
+###############################################
 
 # Get the run ids
 my @ids = keys(%results);
@@ -96,12 +110,8 @@ my @ids = keys(%results);
 # Now get the labels
 my @labels = sort keys(%{$results{$ids[0]}});
 
-print join(" -- ",@labels),"\n";
-
 # Number of items
 my $numitems = scalar @labels;
-
-#print join("\n",@titles),"\n";
 
 # Output file based on the outdir
 my $outfile = $outdir.".csv";
