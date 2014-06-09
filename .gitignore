@@ -7,7 +7,9 @@
 *.lo
 *.la
 *.log
+*.csv
 
 # Ignore a bin directory and its contents
 bin/
 .deps/
+bench/results*
