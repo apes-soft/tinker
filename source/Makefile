@@ -60,7 +60,7 @@ LINKDIR = /usr/local/bin
 ##  Parallel: OpenMP
 
 F77 = gfortran
-LIBS = -L ../fftw/lib/ -lfftw3_omp -lfftw3
+LIBS = -L ../thirdparty/fftw/lib/ -lfftw3_omp -lfftw3
 F77FLAGS = -c
 OPTFLAGS = -ffast-math -fopenmp -O3 #-g 
 LIBFLAGS = -crusv 
