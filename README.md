@@ -106,11 +106,12 @@ integrators, etc. are not.
 # Comments and future work
 
 * Some of the files included with this distribution may not be used.  Alex 
-  have removed many unused files from the original Tinker distribution, 
-  but probably not all of them.
+  has removed many unused files from the original Tinker distribution, 
+  but probably not all of them. Jay is going to have a look and see what
+  else can be removed.
 
 * Some of the header modules ('use whatever') within files may be unused,
- as well.  Alex has done his best to clear out the obvious ones.
+ as well.  Alex did his best to clear out the obvious ones.
  
 * The `Makefile` is a bit of a mess and could probably use some work. It 
  should be functional, though.
