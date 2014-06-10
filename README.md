@@ -17,7 +17,7 @@ Albaugh](mailto:aalbaugh@berkeley.edu).
 
 If you do not have a compiled version of `fftw` then you will need to
 compile this first. You should be able to do this by just running the
-commands in the `fftw` directory (note the backticks that surround 
+commands in the `thirdparty/fftw` directory (note the backticks that surround 
 the `pwd` command should execute the command before being passed to 
 the `configure` script):
 
@@ -106,11 +106,12 @@ integrators, etc. are not.
 # Comments and future work
 
 * Some of the files included with this distribution may not be used.  Alex 
-  have removed many unused files from the original Tinker distribution, 
-  but probably not all of them.
+  has removed many unused files from the original Tinker distribution, 
+  but probably not all of them. Jay is going to have a look and see what
+  else can be removed.
 
 * Some of the header modules ('use whatever') within files may be unused,
- as well.  Alex has done his best to clear out the obvious ones.
+ as well.  Alex did his best to clear out the obvious ones.
  
 * The `Makefile` is a bit of a mess and could probably use some work. It 
  should be functional, though.
