@@ -17,7 +17,7 @@ Albaugh](mailto:aalbaugh@berkeley.edu).
 
 If you do not have a compiled version of `fftw` then you will need to
 compile this first. You should be able to do this by just running the
-commands in the `fftw` directory (note the backticks that surround 
+commands in the `thirdparty/fftw` directory (note the backticks that surround 
 the `pwd` command should execute the command before being passed to 
 the `configure` script):
 
