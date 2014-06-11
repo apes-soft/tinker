@@ -5,16 +5,35 @@
 # that are then hoovered up by another perl script. 
 #
 
+# Let perl tell us if we are doing anything silly.
 use strict;
 use warnings;
 
+# Process command line arguments.
+use Getopt::Std;
+my %opts; # store the options and values used.
 
-my $Nrepeats = 1;         # Number of times to run each piece of code.
-my $Nruns = 16;           # Number of runs
-my $N=10000;              # Starting number of particles.
-my $outdir="out6";        # Output directory.
-my $code="code4";         # Code basename to use to for experiment.
-my $time="/usr/bin/time"; # Timing command to use.
+# Get the command line arguments
+if(! getopt("hd:c:",\%opts)){HELP_MESSAGE();}
+
+# Declare and set varyables to be used.
+my($outdir,$code);
+
+# Print out a help message.
+if( defined $opts{'h'} ) { HELP_MESSAGE(); }
+
+# Output directory.
+if( defined $opts{'d'} ) {$outdir=$opts{'d'};}else{$outdir="out1";}
+# Code basename to use to for experiment.
+if( defined $opts{'c'} ) {$code=$opts{'c'};}else{$code="code1";}
+
+print "Using output directory $outdir and codebase $code.\n";
+c
+my $Nrepeats = 1;          # Number of times to run each piece of code.
+my $Nruns = 16;            # Number of runs
+my $N=10000;               # Starting number of particles.
+my $time="/usr/bin/time";  # Timing command to use.
+my $compiler="ifort";      # Compiler name with any optimisation flags.
 
 # Create the output directory.
 system("mkdir -p $outdir");
@@ -28,7 +47,7 @@ for(my $num=1;$num <= $Nruns; $num++){
    # Update the number of particles.
    $N=$N+20000;
    # Recompile the code.
-   system("gfortran -o $code $code.f90");
+   system("$compiler -o $code $code.f90");
    for(my $run=1; $run <= $Nrepeats; $run++){
 
       print "Running N=$N ($num/$Nruns), run = $run/$Nrepeats\n";
@@ -45,4 +64,19 @@ for(my $num=1;$num <= $Nruns; $num++){
 # Run the post processing perl script that will generate 
 # a CSV file.
 
-#system("./processOutput.pl $outdir");
+system("../../bench/processOutput.pl $outdir");
+
+# System help message
+sub HELP_MESSAGE
+{
+print <<EOF;
+
+The script run.pl runs a number of experiments for a given piece
+of code. Valid arguments are:
+
+  -d Specifies the output directory.
+  -c Specifies the code basename to use.
+
+EOF
+exit 0;
+}
