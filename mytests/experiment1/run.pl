@@ -28,7 +28,7 @@ if( defined $opts{'d'} ) {$outdir=$opts{'d'};}else{$outdir="out1";}
 if( defined $opts{'c'} ) {$code=$opts{'c'};}else{$code="code1";}
 
 print "Using output directory $outdir and codebase $code.\n";
-c
+
 my $Nrepeats = 1;          # Number of times to run each piece of code.
 my $Nruns = 16;            # Number of runs
 my $N=10000;               # Starting number of particles.
