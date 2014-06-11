@@ -13,4 +13,3 @@
 bin/
 .deps/
 bench/results*/
-mytests/
