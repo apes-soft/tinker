@@ -15,6 +15,12 @@ use warnings;
 # Output directory to collect the files from.
 my $outdir = "results2";
 
+# Check the directory actually exists.
+if(not -d $outdir){
+   print "The directory $outdir does not exist. Terminating ...\n\n";
+   exit 1;
+}
+
 # Store the results in this hash array.
 my %results;
 
@@ -23,7 +29,7 @@ my @files = `ls -1 $outdir/*.txt`;
 
 # Some keynames
 my $runlabel    = "0Run";
-my $threadlabel = "00Thread(s)";
+my $threadlabel = "00N";
 
 # Variable to count the number of runs per thread done.
 my $numruns = 0;
