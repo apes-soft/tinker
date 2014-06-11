@@ -12,12 +12,23 @@
 use strict;
 use warnings;
 
-# Output directory to collect the files from.
+# Process command line arguments.
+use Getopt::Std;
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+our(%opts);
+
+# Default output directory to collect the files from.
 my $outdir = "results2";
+
+# Get the command line arguments
+if(! getopt('d:',\%opts)){HELP_MESSAGE();}
+
+if( $opts{'h'} ) { HELP_MESSAGE(); }
+if( $opts{'d'} ) { $outdir=$opts{'d'}; }
 
 # Check the directory actually exists.
 if(not -d $outdir){
-   print "The directory $outdir does not exist. Terminating ...\n\n";
+   print "\nThe directory $outdir does not exist. Terminating ...\n\n";
    exit 1;
 }
 
@@ -157,4 +168,24 @@ for(my $r=1; $r <= $numruns; $r++){
 close(OUT) or die("Could not close the output file $outfile: $!.\n");
 
 print "Output has been placed in $outfile.\n";
+
+# System help message
+sub HELP_MESSAGE
+{
+print <<EOF;
+
+The script processOutput.pl concatenates the output produced by the
+time command (shell intrinsic and /usr/bin/time) and outputs into a
+csv file. It expects the output file to be in a subdirectory and to
+have the extension "txt". The output csv file is named the same as the
+directory that contains the txt files. You can specify the name of
+the directory to be processed using the "-d" flag. Valid options to
+the script are:
+
+   -d Directory name - to specify the input directory name.
+   -h This help message.
+
+EOF
+exit 0;
+}
 
