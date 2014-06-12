@@ -64,7 +64,7 @@ for(my $num=1;$num <= $Nruns; $num++){
 # Run the post processing perl script that will generate 
 # a CSV file.
 
-system("../../bench/processOutput.pl $outdir");
+system("../../bench/processOutput.pl -d $outdir");
 
 # System help message
 sub HELP_MESSAGE
