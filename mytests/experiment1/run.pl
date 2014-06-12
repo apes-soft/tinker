@@ -33,7 +33,10 @@ my $Nrepeats = 1;          # Number of times to run each piece of code.
 my $Nruns = 16;            # Number of runs
 my $N=10000;               # Starting number of particles.
 my $time="/usr/bin/time";  # Timing command to use.
-my $compiler="ifort";      # Compiler name with any optimisation flags.
+
+# Compiler name with any optimisation flags.
+#my $compiler="ifort -O3 -no-ipo -no-prec-div";
+my $compiler="ifort -fast";
 
 # Create the output directory.
 system("mkdir -p $outdir");
