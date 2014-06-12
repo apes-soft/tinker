@@ -4,7 +4,7 @@
 # it by hand.
 #
 
-rm -f *~ *.bak code? *.csv
+rm -f *~ *.bak code? *.csv *.data
 
 # Remove any subdirectories
 rm -R -- */
