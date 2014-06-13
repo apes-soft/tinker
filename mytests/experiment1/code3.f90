@@ -6,7 +6,7 @@ program code3
 
   implicit none
 
-  integer, parameter:: number=310000
+  integer, parameter:: number=100000
   real (kind=8):: pos(3*number)
   real (kind=8):: dr, rmax,rmin
   integer:: i,j,seed
@@ -14,6 +14,7 @@ program code3
   ! set the random seed and initialise the random number gen.
   seed = 5
   call random_seed(seed)
+
   ! initialize the data.
   ! Assume layout is x1,y1,z1,x2,y2,z2,...
   call random_number(pos)
@@ -21,9 +22,10 @@ program code3
   ! Initialize max and min distance
   rmax = 0.0
   rmin = 10.0**7
+
   ! calculate the distance from the origin
-  do i=1,number,3
-    do j=i+3,number,3
+  do i=1,3*number,3
+    do j=i+3,3*number,3
        dr = sqrt((pos(i)-pos(j))*(pos(i)-pos(j))+         &
                  (pos(i+1)-pos(j+1))*(pos(i+1)-pos(j+1))+ &
                  (pos(i+2)-pos(j+2))*(pos(i+2)-pos(j+2)))

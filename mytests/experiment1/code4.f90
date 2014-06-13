@@ -6,7 +6,7 @@ program code4
 
   implicit none
 
-  integer, parameter:: number=250000
+  integer, parameter:: number=310000
   real (kind=8):: pos(3*number)
   real (kind=8):: dr, rmax,rmin
   integer:: i,j,seed
@@ -22,8 +22,8 @@ program code4
   rmax = 0.0
   rmin = 10.0**7
   ! calculate the distance from the origin
-  do i=1,number
-    do j=i,number
+  do i=1,3*number
+    do j=i,3*number
        dr = sqrt((pos(i)-pos(j))*(pos(i)-pos(j))+                             &
                  (pos(i+number)-pos(j+number))*(pos(i+number)-pos(j+number))+ &
                  (pos(i+2*number)-pos(j+2*number))*                           &
