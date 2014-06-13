@@ -36,7 +36,11 @@ my $time="/usr/bin/time";  # Timing command to use.
 
 # Compiler name with any optimisation flags.
 #my $compiler="ifort -O3 -no-ipo -no-prec-div";
-my $compiler="ifort -fast";
+#my $compiler="ifort -fast";
+my $compiler="ifort";
+# my $compiler="gfortran";
+# my $compiler="gfortran -O3";
+
 
 # Create the output directory.
 system("mkdir -p $outdir");
@@ -53,7 +57,7 @@ for(my $num=1;$num <= $Nruns; $num++){
    system("$compiler -o $code $code.f90");
    for(my $run=1; $run <= $Nrepeats; $run++){
 
-      print "Running N=$N ($num/$Nruns), run = $run/$Nrepeats\n";
+      print "Running $code with N=$N ($num/$Nruns), run = $run/$Nrepeats\n";
 
       # filename to put the output data.
       my $outfile="$outdir/part1-$oldN-$run.txt";
