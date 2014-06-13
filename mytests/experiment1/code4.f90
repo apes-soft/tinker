@@ -22,8 +22,8 @@ program code4
   rmax = 0.0
   rmin = 10.0**7
   ! calculate the distance from the origin
-  do i=1,3*number
-    do j=i,3*number
+  do i=1,number
+    do j=i,number
        dr = sqrt((pos(i)-pos(j))*(pos(i)-pos(j))+                             &
                  (pos(i+number)-pos(j+number))*(pos(i+number)-pos(j+number))+ &
                  (pos(i+2*number)-pos(j+2*number))*                           &
