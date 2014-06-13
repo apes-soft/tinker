@@ -23,7 +23,7 @@ my($outdir,$code);
 if( defined $opts{'h'} ) { HELP_MESSAGE(); }
 
 # Output directory.
-if( defined $opts{'d'} ) {$outdir=$opts{'d'};}else{$outdir="out1";}
+if( defined $opts{'o'} ) {$outdir=$opts{'o'};}else{$outdir="out1";}
 # Code basename to use to for experiment.
 if( defined $opts{'c'} ) {$code=$opts{'c'};}else{$code="code1";}
 
@@ -57,7 +57,7 @@ for(my $num=1;$num <= $Nruns; $num++){
    system("$compiler -o $code $code.f90");
    for(my $run=1; $run <= $Nrepeats; $run++){
 
-      print "Running $code with N=$N ($num/$Nruns), run = $run/$Nrepeats\n";
+      print "Running $code with N=$N ($num/$Nruns), run = $run/$Nrepeats to $outdir.\n";
 
       # filename to put the output data.
       my $outfile="$outdir/part1-$oldN-$run.txt";
@@ -81,7 +81,7 @@ print <<EOF;
 The script run.pl runs a number of experiments for a given piece
 of code. Valid arguments are:
 
-  -d Specifies the output directory.
+  -o Specifies the output directory.
   -c Specifies the code basename to use.
 
 EOF
