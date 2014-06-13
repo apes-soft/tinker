@@ -14,7 +14,7 @@ use Getopt::Std;
 my %opts; # store the options and values used.
 
 # Get the command line arguments
-if(! getopt("hd:c:",\%opts)){HELP_MESSAGE();}
+if(! getopt("ho:c:",\%opts)){HELP_MESSAGE();}
 
 # Declare and set varyables to be used.
 my($outdir,$code);
