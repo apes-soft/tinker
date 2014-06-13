@@ -134,6 +134,14 @@ print "Number of runs $numruns.\n";
 # Get the run ids
 my @ids = keys(%results);
 
+# Collect the maing changing variables.
+my @N;
+foreach my $id (@ids){
+    my($n,$r) = split("-",$id);
+    push(@N,$n);
+}
+
+
 # Now get the labels
 my @labels = sort keys(%{$results{$ids[0]}});
 
@@ -155,8 +163,8 @@ print OUT join(",",sort @labels),"\n";
 # with a better way of doign it.
 for(my $r=1; $r <= $numruns; $r++){
     # Loop round the run ids
-    foreach my $id (sort @ids){
-        next if(not $results{$id}{$runlabel} == $r);
+    foreach my $n (sort {$a <=> $b} @N){
+        my $id ="$n-$r";
 	for(my $i=0; $i < $numitems-1;$i++){
 	    print OUT "$results{$id}{$labels[$i]},";
 	}
