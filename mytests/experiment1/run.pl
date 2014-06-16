@@ -30,8 +30,9 @@ if( defined $opts{'c'} ) {$code=$opts{'c'};}else{$code="code1";}
 print "Using output directory $outdir and codebase $code.\n";
 
 my $Nrepeats = 1;          # Number of times to run each piece of code.
-my $Nruns = 16;            # Number of runs
-my $N=10000;               # Starting number of particles.
+my $Nruns = 20;            # Number of runs
+my $N=50000;               # Starting number of particles.
+my $Nstep=50000;           # Increase in N between runs.
 my $time="/usr/bin/time";  # Timing command to use.
 
 # Compiler name with any optimisation flags.
@@ -45,26 +46,29 @@ my $time="/usr/bin/time";  # Timing command to use.
 # Create the output directory.
 system("mkdir -p $outdir");
 
-# Loop over the number of runs.
+# Loop over the different number of array sizes.
 for(my $num=1;$num <= $Nruns; $num++){
+
    # Replace the current number of particles in the code.
    system("perl -pi.bak -e \"s/number=\\d+/number=$N/\" $code.f90");
-   # Record the old N for labelling purposes.
-   my $oldN=$N;
-   # Update the number of particles.
-   $N=$N+20000;
+
    # Recompile the code.
    system("$compiler -o $code $code.f90");
+
+   # Number of repeats for each array size.
    for(my $run=1; $run <= $Nrepeats; $run++){
 
       # filename to put the output data.
-      my $outfile="$outdir/part1-$oldN-$run.txt";
+      my $outfile="$outdir/part1-$N-$run.txt";
 
       print "Running $code with N=$N ($num/$Nruns), run = $run/$Nrepeats to $outfile.\n";
 
       # Run the code.
       system("$time -v -o $outfile ./$code");
    }
+
+   # Update the array size.
+   $N=$N+$Nstep;
 
 }
 
