@@ -45,9 +45,9 @@ if( defined $opts{'c'} ) {$code=$opts{'c'};}else{$code="code1";}
 print "Using output directory $outdir and codebase $code.\n";
 
 my $Nrepeats = 1;               # Number of times to run each piece of code.
-my $Nruns    = 17;              # Number of runs
-my $N        = 50000;           # Starting number for the array size.
-my $Nstep    = 50000;           # Increase in N between runs.
+my $Nruns    = 20;              # Number of runs
+my $N        = 10000;           # Starting number for the array size.
+my $Nstep    = 20000;           # Increase in N between runs.
 my $time     ="/usr/bin/time";  # Timing command to use.
 
 # Compiler name with any optimisation flags.
@@ -93,7 +93,7 @@ for(my $num=1;$num <= $Nruns; $num++){
 # Run the post processing perl script that will generate 
 # a CSV file.
 
-system("../bench/processOutput.pl -d $outdir");
+system("../../bench/processOutput.pl -d $outdir");
 
 # System help message
 sub HELP_MESSAGE
