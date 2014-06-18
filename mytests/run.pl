@@ -1,9 +1,23 @@
 #!/usr/bin/perl
 # 
-# Run a number of jobs resizing the initial size of the
-# array and then compiling. Output goes to a set of files
-# that are then hoovered up by another perl script. 
+# Run a number of jobs resizing the size of an
+# array mimicing particle positions, compiling 
+# and running, timing the results. Output goes 
+# to a set of files that are then hoovered up 
+# by another perl script. 
 #
+# Usage:
+#
+# run.pl -c CodeBaseName -o OutputDirectory
+#
+# Timing files will be placed in the subdirectory
+# OutputDirectory and have the following format:
+#
+#   CodeBaseName-ArraySize-Run.txt
+#
+# Where array size is the size of the array used
+# and Run is the run number (can repeat each run
+# more than once).
 
 # Let perl tell us if we are doing anything silly.
 use strict;
@@ -14,6 +28,7 @@ use Getopt::Std;
 my %opts; # store the options and values used.
 
 # Get the command line arguments
+# h, o anc c flags with o and c having arguments.
 if(! getopt("ho:c:",\%opts)){HELP_MESSAGE();}
 
 # Declare and set varyables to be used.
@@ -29,11 +44,11 @@ if( defined $opts{'c'} ) {$code=$opts{'c'};}else{$code="code1";}
 
 print "Using output directory $outdir and codebase $code.\n";
 
-my $Nrepeats = 1;          # Number of times to run each piece of code.
-my $Nruns = 17;            # Number of runs
-my $N=50000;               # Starting number of particles.
-my $Nstep=50000;           # Increase in N between runs.
-my $time="/usr/bin/time";  # Timing command to use.
+my $Nrepeats = 1;               # Number of times to run each piece of code.
+my $Nruns    = 17;              # Number of runs
+my $N        = 50000;           # Starting number for the array size.
+my $Nstep    = 50000;           # Increase in N between runs.
+my $time     ="/usr/bin/time";  # Timing command to use.
 
 # Compiler name with any optimisation flags.
 #my $compiler="ifort -O3 -no-ipo -no-prec-div";
@@ -61,7 +76,7 @@ for(my $num=1;$num <= $Nruns; $num++){
    for(my $run=1; $run <= $Nrepeats; $run++){
 
       # filename to put the output data.
-      my $outfile="$outdir/part1-$N-$run.txt";
+      my $outfile="$outdir/$code-$N-$run.txt";
 
       print "Running $code with N=$N ($num/$Nruns), run = $run/$Nrepeats to $outfile.\n";
       print "Using: $compilation.\n";
