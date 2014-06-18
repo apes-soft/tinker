@@ -7,4 +7,5 @@ Space for doing a number of small scale tests.
    these changes to the `tinkerLite` framework.
 * `experiment2` - see what kind of overhead is introduced by using a derived
    fortran type to code2 in `experiment2`.
-
+* `experiment3` - quick check to see if there is a difference in performance
+   between a statically allocated array and a dynamic one.
