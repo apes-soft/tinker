@@ -17,13 +17,13 @@ c     force field potential energy functional forms and constants
 c
 c
       subroutine prmkey (text)
-      use sizes
       use angpot
       use bndpot
       use chgpot
       use fields
       use mplpot
       use polpot
+      use potent
       use torpot
       use urypot
       use vdwpot
@@ -48,129 +48,129 @@ c     select the individual force field potential terms
 c
       if (keyword(1:9) .eq. 'BONDTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_bond = .true.
-         !if (value .eq. 'NONE')  use_bond = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_bond = .true.
+         if (value .eq. 'NONE')  use_bond = .false.
       else if (keyword(1:10) .eq. 'ANGLETERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_angle = .true.
-         !if (value .eq. 'NONE')  use_angle = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_angle = .true.
+         if (value .eq. 'NONE')  use_angle = .false.
       else if (keyword(1:11) .eq. 'STRBNDTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_strbnd = .true.
-         !if (value .eq. 'NONE')  use_strbnd = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_strbnd = .true.
+         if (value .eq. 'NONE')  use_strbnd = .false.
       else if (keyword(1:9) .eq. 'UREYTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_urey = .true.
-         !if (value .eq. 'NONE')  use_urey = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_urey = .true.
+         if (value .eq. 'NONE')  use_urey = .false.
       else if (keyword(1:11) .eq. 'ANGANGTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_angang = .true.
-         !if (value .eq. 'NONE')  use_angang = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_angang = .true.
+         if (value .eq. 'NONE')  use_angang = .false.
       else if (keyword(1:11) .eq. 'OPBENDTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_opbend = .true.
-         !if (value .eq. 'NONE')  use_opbend = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_opbend = .true.
+         if (value .eq. 'NONE')  use_opbend = .false.
       else if (keyword(1:11) .eq. 'OPDISTTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_opdist = .true.
-         !if (value .eq. 'NONE')  use_opdist = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_opdist = .true.
+         if (value .eq. 'NONE')  use_opdist = .false.
       else if (keyword(1:11) .eq. 'IMPROPTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_improp = .true.
-         !if (value .eq. 'NONE')  use_improp = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_improp = .true.
+         if (value .eq. 'NONE')  use_improp = .false.
       else if (keyword(1:12) .eq. 'IMPTORSTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_imptor = .true.
-         !if (value .eq. 'NONE')  use_imptor = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_imptor = .true.
+         if (value .eq. 'NONE')  use_imptor = .false.
       else if (keyword(1:12) .eq. 'TORSIONTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_tors = .true.
-         !if (value .eq. 'NONE')  use_tors = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_tors = .true.
+         if (value .eq. 'NONE')  use_tors = .false.
       else if (keyword(1:11) .eq. 'PITORSTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_pitors = .true.
-         !if (value .eq. 'NONE')  use_pitors = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_pitors = .true.
+         if (value .eq. 'NONE')  use_pitors = .false.
       else if (keyword(1:11) .eq. 'STRTORTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_strtor = .true.
-         !if (value .eq. 'NONE')  use_strtor = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_strtor = .true.
+         if (value .eq. 'NONE')  use_strtor = .false.
       else if (keyword(1:11) .eq. 'ANGTORTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_angtor = .true.
-         !if (value .eq. 'NONE')  use_strtor = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_angtor = .true.
+         if (value .eq. 'NONE')  use_strtor = .false.
       else if (keyword(1:11) .eq. 'TORTORTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_tortor = .true.
-         !if (value .eq. 'NONE')  use_tortor = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_tortor = .true.
+         if (value .eq. 'NONE')  use_tortor = .false.
       else if (keyword(1:8) .eq. 'VDWTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_vdw = .true.
-         !if (value .eq. 'NONE')  use_vdw = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_vdw = .true.
+         if (value .eq. 'NONE')  use_vdw = .false.
       else if (keyword(1:11) .eq. 'CHARGETERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_charge = .true.
-         !if (value .eq. 'NONE')  use_charge = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_charge = .true.
+         if (value .eq. 'NONE')  use_charge = .false.
       else if (keyword(1:11) .eq. 'CHGDPLTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_chgdpl = .true.
-         !if (value .eq. 'NONE')  use_chgdpl = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_chgdpl = .true.
+         if (value .eq. 'NONE')  use_chgdpl = .false.
       else if (keyword(1:11) .eq. 'DIPOLETERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_dipole = .true.
-         !if (value .eq. 'NONE')  use_dipole = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_dipole = .true.
+         if (value .eq. 'NONE')  use_dipole = .false.
       else if (keyword(1:10) .eq. 'MPOLETERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_mpole = .true.
-         !if (value .eq. 'NONE')  use_mpole = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_mpole = .true.
+         if (value .eq. 'NONE')  use_mpole = .false.
       else if (keyword(1:13) .eq. 'POLARIZETERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_polar = .true.
-         !if (value .eq. 'NONE')  use_polar = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_polar = .true.
+         if (value .eq. 'NONE')  use_polar = .false.
       else if (keyword(1:13) .eq. 'RXNFIELDTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_rxnfld = .true.
-         !if (value .eq. 'NONE')  use_rxnfld = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_rxnfld = .true.
+         if (value .eq. 'NONE')  use_rxnfld = .false.
       else if (keyword(1:12) .eq. 'SOLVATETERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_solv = .true.
-         !if (value .eq. 'NONE')  use_solv = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_solv = .true.
+         if (value .eq. 'NONE')  use_solv = .false.
       else if (keyword(1:12) .eq. 'METALTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_metal = .true.
-         !if (value .eq. 'NONE')  use_metal = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_metal = .true.
+         if (value .eq. 'NONE')  use_metal = .false.
       else if (keyword(1:13) .eq. 'RESTRAINTERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_geom = .true.
-         !if (value .eq. 'NONE')  use_geom = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_geom = .true.
+         if (value .eq. 'NONE')  use_geom = .false.
       else if (keyword(1:10) .eq. 'EXTRATERM ') then
          call getword (record,value,next)
-         !if (value .eq. 'ONLY')  call potoff
-         !use_extra = .true.
-         !if (value .eq. 'NONE')  use_extra = .false.
+         if (value .eq. 'ONLY')  call potoff
+         use_extra = .true.
+         if (value .eq. 'NONE')  use_extra = .false.
       end if
 c
 c     select the name of the force field parameter set
@@ -413,37 +413,37 @@ c     "potoff" clears the forcefield definition by turning off
 c     the use of each of the potential energy functions
 c
 c
-c      subroutine potoff
-c      use potent
-c      implicit none
+      subroutine potoff
+      use potent
+      implicit none
 c
 c
 c     turn off the use of each of the potential energy functions
 c
-c      use_bond = .false.
-c      use_angle = .false.
-c      use_strbnd = .false.
-c      use_urey = .false.
-c      use_angang = .false.
-c      use_opbend = .false.
-c      use_opdist = .false.
-c      use_improp = .false.
-c      use_imptor = .false.
-c      use_tors = .false.
-c      use_pitors = .false.
-c      use_strtor = .false.
-c      use_angtor = .false.
-c      use_tortor = .false.
-c      use_vdw = .false.
-c      use_charge = .false.
-c      use_chgdpl = .false.
-c      use_dipole = .false.
-c      use_mpole = .false.
-c      use_polar = .false.
-c      use_rxnfld = .false.
-c      use_solv = .false.
-c      use_metal = .false.
-c      use_geom = .false.
-c      use_extra = .false.
-c      return
-c      end
+      use_bond = .false.
+      use_angle = .false.
+      use_strbnd = .false.
+      use_urey = .false.
+      use_angang = .false.
+      use_opbend = .false.
+      use_opdist = .false.
+      use_improp = .false.
+      use_imptor = .false.
+      use_tors = .false.
+      use_pitors = .false.
+      use_strtor = .false.
+      use_angtor = .false.
+      use_tortor = .false.
+      use_vdw = .false.
+      use_charge = .false.
+      use_chgdpl = .false.
+      use_dipole = .false.
+      use_mpole = .false.
+      use_polar = .false.
+      use_rxnfld = .false.
+      use_solv = .false.
+      use_metal = .false.
+      use_geom = .false.
+      use_extra = .false.
+      return
+      end

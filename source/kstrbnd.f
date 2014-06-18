@@ -29,6 +29,7 @@ c
       use iounit
       use keys
       use kstbnd
+      use potent
       use strbnd
       implicit none
       integer i,j,k,nsb
@@ -160,6 +161,6 @@ c
 c
 c     turn off the stretch-bend potential if it is not used
 c
-      !if (nstrbnd .eq. 0)  use_strbnd = .false.
+      if (nstrbnd .eq. 0)  use_strbnd = .false.
       return
       end

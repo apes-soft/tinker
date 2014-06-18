@@ -53,19 +53,19 @@ c
 c
 c     get fractional coordinates of center of mass
 c
-         !if (orthogonal .or. octahedron) then
-         zfrac = zmid
-         yfrac = ymid
-         xfrac = xmid
-         !else if (monoclinic) then
-         !   zfrac = zmid / beta_sin
-         !   yfrac = ymid
-         !   xfrac = xmid - zfrac*beta_cos
-         !else if (triclinic) then
-         !   zfrac = zmid / gamma_term
-         !   yfrac = (ymid - zfrac*beta_term) / gamma_sin
-         !   xfrac = xmid - yfrac*gamma_cos - zfrac*beta_cos
-         !end if
+c        if (orthogonal .or. octahedron) then
+            zfrac = zmid
+            yfrac = ymid
+            xfrac = xmid
+c        else if (monoclinic) then
+c           zfrac = zmid / beta_sin
+c           yfrac = ymid
+c           xfrac = xmid - zfrac*beta_cos
+c        else if (triclinic) then
+c           zfrac = zmid / gamma_term
+c           yfrac = (ymid - zfrac*beta_term) / gamma_sin
+c           xfrac = xmid - yfrac*gamma_cos - zfrac*beta_cos
+c        end if
 c
 c     translate center of mass into the periodic box
 c
@@ -90,29 +90,29 @@ c
 c
 c     truncated octahedron needs to have corners removed
 c
-         !if (octahedron) then
-         !   if (abs(xfrac)+abs(yfrac)+abs(zfrac) .gt. box34) then
-         !      xfrac = xfrac - sign(xbox2,xfrac)
-         !      yfrac = yfrac - sign(ybox2,yfrac)
-         !      zfrac = zfrac - sign(zbox2,zfrac)
-         !   end if
-         !end if
+c        if (octahedron) then
+c           if (abs(xfrac)+abs(yfrac)+abs(zfrac) .gt. box34) then
+c              xfrac = xfrac - sign(xbox2,xfrac)
+c              yfrac = yfrac - sign(ybox2,yfrac)
+c              zfrac = zfrac - sign(zbox2,zfrac)
+c           end if
+c        end if
 c
 c     convert translated fraction center of mass to Cartesian
 c
-         !if (orthogonal .or. octahedron) then
-         xcom = xfrac
-         ycom = yfrac
-         zcom = zfrac
-         !else if (monoclinic) then
-         !   xcom = xfrac + zfrac*beta_cos
-         !   ycom = yfrac
-         !   zcom = zfrac * beta_sin
-         !else if (triclinic) then
-         !   xcom = xfrac + yfrac*gamma_cos + zfrac*beta_cos
-         !   ycom = yfrac*gamma_sin + zfrac*beta_term
-         !   zcom = zfrac * gamma_term
-         !end if
+c        if (orthogonal .or. octahedron) then
+            xcom = xfrac
+            ycom = yfrac
+            zcom = zfrac
+c        else if (monoclinic) then
+c           xcom = xfrac + zfrac*beta_cos
+c           ycom = yfrac
+c           zcom = zfrac * beta_sin
+c        else if (triclinic) then
+c           xcom = xfrac + yfrac*gamma_cos + zfrac*beta_cos
+c           ycom = yfrac*gamma_sin + zfrac*beta_term
+c           zcom = zfrac * gamma_term
+c        end if
 c
 c     translate coordinates via offset from center of mass
 c

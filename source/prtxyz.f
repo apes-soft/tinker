@@ -85,10 +85,10 @@ c
 c
 c     write out the periodic cell lengths and angles
 c
-      !if (use_bounds) then
-      fstr = '(1x,6f'//crdc//'.'//digc//')'
-      write (ixyz,fstr)  xbox,ybox,zbox,alpha,beta,gamma
-      !end if
+c     if (use_bounds) then
+         fstr = '(1x,6f'//crdc//'.'//digc//')'
+         write (ixyz,fstr)  xbox,ybox,zbox,alpha,beta,gamma
+c     end if
 c
 c     write out the coordinate line for each atom
 c

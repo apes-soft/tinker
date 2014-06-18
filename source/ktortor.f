@@ -25,6 +25,7 @@ c
       use iounit
       use keys
       use ktrtor
+      use potent
       use tortor
       implicit none
       integer i,j,k,m
@@ -288,6 +289,6 @@ c
 c
 c     turn off the torsion-torsion potential if it is not used
 c
-      !if (ntortor .eq. 0)  use_tortor = .false.
+      if (ntortor .eq. 0)  use_tortor = .false.
       return
       end

@@ -26,6 +26,7 @@ c
       use mpole
       use polar
       use polpot
+      use potent
       use usolve
       implicit none
       integer i,j,k
@@ -187,15 +188,15 @@ c
 c
 c     turn off polarizable multipole potential if it is not used
 c
-      !if (npole .eq. 0)  use_mpole = .false.
-      !if (npolar .eq. 0)  use_polar = .false.
+      if (npole .eq. 0)  use_mpole = .false.
+      if (npolar .eq. 0)  use_polar = .false.
 c
 c     perform dynamic allocation of some global arrays
 c
-      !if (use_polar) then
-      if (.not. allocated(mindex))  allocate (mindex(npole))
-      if (.not. allocated(minv))  allocate (minv(3*maxulst*npole))
-      !end if
+      if (use_polar) then
+         if (.not. allocated(mindex))  allocate (mindex(npole))
+         if (.not. allocated(minv))  allocate (minv(3*maxulst*npole))
+      end if
       return
       end
 c

@@ -35,7 +35,7 @@ c
       xbox2 = 0.5d0 * xbox
       ybox2 = 0.5d0 * ybox
       zbox2 = 0.5d0 * zbox
-      !if (octahedron)  box34 = 0.75d0 * xbox
+      if (octahedron)  box34 = 0.75d0 * xbox
 c
 c     set replicated cell dimensions equal to the unitcell
 c
@@ -98,6 +98,6 @@ c
 c
 c     volume of truncated octahedron is half of cubic parent
 c
-      !if (octahedron)  volbox = 0.5d0 * volbox
+      if (octahedron)  volbox = 0.5d0 * volbox
       return
       end

@@ -232,7 +232,7 @@ c
                speed = maxwell (mass(i),kelvin)
                call ranvec (vec)
                do j = 1, 3
-                  v(j,i) = 0.0d0!speed * vec(j)
+                  v(j,i) = speed * vec(j)
                   a(j,i) = -convert * derivs(j,i) / mass(i)
                   aalt(j,i) = a(j,i)
                end do

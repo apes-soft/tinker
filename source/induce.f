@@ -38,7 +38,6 @@ c
 c     choose the method for computation of induced dipoles
 c
       call induce0a
-
 c
 c     update the lists of previous induced dipole values
 c
@@ -293,7 +292,6 @@ c
          write (iout,40)
    40    format (/,' INDUCE  --  Warning, Induced Dipoles',
      &              ' are not Converged')
-         call prterr
          call fatal
       end if
 c
@@ -537,11 +535,11 @@ c
          if (term .gt. -50.0d0) then
             denom = volterm*hsq*bsmod1(k1)*bsmod2(k2)*bsmod3(k3)
             expterm = exp(term) / denom
-            !if (.not. use_bounds) then
-            !   expterm = expterm * (1.0d0-cos(pi*xbox*sqrt(hsq)))
-            !else if (octahedron) then
-            !   if (mod(m1+m2+m3,2) .ne. 0)  expterm = 0.0d0
-            !end if
+c           if (.not. use_bounds) then
+c              expterm = expterm * (1.0d0-cos(pi*xbox*sqrt(hsq)))
+c           else if (octahedron) then
+c              if (mod(m1+m2+m3,2) .ne. 0)  expterm = 0.0d0
+c           end if
          end if
          qfac(k1,k2,k3) = expterm
       end do
@@ -1437,7 +1435,6 @@ c
       end if
       return
       end
-
 c
 c
 c     ################################################################

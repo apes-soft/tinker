@@ -27,6 +27,7 @@ c
       use keys
       use ktorsn
       use math
+      use potent
       use tors
       implicit none
       integer i,j
@@ -531,6 +532,6 @@ c
 c
 c     turn off the torsional potential if it is not used
 c
-      !if (ntors .eq. 0)  use_tors = .false.
+      if (ntors .eq. 0)  use_tors = .false.
       return
       end

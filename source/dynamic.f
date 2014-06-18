@@ -34,8 +34,6 @@ c
       character*20 keyword
       character*120 record
       character*120 string
-      real*8 start,finish
-      real*8 omp_get_wtime
 c
 c
 c     set up the structure and molecular mechanics calculation
@@ -155,20 +153,9 @@ c
 c
 c     integrate equations of motion to take a time step
 c
-      !print*, "totmass", totmass, volbox
-      !print*, x(1),a(1,1)
-      !print*, y(1),a(2,1)
-      !print*, z(1),a(3,1)
-      !print*, x(2),a(1,2)
-      !print*, y(2),a(2,2)
-      !print*, z(2),a(3,2)
-      !stop
-      start = omp_get_wtime()
       do istep = 1, nstep
          call verlet (istep,dt)
       end do
-      finish = omp_get_wtime()
-      print*, "Dynamics complete in ", finish-start, " seconds."
 c
 c     perform any final tasks before program exit
 c

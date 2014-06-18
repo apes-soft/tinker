@@ -28,6 +28,7 @@ c
       use iounit
       use kangs
       use keys
+      use potent
       implicit none
       integer i,j
       integer ia,ib,ic
@@ -445,6 +446,6 @@ c
 c
 c     turn off the angle bending potential if it is not used
 c
-      !if (nangle .eq. 0)  use_angle = .false.
+      if (nangle .eq. 0)  use_angle = .false.
       return
       end

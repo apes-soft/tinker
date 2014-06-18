@@ -26,6 +26,7 @@ c
       use iounit
       use keys
       use kurybr
+      use potent
       use urey
       implicit none
       integer i,j,nu
@@ -145,6 +146,6 @@ c
 c
 c     turn off the Urey-Bradley potential if it is not used
 c
-      !if (nurey .eq. 0)  use_urey = .false.
+      if (nurey .eq. 0)  use_urey = .false.
       return
       end

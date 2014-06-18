@@ -54,10 +54,6 @@ c     assign atoms to molecules and set the atom groups
 c
       call molecule
 c
-c     find any pisystem atoms, bonds and torsional angles
-c
-      call orbital
-c
 c     assign bond, angle and cross term potential parameters
 c
       call kbond

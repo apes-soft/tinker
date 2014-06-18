@@ -31,14 +31,23 @@ c
 c
 c     find the maximum sphere radius inscribed in periodic box
 c
-      xlimit = xbox2
-      ylimit = ybox2
-      zlimit = zbox2
-      !else if (octahedron) then
-      !   xlimit = (sqrt(3.0d0)/4.0d0) * xbox
-      !   ylimit = xlimit
-      !   zlimit = xlimit
-      !end if
+c     if (orthogonal) then
+         xlimit = xbox2
+         ylimit = ybox2
+         zlimit = zbox2
+c     else if (monoclinic) then
+c        xlimit = xbox2 * beta_sin
+c        ylimit = ybox2
+c        zlimit = zbox2 * beta_sin
+c     else if (triclinic) then
+c        xlimit = xbox2 * beta_sin * gamma_sin
+c        ylimit = ybox2 * gamma_sin
+c        zlimit = zbox2 * beta_sin
+c     else if (octahedron) then
+c        xlimit = (sqrt(3.0d0)/4.0d0) * xbox
+c        ylimit = xlimit
+c        zlimit = xlimit
+c     end if
       maximage = min(xlimit,ylimit,zlimit)
 c
 c     use replicate method to handle cutoffs too large for images
@@ -52,12 +61,12 @@ c
 c
 c     truncated octahedron cannot use the replicates method
 c
-!      if (octahedron .and. use_replica) then
-!         write (iout,10)
-!   10    format (/,' REPLICA  --  Truncated Octahedron',
-!     &              ' cannot be Replicated')
-!         call fatal
-!      end if
+c     if (octahedron .and. use_replica) then
+c        write (iout,10)
+c   10   format (/,' REPLICA  --  Truncated Octahedron',
+c     &             ' cannot be Replicated')
+c        call fatal
+c     end if
 c
 c     find the number of replicates needed based on cutoff
 c

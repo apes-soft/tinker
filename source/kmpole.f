@@ -27,6 +27,7 @@ c
       use mpole
       use polar
       use polgrp
+      use potent
       use units
       implicit none
       integer i,j,k,l,m
@@ -515,50 +516,50 @@ c
 c
 c     perform dynamic allocation of some global arrays
 c
-      !if (.not. use_polar) then
-      !   if (.not. allocated(uind))  allocate (uind(3,n))
-      !   if (.not. allocated(uinp))  allocate (uinp(3,n))
-      !   if (.not. allocated(uinds))  allocate (uinds(3,n))
-      !   if (.not. allocated(uinps))  allocate (uinps(3,n))
+      if (.not. use_polar) then
+         if (.not. allocated(uind))  allocate (uind(3,n))
+         if (.not. allocated(uinp))  allocate (uinp(3,n))
+         if (.not. allocated(uinds))  allocate (uinds(3,n))
+         if (.not. allocated(uinps))  allocate (uinps(3,n))
 c
 c     if polarization not used, zero out induced dipoles
 c
-      !   do i = 1, n
-      !      do j = 1, 3
-      !         uind(j,i) = 0.0d0
-      !         uinp(j,i) = 0.0d0
-      !         uinds(j,i) = 0.0d0
-      !         uinps(j,i) = 0.0d0
-      !      end do
-      !   end do
-      !end if
+         do i = 1, n
+            do j = 1, 3
+               uind(j,i) = 0.0d0
+               uinp(j,i) = 0.0d0
+               uinds(j,i) = 0.0d0
+               uinps(j,i) = 0.0d0
+            end do
+         end do
+      end if
 c
 c     remove any zero or undefined atomic multipoles
 c
-      !if (.not.use_polar .and. .not.use_solv) then
-      !   npole = 0
-      !   do i = 1, n
-      !      if (polsiz(i) .ne. 0) then
-      !         npole = npole + 1
-      !         ipole(npole) = i
-      !         pollist(i) = npole
-      !         zaxis(npole) = zaxis(i)
-      !         xaxis(npole) = xaxis(i)
-      !         yaxis(npole) = yaxis(i)
-      !         polaxe(npole) = polaxe(i)
-      !         do j = 1, maxpole
-      !            pole(j,npole) = pole(j,i)
-      !         end do
-      !      end if
-      !   end do
+      if (.not.use_polar .and. .not.use_solv) then
+         npole = 0
+         do i = 1, n
+            if (polsiz(i) .ne. 0) then
+               npole = npole + 1
+               ipole(npole) = i
+               pollist(i) = npole
+               zaxis(npole) = zaxis(i)
+               xaxis(npole) = xaxis(i)
+               yaxis(npole) = yaxis(i)
+               polaxe(npole) = polaxe(i)
+               do j = 1, maxpole
+                  pole(j,npole) = pole(j,i)
+               end do
+            end if
+         end do
 c
 c     test multipoles at chiral sites and invert if necessary
 c
-      !   call chkpole
+         call chkpole
 c
 c     turn off the atomic multipole potential if it is not used
 c
-      !   if (npole .eq. 0)  use_mpole = .false.
-      !end if
+         if (npole .eq. 0)  use_mpole = .false.
+      end if
       return
       end

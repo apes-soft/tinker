@@ -62,7 +62,6 @@ c
       use couple
       use deriv
       use energi
-      use inter
       use molcul
       use neigh
       use shunt
@@ -92,7 +91,7 @@ c
       real*8 rik6,rik7
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
-      real*8 evt,eintert
+      real*8 evt
       real*8 virt(3,3)
       real*8, allocatable :: xred(:)
       real*8, allocatable :: yred(:)
@@ -146,7 +145,6 @@ c
 c     transfer global to local copies for OpenMP calculation
 c
       evt = ev
-      eintert = einter
       do i = 1, n
          devt(1,i) = dev(1,i)
          devt(2,i) = dev(2,i)
@@ -165,8 +163,8 @@ c
 !$OMP& i12,i13,i14,i15,v2scale,v3scale,v4scale,v5scale,
 !$OMP& off2,radmin,epsilon,radmin4,epsilon4,ghal,dhal,
 !$OMP& cut2,c0,c1,c2,c3,c4,c5,molcule)
-!$OMP& firstprivate(vscale,iv14) shared(evt,devt,virt,eintert)
-!$OMP DO reduction(+:evt,devt,virt,eintert) schedule(guided)
+!$OMP& firstprivate(vscale,iv14) shared(evt,devt,virt)
+!$OMP DO reduction(+:evt,devt,virt) schedule(guided)
 c
 c     find van der Waals energy and derivatives via neighbor list
 c
@@ -304,12 +302,6 @@ c
                virt(1,3) = virt(1,3) + vzx
                virt(2,3) = virt(2,3) + vzy
                virt(3,3) = virt(3,3) + vzz
-c
-c     increment the total intermolecular energy
-c
-               if (molcule(i) .ne. molcule(k)) then
-                  eintert = eintert + e
-               end if
             end if
          end do
 c
@@ -337,7 +329,6 @@ c
 c     transfer local to global copies for OpenMP calculation
 c
       ev = evt
-      einter = eintert
       do i = 1, n
          dev(1,i) = devt(1,i)
          dev(2,i) = devt(2,i)

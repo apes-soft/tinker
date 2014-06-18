@@ -29,6 +29,7 @@ c
       use kvdws
       use kvdwpr
       use math
+      use potent
       use vdw
       use vdwpot
       implicit none
@@ -502,6 +503,6 @@ c
 c
 c     turn off the van der Waals potential if it is not used
 c
-      !if (nvdw .eq. 0)  use_vdw = .false.
+      if (nvdw .eq. 0)  use_vdw = .false.
       return
       end

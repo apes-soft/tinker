@@ -87,11 +87,7 @@ c     perform a complete list build instead of an update
 c
       if (dovlst) then
          dovlst = .false.
-         !if (octahedron) then
-         !   call vbuild (xred,yred,zred)
-         !else
          call vlight (xred,yred,zred)
-         !end if
          return
       end if
 c
@@ -372,11 +368,7 @@ c     perform a complete list build instead of an update
 c
       if (domlst) then
          domlst = .false.
-         !if (octahedron) then
-         !   call mbuild
-         !else
          call mlight
-         !end if
          return
       end if
 c
@@ -658,11 +650,7 @@ c     perform a complete list build instead of an update
 c
       if (doulst) then
          doulst = .false.
-         !if (octahedron) then
-         !   call ubuild
-         !else
          call ulight
-         !end if
          return
       end if
 c
@@ -947,17 +935,6 @@ c
       data first  / .true. /
 c
 c
-c     truncated octahedron periodicity is not handled at present
-c
-!      if (use_bounds) then
-!         if (octahedron) then
-!            write (iout,10)
-!   10       format (/,' LIGHTS  --  Truncated Octahedron not',
-!     &                 ' Supported by Method of Lights')
-!            call fatal
-!         end if
-!      end if
-c
 c     set the light width based on input distance cutoff
 c
       xcut = cutoff
@@ -1207,17 +1184,5 @@ c
       if (xr .gt. xbox2)  xr = xr - xbox
       if (yr .gt. ybox2)  yr = yr - ybox
       if (zr .gt. zbox2)  zr = zr - zbox
-c
-c     for truncated octahedron, remove the corner pieces
-c
-      !else if (octahedron) then
-      !   if (abs(xr) .gt. xbox2)  xr = xr - sign(xbox,xr)
-      !   if (abs(yr) .gt. ybox2)  yr = yr - sign(ybox,yr)
-      !   if (abs(zr) .gt. zbox2)  zr = zr - sign(zbox,zr)
-      !   if (abs(xr)+abs(yr)+abs(zr) .gt. box34) then
-      !      xr = xr - sign(xbox2,xr)
-      !      yr = yr - sign(ybox2,yr)
-      !      zr = zr - sign(zbox2,zr)
-      !   end if
       return
       end
