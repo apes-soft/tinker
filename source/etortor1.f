@@ -338,3 +338,88 @@ c
       end do
       return
       end
+c
+c
+c     ###############################################################
+c     ##                                                           ##
+c     ##  subroutine chkttor  --  check torsion-torsion chirality  ##
+c     ##                                                           ##
+c     ###############################################################
+c
+c
+c     "chkttor" tests the attached atoms at a torsion-torsion central
+c     site and inverts the angle values if the site is chiral
+c
+c     note that the sign convention used in this version is correct
+c     for phi-psi torsion-torsion interactions as defined in the
+c     AMOEBA protein force field; the code may need to be altered
+c     for other uses of the torsion-torsion potential, and will not
+c     correctly handle enantiomeric sugar rings in nucleic acids
+c
+c
+      subroutine chkttor (ib,ic,id,sign,value1,value2)
+      use sizes
+      use atomid
+      use atoms
+      use couple
+      implicit none
+      integer i,j,k,m
+      integer ia,ib,ic,id
+      real*8 sign
+      real*8 value1
+      real*8 value2
+      real*8 xac,yac,zac
+      real*8 xbc,ybc,zbc
+      real*8 xdc,ydc,zdc
+      real*8 c1,c2,c3,vol
+c
+c
+c     test for chirality at the central torsion-torsion site
+c
+      sign = 1.0d0
+      if (n12(ic) .eq. 4) then
+         j = 0
+         do i = 1, 4
+            m = i12(i,ic)
+            if (m.ne.ib .and. m.ne.id) then
+               if (j .eq. 0) then
+                  j = m
+               else
+                  k = m
+               end if
+            end if
+         end do
+         ia = 0
+         if (type(j) .gt. type(k))  ia = j
+         if (type(k) .gt. type(j))  ia = k
+         if (atomic(j) .gt. atomic(k))  ia = j
+         if (atomic(k) .gt. atomic(j))  ia = k
+c
+c     compute the signed parallelpiped volume at central site
+c
+         if (ia .ne. 0) then
+            xac = x(ia) - x(ic)
+            yac = y(ia) - y(ic)
+            zac = z(ia) - z(ic)
+            xbc = x(ib) - x(ic)
+            ybc = y(ib) - y(ic)
+            zbc = z(ib) - z(ic)
+            xdc = x(id) - x(ic)
+            ydc = y(id) - y(ic)
+            zdc = z(id) - z(ic)
+            c1 = ybc*zdc - zbc*ydc
+            c2 = ydc*zac - zdc*yac
+            c3 = yac*zbc - zac*ybc
+            vol = xac*c1 + xbc*c2 + xdc*c3
+c
+c     invert the angle values if chirality has an inverted sign
+c
+            if (vol .lt. 0.0d0) then
+               sign = -1.0d0
+               value1 = -value1
+               value2 = -value2
+            end if
+         end if
+      end if
+      return
+      end

@@ -5,39 +5,19 @@ c     ##  COPYRIGHT (C)  1990  by  Jay William Ponder  ##
 c     ##              All Rights Reserved              ##
 c     ###################################################
 c
-c     #############################################################
-c     ##                                                         ##
-c     ##  subroutine etors1  --  torsional energy & derivatives  ##
-c     ##                                                         ##
-c     #############################################################
+c     #################################################################
+c     ##                                                             ##
+c     ##  subroutine etors1  --  standard torsional energy & derivs  ##
+c     ##                                                             ##
+c     #################################################################
 c
 c
 c     "etors1" calculates the torsional potential energy and first
-c     derivatives with respect to Cartesian coordinates
-c
-c
-      subroutine etors1
-      use sizes
-      use warp
-      implicit none
-      call etors1a
-      return
-      end
-c
-c
-c     ##################################################################
-c     ##                                                              ##
-c     ##  subroutine etors1a  --  standard torsional energy & derivs  ##
-c     ##                                                              ##
-c     ##################################################################
-c
-c
-c     "etors1a" calculates the torsional potential energy and first
 c     derivatives with respect to Cartesian coordinates using a
 c     standard sum of Fourier terms
 c
 c
-      subroutine etors1a
+      subroutine etors1
       use sizes
       use atoms
       use deriv

@@ -148,7 +148,7 @@ c
                alpha = aang
                beta = bang
                gamma = gang
-               !use_bounds = .true.
+c              use_bounds = .true.
                call lattice
             end if
    60       continue

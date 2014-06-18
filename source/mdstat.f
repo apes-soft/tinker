@@ -23,13 +23,11 @@ c
       use bath
       use boxes
       use inform
-      use inter
       use iounit
       use limits
       use mdstuf
       use molcul
       use units
-      use warp
       implicit none
       integer istep,modstep
       real*8 dt,temp,pres
@@ -287,8 +285,5 @@ c
      &                    '(+/-',f9.4,')')
          end if
       end if
-c
-c     declare deformation value for potential energy smoothing
-c
       return
       end

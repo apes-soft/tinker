@@ -19,7 +19,6 @@ c
       subroutine switch (mode)
       use sizes
       use limits
-      use nonpol
       use shunt
       implicit none
       real*8 denom,term
@@ -53,12 +52,6 @@ c
       else if (mode(1:6) .eq. 'USOLVE') then
          off = usolvcut
          cut = usolvcut
-      else if (mode(1:3) .eq. 'GKV') then
-         off = spoff
-         cut = spcut
-      else if (mode(1:4) .eq. 'GKSA') then
-         off = stcut
-         cut = stoff
       else
          off = min(vdwcut,chgcut,dplcut,mpolecut)
          cut = min(vdwtaper,chgtaper,dpltaper,mpoletaper)

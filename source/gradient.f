@@ -21,7 +21,6 @@ c
       use atoms
       use deriv
       use energi
-      use inter
       use iounit
       use limits
       use vdwpot
@@ -92,7 +91,6 @@ c
             vir(j,i) = 0.0d0
          end do
       end do
-      einter = 0.0d0
 c
 c     maintain any periodic boundary conditions
 c

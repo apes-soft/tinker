@@ -30,6 +30,7 @@ c
       use keys
       use kopbnd
       use opbend
+      use potent
       implicit none
       integer i,j,it
       integer ia,ib,ic,id
@@ -224,6 +225,6 @@ c
 c
 c     turn off the out-of-plane bending term if it is not used
 c
-      !if (nopbend .eq. 0)  use_opbend = .false.
+      if (nopbend .eq. 0)  use_opbend = .false.
       return
       end

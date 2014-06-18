@@ -19,7 +19,6 @@ c
 c
       subroutine final
       use sizes
-      use align
       use angbnd
       use atmlst
       use bitor
@@ -34,12 +33,7 @@ c
       use moldyn
       use mpole
       use neigh
-      use nonpol
       use opbend
-      use orbits
-      use pdb
-      use piorbs
-      use pistuf
       use pitors
       use pme
       use polar
@@ -52,14 +46,8 @@ c
       use uprior
       use urey
       use vdw
-      use warp
       implicit none
 c
-c
-c     deallocation of global arrays from module align
-c
-      if (allocated(ifit))  deallocate (ifit)
-      if (allocated(wfit))  deallocate (wfit)
 c
 c     deallocation of global arrays from module angbnd
 c
@@ -169,56 +157,10 @@ c
       if (allocated(nulst))  deallocate (nulst)
       if (allocated(ulst))  deallocate (ulst)
 c
-c     deallocation of global arrays from module nonpol
-c
-      if (allocated(rcav))  deallocate (rcav)
-      if (allocated(rdisp))  deallocate (rdisp)
-      if (allocated(cdisp))  deallocate (cdisp)
-c
 c     deallocation of global arrays from module opbend
 c
       if (allocated(iopb))  deallocate (iopb)
       if (allocated(opbk))  deallocate (opbk)
-c
-c     deallocation of global arrays from module orbits
-c
-      if (allocated(qorb))  deallocate (qorb)
-      if (allocated(worb))  deallocate (worb)
-      if (allocated(emorb))  deallocate (emorb)
-c
-c     deallocation of global arrays from module pdb
-c
-      if (allocated(resnum))  deallocate (resnum)
-      if (allocated(resatm))  deallocate (resatm)
-      if (allocated(npdb12))  deallocate (npdb12)
-      if (allocated(ipdb12))  deallocate (ipdb12)
-      if (allocated(pdblist))  deallocate (pdblist)
-      if (allocated(xpdb))  deallocate (xpdb)
-      if (allocated(ypdb))  deallocate (ypdb)
-      if (allocated(zpdb))  deallocate (zpdb)
-      if (allocated(pdbres))  deallocate (pdbres)
-      if (allocated(pdbatm))  deallocate (pdbatm)
-      if (allocated(pdbtyp))  deallocate (pdbtyp)
-c
-c     deallocation of global arrays from module piorbs
-c
-      if (allocated(iorbit))  deallocate (iorbit)
-      if (allocated(iconj))  deallocate (iconj)
-      if (allocated(kconj))  deallocate (kconj)
-      if (allocated(piperp))  deallocate (piperp)
-      if (allocated(ibpi))  deallocate (ibpi)
-      if (allocated(itpi))  deallocate (itpi)
-      if (allocated(pbpl))  deallocate (pbpl)
-      if (allocated(pnpl))  deallocate (pnpl)
-      if (allocated(listpi))  deallocate (listpi)
-c
-c     deallocation of global arrays from module pistuf
-c
-      if (allocated(bkpi))  deallocate (bkpi)
-      if (allocated(blpi))  deallocate (blpi)
-      if (allocated(kslope))  deallocate (kslope)
-      if (allocated(lslope))  deallocate (lslope)
-      if (allocated(torsp2))  deallocate (torsp2)
 c
 c     deallocation of global arrays from module pitors
 c
@@ -305,10 +247,6 @@ c
       if (allocated(epsilon4))  deallocate (epsilon4)
       if (allocated(radhbnd))  deallocate (radhbnd)
       if (allocated(epshbnd))  deallocate (epshbnd)
-c
-c     deallocation of global arrays from module warp
-c
-      if (allocated(m2))  deallocate (m2)
 c
 c     print a final status message before exiting TINKER
 c

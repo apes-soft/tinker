@@ -18,40 +18,12 @@ c
 c
       subroutine empole1
       use sizes
-      use deriv
-      use energi
-      use limits
-      use mpole
-      implicit none
-      integer i,j,ii
-      
-      call empole1d
-      return
-      end
-
-c
-c
-c     ################################################################
-c     ##                                                            ##
-c     ##  subroutine empole1d  --  Ewald multipole derivs via list  ##
-c     ##                                                            ##
-c     ################################################################
-c
-c
-c     "empole1d" calculates the multipole and dipole polarization
-c     energy and derivatives with respect to Cartesian coordinates
-c     using particle mesh Ewald summation and a neighbor list
-c
-c
-      subroutine empole1d
-      use sizes
       use atoms
       use boxes
       use chgpot
       use deriv
       use energi
       use ewald
-      use inter
       use math
       use mpole
       use polar
@@ -112,7 +84,7 @@ c
 c
 c     compute the real space part of the Ewald summation
 c
-      call ereal1d (eintra)
+      call ereal1d
 c
 c     compute the Ewald self-energy term over all the atoms
 c
@@ -161,10 +133,6 @@ c
          trqi(3) = term * (dix*uiy-diy*uix)
          call torque (i,trq,trqi,frcx,frcy,frcz)
       end do
-c
-c     intermolecular energy is total minus intramolecular part
-c
-      einter = einter + em + ep - eintra
       return
       end
 c
@@ -181,7 +149,7 @@ c     summation energy and gradient due to atomic multipole interactions
 c     and dipole polarizability
 c
 c
-      subroutine ereal1d (eintra)
+      subroutine ereal1d
       use sizes
       use atoms
       use boxes
@@ -207,8 +175,8 @@ c
       integer ii,kk,kkk
       integer iax,iay,iaz
       integer kax,kay,kaz
-      real*8 e,ei,f,bfac
-      real*8 eintra,erfc
+      real*8 e,ei,f
+      real*8 bfac,erfc
       real*8 damp,expdamp
       real*8 pdi,pti,pgamma
       real*8 scale3,scale5
@@ -286,10 +254,6 @@ c
       external erfc
 c
 c
-c     zero out the intramolecular portion of the Ewald energy
-c
-      eintra = 0.0d0
-c
 c     perform dynamic allocation of some local arrays
 c
       allocate (mscale(n))
@@ -320,7 +284,6 @@ c     initialize local variables for OpenMP calculation
 c
       emtt = 0.0d0
       eptt = 0.0d0
-      eintrat = eintra
       do i = 1, n
          do j = 1, 3
             demt1(j,i) = 0.0d0
@@ -355,7 +318,7 @@ c
 !$OMP& ddsc3,ddsc5,ddsc7,bn,sc,gl,sci,scip,gli,glip,gf,gfi,
 !$OMP& gfr,gfri,gti,gtri,dorl,dorli)
 !$OMP& firstprivate(mscale,pscale,dscale,uscale)
-!$OMP DO reduction(+:emtt,eptt,eintrat,demt1,demt2,dept1,dept2,virt)
+!$OMP DO reduction(+:emtt,eptt,demt1,demt2,dept1,dept2,virt)
 !$OMP& schedule(guided)
 c
 c     compute the real space portion of the Ewald summation
@@ -714,18 +677,6 @@ c
                ei = f * ei
                emtt = emtt + e
                eptt = eptt + ei
-c
-c     increment the total intramolecular energy; assumes
-c     intramolecular distances are less than half of cell
-c     length and less than the ewald cutoff
-c
-               if (molcule(ii) .eq. molcule(kk)) then
-                  eintrat = eintrat + mscale(kk)*erl*f
-                  eintrat = eintrat + 0.5d0*pscale(kk)
-     &                         * (rr3*(gli(1)+gli(6))*scale3
-     &                              + rr5*(gli(2)+gli(7))*scale5
-     &                              + rr7*gli(3)*scale7)
-               end if
 c
 c     set flags to compute components without screening
 c
@@ -1195,7 +1146,6 @@ c     add local copies to global variables for OpenMP calculation
 c
       em = em + emtt
       ep = ep + eptt
-      eintra = eintrat
       do i = 1, n
          do j = 1, 3
             dem(j,i) = dem(j,i) + demt1(j,i) + demt2(j,i)
@@ -1417,11 +1367,11 @@ c
          if (term .gt. -50.0d0) then
             denom = volterm*hsq*bsmod1(k1)*bsmod2(k2)*bsmod3(k3)
             expterm = exp(term) / denom
-           ! if (.not. use_bounds) then
-           !    expterm = expterm * (1.0d0-cos(pi*xbox*sqrt(hsq)))
-           ! else if (octahedron) then
-           !    if (mod(m1+m2+m3,2) .ne. 0)  expterm = 0.0d0
-           ! end if
+c           if (.not. use_bounds) then
+c              expterm = expterm * (1.0d0-cos(pi*xbox*sqrt(hsq)))
+c           else if (octahedron) then
+c              if (mod(m1+m2+m3,2) .ne. 0)  expterm = 0.0d0
+c           end if
             struc2 = qgrid(1,k1,k2,k3)*qgrip(1,k1,k2,k3)
      &                  + qgrid(2,k1,k2,k3)*qgrip(2,k1,k2,k3)
             eterm = 0.5d0 * electric * expterm * struc2

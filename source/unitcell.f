@@ -77,17 +77,17 @@ c
 c
 c     check for proper use of truncated octahedron boundary
 c
-!      if (octahedron) then
-!         if (xbox.eq.ybox .and. xbox.eq.zbox .and. orthogonal) then
-!            orthogonal = .false.
-!            monoclinic = .false.
-!            triclinic = .false.
-!         else
-!            write (iout,20)
-!   20       format (/,' UNITCELL  --  Truncated Octahedron',
-!     &                 ' Incompatible with Defined Cell')
-!            call fatal
-!         end if
-!      end if
+c     if (octahedron) then
+c        if (xbox.eq.ybox .and. xbox.eq.zbox .and. orthogonal) then
+c           orthogonal = .false.
+c           monoclinic = .false.
+c           triclinic = .false.
+c        else
+c           write (iout,20)
+c  20       format (/,' UNITCELL  --  Truncated Octahedron',
+c    &                 ' Incompatible with Defined Cell')
+c           call fatal
+c        end if
+c     end if
       return
       end
