@@ -114,13 +114,13 @@ LINKFLAGS = $(OPTFLAGS) -static-libgcc
 ##  Compiler: Intel Fortran for Mac 14.0
 ##  Parallel: OpenMP
 
-F77 = ifort
-LIBS = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
-F77FLAGS = -c -axSSSE3
-OPTFLAGS = -O3 -no-ipo -no-prec-div -openmp
-LIBFLAGS = -crusv
-RANLIB = /usr/bin/ranlib 
-LINKFLAGS = $(OPTFLAGS) -static-intel #-Wl,-stack_size,0x10000000
+#F77 = ifort
+#LIBS = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
+#F77FLAGS = -c -axSSSE3
+#OPTFLAGS = -O3 -no-ipo -no-prec-div -openmp
+#LIBFLAGS = -crusv
+#RANLIB = /usr/bin/ranlib 
+#LINKFLAGS = $(OPTFLAGS) -static-intel #-Wl,-stack_size,0x10000000
 
 
 #################################################################
