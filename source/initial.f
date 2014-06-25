@@ -36,11 +36,10 @@ c
 !$    integer omp_get_num_procs
       integer omp_get_num_threads
       real*8 precise
-c
+
 c
 c     cores, thread count and options for OpenMP
 c
-c      nproc = 1 
      
        nthread = 1
 !$OMP PARALLEL shared(nthread) 
