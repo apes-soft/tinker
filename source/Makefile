@@ -318,8 +318,13 @@ EXEFILES = dynamic.x
 %.o: %.c
 	${CC} ${CFLAGS} ${INCLUDEDIR} ${OPTFLAGS} $<
 
+# $@ gives the name of the target
+# $^ gives you all the prerequisites
+# $< gives you the first prerequisite
+# $(word 2,$^) gives you the second prerequisite
 %.x: %.o libtinker.a
-	${F77} ${LINKFLAGS} -o $@ $^ ${LIBS} #; strip $@
+	${F77} ${LINKFLAGS} -o $@ $< -L . -ltinker ${LIBS} 
+	#strip $@
 
 all:	${EXEFILES}
 
