@@ -24,7 +24,6 @@ c
       use cell
       use files
       use inform
-      use iounit
       use keys
       use molcul
       use neigh
@@ -94,24 +93,24 @@ c
 c
 c     flags for information levels within the program
 c
-      silent = .false.
+      silent  = .false.
       verbose = .false.
-      debug = .false.
-      abort = .false.
+      debug   = .false.
+      abort   = .false.
 c
 c     default values for unitcell dimensions
 c
-      xbox = 0.0d0
-      ybox = 0.0d0
-      zbox = 0.0d0
+      xbox  = 0.0d0
+      ybox  = 0.0d0
+      zbox  = 0.0d0
       alpha = 0.0d0
-      beta = 0.0d0
+      beta  = 0.0d0
       gamma = 0.0d0
 c
 c     flags for temperature and pressure baths
 c
       isothermal = .false.
-      isobaric = .false.
+      isobaric   = .false.
 c
 c     flags for rebuilding of neighbor lists
 c
