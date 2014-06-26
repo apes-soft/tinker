@@ -1,6 +1,6 @@
 # Changes
 
-Try to enumerate reason for changes:
+Try to enumerate the rationale for changes in the code base:
 
 * Made several changes to the Makefile. I think the way that the tinker
   library is linked in is the correct way now. Also, only make the 
