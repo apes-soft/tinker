@@ -42,12 +42,12 @@ LINKDIR = /usr/local/bin
 ##  May Need Editing to Match Your Desired OS & Compiler Version  ##
 ####################################################################
 
-# This could be made more generic but it is a bit of a pain to
-# comment in/out compiler specific especially when a reviosion
-# control is system. Going to set specific compiler flags for
-# specific machines depending on the hostname that is being
-# used and then use dependencies. Hopefully this will work better
-# with a revision control system.
+# This could be made more generic but it is a bit of a pain to comment
+# in/out compiler specific especially when a reviosion control is
+# system. Going to set specific compiler flags for specific machines
+# depending on the hostname that is being used and then use
+# dependencies. Hopefully this will work better with a revision
+# control system.
 
 # Find out what host we are on.
 HOSTNAME:= $(shell hostname)
@@ -62,7 +62,7 @@ ifeq ($(HOSTNAME),indy0)
    RANLIB = ranlib
    LINKFLAGS = $(OPTFLAGS) -static-libgcc
 
-else ifeq ($(HOSTNAME),ultra)
+else ifeq ($(HOSTNAME),phi.hydra)
 
    F77 = ifort
    LIBS = -L$(TINKERDIR)/fftw/lib -lfftw3_threads -lfftw3
@@ -72,8 +72,16 @@ else ifeq ($(HOSTNAME),ultra)
    RANLIB = ranlib
    LINKFLAGS = $(OPTFLAGS) -static-libgcc -static-intel
 
-else
-   ME:="gfortran"
+else  # Default is to use gfortran
+
+   F77 = gfortran
+   LIBS = -L ../thirdparty/fftw/lib/ -lfftw3_omp -lfftw3
+   F77FLAGS = -c
+   OPTFLAGS = -ffast-math -fopenmp -O3 #-g
+   LIBFLAGS = -crusv
+   RANLIB = ranlib
+   LINKFLAGS = $(OPTFLAGS) -static-libgcc
+
 endif
 
 ##  Machine:  Generic Linux or Macintosh
@@ -108,14 +116,6 @@ endif
 #RANLIB =
 #LINKFLAGS = -static-libgcc -static-intel
 
-##  Machine:  Generic Linux
-##  CPU Type: Intel x86 Compatible (also AMD)
-##  Oper Sys: Fedora Core
-##  Compiler: Intel Fortran for Linux 14.0
-##  Parallel: OpenMP
-
-
-
 ##  Machine:  Macintosh
 ##  CPU Type: Intel Xeon
 ##  Oper Sys: OS X 10.9 (Mavericks)
@@ -148,9 +148,6 @@ endif
 #################################################################
 ##  Should not be Necessary to Change Things Below this Point  ##
 #################################################################
-
-test:
-	@echo Test region. $(F77) "($(HOSTNAME))"
 
 OBJS = angbnd.o \
        angles.o \
