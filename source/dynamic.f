@@ -75,7 +75,7 @@ c
       if (exist) read (string,*,err=40,end=40)  dt
    40 continue
       if (dt .lt. 0.0d0) then
-         write (iout,*) "The time sete length in Femtoseconds ",
+         write (iout,*) "The time step length in Femtoseconds ",
      &                  "must be specified in the key file."
          call fatal
       end if
@@ -92,22 +92,18 @@ c
       call nextarg (string,exist)
       if (exist)  read (string,*,err=80,end=80)  dtdump
    80 continue
-      do while (dtdump .lt. 0.0d0)
-         write (iout,90)
-   90    format (/,' Enter Time between Dumps in Picoseconds',
-     &              ' [0.1] :  ',$)
-         read (input,100,err=110)  dtdump
-  100    format (f20.0)
-         if (dtdump .le. 0.0d0)  dtdump = 0.1d0
-  110    continue
-      end do
+      if (dtdump .lt. 0.0d0) then
+         write (iout,*) "The time between dumps in Picoseconds ",
+     &                  "must be specified in the key file."
+         call fatal
+      end if
       iwrite = nint(dtdump/dt)
 c
 c     get choice of statistical ensemble for periodic system
 c
-      mode = 4
+      mode       = 4
       isothermal = .true.
-      kelvin = -1.0d0
+      kelvin     = -1.0d0
       call nextarg (string,exist)
       if (exist)  read (string,*,err=170,end=170)  kelvin
   170 continue
