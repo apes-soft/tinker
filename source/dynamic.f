@@ -107,17 +107,13 @@ c
       call nextarg (string,exist)
       if (exist)  read (string,*,err=170,end=170)  kelvin
   170 continue
-      do while (kelvin .lt. 0.0d0)
-         write (iout,180)
-  180    format (/,' Enter the Desired Temperature in Degrees',
-     &                    ' K [298] :  ',$)
-         read (input,190,err=200)  kelvin
-  190    format (f20.0)
-         if (kelvin .le. 0.0d0)  kelvin = 298.0d0
-  200    continue
-      end do
+      if  (kelvin .lt. 0.0d0) then
+         write (iout,*) "The Desired Temperature in Degrees K ",
+     &                  "must be specified in the key file."
+         call fatal
+      end if 
       isobaric = .true.
-      atmsph = -1.0d0
+      atmsph   = -1.0d0
       call nextarg (string,exist)
       if (exist)  read (string,*,err=210,end=210)  atmsph
   210 continue
