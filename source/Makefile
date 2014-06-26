@@ -54,9 +54,9 @@ HOSTNAME:= $(shell hostname)
 
 ifeq ($(HOSTNAME),indy0)
 
-   F77 = gfortran
+   FC = gfortran
    LIBS = -L ../thirdparty/fftw/lib/ -lfftw3_omp -lfftw3
-   F77FLAGS = -c
+   FCFLAGS = -c
    OPTFLAGS = -ffast-math -fopenmp -O3 #-g 
    LIBFLAGS = -crusv 
    RANLIB = ranlib
@@ -64,9 +64,9 @@ ifeq ($(HOSTNAME),indy0)
 
 else ifeq ($(HOSTNAME),phi.hydra)
 
-   F77 = ifort
+   FC = ifort
    LIBS = -L$(TINKERDIR)/fftw/lib -lfftw3_threads -lfftw3
-   F77FLAGS = -c -xHost
+   FCFLAGS = -c -xHost
    OPTFLAGS = -O3 -no-ipo -no-prec-div -recursive -openmp
    LIBFLAGS = -crusv
    RANLIB = ranlib
@@ -74,9 +74,9 @@ else ifeq ($(HOSTNAME),phi.hydra)
 
 else  # Default is to use gfortran
 
-   F77 = gfortran
+   FC = gfortran
    LIBS = -L ../thirdparty/fftw/lib/ -lfftw3_omp -lfftw3
-   F77FLAGS = -c
+   FCFLAGS = -c
    OPTFLAGS = -ffast-math -fopenmp -O3 #-g
    LIBFLAGS = -crusv
    RANLIB = ranlib
@@ -88,9 +88,9 @@ endif
 ##  CPU Type: Intel x86 Compatibles
 ##  Compiler: GNU gfortran
 
-#F77 = gfortran
+#FC = gfortran
 #LIBS =
-#F77FLAGS = -c
+#FCFLAGS = -c
 #OPTFLAGS = -O3 -ffast-math
 #LIBFLAGS = -crusv
 #RANLIB =
@@ -108,9 +108,9 @@ endif
 ##  Oper Sys: Fedora Core
 ##  Compiler: Intel Fortran for Linux 14.0
 
-#F77 = ifort
+#FC = ifort
 #LIBS =
-#F77FLAGS = -c -xHost
+#FCFLAGS = -c -xHost
 #OPTFLAGS = -O3 -no-ipo -no-prec-div -recursive
 #LIBFLAGS = -crusv
 #RANLIB =
@@ -121,9 +121,9 @@ endif
 ##  Oper Sys: OS X 10.9 (Mavericks)
 ##  Compiler: Intel Fortran for Mac 14.0
 
-#F77 = ifort
+#FC = ifort
 #LIBS =
-#F77FLAGS = -c -axSSSE3
+#FCFLAGS = -c -axSSSE3
 #OPTFLAGS = -O3 -no-ipo -no-prec-div -mdynamic-no-pic
 #LIBFLAGS = -crusv
 #RANLIB =
@@ -136,9 +136,9 @@ endif
 ##  Compiler: Intel Fortran for Mac 14.0
 ##  Parallel: OpenMP
 
-#F77 = ifort
+#FC = ifort
 #LIBS = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
-#F77FLAGS = -c -axSSSE3
+#FCFLAGS = -c -axSSSE3
 #OPTFLAGS = -O3 -no-ipo -no-prec-div -openmp
 #LIBFLAGS = -crusv
 #RANLIB = /usr/bin/ranlib 
@@ -335,7 +335,7 @@ OBJS = angbnd.o \
 EXEFILES = dynamic.x 
 
 %.o: %.f
-	${F77} ${F77FLAGS} ${OPTFLAGS} $< -o $@ 
+	${FC} ${FCFLAGS} ${OPTFLAGS} $< -o $@ 
 
 %.o: %.c
 	${CC} ${CFLAGS} ${INCLUDEDIR} ${OPTFLAGS} $<
@@ -345,7 +345,7 @@ EXEFILES = dynamic.x
 # $< gives you the first prerequisite
 # $(word 2,$^) gives you the second prerequisite
 %.x: %.o libtinker.a
-	${F77} ${LINKFLAGS} -o $@ $< -L . -ltinker ${LIBS} 
+	${FC} ${LINKFLAGS} -o $@ $< -L . -ltinker ${LIBS} 
 	#strip $@
 
 all:	${EXEFILES}
