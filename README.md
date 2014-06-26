@@ -6,9 +6,12 @@ performance gains.  This software is taken from Tinker 7.0 off of Jay
 Ponder's GitHub [tinker repository](https://github.com/jayponder/tinker).  
 This software will only perform the Tinker executable `dynamic` and
 most options within `dynamic` are already made (see below for
-details).  Using GNU compilers and 12 cores Alex Albaugh was able to
-achieve ~5% speedups from the base Tinker for a system of 32000 water
-molecules and for the JAC benchmark.  Any comments, questions, or
+details).  
+
+Using the GNU compilers on a 12 core system Alex Albaugh was able to
+achieve ~5% performance improvement compared to the base Tinker the 
+code is derived from for a system of 32000 water
+molecules and also for the JAC benchmark.  Any comments, questions, or
 concerns can be direction to [Alex
 Albaugh](mailto:aalbaugh@berkeley.edu).
 
