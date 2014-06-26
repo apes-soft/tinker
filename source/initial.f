@@ -32,7 +32,6 @@ c
       use params
       use zclose
       implicit none
-!$    integer omp_get_num_procs
       integer omp_get_num_threads
       real*8 precise
 
