@@ -44,10 +44,10 @@ c
 c
 c     initialize the temperature, pressure and coupling baths
 c
-      kelvin = 0.0d0
-      atmsph = 0.0d0
+      kelvin     = 0.0d0
+      atmsph     = 0.0d0
       isothermal = .false.
-      isobaric = .false.
+      isobaric   = .false.
 c
 c     check for keywords containing any altered parameters
 c
@@ -55,36 +55,30 @@ c
 c
 c     initialize the simulation length as number of time steps
 c
-      query = .true.
+
       call nextarg (string,exist)
       if (exist) then
          read (string,*,err=10,end=10)  nstep
          query = .false.
+      else
+         write(iout,*) "Need to specify the number of dynamic steps ", 
+     &                 "to be taken in the key file."
+         call fatal
       end if
    10 continue
-      if (query) then
-         write (iout,20)
-   20    format (/,' Enter the Number of Dynamics Steps to be',
-     &              ' Taken :  ',$)
-         read (input,30)  nstep
-   30    format (i10)
-      end if
+
 c
 c     get the length of the dynamics time step in picoseconds
 c
       dt = -1.0d0
       call nextarg (string,exist)
-      if (exist)  read (string,*,err=40,end=40)  dt
+      if (exist) read (string,*,err=40,end=40)  dt
    40 continue
-      do while (dt .lt. 0.0d0)
-         write (iout,50)
-   50    format (/,' Enter the Time Step Length in Femtoseconds',
-     &              ' [1.0] :  ',$)
-         read (input,60,err=70)  dt
-   60    format (f20.0)
-         if (dt .le. 0.0d0)  dt = 1.0d0
-   70    continue
-      end do
+      if (dt .lt. 0.0d0) then
+         write (iout,*) "The time sete length in Femtoseconds ",
+     &                  "must be specified in the key file."
+         call fatal
+      end if
       dt = 0.001d0 * dt
 c
 c     enforce bounds on thermostat and barostat coupling times
