@@ -48,7 +48,7 @@ LINKDIR = /usr/local/bin
 #
 # The default is: GenericGfortranOpenMP
 
-COMPARCH=""
+COMPARCH=LinuxIntelOpenMP
 
 ifeq ($(COMPARCH),GenericGfortran)
 
@@ -103,7 +103,7 @@ else ifeq ($(COMPARCH),LinuxIntelOpenMP)
   ##  Parallel: OpenMP
 
   F77       = ifort
-  LIBS      = -L$(TINKERDIR)/fftw/lib -lfftw3_threads -lfftw3
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_threads -lfftw3
   F77FLAGS  = -c -xHost
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
   LIBFLAGS  = -crusv
