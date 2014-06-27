@@ -3,6 +3,15 @@
 Trying to enumerate in reverse chronological order the rationale for
 changes made to the code base.
 
+* Have tried to make the lack of provision of any inputs to be a
+  fatal condition as opposed to going to standard input to ask
+  the user to provide a value. In an HPC context this could 
+  potentially be a problem - user submits a job, misconfigures the
+  inputs and the program goes to standard input to ask the user
+  and, as the user, has not access to the back end nodes they are
+  blissfully ignorant that their program has stalled. This could
+  burn a lot of hours unnecessarily ergo it is better to go into
+  a terminal state.
 * Renamed `F77` to `FC` and `F77FLAGS` to `FCFLAGS` which is a more
   standard way of referring to the Fortran compiler in `Makefile`s.
 * Introduced conditionals to the `Makefile` to specify the compiler to
