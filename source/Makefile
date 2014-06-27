@@ -42,108 +42,129 @@ LINKDIR = /usr/local/bin
 ##  May Need Editing to Match Your Desired OS & Compiler Version  ##
 ####################################################################
 
-# This could be made more generic but it is a bit of a pain to comment
-# in/out compiler specific especially when a reviosion control is
-# system. Going to set specific compiler flags for specific machines
-# depending on the hostname that is being used and then use
-# dependencies. Hopefully this will work better with a revision
-# control system.
+# Set the compiler option to use by uncommenting one of the options
+# below. If you are not clear what these mean look below under the
+# appropriate flag to see in detail what they mean.
+#
+# If none specified the default is: GenericGfortranOpenMP
 
-# Find out what host we are on.
-HOSTNAME:= $(shell hostname)
+#COMPARCH=GenericGfortran
+COMPARCH=GenericGfortranOpenMP
+#COMPARCH=LinuxIntel
+#COMPARCH=LinuxIntelOpenMP
+#COMPARCH=MacIntel
+#COMPARCH=MacIntelOpenMP
+#COMPARCH=MacXeonIntelOpenMP
+#COMPARCH=LinuxIntelOpenMP
 
-ifeq ($(HOSTNAME),indy0)
+ifeq ($(COMPARCH),GenericGfortran)
 
-   FC = gfortran
-   LIBS = -L ../thirdparty/fftw/lib/ -lfftw3_omp -lfftw3
-   FCFLAGS = -c
-   OPTFLAGS = -ffast-math -fopenmp -O3 #-g 
-   LIBFLAGS = -crusv 
-   RANLIB = ranlib
-   LINKFLAGS = $(OPTFLAGS) -static-libgcc
+  ##  Machine:  Generic Linux or Macintosh
+  ##  CPU Type: Intel x86 Compatibles
+  ##  Compiler: GNU gfortran
 
-else ifeq ($(HOSTNAME),phi.hydra)
+  FC        = gfortran
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
+  FCFLAGS   = -c
+  OPTFLAGS  = -O3 -ffast-math 
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = $(OPTFLAGS) -static-libgcc
 
-   FC = ifort
-   LIBS = -L$(TINKERDIR)/fftw/lib -lfftw3_threads -lfftw3
-   FCFLAGS = -c -xHost
-   OPTFLAGS = -O3 -no-ipo -no-prec-div -recursive -openmp
-   LIBFLAGS = -crusv
-   RANLIB = ranlib
-   LINKFLAGS = $(OPTFLAGS) -static-libgcc -static-intel
+else ifeq ($(COMPARCH),GenericGfortranOpenMP)
 
-else  # Default is to use gfortran
+  ##  Machine:  Generic Linux or Macintosh OS X
+  ##  CPU Type: Intel x86 Compatible
+  ##  Compiler: GNU gfortran
+  ##  Parallel: OpenMP
 
-   FC = gfortran
-   LIBS = -L ../thirdparty/fftw/lib/ -lfftw3_omp -lfftw3
-   FCFLAGS = -c
-   OPTFLAGS = -ffast-math -fopenmp -O3 #-g
-   LIBFLAGS = -crusv
-   RANLIB = ranlib
-   LINKFLAGS = $(OPTFLAGS) -static-libgcc
+  FC        = gfortran
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
+  FCFLAGS   = -c
+  OPTFLAGS  = -O3 -ffast-math -fopenmp
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = $(OPTFLAGS) -static-libgcc
+
+else ifeq ($(COMPARCH),LinuxIntel)
+
+  ##  Machine:  Generic Linux
+  ##  CPU Type: Intel x86 Compatible (also AMD)
+  ##  Oper Sys: Fedora Core
+  ##  Compiler: Intel Fortran for Linux 14.0
+
+  FC        = ifort
+  LIBS      =
+  FCFLAGS   = -c -xHost
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = -static-libgcc -static-intel
+
+else ifeq ($(COMPARCH),LinuxIntelOpenMP)
+
+  ##  Machine:  Generic Linux
+  ##  CPU Type: Intel x86 Compatible (also AMD)
+  ##  Oper Sys: Fedora Core
+  ##  Compiler: Intel Fortran for Linux 14.0
+  ##  Parallel: OpenMP
+
+  FC        = ifort
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_threads -lfftw3
+  FCFLAGS   = -c -xHost
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
+  LIBFLAGS  = -crusv
+  RANLIB    =
+  LINKFLAGS = $(OPTFLAGS) -static-libgcc -static-intel
+
+else ifeq ($(COMPARCH),MacIntelOpenMP)
+
+  ##  Machine:  Macintosh
+  ##  CPU Type: Intel Xeon
+  ##  Oper Sys: OS X 10.9 (Mavericks)
+  ##  Compiler: Intel Fortran for Mac 14.0
+
+  FC        = ifort
+  LIBS      =
+  FCFLAGS   = -c -axSSSE3
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -mdynamic-no-pic
+  LIBFLAGS  = -crusv
+  RANLIB    =
+  LINKFLAGS = $(OPTFLAGS) -static-intel -mmacosx-version-min=10.6 \
+              -Wl,-stack_size,0x10000000
+
+else ifeq ($(COMPARCH),MacIntelXeonOpenMP)
+
+  ##  Machine:  Macintosh
+  ##  CPU Type: Intel Xeon
+  ##  Oper Sys: OS X 10.9 (Mavericks)
+  ##  Compiler: Intel Fortran for Mac 14.0
+  ##  Parallel: OpenMP
+
+  FC        = ifort
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
+  FCFLAGS   = -c -axSSSE3
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -openmp
+  LIBFLAGS  = -crusv
+  RANLIB    = /usr/bin/ranlib 
+  LINKFLAGS = $(OPTFLAGS) -static-intel #-Wl,-stack_size,0x10000000
+
+else
+
+  ##  Machine:  Generic Linux or Macintosh OS X
+  ##  CPU Type: Intel x86 Compatible
+  ##  Compiler: GNU gfortran
+  ##  Parallel: OpenMP
+
+  FC        = gfortran
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
+  FCFLAGS   = -c
+  OPTFLAGS  = -O3 -ffast-math -fopenmp
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = $(OPTFLAGS) -static-libgcc
 
 endif
-
-##  Machine:  Generic Linux or Macintosh
-##  CPU Type: Intel x86 Compatibles
-##  Compiler: GNU gfortran
-
-#FC = gfortran
-#LIBS =
-#FCFLAGS = -c
-#OPTFLAGS = -O3 -ffast-math
-#LIBFLAGS = -crusv
-#RANLIB =
-#LINKFLAGS = $(OPTFLAGS) -static-libgcc
-
-##  Machine:  Generic Linux or Macintosh OS X
-##  CPU Type: Intel x86 Compatible
-##  Compiler: GNU gfortran
-##  Parallel: OpenMP
-
-
-
-##  Machine:  Generic Linux
-##  CPU Type: Intel x86 Compatible (also AMD)
-##  Oper Sys: Fedora Core
-##  Compiler: Intel Fortran for Linux 14.0
-
-#FC = ifort
-#LIBS =
-#FCFLAGS = -c -xHost
-#OPTFLAGS = -O3 -no-ipo -no-prec-div -recursive
-#LIBFLAGS = -crusv
-#RANLIB =
-#LINKFLAGS = -static-libgcc -static-intel
-
-##  Machine:  Macintosh
-##  CPU Type: Intel Xeon
-##  Oper Sys: OS X 10.9 (Mavericks)
-##  Compiler: Intel Fortran for Mac 14.0
-
-#FC = ifort
-#LIBS =
-#FCFLAGS = -c -axSSSE3
-#OPTFLAGS = -O3 -no-ipo -no-prec-div -mdynamic-no-pic
-#LIBFLAGS = -crusv
-#RANLIB =
-#LINKFLAGS = $(OPTFLAGS) -static-intel -mmacosx-version-min=10.6 \
-#             -Wl,-stack_size,0x10000000
-
-##  Machine:  Macintosh
-##  CPU Type: Intel Xeon
-##  Oper Sys: OS X 10.9 (Mavericks)
-##  Compiler: Intel Fortran for Mac 14.0
-##  Parallel: OpenMP
-
-#FC = ifort
-#LIBS = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
-#FCFLAGS = -c -axSSSE3
-#OPTFLAGS = -O3 -no-ipo -no-prec-div -openmp
-#LIBFLAGS = -crusv
-#RANLIB = /usr/bin/ranlib 
-#LINKFLAGS = $(OPTFLAGS) -static-intel #-Wl,-stack_size,0x10000000
-
 
 #################################################################
 ##  Should not be Necessary to Change Things Below this Point  ##
@@ -340,13 +361,9 @@ EXEFILES = dynamic.x
 %.o: %.c
 	${CC} ${CFLAGS} ${INCLUDEDIR} ${OPTFLAGS} $<
 
-# $@ gives the name of the target
-# $^ gives you all the prerequisites
-# $< gives you the first prerequisite
-# $(word 2,$^) gives you the second prerequisite
 %.x: %.o libtinker.a
-	${FC} ${LINKFLAGS} -o $@ $< -L . -ltinker ${LIBS} 
-	#strip $@
+	${FC} ${LINKFLAGS} -o $@ $< -L . -ltinker ${LIBS}
+	strip $@
 
 all:	${EXEFILES}
 
@@ -355,8 +372,6 @@ clean:
 
 listing:
 	cat *.i *.f *.c > tinker.txt
-
-install: rename
 
 rename:
 	mkdir -p $(BINDIR)
@@ -368,8 +383,6 @@ remove_links:
 create_links:
 	ln -s $(BINDIR)/dynamic    $(LINKDIR)/dynamic
 
-# The names of all the prerequisites that are newer than the target,
-# with spaces between them.
 libtinker.a: ${OBJS} 
 	ar ${LIBFLAGS} libtinker.a $?
 	${RANLIB} libtinker.a
