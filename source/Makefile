@@ -319,7 +319,8 @@ EXEFILES = dynamic.x
 	${CC} ${CFLAGS} ${INCLUDEDIR} ${OPTFLAGS} $<
 
 %.x: %.o libtinker.a
-	${F77} ${LINKFLAGS} -o $@ $^ ${LIBS}; strip $@
+	${F77} ${LINKFLAGS} -o $@ $< -L . -ltinker ${LIBS}
+	strip $@
 
 all:	${EXEFILES}
 
