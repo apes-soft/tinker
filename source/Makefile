@@ -72,7 +72,7 @@ LINKFLAGS = $(OPTFLAGS) -static-libgcc
 ##  Oper Sys: Fedora Core
 ##  Compiler: Intel Fortran for Linux 14.0
 
-#F77 = /opt/intel/bin/ifort
+#F77 = ifort
 #LIBS =
 #F77FLAGS = -c -xHost
 #OPTFLAGS = -O3 -no-ipo -no-prec-div -recursive
@@ -86,7 +86,7 @@ LINKFLAGS = $(OPTFLAGS) -static-libgcc
 ##  Compiler: Intel Fortran for Linux 14.0
 ##  Parallel: OpenMP
 
-#F77 = /opt/intel/bin/ifort
+#F77 = ifort
 #LIBS = -L$(TINKERDIR)/fftw/lib -lfftw3_threads -lfftw3
 #F77FLAGS = -c -xHost
 #OPTFLAGS = -O3 -no-ipo -no-prec-div -recursive -openmp
@@ -99,7 +99,7 @@ LINKFLAGS = $(OPTFLAGS) -static-libgcc
 ##  Oper Sys: OS X 10.9 (Mavericks)
 ##  Compiler: Intel Fortran for Mac 14.0
 
-#F77 = /opt/intel/bin/ifort
+#F77 = ifort
 #LIBS =
 #F77FLAGS = -c -axSSSE3
 #OPTFLAGS = -O3 -no-ipo -no-prec-div -mdynamic-no-pic
