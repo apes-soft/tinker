@@ -63,9 +63,9 @@ ifeq ($(COMPARCH),GenericGfortran)
   ##  CPU Type: Intel x86 Compatibles
   ##  Compiler: GNU gfortran
 
-  F77       = gfortran
+  FC        = gfortran
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
-  F77FLAGS  = -c
+  FCFLAGS   = -c
   OPTFLAGS  = -O3 -ffast-math 
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
@@ -78,9 +78,9 @@ else ifeq ($(COMPARCH),GenericGfortranOpenMP)
   ##  Compiler: GNU gfortran
   ##  Parallel: OpenMP
 
-  F77       = gfortran
+  FC        = gfortran
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
-  F77FLAGS  = -c
+  FCFLAGS   = -c
   OPTFLAGS  = -O3 -ffast-math -fopenmp
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
@@ -93,9 +93,9 @@ else ifeq ($(COMPARCH),LinuxIntel)
   ##  Oper Sys: Fedora Core
   ##  Compiler: Intel Fortran for Linux 14.0
 
-  F77       = ifort
+  FC        = ifort
   LIBS      =
-  F77FLAGS  = -c -xHost
+  FCFLAGS   = -c -xHost
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
@@ -109,9 +109,9 @@ else ifeq ($(COMPARCH),LinuxIntelOpenMP)
   ##  Compiler: Intel Fortran for Linux 14.0
   ##  Parallel: OpenMP
 
-  F77       = ifort
+  FC        = ifort
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_threads -lfftw3
-  F77FLAGS  = -c -xHost
+  FCFLAGS   = -c -xHost
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
   LIBFLAGS  = -crusv
   RANLIB    =
@@ -124,9 +124,9 @@ else ifeq ($(COMPARCH),MacIntelOpenMP)
   ##  Oper Sys: OS X 10.9 (Mavericks)
   ##  Compiler: Intel Fortran for Mac 14.0
 
-  F77       = ifort
+  FC        = ifort
   LIBS      =
-  F77FLAGS  = -c -axSSSE3
+  FCFLAGS   = -c -axSSSE3
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -mdynamic-no-pic
   LIBFLAGS  = -crusv
   RANLIB    =
@@ -141,9 +141,9 @@ else ifeq ($(COMPARCH),MacIntelXeonOpenMP)
   ##  Compiler: Intel Fortran for Mac 14.0
   ##  Parallel: OpenMP
 
-  F77       = ifort
+  FC        = ifort
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
-  F77FLAGS  = -c -axSSSE3
+  FCFLAGS   = -c -axSSSE3
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -openmp
   LIBFLAGS  = -crusv
   RANLIB    = /usr/bin/ranlib 
@@ -156,9 +156,9 @@ else
   ##  Compiler: GNU gfortran
   ##  Parallel: OpenMP
 
-  F77       = gfortran
+  FC        = gfortran
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
-  F77FLAGS  = -c
+  FCFLAGS   = -c
   OPTFLAGS  = -O3 -ffast-math -fopenmp
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
@@ -356,13 +356,13 @@ OBJS = angbnd.o \
 EXEFILES = dynamic.x 
 
 %.o: %.f
-	${F77} ${F77FLAGS} ${OPTFLAGS} $< -o $@ 
+	${FC} ${FCFLAGS} ${OPTFLAGS} $< -o $@ 
 
 %.o: %.c
 	${CC} ${CFLAGS} ${INCLUDEDIR} ${OPTFLAGS} $<
 
 %.x: %.o libtinker.a
-	${F77} ${LINKFLAGS} -o $@ $< -L . -ltinker ${LIBS}
+	${FC} ${LINKFLAGS} -o $@ $< -L . -ltinker ${LIBS}
 	strip $@
 
 all:	${EXEFILES}
