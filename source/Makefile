@@ -46,13 +46,13 @@ LINKDIR = /usr/local/bin
 ##  CPU Type: Intel x86 Compatibles
 ##  Compiler: GNU gfortran
 
-#F77 = /usr/local/bin/gfortran
-#LIBS =
-#F77FLAGS = -c
-#OPTFLAGS = -O3 -ffast-math
-#LIBFLAGS = -crusv
-#RANLIB =
-#LINKFLAGS = $(OPTFLAGS) -static-libgcc
+F77 = gfortran
+LIBS = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
+F77FLAGS = -c
+OPTFLAGS = -O3 -ffast-math -fopenmp
+LIBFLAGS = -crusv
+RANLIB = ranlib
+LINKFLAGS = $(OPTFLAGS) -static-libgcc
 
 ##  Machine:  Generic Linux or Macintosh OS X
 ##  CPU Type: Intel x86 Compatible
@@ -114,13 +114,13 @@ LINKDIR = /usr/local/bin
 ##  Compiler: Intel Fortran for Mac 14.0
 ##  Parallel: OpenMP
 
-F77 = ifort
-LIBS = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
-F77FLAGS = -c -axSSSE3
-OPTFLAGS = -O3 -no-ipo -no-prec-div -openmp
-LIBFLAGS = -crusv
-RANLIB = /usr/bin/ranlib 
-LINKFLAGS = $(OPTFLAGS) -static-intel #-Wl,-stack_size,0x10000000
+# F77 = ifort
+# LIBS = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
+# F77FLAGS = -c -axSSSE3
+# OPTFLAGS = -O3 -no-ipo -no-prec-div -openmp
+# LIBFLAGS = -crusv
+# RANLIB = /usr/bin/ranlib 
+# LINKFLAGS = $(OPTFLAGS) -static-intel #-Wl,-stack_size,0x10000000
 
 
 #################################################################
@@ -341,188 +341,7 @@ create_links:
 	ln -s $(BINDIR)/dynamic    $(LINKDIR)/dynamic
 
 libtinker.a: ${OBJS} 
-	ar ${LIBFLAGS} libtinker.a \
-        angbnd.o \
-        angles.o \
-        angpot.o \
-        argue.o \
-        ascii.o \
-        atmlst.o \
-        atomid.o \
-        atoms.o \
-        attach.o \
-        basefile.o \
-        bath.o \
-        bicubic.o \
-        bitor.o \
-        bitors.o \
-        bndpot.o \
-        bndstr.o \
-        bonds.o \
-        bounds.o \
-        boxes.o \
-        calendar.o \
-        cell.o \
-        chgpot.o \
-        chkpole.o \
-        chkring.o \
-        chkxyz.o \
-        cholesky.o \
-        chunks.o \
-        column.o \
-        command.o \
-        connect.o \
-        control.o \
-        couple.o \
-        cspline.o \
-        cutoffs.o \
-        deriv.o \
-        eangle1.o \
-        ebond1.o \
-        ehal1.o \
-        empole1.o \
-        energi.o \
-        eopbend1.o \
-        epitors1.o \
-        erf.o \
-        estrbnd1.o \
-        etors1.o \
-        etortor1.o \
-        eurey1.o \
-        evcorr.o \
-        ewald.o \
-        fatal.o \
-        fft.o \
-        fft3d.o \
-        fftpack.o \
-        field.o \
-        fields.o \
-        files.o \
-        final.o \
-        freeunit.o \
-        getkey.o \
-        getnumb.o \
-        getprm.o \
-        getstring.o \
-        gettext.o \
-        getword.o \
-        getxyz.o \
-        gradient.o \
-        image.o \
-        induce.o \
-        inform.o \
-        initatom.o \
-        initial.o \
-        initprm.o \
-        iounit.o \
-        kangle.o \
-        kangs.o \
-        katom.o \
-        katoms.o \
-        kbond.o \
-        kbonds.o \
-        kewald.o \
-        keys.o \
-        kinetic.o \
-        kmpole.o \
-        kmulti.o \
-        kopbend.o \
-        kopbnd.o \
-        korbs.o \
-        kpitor.o \
-        kpitors.o \
-        kpolar.o \
-        kpolr.o \
-        kstbnd.o \
-        kstrbnd.o \
-        ktors.o \
-        ktorsn.o \
-        ktortor.o \
-        ktrtor.o \
-        kurey.o \
-        kurybr.o \
-        kvdw.o \
-        kvdwpr.o \
-        kvdws.o \
-        lattice.o \
-        light.o \
-        limits.o \
-        math.o \
-        maxwell.o \
-        mdinit.o \
-        mdrest.o \
-        mdsave.o \
-        mdstat.o \
-        mdstuf.o \
-        mechanic.o \
-        molcul.o \
-        moldyn.o \
-        molecule.o \
-        mplpot.o \
-        mpole.o \
-        nblist.o \
-        neigh.o \
-        nextarg.o \
-        nexttext.o \
-        nspline.o \
-        number.o \
-        numeral.o \
-        opbend.o \
-        openend.o \
-        openmp.o \
-        output.o \
-        params.o \
-        pitors.o \
-        pme.o \
-        pmestuff.o \
-        polar.o \
-        polgrp.o \
-        polpot.o \
-        potent.o \
-        pressure.o \
-        prmkey.o \
-        promo.o \
-        prtdyn.o \
-        prtxyz.o \
-        ptable.o \
-        random.o \
-        readdyn.o \
-        readprm.o \
-        readxyz.o \
-        replica.o \
-        ring.o \
-        rings.o \
-        rotpole.o \
-        shunt.o \
-        sizes.o \
-        sort.o \
-        strbnd.o \
-        suffix.o \
-        switch.o \
-        tarray.o \
-        temper.o \
-        titles.o \
-        torphase.o \
-        torpot.o \
-        torque.o \
-        tors.o \
-        torsions.o \
-        tortor.o \
-        trimtext.o \
-        unitcell.o \
-        units.o \
-        uprior.o \
-        urey.o \
-        urypot.o \
-        usolve.o \
-        vdw.o \
-        vdwpot.o \
-        verlet.o \
-        version.o \
-        virial.o \
-        xyzatm.o \
-        zclose.o \
-        zcoord.o
+	ar ${LIBFLAGS} libtinker.a $?
 	${RANLIB} libtinker.a
 
 ###############################################################
