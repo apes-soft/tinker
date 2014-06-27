@@ -35,7 +35,7 @@ c
 c
 c     set the default name for the parameter file
 c
-      useprm = .true.
+      useprm  = .true.
       prmfile = filename(1:leng)//'.prm'
 c
 c     search the keyword list for the parameter filename
@@ -81,22 +81,12 @@ c
 c
 c     if necessary, ask for the parameter filename
 c
-      do while (.not. exist)
-         write (iout,10)
-   10    format (/,' Enter Potential Parameter File Name :  ',$)
-         read (input,20)  prmfile
-   20    format (a120)
-         next = 1
-         call getword (prmfile,none,next)
-         call upcase (none)
-         if (none.eq.'NONE' .and. next.eq.5) then
-            exist = .true.
-            useprm = .false.
-         else
-            call suffix (prmfile,'prm','old')
-            inquire (file=prmfile,exist=exist)
-         end if
-      end do
+      if (.not. exist) then
+         write (iout,*) "Potential paramter file not specified or ",
+     &                  "cannot be found."
+         call fatal
+      end if
+
 c
 c     initialize force field control and parameter values
 c
