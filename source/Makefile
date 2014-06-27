@@ -42,13 +42,20 @@ LINKDIR = /usr/local/bin
 ##  May Need Editing to Match Your Desired OS & Compiler Version  ##
 ####################################################################
 
-# Set the compiler option to use. One of: GenericGfortran, 
-# GenericGfortranOpenMP, LinuxIntel, LinuxIntelOpenMP, MacIntel,
-# MacIntelOpenMP, MacXeonIntelOpenMP.
+# Set the compiler option to use by uncommenting one of the options
+# below. If you are not clear what these mean look below under the
+# appropriate flag to see in detail what they mean.
 #
-# The default is: GenericGfortranOpenMP
+# If none specified the default is: GenericGfortranOpenMP
 
-COMPARCH=LinuxIntelOpenMP
+#COMPARCH=GenericGfortran
+COMPARCH=GenericGfortranOpenMP
+#COMPARCH=LinuxIntel
+#COMPARCH=LinuxIntelOpenMP
+#COMPARCH=MacIntel
+#COMPARCH=MacIntelOpenMP
+#COMPARCH=MacXeonIntelOpenMP
+#COMPARCH=LinuxIntelOpenMP
 
 ifeq ($(COMPARCH),GenericGfortran)
 
