@@ -334,96 +334,15 @@ class Tinker(unittest.TestCase):
     # Begin Tests #
     ###############
 
-    def testAnion(self):
-        outStem ="anion"
-        RunSystem(outStem)
-        self.assertTrue(CompareFiles(outStem))
-
-    def testArgon(self):
-        outStem = "argon"
-        RunSystem(outStem)
-        self.assertTrue(CompareFiles(outStem))
-
-    def testCluster(self):
-        outStem = "cluster"
-        RunSystem(outStem)
-        self.assertTrue(CompareFiles(outStem))
-
-    def testCramblin(self):
-        outStem = "crambin"
-        RunSystem(outStem)
-        self.assertTrue(CompareFiles(outStem))
-
-    def testCyclohex(self):
-        outStem = "cyclohex"
-        RunSystem(outStem)
-        self.assertTrue(CompareFiles(outStem))
-
     def testDhfr(self):
         outStem = "dhfr"
         RunSystem(outStem)
         self.assertTrue(CompareFiles(outStem))
 
-    def testDialanine(self):
-        outStem = "dialanine"
+    def testIce(self):
+        outStem = "ice"
         RunSystem(outStem)
         self.assertTrue(CompareFiles(outStem))
-
-    def testEnkephalin(self):
-        outStem = "enkephalin"
-        RunSystem(outStem)
-        self.assertTrue(CompareFiles(outStem))
-
-    def testEthanol(self):
-        outStem = "ethanol"
-        RunSystem(outStem)
-        self.assertTrue(CompareFiles(outStem))
-
-    def testFormaide(self):
-        outStem = "formamide"
-        RunSystem(outStem)
-        self.assertTrue(CompareFiles(outStem))
-
-    # This one takes a long time.
-    def testGpcr(self):
-        outStem = "gpcr"
-        RunSystem(outStem)
-        self.assertTrue(CompareFiles(outStem))
-
-    def testHelix(self):
-        outStem = "helix"
-        RunSystem(outStem)
-        self.assertTrue(CompareFiles(outStem))
-
-    ##########################################
-    # Test in the 0README but not in the files.
-    #
-    # def testIce(self):
-    #     outStem = "ice"
-    #     RunSystem(outStem)
-    #     self.assertTrue(CompareFiles(outStem))
-
-    def testIfabp(self):
-        outStem = "ifabp"
-        RunSystem(outStem)
-        self.assertTrue(CompareFiles(outStem))
-
-    def testSalt(self):
-        outStem = "salt"
-        RunSystem(outStem)
-        self.assertTrue(CompareFiles(outStem))
-
-    def testTetraala(self):
-        outStem = "tetraala"
-        RunSystem(outStem)
-        self.assertTrue(CompareFiles(outStem))
-
-    def testWater(self):
-        skipTest("This is giving a segmentation fault.")
-        outStem = "water"
-        RunSystem(outStem)
-        self.assertTrue(CompareFiles(outStem))
-
 
 # This bit of code allows the tests to be run from the
 # command line. The main function uses the
