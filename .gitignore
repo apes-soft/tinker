@@ -8,6 +8,7 @@
 *.la
 *.csv
 core
+thirdparty/fftw/config.log
 
 # Ignore a bin directory and its contents
 bin/
