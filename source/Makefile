@@ -81,7 +81,7 @@ else ifeq ($(COMPARCH),GenericGfortranOpenMP)
   FC        = gfortran
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
   FCFLAGS   = -c
-  OPTFLAGS  = -ffast-math -fopenmp -g # -O3
+  OPTFLAGS  = -ffast-math -fopenmp -O3
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc
@@ -380,7 +380,7 @@ clean:
 listing:
 	cat *.i *.f *.c > tinker.txt
 
-install: rename
+install: all rename
 
 rename:
 	mkdir -p $(BINDIR)
