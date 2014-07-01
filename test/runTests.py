@@ -4,6 +4,12 @@
 # tinker. This uses the files supplied as the "correct"
 # answer, running tinker and comparing the output using a
 # `diff` call to see if they are the same or not.
+#
+# The canonical name for the "correct" output file will have a .log
+# extension which is compared to the current run which produces an
+# output file with a .out extensions. These two files are compared
+# with a diff which compares floating point numbers to a given 
+# tolerance.
 # 
 # This code was built for the APES project () and is
 # distributed under a BSD Licence (see below for the URL).
