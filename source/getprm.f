@@ -23,8 +23,7 @@ c
       use keys
       use params
       implicit none
-      integer i,iprm,next
-      integer freeunit
+      integer i,next
       logical exist,useprm
       character*4 none
       character*20 keyword
@@ -96,7 +95,6 @@ c     read the parameter file and store it for latter use
 c
       nprm = 0
       if (useprm) then
-         iprm = freeunit ()
          open (unit=iprm,file=prmfile,status='old')
          rewind (unit=iprm)
          do while (.true.)

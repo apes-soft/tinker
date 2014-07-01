@@ -18,5 +18,6 @@ c
       integer, parameter:: iout  =  6 ! Fortran I/O unit for main output (default=6)
       integer, parameter:: ixyz  = 10 ! Fortran I/O unit for xyz files.
       integer, parameter:: ikey  = 11 ! Fortran I/O unit for key files.
+      integer, parameter:: iprm  = 12 ! Fortran I/O unit for parameter files.
       save
       end
