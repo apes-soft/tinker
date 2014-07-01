@@ -21,8 +21,6 @@ c
       use iounit
       use output
       implicit none
-      integer ixyz
-      integer freeunit
       logical exist
       character*120 xyzfile
 c
@@ -47,10 +45,9 @@ c
 c     first open and then read the Cartesian coordinates file
 c
       coordtype = 'CARTESIAN'
-      ixyz = freeunit ()
       open (unit=ixyz,file=xyzfile,status='old')
       rewind (unit=ixyz)
-      call readxyz (ixyz)
+      call readxyz ()
       close (unit=ixyz)
 c
 c     quit if the Cartesian coordinates file contains no atoms

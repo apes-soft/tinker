@@ -34,7 +34,7 @@ c
       use units
       implicit none
       integer i,j,k,istep
-      integer ixyz,iind
+      integer iind
       integer ivel,ifrc
       integer iend,idump,lext
       integer freeunit,trimtext
@@ -113,7 +113,6 @@ c
 c
 c     save coordinates to an archive or numbered structure file
 c
-      ixyz = freeunit ()
       if (archive) then
          xyzfile = filename(1:leng)
          call suffix (xyzfile,'arc','old')

@@ -12,13 +12,10 @@ c     ##                                                        ##
 c     ############################################################
 c
 c
-c     input   Fortran I/O unit for main input (default=5)
-c     iout    Fortran I/O unit for main output (default=6)
-c
-c
       module iounit
       implicit none
-      integer, parameter:: input = 5
-      integer, parameter:: iout  = 6
+      integer, parameter:: input =  5 ! Fortran I/O unit for main input (default=5)
+      integer, parameter:: iout  =  6 ! Fortran I/O unit for main output (default=6)
+      integer, parameter:: ixyz  = 10 ! Fortran I/O unit for xyz files.
       save
       end
