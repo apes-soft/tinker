@@ -14,3 +14,5 @@ bin/
 bench/results*
 mytests/
 source/gitversion.f
+test/test.log*
+test/*.out
