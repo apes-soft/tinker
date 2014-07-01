@@ -339,11 +339,6 @@ class Tinker(unittest.TestCase):
         RunSystem(outStem)
         self.assertTrue(CompareFiles(outStem))
 
-    def testIce(self):
-        outStem = "ice"
-        RunSystem(outStem)
-        self.assertTrue(CompareFiles(outStem))
-
 # This bit of code allows the tests to be run from the
 # command line. The main function uses the
 # unittest.TestLoader class to automatically find and load
