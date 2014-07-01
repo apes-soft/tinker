@@ -18,3 +18,5 @@ bench/results*
 mytests/
 source/gitversion.f
 thirdparty/fftw/autom4te.cache/
+test/*.out
+test/test.log*
