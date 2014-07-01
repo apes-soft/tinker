@@ -36,7 +36,7 @@ c
       use kvdwpr
       use params
       implicit none
-      integer i,j,iprm
+      integer i,j,icprm
       integer ia,ib,ic,id,ie
       integer if,ig,ih,ii
       integer size,next
@@ -131,10 +131,10 @@ c
 c     process each line of the parameter file, first
 c     extract the keyword at the start of each line
 c
-      iprm = 0
-      dowhile (iprm .lt. nprm)
-         iprm = iprm + 1
-         record = prmline(iprm)
+      icprm = 0
+      dowhile (icprm .lt. nprm)
+         icprm = icprm + 1
+         record = prmline(icprm)
          next = 1
          call gettext (record,keyword,next)
          call upcase (keyword)
@@ -750,8 +750,8 @@ c
             read (string,*,err=340,end=340)  ia,ib,ic,id,ie,nx,ny
             nxy = nx * ny
             do i = 1, nxy
-               iprm = iprm + 1
-               record = prmline(iprm)
+               icprm = icprm + 1
+               record = prmline(icprm)
                read (record,*,err=340,end=340)  tx(i),ty(i),tf(i)
             end do
   340       continue
@@ -812,17 +812,17 @@ c
             ib = 0
             read (string,*,err=440,end=440)  ia,pl(1)
   430       continue
-            iprm = iprm + 1
-            record = prmline(iprm)
+            icprm = icprm + 1
+            record = prmline(icprm)
             read (record,*,err=440,end=440)  pl(2),pl(3),pl(4)
-            iprm = iprm + 1
-            record = prmline(iprm)
+            icprm = icprm + 1
+            record = prmline(icprm)
             read (record,*,err=440,end=440)  pl(5)
-            iprm = iprm + 1
-            record = prmline(iprm)
+            icprm = icprm + 1
+            record = prmline(icprm)
             read (record,*,err=440,end=440)  pl(8),pl(9)
-            iprm = iprm + 1
-            record = prmline(iprm)
+            icprm = icprm + 1
+            record = prmline(icprm)
             read (record,*,err=440,end=440)  pl(11),pl(12),pl(13)
   440       continue
             if (ib .eq. 0)  axt = 'None'
