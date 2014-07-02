@@ -35,7 +35,7 @@ c
       integer i,k,next
       integer ifft1,ifft2,ifft3
       integer multi(maxpower)
-      real*8 delta,rmax,dens
+      real*8 delta,dens
       character*20 keyword
       character*120 record
       character*120 string

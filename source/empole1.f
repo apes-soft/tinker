@@ -30,22 +30,14 @@ c
       use polpot
       use virial
       implicit none
-      integer i,j,ii
-      real*8 e,ei,eintra
+      integer i,j
+      real*8 e,ei
       real*8 f,term,fterm
       real*8 cii,dii,qii,uii
-      real*8 xd,yd,zd
-      real*8 xu,yu,zu
-      real*8 xup,yup,zup
-      real*8 xq,yq,zq
-      real*8 xv,yv,zv,vterm
       real*8 ci,dix,diy,diz
       real*8 uix,uiy,uiz
       real*8 qixx,qixy,qixz
       real*8 qiyy,qiyz,qizz
-      real*8 xdfield,xufield
-      real*8 ydfield,yufield
-      real*8 zdfield,zufield
       real*8 trq(3),trqi(3)
       real*8 frcx(3),frcy(3),frcz(3)
 c
@@ -200,7 +192,7 @@ c
       real*8 erl,erli
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
-      real*8 emtt,eptt,eintrat
+      real*8 emtt,eptt
       real*8 frcxi(3),frcxk(3)
       real*8 frcyi(3),frcyk(3)
       real*8 frczi(3),frczk(3)

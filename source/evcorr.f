@@ -44,9 +44,7 @@ c
       real*8 rv,rv2,rv6,rv7
       real*8 r,r2,r3,r4
       real*8 r5,r6,r7
-      real*8 p,p6,p12
       real*8 rho,tau,tau7
-      real*8 expterm
       character*6 mode
 c
 c
@@ -104,8 +102,8 @@ c
             fkm = dble(mvt(k))
             fik = fi*fk - vlam1*(fim*fk+(fi-fim)*fkm)
             if (k .eq. i)  fik = 0.5d0 * fik
-	          rv = radmin(kt,it)
-	          eps = epsilon(kt,it)
+                  rv = radmin(kt,it)
+                  eps = epsilon(kt,it)
             rv2 = rv * rv
             rv6 = rv2 * rv2 * rv2
             rv7 = rv6 * rv
@@ -117,10 +115,10 @@ c
                r6 = r3 * r3
                r7 = r6 * r
                e = 0.0d0
-	             rho = r7 + ghal*rv7
-	             tau = (dhal+1.0d0) / (r+dhal*rv)
+                     rho = r7 + ghal*rv7
+                     tau = (dhal+1.0d0) / (r+dhal*rv)
                tau7 = tau**7
-	             e = eps * rv7 * tau7 * ((ghal+1.0d0)*rv7/rho-2.0d0)
+                     e = eps * rv7 * tau7 * ((ghal+1.0d0)*rv7/rho-2.0d0)
                if (r .lt. off) then
                   r4 = r2 * r2
                   r5 = r2 * r3
@@ -184,10 +182,8 @@ c
       real*8 rv,rv2,rv6,rv7
       real*8 r,r2,r3,r4
       real*8 r5,r6,r7
-      real*8 p,p6,p12
       real*8 rho,tau,tau7
       real*8 dtau,gtau
-      real*8 rvterm,expterm
       character*6 mode
 c
 c
@@ -246,8 +242,8 @@ c
             fkm = dble(mvt(k))
             fik = fi*fk - vlam1*(fim*fk+(fi-fim)*fkm)
             if (k .eq. i)  fik = 0.5d0 * fik
-	          rv = radmin(kt,it)
-	          eps = epsilon(kt,it)
+                  rv = radmin(kt,it)
+                  eps = epsilon(kt,it)
             rv2 = rv * rv
             rv6 = rv2 * rv2 * rv2
             rv7 = rv6 * rv
@@ -261,12 +257,12 @@ c
                r7 = r6 * r
                e = 0.0d0
                de = 0.0d0
-	             rho = r7 + ghal*rv7
-	             tau = (dhal+1.0d0) / (r+dhal*rv)
+                     rho = r7 + ghal*rv7
+                     tau = (dhal+1.0d0) / (r+dhal*rv)
                tau7 = tau**7
                dtau = tau / (dhal+1.0d0)
                gtau = eps*tau7*r6*(ghal+1.0d0)*(rv7/rho)**2
-	             e = eps * rv7 * tau7 * ((ghal+1.0d0)*rv7/rho-2.0d0)
+                     e = eps * rv7 * tau7 * ((ghal+1.0d0)*rv7/rho-2.0d0)
                de = -7.0d0 * (dtau*e+gtau)
                if (r .lt. off) then
                   r4 = r2 * r2

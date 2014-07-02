@@ -34,7 +34,6 @@ c
       real*8 etot,epot,ekin
       real*8 pico,dens
       real*8 fluctuate,fluctuate2
-      real*8 intfluct,intfluct2
       real*8 potfluct,potfluct2
       real*8 kinfluct,kinfluct2
       real*8 tfluct,pfluct,dfluct
@@ -42,7 +41,6 @@ c
       real*8 etot_sum,etot2_sum
       real*8 eint_sum,eint2_sum
       real*8 etot_ave,etot2_ave
-      real*8 eint_ave,eint2_ave
       real*8 epot_sum,epot2_sum
       real*8 ekin_sum,ekin2_sum
       real*8 epot_ave,epot2_ave

@@ -33,7 +33,7 @@ c
       use uprior
       implicit none
       integer i,j,k
-      integer size,next
+      integer next
       integer lext
       real*8 e,ekt,qterm
       real*8 maxwell,speed

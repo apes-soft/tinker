@@ -35,7 +35,7 @@ c
       implicit none
       integer i,j,k,istep
       integer idump,lext
-      integer freeunit,trimtext
+      integer trimtext
       integer moddump
       real*8 dt,epot,eksum
       real*8 pico,wt

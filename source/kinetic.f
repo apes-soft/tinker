@@ -26,11 +26,9 @@ c
       use units
       implicit none
       integer i,j,k
-      integer start,stop
       real*8 eksum
       real*8 term,value
       real*8 ekin(3,3)
-      real*8 inert(3,3)
 c
 c
 c     zero out the total kinetic energy and its outer product

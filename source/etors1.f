@@ -27,7 +27,7 @@ c
       use virial
       implicit none
       integer i,ia,ib,ic,id
-      real*8 e,dedphi,rcb,fgrp
+      real*8 e,dedphi,rcb
       real*8 v1,v2,v3,v4,v5,v6
       real*8 c1,c2,c3,c4,c5,c6
       real*8 s1,s2,s3,s4,s5,s6

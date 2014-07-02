@@ -36,7 +36,7 @@ c
       integer i,k,ia,ib
       integer next,size
       integer number
-      real*8 rd,ep,rdn,gik
+      real*8 rd,ep,rdn
       real*8, allocatable :: srad(:)
       real*8, allocatable :: srad4(:)
       real*8, allocatable :: seps(:)
@@ -448,7 +448,6 @@ c
                epshbnd(k,i) = 0.0d0
             end do
          end do
-  230    continue
       end if
 c
 c     set coefficients for Gaussian fit to eps=1 and radmin=1

@@ -38,7 +38,6 @@ c
       implicit none
       integer i,j,icprm
       integer ia,ib,ic,id,ie
-      integer if,ig,ih,ii
       integer size,next
       integer length,trimtext
       integer nb,nb5,nb4,nb3,nel
@@ -50,32 +49,20 @@ c
       integer nmp,npi,npi5,npi4
       integer cls,atn,lig
       integer nx,ny,nxy
-      integer bt,at,sbt,tt
       integer ft(6),pg(maxval)
       real*8 wght,rd,ep,rdn
       real*8 an1,an2,an3
       real*8 ba1,ba2
-      real*8 aa1,aa2,aa3
-      real*8 bt1,bt2,bt3
-      real*8 bt4,bt5,bt6
-      real*8 bt7,bt8,bt9
-      real*8 at1,at2,at3
-      real*8 at4,at5,at6
-      real*8 an,pr,ds,dk
-      real*8 vd,cg,dp,ps
+      real*8 an,pr,ds
       real*8 fc,bd,dl,el
       real*8 pt,pol,thl
       real*8 iz,rp,ss,ts
-      real*8 abc,cba
-      real*8 gi,alphi
-      real*8 nni,factor
       real*8 vt(6),st(6)
       real*8 pl(13)
       real*8 tx(maxtgrd2)
       real*8 ty(maxtgrd2)
       real*8 tf(maxtgrd2)
-      logical header,sane
-      character*1 da1
+      logical header
       character*4 pa,pb,pc
       character*4 pd,pe
       character*8 axt

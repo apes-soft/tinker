@@ -32,7 +32,7 @@ c
       real*8 e,ideal,force
       real*8 fold,factor,dot
       real*8 cosine,sine
-      real*8 angle,fgrp
+      real*8 angle
       real*8 dt,dt2,dt3,dt4
       real*8 deddt,term
       real*8 terma,termc

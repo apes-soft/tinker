@@ -27,12 +27,10 @@ c
       use keys
       use mdstuf
       implicit none
-      integer i,istep,nstep
-      integer mode,next
-      real*8 dt,dtdump
-      logical exist,query
-      character*20 keyword
-      character*120 record
+      integer:: istep,nstep
+      integer:: mode
+      real (kind=8):: dt,dtdump
+      logical:: exist,query
       character*120 string
 c
 c
