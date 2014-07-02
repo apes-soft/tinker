@@ -35,7 +35,7 @@ c
       implicit none
       integer i,j,k,istep
       integer iind
-      integer ivel,ifrc
+      integer ifrc
       integer idump,lext
       integer freeunit,trimtext
       integer moddump
@@ -141,7 +141,6 @@ c
 c     save the velocity vector components at the current step
 c
       if (velsave) then
-         ivel = freeunit ()
          if (archive) then
             velfile = filename(1:leng)
             call suffix (velfile,'vel','old')
