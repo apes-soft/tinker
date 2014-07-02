@@ -1,4 +1,4 @@
-# This is the dev-mario branch
+# Cumulative changes made to the code
 
 Using this to develop `tinkerLite` - a cut down version of tinker, basically `dynamic`
 with restricted options of what can be run. The main aim of this work is to:
