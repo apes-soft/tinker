@@ -24,7 +24,6 @@ c
       use cell
       use files
       use inform
-      use iounit
       use keys
       use molcul
       use neigh
@@ -33,27 +32,25 @@ c
       use params
       use zclose
       implicit none
-!$    integer omp_get_num_procs
-c
+      integer omp_get_num_threads
+
 c
 c     cores, thread count and options for OpenMP
 c
-      nproc = 1
-      nthread = 1
-!$    nproc = omp_get_num_procs ()
-!$    nthread = nproc
-!$    call omp_set_num_threads (nthread)
-!$    call omp_set_nested (.true.)
+     
+       nthread = 1
+!$OMP PARALLEL shared(nthread) 
+!$OMP MASTER 
+       nthread = omp_get_num_threads()
+!$OMP END MASTER
+!$OMP END PARALLEL 
+
 c
 c     Intel compiler extensions to OpenMP standard
 c
 !!$    call kmp_set_stacksize_s (2**28)
 !!$    call kmp_set_blocktime (0)
-c
-c     default unit numbers for input and output
-c
-      input = 5
-      iout = 6
+
 c
 c     display program banner and copyright notice
 c
@@ -94,24 +91,24 @@ c
 c
 c     flags for information levels within the program
 c
-      silent = .false.
+      silent  = .false.
       verbose = .false.
-      debug = .false.
-      abort = .false.
+      debug   = .false.
+      abort   = .false.
 c
 c     default values for unitcell dimensions
 c
-      xbox = 0.0d0
-      ybox = 0.0d0
-      zbox = 0.0d0
+      xbox  = 0.0d0
+      ybox  = 0.0d0
+      zbox  = 0.0d0
       alpha = 0.0d0
-      beta = 0.0d0
+      beta  = 0.0d0
       gamma = 0.0d0
 c
 c     flags for temperature and pressure baths
 c
       isothermal = .false.
-      isobaric = .false.
+      isobaric   = .false.
 c
 c     flags for rebuilding of neighbor lists
 c

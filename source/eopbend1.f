@@ -31,7 +31,7 @@ c
       integer i,iopbend
       integer ia,ib,ic,id
       real*8 e,angle,force
-      real*8 dot,cosine,fgrp
+      real*8 dot,cosine
       real*8 cc,ee,bkk2,term
       real*8 deddt,dedcos
       real*8 dt,dt2,dt3,dt4
@@ -45,7 +45,6 @@ c
       real*8 xad,yad,zad
       real*8 xcd,ycd,zcd
       real*8 rdb2,rad2,rcd2
-      real*8 rab2,rcb2
       real*8 dccdxia,dccdyia,dccdzia
       real*8 dccdxic,dccdyic,dccdzic
       real*8 dccdxid,dccdyid,dccdzid

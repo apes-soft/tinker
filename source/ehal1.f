@@ -74,16 +74,14 @@ c
       integer kk,kv,kt
       integer, allocatable :: iv14(:)
       real*8 e,de,eps,rdn
-      real*8 fgrp,rv,rv7
+      real*8 rv,rv7
       real*8 xi,yi,zi
       real*8 xr,yr,zr
       real*8 redi,rediv
       real*8 redk,redkv
       real*8 dedx,dedy,dedz
-      real*8 rho,rho6,rho7
-      real*8 tau,tau7,scal
-      real*8 s1,s2,t1,t2
-      real*8 dt1drho,dt2drho
+      real*8 rho
+      real*8 tau,tau7
       real*8 dtau,gtau
       real*8 taper,dtaper
       real*8 rik,rik2,rik3

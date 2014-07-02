@@ -24,9 +24,8 @@ c
       use keys
       use openmp
       implicit none
-      integer i,ikey
+      integer i
       integer next,length
-      integer freeunit
       integer trimtext
       logical exist,header
       character*20 keyword
@@ -79,7 +78,6 @@ c     read the keyfile and store it for latter use
 c
       nkey = 0
       if (exist) then
-         ikey = freeunit ()
          open (unit=ikey,file=keyfile,status='old')
          rewind (unit=ikey)
          do while (.true.)

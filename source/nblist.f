@@ -923,7 +923,6 @@ c
       integer i,j,k,nsite
       real*8 cutoff,box
       real*8 xcut,ycut,zcut
-      real*8 xmove,ymove,zmove
       real*8 xsort(*)
       real*8 ysort(*)
       real*8 zsort(*)

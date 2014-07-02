@@ -31,8 +31,6 @@ c
       use uprior
       implicit none
       integer i,j,k
-      real*8 norm
-      logical header
 c
 c
 c     choose the method for computation of induced dipoles
@@ -326,9 +324,8 @@ c
       use mpole
       use polar
       implicit none
-      integer i,j,ii
+      integer i,j
       real*8 term
-      real*8 ucell(3)
       real*8 field(3,*)
       real*8 fieldp(3,*)
 c
@@ -391,8 +388,6 @@ c
       implicit none
       integer i,j
       real*8 term
-      real*8 ucell(3)
-      real*8 ucellp(3)
       real*8 field(3,*)
       real*8 fieldp(3,*)
 c

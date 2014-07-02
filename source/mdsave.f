@@ -34,10 +34,8 @@ c
       use units
       implicit none
       integer i,j,k,istep
-      integer ixyz,iind
-      integer ivel,ifrc
-      integer iend,idump,lext
-      integer freeunit,trimtext
+      integer idump,lext
+      integer trimtext
       integer moddump
       real*8 dt,epot,eksum
       real*8 pico,wt
@@ -113,7 +111,6 @@ c
 c
 c     save coordinates to an archive or numbered structure file
 c
-      ixyz = freeunit ()
       if (archive) then
          xyzfile = filename(1:leng)
          call suffix (xyzfile,'arc','old')
@@ -142,7 +139,6 @@ c
 c     save the velocity vector components at the current step
 c
       if (velsave) then
-         ivel = freeunit ()
          if (archive) then
             velfile = filename(1:leng)
             call suffix (velfile,'vel','old')
@@ -171,7 +167,6 @@ c
 c     save the force vector components for the current step
 c
       if (frcsave .and. integrate.ne.'RIGIDBODY') then
-         ifrc = freeunit ()
          if (archive) then
             frcfile = filename(1:leng)
             call suffix (frcfile,'frc','old')
@@ -201,7 +196,6 @@ c
 c     save the current induced dipole moment at each site
 c
       if (uindsave) then
-         iind = freeunit ()
          if (archive) then
             indfile = filename(1:leng)
             call suffix (indfile,'uind','old')
@@ -238,7 +232,6 @@ c
          endfile = filename(1:leng)//'.end'
          inquire (file=endfile,exist=exist)
          if (exist) then
-            iend = freeunit ()
             open (unit=iend,file=endfile,status='old')
             close (unit=iend,status='delete')
          end if
