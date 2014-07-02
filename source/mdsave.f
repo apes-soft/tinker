@@ -36,7 +36,7 @@ c
       integer i,j,k,istep
       integer iind
       integer ivel,ifrc
-      integer iend,idump,lext
+      integer idump,lext
       integer freeunit,trimtext
       integer moddump
       real*8 dt,epot,eksum
@@ -237,7 +237,6 @@ c
          endfile = filename(1:leng)//'.end'
          inquire (file=endfile,exist=exist)
          if (exist) then
-            iend = freeunit ()
             open (unit=iend,file=endfile,status='old')
             close (unit=iend,status='delete')
          end if
