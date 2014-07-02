@@ -170,7 +170,7 @@ endif
 # This is a trick to always run a perl script to create a
 # gitversion.f file with the current git has id. Will work
 # for gmake - not sure about the other versions of make
-RUNSCRIPT:=$(shell ./version.pl)
+#RUNSCRIPT:=$(shell ./version.pl)
 
 #################################################################
 ##  Should not be Necessary to Change Things Below this Point  ##
