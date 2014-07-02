@@ -11,6 +11,10 @@ with restricted options of what can be run. The main aim of this work is to:
 Enumerate in reverse chronological order the rationale for
 changes made to the `tinkerLite` code base.
 
+* Removed `freeunit.f` and moved the definition of specific 
+  unit numbers to deal with io of different types to `iounit.f`.
+* Had a further cull of unused variables as reported by the
+  `gfortran` compiler with the `-Wall` flag.
 * Added a test directory. Only have one valid regression test
   `dhfr` otherwise know as JAC. Could not import the files 
   from the main `tiker` distribution as that usess a `Modified Beeman 
