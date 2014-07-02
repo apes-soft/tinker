@@ -33,7 +33,6 @@ c
       use zclose
       implicit none
       integer omp_get_num_threads
-      real*8 precise
 
 c
 c     cores, thread count and options for OpenMP
