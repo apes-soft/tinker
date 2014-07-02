@@ -16,7 +16,7 @@ c     "readdyn" get the positions, velocities and accelerations
 c     for a molecular dynamics restart from an external disk file
 c
 c
-      subroutine readdyn (idyn)
+      subroutine readdyn
       use sizes
       use atoms
       use boxes
@@ -25,7 +25,7 @@ c
       use mdstuf
       use moldyn
       implicit none
-      integer i,idyn,ndyn
+      integer i,ndyn
       logical exist,opened,quit
       character*120 dynfile
       character*120 record

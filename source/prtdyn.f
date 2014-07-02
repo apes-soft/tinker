@@ -24,9 +24,9 @@ c
       use mdstuf
       use moldyn
       use titles
+      use iounit
       implicit none
-      integer i,idyn
-      integer freeunit
+      integer i
       logical exist
       character*2 atmc
       character*39 fstr
@@ -35,7 +35,7 @@ c
 c
 c     update an existing restart file or open a new one
 c
-      idyn = freeunit ()
+
       dynfile = filename(1:leng)//'.dyn'
       inquire (file=dynfile,exist=exist)
       if (exist) then

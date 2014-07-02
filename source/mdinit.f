@@ -32,9 +32,9 @@ c
       use units
       use uprior
       implicit none
-      integer i,j,k,idyn
+      integer i,j,k
       integer size,next
-      integer lext,freeunit
+      integer lext
       real*8 e,ekt,qterm
       real*8 maxwell,speed
       real*8 vec(3)
@@ -216,10 +216,9 @@ c
       call version (dynfile,'old')
       inquire (file=dynfile,exist=exist)
       if (exist) then
-         idyn = freeunit ()
          open (unit=idyn,file=dynfile,status='old')
          rewind (unit=idyn)
-         call readdyn (idyn)
+         call readdyn
          close (unit=idyn)
 c
 c     set velocities and accelerations for Cartesian dynamics

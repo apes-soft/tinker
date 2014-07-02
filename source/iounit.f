@@ -20,6 +20,7 @@ c
       integer, parameter:: ikey  = 11 ! Fortran I/O unit for key files.
       integer, parameter:: iprm  = 12 ! Fortran I/O unit for parameter files.
       integer, parameter:: iend  = 13 ! Fortran I/O unit to test for termination of run.
-      integer, parameter:: ivel  = 14 ! Fortran I/O unit to velocity vector components.
+      integer, parameter:: ivel  = 14 ! Fortran I/O unit for velocity vector components.
+      integer, parameter:: idyn  = 14 ! Fortran I/O unit for dynamics file.
       save
       end
