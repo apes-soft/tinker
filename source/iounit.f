@@ -21,6 +21,8 @@ c
       integer, parameter:: iprm  = 12 ! Fortran I/O unit for parameter files.
       integer, parameter:: iend  = 13 ! Fortran I/O unit to test for termination of run.
       integer, parameter:: ivel  = 14 ! Fortran I/O unit for velocity vector components.
-      integer, parameter:: idyn  = 14 ! Fortran I/O unit for dynamics file.
+      integer, parameter:: idyn  = 15 ! Fortran I/O unit for dynamics file.
+      integer, parameter:: ifrc  = 16 ! Fortran I/O unit for force vector components.
+      integer, parameter:: iind  = 17 ! Fortran I/O unit for induced dipole moment at each site
       save
       end

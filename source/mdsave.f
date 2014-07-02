@@ -34,8 +34,6 @@ c
       use units
       implicit none
       integer i,j,k,istep
-      integer iind
-      integer ifrc
       integer idump,lext
       integer freeunit,trimtext
       integer moddump
@@ -169,7 +167,6 @@ c
 c     save the force vector components for the current step
 c
       if (frcsave .and. integrate.ne.'RIGIDBODY') then
-         ifrc = freeunit ()
          if (archive) then
             frcfile = filename(1:leng)
             call suffix (frcfile,'frc','old')
@@ -199,7 +196,6 @@ c
 c     save the current induced dipole moment at each site
 c
       if (uindsave) then
-         iind = freeunit ()
          if (archive) then
             indfile = filename(1:leng)
             call suffix (indfile,'uind','old')
