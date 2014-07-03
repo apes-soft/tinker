@@ -65,9 +65,9 @@ c
 c     get coordinates and frame definition for the multipole site
 c
       ii = ipole(i)
-      xi = x(ii)
-      yi = y(ii)
-      zi = z(ii)
+      xi = pos(1,ii)
+      yi = pos(2,ii)
+      zi = pos(3,ii)
       ix = xaxis(i)
       iy = yaxis(i)
       iz = zaxis(i)
@@ -84,9 +84,9 @@ c
 c     Z-Only method rotation matrix elements for z-axis only
 c
       if (polaxe(i) .eq. 'Z-Only') then
-         dx = x(iz) - xi
-         dy = y(iz) - yi
-         dz = z(iz) - zi
+         dx = pos(1,iz) - xi
+         dy = pos(2,iz) - yi
+         dz = pos(3,iz) - zi
          r = sqrt(dx*dx + dy*dy + dz*dz)
          a(1,3) = dx / r
          a(2,3) = dy / r
@@ -106,16 +106,16 @@ c
 c     Z-then-X method rotation matrix elements for z- and x-axes
 c
       else if (polaxe(i) .eq. 'Z-then-X') then
-         dx = x(iz) - xi
-         dy = y(iz) - yi
-         dz = z(iz) - zi
+         dx = pos(1,iz) - xi
+         dy = pos(2,iz) - yi
+         dz = pos(3,iz) - zi
          r = sqrt(dx*dx + dy*dy + dz*dz)
          a(1,3) = dx / r
          a(2,3) = dy / r
          a(3,3) = dz / r
-         dx = x(ix) - xi
-         dy = y(ix) - yi
-         dz = z(ix) - zi
+         dx = pos(1,ix) - xi
+         dy = pos(2,ix) - yi
+         dz = pos(3,ix) - zi
          dot = dx*a(1,3) + dy*a(2,3) + dz*a(3,3)
          dx = dx - dot*a(1,3)
          dy = dy - dot*a(2,3)
@@ -128,16 +128,16 @@ c
 c     Bisector method rotation matrix elements for z- and x-axes
 c
       else if (polaxe(i) .eq. 'Bisector') then
-         dx = x(iz) - xi
-         dy = y(iz) - yi
-         dz = z(iz) - zi
+         dx = pos(1,iz) - xi
+         dy = pos(2,iz) - yi
+         dz = pos(3,iz) - zi
          r = sqrt(dx*dx + dy*dy + dz*dz)
          dx1 = dx / r
          dy1 = dy / r
          dz1 = dz / r
-         dx = x(ix) - xi
-         dy = y(ix) - yi
-         dz = z(ix) - zi
+         dx = pos(1,ix) - xi
+         dy = pos(2,ix) - yi
+         dz = pos(3,ix) - zi
          r = sqrt(dx*dx + dy*dy + dz*dz)
          dx2 = dx / r
          dy2 = dy / r
@@ -161,23 +161,23 @@ c
 c     Z-Bisect method rotation matrix elements for z- and x-axes
 c
       else if (polaxe(i) .eq. 'Z-Bisect') then
-         dx = x(iz) - xi
-         dy = y(iz) - yi
-         dz = z(iz) - zi
+         dx = pos(1,iz) - xi
+         dy = pos(2,iz) - yi
+         dz = pos(3,iz) - zi
          r = sqrt(dx*dx + dy*dy + dz*dz)
          a(1,3) = dx / r
          a(2,3) = dy / r
          a(3,3) = dz / r
-         dx = x(ix) - xi
-         dy = y(ix) - yi
-         dz = z(ix) - zi
+         dx = pos(1,ix) - xi
+         dy = pos(2,ix) - yi
+         dz = pos(3,ix) - zi
          r = sqrt(dx*dx + dy*dy + dz*dz)
          dx1 = dx / r
          dy1 = dy / r
          dz1 = dz / r
-         dx = x(iy) - xi
-         dy = y(iy) - yi
-         dz = z(iy) - zi
+         dx = pos(1,iy) - xi
+         dy = pos(2,iy) - yi
+         dz = pos(3,iy) - zi
          r = sqrt(dx*dx + dy*dy + dz*dz)
          dx2 = dx / r
          dy2 = dy / r
@@ -201,23 +201,23 @@ c
 c     3-Fold method rotation matrix elements for z- and x-axes
 c
       else if (polaxe(i) .eq. '3-Fold') then
-         dx = x(iz) - xi
-         dy = y(iz) - yi
-         dz = z(iz) - zi
+         dx = pos(1,iz) - xi
+         dy = pos(2,iz) - yi
+         dz = pos(3,iz) - zi
          r = sqrt(dx*dx + dy*dy + dz*dz)
          dx1 = dx / r
          dy1 = dy / r
          dz1 = dz / r
-         dx = x(ix) - xi
-         dy = y(ix) - yi
-         dz = z(ix) - zi
+         dx = pos(1,ix) - xi
+         dy = pos(2,ix) - yi
+         dz = pos(3,ix) - zi
          r = sqrt(dx*dx + dy*dy + dz*dz)
          dx2 = dx / r
          dy2 = dy / r
          dz2 = dz / r
-         dx = x(iy) - xi
-         dy = y(iy) - yi
-         dz = z(iy) - zi
+         dx = pos(1,iy) - xi
+         dy = pos(2,iy) - yi
+         dz = pos(3,iy) - zi
          r = sqrt(dx*dx + dy*dy + dz*dz)
          dx3 = dx / r
          dy3 = dy / r

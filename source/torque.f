@@ -78,22 +78,22 @@ c
 c
 c     construct the three rotation axes for the local frame
 c
-      u(1) = x(ia) - x(ib)
-      u(2) = y(ia) - y(ib)
-      u(3) = z(ia) - z(ib)
+      u(1) = pos(1,ia) - pos(1,ib)
+      u(2) = pos(2,ia) - pos(2,ib)
+      u(3) = pos(3,ia) - pos(3,ib)
       if (axetyp .ne. 'Z-Only') then
-         v(1) = x(ic) - x(ib)
-         v(2) = y(ic) - y(ib)
-         v(3) = z(ic) - z(ib)
+         v(1) = pos(1,ic) - pos(1,ib)
+         v(2) = pos(2,ic) - pos(2,ib)
+         v(3) = pos(3,ic) - pos(3,ib)
       else
          v(1) = random ()
          v(2) = random ()
          v(3) = random ()
       end if
       if (axetyp.eq.'Z-Bisect' .or. axetyp.eq.'3-Fold') then
-         w(1) = x(id) - x(ib)
-         w(2) = y(id) - y(ib)
-         w(3) = z(id) - z(ib)
+         w(1) = pos(1,id) - pos(1,ib)
+         w(2) = pos(2,id) - pos(2,ib)
+         w(3) = pos(3,id) - pos(3,ib)
       else
          w(1) = u(2)*v(3) - u(3)*v(2)
          w(2) = u(3)*v(1) - u(1)*v(3)
@@ -465,22 +465,22 @@ c
 c
 c     construct the three rotation axes for the local frame
 c
-         u(1) = x(ia) - x(ib)
-         u(2) = y(ia) - y(ib)
-         u(3) = z(ia) - z(ib)
+         u(1) = pos(1,ia) - pos(1,ib)
+         u(2) = pos(2,ia) - pos(2,ib)
+         u(3) = pos(3,ia) - pos(3,ib)
          if (axetyp .ne. 'Z-Only') then
-            v(1) = x(ic) - x(ib)
-            v(2) = y(ic) - y(ib)
-            v(3) = z(ic) - z(ib)
+            v(1) = pos(1,ic) - pos(1,ib)
+            v(2) = pos(2,ic) - pos(2,ib)
+            v(3) = pos(3,ic) - pos(3,ib)
          else
             v(1) = random ()
             v(2) = random ()
             v(3) = random ()
          end if
          if (axetyp.eq.'Z-Bisect' .or. axetyp.eq.'3-Fold') then
-            w(1) = x(id) - x(ib)
-            w(2) = y(id) - y(ib)
-            w(3) = z(id) - z(ib)
+            w(1) = pos(1,id) - pos(1,ib)
+            w(2) = pos(2,id) - pos(2,ib)
+            w(3) = pos(3,id) - pos(3,ib)
          else
             w(1) = u(2)*v(3) - u(3)*v(2)
             w(2) = u(3)*v(1) - u(1)*v(3)
@@ -759,22 +759,22 @@ c
 c
 c     construct the three rotation axes for the local frame
 c
-      u(1) = x(ia) - x(ib)
-      u(2) = y(ia) - y(ib)
-      u(3) = z(ia) - z(ib)
+      u(1) = pos(1,ia) - pos(1,ib)
+      u(2) = pos(2,ia) - pos(2,ib)
+      u(3) = pos(3,ia) - pos(3,ib)
       if (axetyp .ne. 'Z-Only') then
-         v(1) = x(ic) - x(ib)
-         v(2) = y(ic) - y(ib)
-         v(3) = z(ic) - z(ib)
+         v(1) = pos(1,ic) - pos(1,ib)
+         v(2) = pos(2,ic) - pos(2,ib)
+         v(3) = pos(3,ic) - pos(3,ib)
       else
          v(1) = random ()
          v(2) = random ()
          v(3) = random ()
       end if
       if (axetyp.eq.'Z-Bisect' .or. axetyp.eq.'3-Fold') then
-         w(1) = x(id) - x(ib)
-         w(2) = y(id) - y(ib)
-         w(3) = z(id) - z(ib)
+         w(1) = pos(1,id) - pos(1,ib)
+         w(2) = pos(2,id) - pos(2,ib)
+         w(3) = pos(3,id) - pos(3,ib)
       else
          w(1) = u(2)*v(3) - u(3)*v(2)
          w(2) = u(3)*v(1) - u(1)*v(3)

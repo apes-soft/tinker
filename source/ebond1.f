@@ -53,9 +53,9 @@ c
 c
 c     compute the value of the bond length deviation
 c
-         xab = x(ia) - x(ib)
-         yab = y(ia) - y(ib)
-         zab = z(ia) - z(ib)
+         xab = pos(1,ia) - pos(1,ib)
+         yab = pos(2,ia) - pos(2,ib)
+         zab = pos(3,ia) - pos(3,ib)
          rab = sqrt(xab*xab + yab*yab + zab*zab)
          dt = rab - ideal
 c

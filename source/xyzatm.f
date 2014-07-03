@@ -50,23 +50,23 @@ c
 c     if no second site given, place the atom at the origin
 c
       if (ia .eq. 0) then
-         x(i) = 0.0d0
-         y(i) = 0.0d0
-         z(i) = 0.0d0
+         pos(1,i) = 0.0d0
+         pos(2,i) = 0.0d0
+         pos(3,i) = 0.0d0
 c
 c     if no third site given, place the atom along the z-axis
 c
       else if (ib .eq. 0) then
-         x(i) = x(ia)
-         y(i) = y(ia)
-         z(i) = z(ia) + bond
+         pos(1,i) = pos(1,ia)
+         pos(2,i) = pos(2,ia)
+         pos(3,i) = pos(3,ia) + bond
 c
 c     if no fourth site given, place the atom in the x,z-plane
 c
       else if (ic .eq. 0) then
-         xab = x(ia) - x(ib)
-         yab = y(ia) - y(ib)
-         zab = z(ia) - z(ib)
+         xab = pos(1,ia) - pos(1,ib)
+         yab = pos(2,ia) - pos(2,ib)
+         zab = pos(3,ia) - pos(3,ib)
          rab = sqrt(xab**2 + yab**2 + zab**2)
          xab = xab / rab
          yab = yab / rab
@@ -82,23 +82,23 @@ c
          end if
          xtmp = bond*sin1
          ztmp = rab - bond*cos1
-         x(i) = x(ib) + xtmp*cosg + ztmp*sing*sinb
-         y(i) = y(ib) - xtmp*sing + ztmp*cosg*sinb
-         z(i) = z(ib) + ztmp*cosb
+         pos(1,i) = pos(1,ib) + xtmp*cosg + ztmp*sing*sinb
+         pos(2,i) = pos(2,ib) - xtmp*sing + ztmp*cosg*sinb
+         pos(3,i) = pos(3,ib) + ztmp*cosb
 c
 c     general case where the second angle is a dihedral angle
 c
       else if (chiral .eq. 0) then
-         xab = x(ia) - x(ib)
-         yab = y(ia) - y(ib)
-         zab = z(ia) - z(ib)
+         xab = pos(1,ia) - pos(1,ib)
+         yab = pos(2,ia) - pos(2,ib)
+         zab = pos(3,ia) - pos(3,ib)
          rab = sqrt(xab**2 + yab**2 + zab**2)
          xab = xab / rab
          yab = yab / rab
          zab = zab / rab
-         xbc = x(ib) - x(ic)
-         ybc = y(ib) - y(ic)
-         zbc = z(ib) - z(ic)
+         xbc = pos(1,ib) - pos(1,ic)
+         ybc = pos(2,ib) - pos(2,ic)
+         zbc = pos(3,ib) - pos(3,ic)
          rbc = sqrt(xbc**2 + ybc**2 + zbc**2)
          xbc = xbc / rbc
          ybc = ybc / rbc
@@ -114,9 +114,12 @@ c
          xu = yt*zab - zt*yab
          yu = zt*xab - xt*zab
          zu = xt*yab - yt*xab
-         x(i) = x(ia) + bond * (xu*sin1*cos2 + xt*sin1*sin2 - xab*cos1)
-         y(i) = y(ia) + bond * (yu*sin1*cos2 + yt*sin1*sin2 - yab*cos1)
-         z(i) = z(ia) + bond * (zu*sin1*cos2 + zt*sin1*sin2 - zab*cos1)
+         pos(1,i) = pos(1,ia) + bond * (xu*sin1*cos2 + xt*sin1*sin2 
+     &              - xab*cos1)
+         pos(2,i) = pos(2,ia) + bond * (yu*sin1*cos2 + yt*sin1*sin2 
+     &              - yab*cos1)
+         pos(3,i) = pos(3,ia) + bond * (zu*sin1*cos2 + zt*sin1*sin2 
+     &              - zab*cos1)
          if (abs(cosine) .ge. 1.0d0) then
             cosb = zab
             sinb = sqrt(xab**2 + yab**2)
@@ -129,9 +132,9 @@ c
             end if
             xtmp = bond*sin1
             ztmp = rab - bond*cos1
-            x(i) = x(ib) + xtmp*cosg + ztmp*sing*sinb
-            y(i) = y(ib) - xtmp*sing + ztmp*cosg*sinb
-            z(i) = z(ib) + ztmp*cosb
+            pos(1,i) = pos(1,ib) + xtmp*cosg + ztmp*sing*sinb
+            pos(2,i) = pos(2,ib) - xtmp*sing + ztmp*cosg*sinb
+            pos(3,i) = pos(3,ib) + ztmp*cosb
             write (iout,10)  i
    10       format (/,' XYZATM  --  Warning, Undefined Dihedral',
      &                 ' Angle at Atom',i6)
@@ -140,16 +143,16 @@ c
 c     general case where the second angle is a bond angle
 c
       else if (abs(chiral) .eq. 1) then
-         xba = x(ib) - x(ia)
-         yba = y(ib) - y(ia)
-         zba = z(ib) - z(ia)
+         xba = pos(1,ib) - pos(1,ia)
+         yba = pos(2,ib) - pos(2,ia)
+         zba = pos(3,ib) - pos(3,ia)
          rba = sqrt(xba**2 + yba**2 + zba**2)
          xba = xba / rba
          yba = yba / rba
          zba = zba / rba
-         xac = x(ia) - x(ic)
-         yac = y(ia) - y(ic)
-         zac = z(ia) - z(ic)
+         xac = pos(1,ia) - pos(1,ic)
+         yac = pos(2,ia) - pos(2,ic)
+         zac = pos(3,ia) - pos(3,ic)
          rac = sqrt(xac**2 + yac**2 + zac**2)
          xac = xac / rac
          yac = yac / rac
@@ -183,9 +186,9 @@ c
          else
             c = 0.0d0
          end if
-         x(i) = x(ia) + bond * (a*xac + b*xba + c*xt)
-         y(i) = y(ia) + bond * (a*yac + b*yba + c*yt)
-         z(i) = z(ia) + bond * (a*zac + b*zba + c*zt)
+         pos(1,i) = pos(1,ia) + bond * (a*xac + b*xba + c*xt)
+         pos(2,i) = pos(2,ia) + bond * (a*yac + b*yba + c*yt)
+         pos(3,i) = pos(3,ia) + bond * (a*zac + b*zba + c*zt)
       end if
       return
       end

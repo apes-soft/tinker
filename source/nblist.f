@@ -73,9 +73,9 @@ c
          ii = ivdw(i)
          iv = ired(ii)
          rdn = kred(ii)
-         xred(i) = rdn*(x(ii)-x(iv)) + x(iv)
-         yred(i) = rdn*(y(ii)-y(iv)) + y(iv)
-         zred(i) = rdn*(z(ii)-z(iv)) + z(iv)
+         xred(i) = rdn*(pos(1,ii)-pos(1,iv)) + pos(1,iv)
+         yred(i) = rdn*(pos(2,ii)-pos(2,iv)) + pos(2,iv)
+         zred(i) = rdn*(pos(3,ii)-pos(3,iv)) + pos(3,iv)
       end do
 c
 c     neighbor list cannot be used with the replicates method
@@ -378,9 +378,9 @@ c
 !$OMP DO schedule(guided)
       do i = 1, npole
          ii = ipole(i)
-         xi = x(ii)
-         yi = y(ii)
-         zi = z(ii)
+         xi = pos(1,ii)
+         yi = pos(2,ii)
+         zi = pos(3,ii)
          xr = xi - xmold(i)
          yr = yi - ymold(i)
          zr = zi - zmold(i)
@@ -402,15 +402,15 @@ c
        do i = 1, npole
          if (update(i)) then
             ii = ipole(i)
-            xi = x(ii)
-            yi = y(ii)
-            zi = z(ii)
+            xi = pos(1,ii)
+            yi = pos(2,ii)
+            zi = pos(3,ii)
             j = 0
             do k = i+1, npole
                kk = ipole(k)
-               xr = xi - x(kk)
-               yr = yi - y(kk)
-               zr = zi - z(kk)
+               xr = xi - pos(1,kk)
+               yr = yi - pos(2,kk)
+               zr = zi - pos(3,kk)
                call imagen (xr,yr,zr)
                r2 = xr*xr + yr*yr + zr*zr
                if (r2 .le. mbuf2) then
@@ -522,12 +522,12 @@ c
       do i = 1, npole
          nelst(i) = 0
          ii = ipole(i)
-         xmold(i) = x(ii)
-         ymold(i) = y(ii)
-         zmold(i) = z(ii)
-         xsort(i) = x(ii)
-         ysort(i) = y(ii)
-         zsort(i) = z(ii)
+         xmold(i) = pos(1,ii)
+         ymold(i) = pos(2,ii)
+         zmold(i) = pos(3,ii)
+         xsort(i) = pos(1,ii)
+         ysort(i) = pos(2,ii)
+         zsort(i) = pos(3,ii)
       end do
 c
 c     use the method of lights to generate neighbors
@@ -548,9 +548,9 @@ c
 !$OMP DO schedule(guided)
       do i = 1, npole
          ii = ipole(i)
-         xi = x(ii)
-         yi = y(ii)
-         zi = z(ii)
+         xi = pos(1,ii)
+         yi = pos(2,ii)
+         zi = pos(3,ii)
          if (kbx(i) .le. kex(i)) then
             repeat = .false.
             start = kbx(i) + 1
@@ -577,9 +577,9 @@ c
             else
                if (kgz.lt.kbz(i) .and. kgz.gt.kez(i))  goto 20
             end if
-            xr = xi - x(kk)
-            yr = yi - y(kk)
-            zr = zi - z(kk)
+            xr = xi - pos(1,kk)
+            yr = yi - pos(2,kk)
+            zr = zi - pos(3,kk)
             call imagen (xr,yr,zr)
             r2 = xr*xr + yr*yr + zr*zr
             if (r2 .le. mbuf2) then
@@ -660,9 +660,9 @@ c
 !$OMP DO schedule(guided)
       do i = 1, npole
          ii = ipole(i)
-         xi = x(ii)
-         yi = y(ii)
-         zi = z(ii)
+         xi = pos(1,ii)
+         yi = pos(2,ii)
+         zi = pos(3,ii)
          xr = xi - xuold(i)
          yr = yi - yuold(i)
          zr = zi - zuold(i)
@@ -684,15 +684,15 @@ c
       do i = 1, npole
          if (update(i)) then
             ii = ipole(i)
-            xi = x(ii)
-            yi = y(ii)
-            zi = z(ii)
+            xi = pos(1,ii)
+            yi = pos(2,ii)
+            zi = pos(3,ii)
             j = 0
             do k = i+1, npole
                kk = ipole(k)
-               xr = xi - x(kk)
-               yr = yi - y(kk)
-               zr = zi - z(kk)
+               xr = xi - pos(1,kk)
+               yr = yi - pos(2,kk)
+               zr = zi - pos(3,kk)
                call imagen (xr,yr,zr)
                r2 = xr*xr + yr*yr + zr*zr
                if (r2 .le. ubuf2) then
@@ -805,12 +805,12 @@ c
       do i = 1, npole
          nulst(i) = 0
          ii = ipole(i)
-         xuold(i) = x(ii)
-         yuold(i) = y(ii)
-         zuold(i) = z(ii)
-         xsort(i) = x(ii)
-         ysort(i) = y(ii)
-         zsort(i) = z(ii)
+         xuold(i) = pos(1,ii)
+         yuold(i) = pos(2,ii)
+         zuold(i) = pos(3,ii)
+         xsort(i) = pos(1,ii)
+         ysort(i) = pos(2,ii)
+         zsort(i) = pos(3,ii)
       end do
 c
 c     use the method of lights to generate neighbors
@@ -831,9 +831,9 @@ c
 !$OMP DO schedule(guided)
       do i = 1, npole
          ii = ipole(i)
-         xi = x(ii)
-         yi = y(ii)
-         zi = z(ii)
+         xi = pos(1,ii)
+         yi = pos(2,ii)
+         zi = pos(3,ii)
          if (kbx(i) .le. kex(i)) then
             repeat = .false.
             start = kbx(i) + 1
@@ -860,9 +860,9 @@ c
             else
                if (kgz.lt.kbz(i) .and. kgz.gt.kez(i))  goto 20
             end if
-            xr = xi - x(kk)
-            yr = yi - y(kk)
-            zr = zi - z(kk)
+            xr = xi - pos(1,kk)
+            yr = yi - pos(2,kk)
+            zr = zi - pos(3,kk)
             call imagen (xr,yr,zr)
             r2 = xr*xr + yr*yr + zr*zr
             if (r2 .le. ubuf2) then

@@ -37,11 +37,11 @@ c     loop over atom pairs testing for identical coordinates
 c
       header = .true.
       do i = 1, n-1
-         xi = x(i)
-         yi = y(i)
-         zi = z(i)
+         xi = pos(1,i)
+         yi = pos(2,i)
+         zi = pos(3,i)
          do j = i+1, n
-            r2 = (x(j)-xi)**2 + (y(j)-yi)**2 + (z(j)-zi)**2
+            r2 = (pos(1,j)-xi)**2 + (pos(2,j)-yi)**2 + (pos(3,j)-zi)**2
             if (r2 .lt. eps) then
                clash = .true.
                if (header) then
