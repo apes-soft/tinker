@@ -116,8 +116,8 @@ integrators, etc. are not.
 * Some of the header modules ('use whatever') within files may be unused,
  as well.  Alex did his best to clear out the obvious ones.
  
-* The `Makefile` is a bit of a mess and could probably use some work. It 
- should be functional, though.
+* ~~The `Makefile` is a bit of a mess and could probably use some work. It 
+ should be functional, though~~.
  
 * In general comments with a `!` are mine and comments with a `c` are 
  original.  Most sections Alex removed have been completely deleted, but 
