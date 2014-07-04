@@ -49,9 +49,9 @@ LINKDIR = /usr/local/bin
 # If none specified the default is: GenericGfortranOpenMP
 
 #COMPARCH=GenericGfortran
-COMPARCH=GenericGfortranOpenMP
+#COMPARCH=GenericGfortranOpenMP
 #COMPARCH=LinuxIntel
-#COMPARCH=LinuxIntelOpenMP
+COMPARCH=LinuxIntelOpenMP
 #COMPARCH=MacIntel
 #COMPARCH=MacIntelOpenMP
 #COMPARCH=MacXeonIntelOpenMP
@@ -96,7 +96,7 @@ else ifeq ($(COMPARCH),LinuxIntel)
 
   FC        = ifort
   LIBS      =
-  FCFLAGS   = -c -xHost
+  FCFLAGS   = -c -warn all -xHost
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
@@ -112,10 +112,10 @@ else ifeq ($(COMPARCH),LinuxIntelOpenMP)
 
   FC        = ifort
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_threads -lfftw3
-  FCFLAGS   = -c -xHost
-  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
+  FCFLAGS   = -c #-warn all 
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp -xHost
   LIBFLAGS  = -crusv
-  RANLIB    =
+  RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc -static-intel
 
 else ifeq ($(COMPARCH),MacIntelOpenMP)
@@ -357,8 +357,7 @@ OBJS = angbnd.o \
        virial.o \
        xyzatm.o \
        zclose.o \
-       zcoord.o \
-       gitversion.o
+       zcoord.o 
 
 EXEFILES = dynamic.x 
 
@@ -375,7 +374,7 @@ EXEFILES = dynamic.x
 all:	${EXEFILES}
 
 clean:
-	rm -f *.o *.mod *.a *.x
+	rm -f *.o *.mod *.a *.x *__genmod.f90
 
 listing:
 	cat *.i *.f *.c > tinker.txt
