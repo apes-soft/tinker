@@ -80,7 +80,7 @@ else ifeq ($(COMPARCH),GenericGfortranOpenMP)
 
   FC        = gfortran
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
-  FCFLAGS   = -Wall -Warray-temporaries -c
+  FCFLAGS   = -Wall -Warray-temporaries -Wcharacter-truncation -c
   OPTFLAGS  = -ffast-math -fopenmp -O3
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
