@@ -49,9 +49,9 @@ LINKDIR = /usr/local/bin
 # If none specified the default is: GenericGfortranOpenMP
 
 #COMPARCH=GenericGfortran
-#COMPARCH=GenericGfortranOpenMP
+COMPARCH=GenericGfortranOpenMP
 #COMPARCH=LinuxIntel
-COMPARCH=LinuxIntelOpenMP
+#COMPARCH=LinuxIntelOpenMP
 #COMPARCH=MacIntel
 #COMPARCH=MacIntelOpenMP
 #COMPARCH=MacXeonIntelOpenMP
