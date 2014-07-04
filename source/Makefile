@@ -111,7 +111,7 @@ else ifeq ($(COMPARCH),LinuxIntelOpenMP)
 
   FC        = ifort
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_threads -lfftw3
-  FCFLAGS   = -warn all -c 
+  FCFLAGS   = -c #-warn all 
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp -xHost
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
