@@ -27,7 +27,6 @@ c
       implicit none
       integer i,ia,ib
       real*8 e,ideal,force
-      real*8 fgrp
       real*8 dt,dt2,deddt
       real*8 de,dedx,dedy,dedz
       real*8 xab,yab,zab,rab

@@ -12,13 +12,17 @@ c     ##                                                        ##
 c     ############################################################
 c
 c
-c     input   Fortran I/O unit for main input (default=5)
-c     iout    Fortran I/O unit for main output (default=6)
-c
-c
       module iounit
       implicit none
-      integer input
-      integer iout
+      integer, parameter:: input =  5 ! Fortran I/O unit for main input (default=5)
+      integer, parameter:: iout  =  6 ! Fortran I/O unit for main output (default=6)
+      integer, parameter:: ixyz  = 10 ! Fortran I/O unit for xyz files.
+      integer, parameter:: ikey  = 11 ! Fortran I/O unit for key files.
+      integer, parameter:: iprm  = 12 ! Fortran I/O unit for parameter files.
+      integer, parameter:: iend  = 13 ! Fortran I/O unit to test for termination of run.
+      integer, parameter:: ivel  = 14 ! Fortran I/O unit for velocity vector components.
+      integer, parameter:: idyn  = 15 ! Fortran I/O unit for dynamics file.
+      integer, parameter:: ifrc  = 16 ! Fortran I/O unit for force vector components.
+      integer, parameter:: iind  = 17 ! Fortran I/O unit for induced dipole moment at each site
       save
       end

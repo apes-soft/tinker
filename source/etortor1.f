@@ -33,7 +33,7 @@ c
       integer ia,ib,ic,id,ie
       integer nlo,nhi,nt
       integer xlo,ylo
-      real*8 e,fgrp,sign
+      real*8 e,sign
       real*8 angle1,angle2
       real*8 value1,value2
       real*8 cosine1,cosine2

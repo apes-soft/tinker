@@ -27,7 +27,7 @@ c
       use virial
       implicit none
       integer i,j
-      real*8 energy,cutoff
+      real*8 energy
       real*8 derivs(3,*)
       logical first
       save first

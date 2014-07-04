@@ -65,7 +65,7 @@ ifeq ($(COMPARCH),GenericGfortran)
 
   FC        = gfortran
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
-  FCFLAGS   = -c
+  FCFLAGS   = -Wall -c
   OPTFLAGS  = -O3 -ffast-math 
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
@@ -80,8 +80,8 @@ else ifeq ($(COMPARCH),GenericGfortranOpenMP)
 
   FC        = gfortran
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
-  FCFLAGS   = -c
-  OPTFLAGS  = -ffast-math -fopenmp -g # -O3
+  FCFLAGS   = -Wall -c
+  OPTFLAGS  = -ffast-math -fopenmp -O3
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc
@@ -170,7 +170,7 @@ endif
 # This is a trick to always run a perl script to create a
 # gitversion.f file with the current git has id. Will work
 # for gmake - not sure about the other versions of make
-RUNSCRIPT:=$(shell ./version.pl)
+#RUNSCRIPT:=$(shell ./version.pl)
 
 #################################################################
 ##  Should not be Necessary to Change Things Below this Point  ##
@@ -234,7 +234,6 @@ OBJS = angbnd.o \
        fields.o \
        files.o \
        final.o \
-       freeunit.o \
        getkey.o \
        getnumb.o \
        getprm.o \
@@ -370,7 +369,7 @@ EXEFILES = dynamic.x
 
 %.x: %.o libtinker.a
 	${FC} ${LINKFLAGS} -o $@ $< -L . -ltinker ${LIBS}
-	strip $@
+	# strip $@
 
 all:	${EXEFILES}
 
@@ -380,7 +379,7 @@ clean:
 listing:
 	cat *.i *.f *.c > tinker.txt
 
-install: rename
+install: all rename
 
 rename:
 	mkdir -p $(BINDIR)
@@ -458,7 +457,6 @@ field.o: keys.o potent.o sizes.o
 fields.o: sizes.o
 files.o:
 final.o: angbnd.o atmlst.o bitor.o bndstr.o chunks.o couple.o deriv.o inform.o iounit.o light.o molcul.o moldyn.o mpole.o neigh.o opbend.o pitors.o pme.o polar.o polgrp.o ring.o sizes.o strbnd.o tarray.o tors.o tortor.o uprior.o urey.o vdw.o
-freeunit.o: iounit.o
 getkey.o: argue.o files.o iounit.o keys.o openmp.o sizes.o
 getnumb.o: ascii.o
 getprm.o: files.o iounit.o keys.o params.o sizes.o

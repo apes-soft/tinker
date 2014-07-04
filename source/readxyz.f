@@ -16,7 +16,7 @@ c     "readxyz" gets a set of Cartesian coordinates from
 c     an external disk file
 c
 c
-      subroutine readxyz (ixyz)
+      subroutine readxyz ()
       use sizes
       use atomid
       use atoms
@@ -28,7 +28,7 @@ c
       use titles
       implicit none
       integer i,j,k,m
-      integer ixyz,nmax
+      integer nmax
       integer next,size
       integer first,last
       integer nexttext

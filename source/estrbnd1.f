@@ -31,7 +31,7 @@ c
       integer i,j,k,istrbnd
       integer ia,ib,ic
       real*8 e,dr1,dr2,dt
-      real*8 fgrp,angle
+      real*8 angle
       real*8 force1,force2
       real*8 dot,cosine
       real*8 xia,yia,zia

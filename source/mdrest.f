@@ -26,7 +26,7 @@ c
       use moldyn
       use units
       implicit none
-      integer i,j,k,istep
+      integer i,j,istep
       real*8 etrans
       real*8 weigh,totmass
       real*8 vtot(3)

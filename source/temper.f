@@ -132,7 +132,7 @@ c
       use moldyn
       use units
       implicit none
-      integer i,j,k,m
+      integer i,j
       integer nc,ns
       real*8 dt,dtc,dts
       real*8 dt2,dt4,dt8

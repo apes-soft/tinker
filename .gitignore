@@ -7,6 +7,9 @@
 *.lo
 *.la
 *.csv
+core
+thirdparty/fftw/config.log
+thirdparty/fftw/configure
 
 # Ignore a bin directory and its contents
 bin/
@@ -14,3 +17,7 @@ bin/
 bench/results*
 mytests/
 source/gitversion.f
+test/test.log*
+test/*.out
+thirdparty/fftw/config.log
+thirdparty/fftw/autom4te.cache/
