@@ -8,9 +8,12 @@ coordinate information.
 
 # Outstanding compilation warnings
 
-Switched on as many compilation switches to find out if there are 
-potential issues. The following are outstanding which may be worth
-examining at some point.
+## gfortran
+
+Switched on as many compilation switches to find out if there are
+potential issues. Essentially though `-Wall` probably suffices to generate
+these. The following warnings are outstanding which may be worth examining
+at some point.
 
 ```
 gfortran -Wall -Warray-temporaries -Wcharacter-truncation -Wextra -Wsurprising   -ffast-math -fopenmp -O3 cspline.f -o cspline.o 
@@ -156,3 +159,29 @@ torque.f:725:0: warning: ‘ursin’ may be used uninitialized in this function 
 torque.f:727:0: warning: ‘ut2sin’ may be used uninitialized in this function [-Wmaybe-uninitialized]
 torque.f:727:0: warning: ‘ut1sin’ may be used uninitialized in this function [-Wmaybe-uninitialized]
 ```
+## ifort
+
+Can play the same game with the intel compiler with the `-warn all` flag but it does not 
+return as many warnings:
+
+```
+ifort: command line remark #10382: option '-xHOST' setting '-xAVX'
+iounit.f(17): warning #5194: Source line truncated.
+      integer, parameter:: input =  5 ! Fortran I/O unit for main input (default=5)
+------------------------------------------------------------------------^
+```
+
+```
+ifort -warn all -c  -O3 -no-ipo -no-prec-div -recursive -openmp -xHost pressure.f -o pressure.o 
+ifort: command line remark #10382: option '-xHOST' setting '-xAVX'
+pressure.f(20): remark #7712: This variable has not been used.   [EPOT]
+      subroutine pressure (dt,epot,ekin,temp,pres,stress)
+------------------------------^
+pressure.f(20): remark #7712: This variable has not been used.   [TEMP]
+      subroutine pressure (dt,epot,ekin,temp,pres,stress)
+----------------------------------------^
+pressure.f(77): remark #7712: This variable has not been used.   [STRESS]
+      subroutine pscale (dt,pres,stress)
+---------------------------------^
+```
+
