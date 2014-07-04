@@ -57,6 +57,15 @@ This scheme is the same as base Tinker except you no longer need to
 specify the thermodynamic ensemble, the system will always be NPT (see
 below).
 
+# Testing
+
+Currently there is only one test that one can do regression testing 
+with for this code `test/dhfr.run` (corresponds to JAC). If you run
+the `test/runTest.py` scrypt it will run `dhfr.run` and compare the
+results output (`dhfr.out`) to an output produced before additioanl
+modifications were made to the code (`dhfr.log`). If these are 
+identical to a number of decimal places specified in `runTests.py`
+then the test will pass.
 
 # Features
 Many of the decisions for `dynamic` in the base Tinker are already made.  The
