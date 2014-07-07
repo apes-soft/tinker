@@ -16,7 +16,7 @@ mkdir -p $outdir
 
 
 # Loop over number of threads.
-for numthreads in 1 2 4 6 8 10 12 14 16 32
+for numthreads in 1 2 4 6 8 10 12 14 16 24
 do
 
   # Vanity prepend a 0 to nubmers less than 10.
@@ -63,7 +63,7 @@ do
      # $resultfile ; } &>> $resultfile
 
      # This works on BASH_VERSION 3 (and hopefully 4 as well)
-     { $timecom ../bin/dynamic 32000_cluster.xyz 1000 1.0 0.1 298.0 1.0 \
+     { $timecom ../bin/dynamic 32000_cluster.xyz 100 1.0 10.0 298.0 1.0 \
                 -k 32000_cluster.key >> $resultfile ; } >> $resultfile 2>&1
      
   done
