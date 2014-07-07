@@ -114,7 +114,7 @@ else ifeq ($(COMPARCH),LinuxIntelOpenMP)
   FCFLAGS   = -c -xHost
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
   LIBFLAGS  = -crusv
-  RANLIB    =
+  RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc -static-intel
 
 else ifeq ($(COMPARCH),MacIntelOpenMP)
@@ -129,7 +129,7 @@ else ifeq ($(COMPARCH),MacIntelOpenMP)
   FCFLAGS   = -c -axSSSE3
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -mdynamic-no-pic
   LIBFLAGS  = -crusv
-  RANLIB    =
+  RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-intel -mmacosx-version-min=10.6 \
               -Wl,-stack_size,0x10000000
 
