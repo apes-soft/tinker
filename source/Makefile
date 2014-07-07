@@ -49,9 +49,9 @@ LINKDIR = /usr/local/bin
 # If none specified the default is: GenericGfortranOpenMP
 
 #COMPARCH=GenericGfortran
-COMPARCH=GenericGfortranOpenMP
+#COMPARCH=GenericGfortranOpenMP
 #COMPARCH=LinuxIntel
-#COMPARCH=LinuxIntelOpenMP
+COMPARCH=LinuxIntelOpenMP
 #COMPARCH=MacIntel
 #COMPARCH=MacIntelOpenMP
 #COMPARCH=MacXeonIntelOpenMP
@@ -114,7 +114,7 @@ else ifeq ($(COMPARCH),LinuxIntelOpenMP)
   FCFLAGS   = -c -xHost
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
   LIBFLAGS  = -crusv
-  RANLIB    =
+  RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc -static-intel
 
 else ifeq ($(COMPARCH),MacIntelOpenMP)
@@ -129,7 +129,7 @@ else ifeq ($(COMPARCH),MacIntelOpenMP)
   FCFLAGS   = -c -axSSSE3
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -mdynamic-no-pic
   LIBFLAGS  = -crusv
-  RANLIB    =
+  RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-intel -mmacosx-version-min=10.6 \
               -Wl,-stack_size,0x10000000
 
@@ -356,8 +356,7 @@ OBJS = angbnd.o \
        virial.o \
        xyzatm.o \
        zclose.o \
-       zcoord.o \
-       gitversion.o
+       zcoord.o 
 
 EXEFILES = dynamic.x 
 
