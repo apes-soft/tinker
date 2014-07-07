@@ -175,7 +175,7 @@ for(my $r=1; $r <= $numruns; $r++){       # Loop over repeated runs
     
     foreach my $n (sort {$a <=> $b} @N){  # Loop over threads/array sizes
         my $id ="$n-$r";
-        print "Printing results for $id\n";
+        
 	for(my $i=0; $i < $numitems-1;$i++){
 	    print OUT "$results{$id}{$labels[$i]},";
 	}
