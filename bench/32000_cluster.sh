@@ -6,7 +6,7 @@
 #
 
 # Name the output directory.
-outdir="res_cluster_xyz"
+outdir="res_cluster_pos"
 
 # time command to use
 timecom="/usr/bin/time -v"
@@ -16,10 +16,10 @@ mkdir -p $outdir
 
 
 # Loop over number of threads.
-for numthreads in 1 2 4 6 8 10 12 14 16 32
+for numthreads in 1 2 4 6 8 10 12 14 16 24
 do
 
-  # Vanity prepend a 0 to nubmers less than 10.
+  # Vanity prepend a 0 to numbers less than 10.
   if [ $numthreads -le 9 ]
   then
        num="0"$numthreads
