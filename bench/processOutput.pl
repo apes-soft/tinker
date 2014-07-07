@@ -88,6 +88,7 @@ foreach my $file (@files){
     my $start=0;
 
     open(FILE,"<",$file) or die("Could not open $file: $!\n");
+
     while(<FILE>){
 
         if(/Command being timed/) {# Expect this to be the first line of timings
@@ -147,6 +148,7 @@ my @ids = keys(%results);
 my @N;
 foreach my $id (@ids){
     my($n,$r) = split("-",$id);
+    next if($r != 1);           # Only pick the first run for uniqueness.
     push(@N,$n);
 }
 
@@ -173,6 +175,7 @@ for(my $r=1; $r <= $numruns; $r++){       # Loop over repeated runs
     
     foreach my $n (sort {$a <=> $b} @N){  # Loop over threads/array sizes
         my $id ="$n-$r";
+        print "Printing results for $id\n";
 	for(my $i=0; $i < $numitems-1;$i++){
 	    print OUT "$results{$id}{$labels[$i]},";
 	}
