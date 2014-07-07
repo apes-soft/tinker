@@ -17,6 +17,7 @@ bin/
 bench/results*
 mytests/
 source/gitversion.f
-thirdparty/fftw/autom4te.cache/
-test/*.out
 test/test.log*
+test/*.out
+thirdparty/fftw/config.log
+thirdparty/fftw/autom4te.cache/
