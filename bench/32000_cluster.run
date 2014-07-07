@@ -1,1 +1,1 @@
-/[path]/dynamic 32000_cluster.xyz 1000 1.0 0.1 298.0 1.0 -k 32000_cluster.key > 32000_cluster.log
+../bin/dynamic 32000_cluster.xyz 1000 1.0 0.1 298.0 1.0 -k 32000_cluster.key > 32000_cluster.log
