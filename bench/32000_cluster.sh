@@ -63,7 +63,7 @@ do
      # $resultfile ; } &>> $resultfile
 
      # This works on BASH_VERSION 3 (and hopefully 4 as well)
-     { $timecom ../bin/dynamic 32000_cluster.xyz 1000 1.0 0.1 298.0 1.0 \
+     { $timecom ../bin/dynamic 32000_cluster.xyz 100 1.0 10.0 298.0 1.0 \
                 -k 32000_cluster.key >> $resultfile ; } >> $resultfile 2>&1
      
   done
