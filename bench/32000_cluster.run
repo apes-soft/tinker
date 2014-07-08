@@ -9,4 +9,6 @@
 # temp   : real number value of temperature of the system in Kelvin
 # pres   : real number value of pressure of the system in atmospheres
 
-../bin/dynamic 32000_cluster.xyz 1000 1.0 0.1 298.0 1.0 -k 32000_cluster.key > 32000_cluster.log
+# Oringinal arguments: 32000_cluster.xyz 1000 1.0 0.1 298.0 1.0 
+time \
+../bin/dynamic 32000_cluster.xyz 100 1.0 10.0 298.0 1.0 -k 32000_cluster.key > 32000_cluster.log
