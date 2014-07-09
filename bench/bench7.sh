@@ -6,7 +6,7 @@
 #
 
 # Name the output directory.
-outdir="results2"
+outdir="res_xyz"
 
 # time command to use
 timecom="/usr/bin/time -v"
