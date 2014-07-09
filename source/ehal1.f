@@ -135,9 +135,9 @@ c
          i = ivdw(k)
          iv = ired(i)
          rdn = kred(i)
-         xred(i) = rdn*(x(i)-x(iv)) + x(iv)
-         yred(i) = rdn*(y(i)-y(iv)) + y(iv)
-         zred(i) = rdn*(z(i)-z(iv)) + z(iv)
+         xred(i) = rdn*(pos(1,i)-pos(1,iv)) + pos(1,iv)
+         yred(i) = rdn*(pos(2,i)-pos(2,iv)) + pos(2,iv)
+         zred(i) = rdn*(pos(3,i)-pos(3,iv)) + pos(3,iv)
       end do
 c
 c     transfer global to local copies for OpenMP calculation

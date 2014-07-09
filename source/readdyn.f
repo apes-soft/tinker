@@ -90,7 +90,7 @@ c
       do i = 1, n
          read (idyn,160)  record
   160    format (a120)
-         read (record,*,err=230,end=230)  x(i),y(i),z(i)
+         read (record,*,err=230,end=230)  pos(1,i),pos(2,i),pos(3,i)
       end do
       read (idyn,170)
   170 format ()

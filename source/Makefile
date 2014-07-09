@@ -80,7 +80,8 @@ else ifeq ($(COMPARCH),GenericGfortranOpenMP)
 
   FC        = gfortran
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
-  FCFLAGS   = -Wall -c
+  WARNINGS  = -Warray-temporaries -Wcharacter-truncation -Wextra -Wsurprising 
+  FCFLAGS   = -Wall $(WARNINGS) -c
   OPTFLAGS  = -ffast-math -fopenmp -O3
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
@@ -95,7 +96,7 @@ else ifeq ($(COMPARCH),LinuxIntel)
 
   FC        = ifort
   LIBS      =
-  FCFLAGS   = -c -xHost
+  FCFLAGS   = -c -warn all -xHost
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
@@ -123,8 +124,8 @@ else ifeq ($(COMPARCH),LinuxIntelOpenMP)
 
   FC        = ifort
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_threads -lfftw3
-  FCFLAGS   = -c -xHost
-  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
+  FCFLAGS   = -c #-warn all 
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp -xHost
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc -static-intel
@@ -387,7 +388,7 @@ install: all rename
 all:	${EXEFILES}
 
 clean:
-	rm -f *.o *.mod *.a *.x
+	rm -f *.o *.mod *.a *.x *__genmod.f90
 
 listing:
 	cat *.i *.f *.c > tinker.txt

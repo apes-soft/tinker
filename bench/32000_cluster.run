@@ -1,7 +1,6 @@
 # Command line argument order:
 #                            ../bin/dynamic.x [file] [nstep] [dt] [dtdump] [temp] [pres]
 # where
-#
 # file   : .xyz coordinate file for the simulation system
 # nstep  : integer number of steps to be taken
 # dt     : real number value of timestep length in femtoseconds

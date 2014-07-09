@@ -53,9 +53,9 @@ c
 c     get the B-spline coefficients for each atomic site
 c
       do i = 1, n
-         xi = x(i)
-         yi = y(i)
-         zi = z(i)
+         xi = pos(1,i)
+         yi = pos(2,i)
+         zi = pos(3,i)
          w = xi*recip(1,1) + yi*recip(2,1) + zi*recip(3,1)
          fr = dble(nfft1) * (w-anint(w)+0.5d0)
          ifr = int(fr-eps)

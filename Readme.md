@@ -1,164 +1,190 @@
-# Tinker Lite
+# Tinker Lite - dev
 
-This is a stripped down version of Tinker created mostly for the
-purpose of readability and simplification, but also for small
-performance gains.  This software is taken from Tinker 7.0 off of Jay
-Ponder's GitHub [tinker repository](https://github.com/jayponder/tinker).  
-This software will only perform the Tinker executable `dynamic` and
-most options within `dynamic` are already made (see below for
-details).  
+This is the main development branch. Main changes over the master 
+branch:
 
-Using the GNU compilers on a 12 core system Alex Albaugh was able to
-achieve ~5% performance improvement compared to the base Tinker the 
-code is derived from for a system of 32000 water
-molecules and also for the JAC benchmark.  Any comments, questions, or
-concerns can be direction to [Alex
-Albaugh](mailto:aalbaugh@berkeley.edu).
+* Have collapsed the distinct `x(N)`, `y(N)` and `z(N)`
+  into a single array `pos(3)(N)`. Testing has shown that this has 
+  no major impact on performance but the change will simplify a 
+  distributed memory parallelisation by reducing the number of explicit 
+  message passes required to exchange coordinate information.
 
+# Outstanding compilation warnings
 
-# Compiling
+## gfortran
 
-If you do not have a compiled version of `fftw` then you will need to
-compile this first. You should be able to do this by just running the
-commands in the `thirdparty/fftw` directory (note the backticks that surround 
-the `pwd` command should execute the command before being passed to 
-the `configure` script):
+Switched on as many compilation switches to find out if there are
+potential issues. Essentially though `-Wall` probably suffices to generate
+these. The following warnings are outstanding which may be worth examining
+at some point.
 
-      make distclean
-      configure --prefix=`pwd`/fftw --enable-threads
-      make
-      make install
+```
+gfortran -Wall -Warray-temporaries -Wcharacter-truncation -Wextra -Wsurprising   -ffast-math -fopenmp -O3 cspline.f -o cspline.o 
+cspline.f: In function ‘cytsyp’:
+cspline.f:212:0: warning: ‘temp2’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+```
 
-You can also use `--enable-openmp` instead of `--enable-thread` for an
-OpenMP version of the libaries.
+```
+gfortran -Wall -Warray-temporaries -Wcharacter-truncation -Wextra -Wsurprising   -ffast-math -fopenmp -O3 eangle1.f -o eangle1.o 
+eangle1.f: In function ‘eangle1’:
+eangle1.f:164:0: warning: ‘e’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+eangle1.f:151:0: warning: ‘deddt’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+```
 
-Modify the included `Makefile` to your desired paths and compilers, just
-like with base Tinker.  The `make` command will then create a single 
-executable called `dynamic.x`.
+```
+gfortran -Wall -Warray-temporaries -Wcharacter-truncation -Wextra -Wsurprising   -ffast-math -fopenmp -O3 ehal1.f -o ehal1.o 
+ehal1.f: In function ‘ehal1c_._omp_fn.0’:
+ehal1.f:318:0: warning: ‘vscale.offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+ehal1.f:97:0: note: ‘vscale.offset’ was declared here
+ehal1.f:189:0: warning: ‘iv14.offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+ehal1.f:75:0: note: ‘iv14.offset’ was declared here
+```
 
+```
+gfortran -Wall -Warray-temporaries -Wcharacter-truncation -Wextra -Wsurprising   -ffast-math -fopenmp -O3 empole1.f -o empole1.o 
+empole1.f: In function ‘ereal1d_._omp_fn.0’:
+empole1.f:1111:0: warning: ‘mscale.offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+empole1.f:236:0: note: ‘mscale.offset’ was declared here
+empole1.f:1112:0: warning: ‘pscale.offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+empole1.f:237:0: note: ‘pscale.offset’ was declared here
+empole1.f:1127:0: warning: ‘dscale.offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+empole1.f:238:0: note: ‘dscale.offset’ was declared here
+empole1.f:1128:0: warning: ‘uscale.offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+empole1.f:239:0: note: ‘uscale.offset’ was declared here
+```
 
-# Running
-`dynamic.x` can be run from the command line or within a script in the 
-following way:
+```
+gfortran -Wall -Warray-temporaries -Wcharacter-truncation -Wextra -Wsurprising   -ffast-math -fopenmp -O3 erf.f -o erf.o 
+erf.f:19.6:
 
-    [path]/dynamic.x [file] [nstep] [dt] [dtdump] [temp] [pres]
+      function erf (x)                                                  
+      1
+Warning: 'erf' declared at (1) is also the name of an intrinsic.  It can only be called via an explicit interface or if declared EXTERNAL.
+erf.f:46.6:
 
-where 
+      function erfc (x)                                                 
+      1
+Warning: 'erfc' declared at (1) is also the name of an intrinsic.  It can only be called via an explicit interface or if declared EXTERNAL.
+```
 
-* `path`: the directory path to the executable
-* `file`: `.xyz` coordinate file for the simulation system
-* `nstep`: integer number of steps to be taken
-* `dt`: real number value of timestep length in femtoseconds
-* `dtdump`: real number value of time between data writes in picoseconds
-* `temp`: real number value of temperature of the system in Kelvin
-* `pres`: real number value of pressure of the system in atmospheres
+```
+gfortran -Wall -Warray-temporaries -Wcharacter-truncation -Wextra -Wsurprising   -ffast-math -fopenmp -O3 etortor1.f -o etortor1.o 
+etortor1.f: In function ‘chkttor’:
+etortor1.f:393:0: warning: ‘k’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+```
 
-This scheme is the same as base Tinker except you no longer need to 
-specify the thermodynamic ensemble, the system will always be NPT (see
-below).
+```
+gfortran -Wall -Warray-temporaries -Wcharacter-truncation -Wextra -Wsurprising   -ffast-math -fopenmp -O3 getnumb.f -o getnumb.o 
+getnumb.f: In function ‘getnumb’:
+getnumb.f:31:0: warning: ‘digit’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+```
 
-# Testing
+```
+gfortran -Wall -Warray-temporaries -Wcharacter-truncation -Wextra -Wsurprising   -ffast-math -fopenmp -O3 induce.f -o induce.o 
+induce.f:1271.16:
 
-Currently there is only one test that one can do regression testing 
-with for this code `test/dhfr.run` (corresponds to JAC). If you run
-the `test/runTest.py` scrypt it will run `dhfr.run` and compare the
-results output (`dhfr.out`) to an output produced before additioanl
-modifications were made to the code (`dhfr.log`). If these are 
-identical to a number of decimal places specified in `runTests.py`
-then the test will pass.
+            m = mindex(i)                                               
+                1
+Warning: Possible change of value in conversion from REAL(8) to INTEGER(4) at (1)
+induce.f:1375.16:
 
-# Features
-Many of the decisions for `dynamic` in the base Tinker are already made.  The
-following is a list of these features:
+            m = mindex(i)                                               
+                1
+Warning: Possible change of value in conversion from REAL(8) to INTEGER(4) at (1)
+induce.f: In function ‘uscale0b_._omp_fn.3’:
+induce.f:1421:0: warning: ‘dscale.offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+induce.f:1233:0: note: ‘dscale.offset’ was declared here
+induce.f: In function ‘udirect2b_._omp_fn.0’:
+induce.f:894:0: warning: ‘pscale.offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+induce.f:642:0: note: ‘pscale.offset’ was declared here
+induce.f:910:0: warning: ‘dscale.offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+induce.f:643:0: note: ‘dscale.offset’ was declared here
+induce.f:909:0: warning: ‘uscale.offset’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+induce.f:644:0: note: ‘uscale.offset’ was declared here
+```
 
-* NPT ensemble
-* cubic system
-* periodic boundaries, tinfoil, no replicas (specify a box length)
-* neighbor lists (no need for any list keywords)
-* Nose-Hoover themostat (no need for 'thermostat' keyword)
-* Berendsen barostat (no need for `barostat` keywork)
-* particle-mesh Ewald (no need for `ewald` keyword)
-* Verlet integrator (no need for 'integrator keyword)
-* mutual polarization (no need for `polarization` keyword)
-* no energy/gradient calls to functions that don't correspond directly to 
-   the `amoebapro13` or a`moebabio09` force field, will only call:
-  * bonds
-  * angles
-  * angle-bending
-  * Urey-Bradley
-  * out-of-plane bending
-  * torsional
-  * pi-orbital torsion
-  * torsional-torsional
-  * 14-7 van der Waals
-  * multipoles with mutual polarization
-* pre-conditioning for the conjugate-gradient solver
-  
-Notable removals from 'dynamic' include the following:
+```
+kpolar.f: In function ‘kpolar’:
+kpolar.f:83:0: warning: ‘npg’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+```
 
-* energy/gradient functions not listed above
-* most debug/verbose sections
-* restraints
-* constraints
-* polymers
-* smoothing
-* non-cubic box geometries
-* implicit solvent
-* socket (outside interfacing)
-* atom grouping
-* inactive atoms (all atoms are active)
-* unused thermostats and barostats
-  
-In general most keywords that require a number value such as 
-`openmp-threads`, box sizes, cutoffs values, etc. are still valid and active.  
-Most keywords that specify certain features such as barostats, 
-integrators, etc. are not.
+```
+gfortran -Wall -Warray-temporaries -Wcharacter-truncation -Wextra -Wsurprising   -ffast-math -fopenmp -O3 kstrbnd.f -o kstrbnd.o 
+kstrbnd.f: In function ‘kstrbnd’:
+kstrbnd.f:147:0: warning: ‘nbc’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+kstrbnd.f:146:0: warning: ‘nba’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+```
 
+```
+gfortran -Wall -Warray-temporaries -Wcharacter-truncation -Wextra -Wsurprising   -ffast-math -fopenmp -O3 pressure.f -o pressure.o 
+pressure.f:77.39:
 
-# Comments and future work
+      subroutine pscale (dt,pres,stress)                                
+                                       1
+Warning: Unused dummy argument 'stress' at (1)
+pressure.f:20.34:
 
-* Some of the files included with this distribution may not be used.  Alex 
-  has removed many unused files from the original Tinker distribution, 
-  but probably not all of them. Jay is going to have a look and see what
-  else can be removed.
+      subroutine pressure (dt,epot,ekin,temp,pres,stress)               
+                                  1
+Warning: Unused dummy argument 'epot' at (1)
+pressure.f:20.44:
 
-* Some of the header modules ('use whatever') within files may be unused,
- as well.  Alex did his best to clear out the obvious ones.
- 
-* ~~The `Makefile` is a bit of a mess and could probably use some work. It 
- should be functional, though~~.
- 
-* In general comments with a `!` are mine and comments with a `c` are 
- original.  Most sections Alex removed have been completely deleted, but 
- some are commented out.
+      subroutine pressure (dt,epot,ekin,temp,pres,stress)               
+                                            1
+Warning: Unused dummy argument 'temp' at (1)
+```
 
-Original `README` from the Tinker distribution:
+```
+gfortran -Wall -Warray-temporaries -Wcharacter-truncation -Wextra -Wsurprising   -ffast-math -fopenmp -O3 readprm.f -o readprm.o 
+readprm.f:965.5:
 
-                   ------------------------------------------
-                   Fortran Source Code for the TINKER Package
-                   ------------------------------------------
+  520          format (/,' READPRM  --  Too many Biopolymer Types;',    
+     1
+Warning: Label 520 at (1) defined but not used
+```
 
-         This subdirectory contains the Fortran 95 source code for the
-         current version of the TINKER program package.
+```
+gfortran -Wall -Warray-temporaries -Wcharacter-truncation -Wextra -Wsurprising   -ffast-math -fopenmp -O3 torque.f -o torque.o 
+torque.f: In function ‘torque’:
+torque.f:47:0: warning: ‘wssin’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+torque.f:43:0: warning: ‘wscos’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+torque.f:358:0: warning: ‘vssin’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+torque.f:43:0: warning: ‘vscos’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+torque.f:46:0: warning: ‘ursin’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+torque.f:48:0: warning: ‘ut2sin’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+torque.f:48:0: warning: ‘ut1sin’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+torque.f: In function ‘torque3’:
+torque.f:726:0: warning: ‘wssin’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+torque.f:722:0: warning: ‘wscos’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+torque.f:726:0: warning: ‘vssin’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+torque.f:722:0: warning: ‘vscos’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+torque.f:725:0: warning: ‘ursin’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+torque.f:727:0: warning: ‘ut2sin’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+torque.f:727:0: warning: ‘ut1sin’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+```
+## ifort
 
-         The code is in a standard Fortran dialect that should compile
-         unchanged on most machines. Script files to build the package
-         on a variety of systems are in subdirectories named for the
-         machine/operating system.
+Can play the same game with the intel compiler with the `-warn all` flag but it does not 
+return as many warnings:
 
-         Only a few source files may require editing prior to building:
-         "sizes.f" which contains some master array dimensions used
-         throughout the package, and "openend.f" which is a system
-         dependent routine to open a file at the end.
+```
+ifort: command line remark #10382: option '-xHOST' setting '-xAVX'
+iounit.f(17): warning #5194: Source line truncated.
+      integer, parameter:: input =  5 ! Fortran I/O unit for main input (default=5)
+------------------------------------------------------------------------^
+```
 
-         In addition, if your system does not support the iargc/getarg
-         mechanism for command line arguments, then comment out the
-         call to the subroutine "command" at the bottom of the source
-         file "initial.f".
-
-         If you are building an OpenMP-capable version of TINKER with
-         a compiler other than the Intel Fortran compiler, then it is
-         necessary to remove the calls to the Intel-specific extensions
-         "kmp_set_stacksize" and "kmp-set-blocksize" near the top of
-         the file "initial.f".
+```
+ifort -warn all -c  -O3 -no-ipo -no-prec-div -recursive -openmp -xHost pressure.f -o pressure.o 
+ifort: command line remark #10382: option '-xHOST' setting '-xAVX'
+pressure.f(20): remark #7712: This variable has not been used.   [EPOT]
+      subroutine pressure (dt,epot,ekin,temp,pres,stress)
+------------------------------^
+pressure.f(20): remark #7712: This variable has not been used.   [TEMP]
+      subroutine pressure (dt,epot,ekin,temp,pres,stress)
+----------------------------------------^
+pressure.f(77): remark #7712: This variable has not been used.   [STRESS]
+      subroutine pscale (dt,pres,stress)
+---------------------------------^
+```
 

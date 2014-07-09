@@ -24,8 +24,6 @@ c
       implicit none
       integer n
       integer type(maxatm)
-      real*8 x(maxatm)
-      real*8 y(maxatm)
-      real*8 z(maxatm)
+      real*8 pos(3,maxatm)
       save
       end

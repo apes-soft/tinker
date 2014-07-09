@@ -76,15 +76,15 @@ c
 c
 c     get the coordinates of the atoms in the angle
 c
-         xia = x(ia)
-         yia = y(ia)
-         zia = z(ia)
-         xib = x(ib)
-         yib = y(ib)
-         zib = z(ib)
-         xic = x(ic)
-         yic = y(ic)
-         zic = z(ic)
+         xia = pos(1,ia)
+         yia = pos(2,ia)
+         zia = pos(3,ia)
+         xib = pos(1,ib)
+         yib = pos(2,ib)
+         zib = pos(3,ib)
+         xic = pos(1,ic)
+         yic = pos(2,ic)
+         zic = pos(3,ic)
 c
 c     compute the value of the bond angle
 c
