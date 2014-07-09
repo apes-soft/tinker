@@ -16,7 +16,7 @@ mkdir -p $outdir
 
 
 # Loop over number of threads.
-for numthreads in 1 2 4 6 8 10 12 14 16 32
+for numthreads in 1 2 4 6 8 10 12 14 16 24
 do
 
   # Vanity prepend a 0 to nubmers less than 10.
@@ -30,6 +30,7 @@ do
 
   # Set the number of threads that are to be used.
   export OMP_NUM_THREADS=$numthreads
+  export OMP_STACKSIZE=100M
 
   # Repeat the loop a number of times.
   for run in 1 2 
@@ -44,7 +45,7 @@ do
      fi
 
      # Output files
-     resultfile=$outdir/bench7-$num-$num2".txt"
+     resultfile=$outdir/32000cluster-$num-$num2".txt"
 
      # Create an output file specifying how many threads are being used.
      echo "Running on $numthreads thread(s)." > $resultfile
