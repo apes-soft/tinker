@@ -7,6 +7,7 @@
 *.lo
 *.la
 *.csv
+*__genmod.f90
 core
 thirdparty/fftw/config.log
 thirdparty/fftw/configure

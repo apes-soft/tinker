@@ -80,18 +80,18 @@ c
 c
 c     get the coordinates of the atoms at trigonal center
 c
-         xia = x(ia)
-         yia = y(ia)
-         zia = z(ia)
-         xib = x(ib)
-         yib = y(ib)
-         zib = z(ib)
-         xic = x(ic)
-         yic = y(ic)
-         zic = z(ic)
-         xid = x(id)
-         yid = y(id)
-         zid = z(id)
+         xia = pos(1,ia)
+         yia = pos(2,ia)
+         zia = pos(3,ia)
+         xib = pos(1,ib)
+         yib = pos(2,ib)
+         zib = pos(3,ib)
+         xic = pos(1,ic)
+         yic = pos(2,ic)
+         zic = pos(3,ic)
+         xid = pos(1,id)
+         yid = pos(2,id)
+         zid = pos(3,id)
 c
 c     compute the out-of-plane bending angle
 c

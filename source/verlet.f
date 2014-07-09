@@ -52,9 +52,9 @@ c
          do j = 1, 3
             v(j,i) = v(j,i) + a(j,i)*dt_2
          end do
-         x(i) = x(i) + v(1,i)*dt
-         y(i) = y(i) + v(2,i)*dt
-         z(i) = z(i) + v(3,i)*dt
+         pos(1,i) = pos(1,i) + v(1,i)*dt
+         pos(2,i) = pos(2,i) + v(2,i)*dt
+         pos(3,i) = pos(3,i) + v(3,i)*dt
       end do
 c
 c     get the potential energy and atomic forces

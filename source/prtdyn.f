@@ -75,7 +75,7 @@ c
       write (idyn,fstr(1:31))
       fstr = '(3d26.16)'
       do i = 1, n
-         write (idyn,fstr(1:9))  x(i),y(i),z(i)
+         write (idyn,fstr(1:9))  pos(1,i),pos(2,i),pos(3,i)
       end do
       fstr = '('' Current Atomic Velocities :'')'
       write (idyn,fstr(1:32))

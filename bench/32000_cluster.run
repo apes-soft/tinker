@@ -1,1 +1,18 @@
-../bin/dynamic 32000_cluster.xyz 1000 1.0 0.1 298.0 1.0 -k 32000_cluster.key > 32000_cluster.log
+# Command line argument order:
+#                            ../bin/dynamic.x [file] [nstep] [dt] [dtdump] [temp] [pres]
+# where
+# file   : .xyz coordinate file for the simulation system
+# nstep  : integer number of steps to be taken
+# dt     : real number value of timestep length in femtoseconds
+# dtdump : real number value of time between data writes in picoseconds
+# temp   : real number value of temperature of the system in Kelvin
+# pres   : real number value of pressure of the system in atmospheres
+
+# Oringinal arguments: 32000_cluster.xyz 1000 1.0 0.1 298.0 1.0
+ulimit -s unlimited          # Place no stack limits on the shell.
+export OMP_NUM_THREADS=2     # Be explicit about the number of threads (removed from key file)
+export OMP_STACKSIZE=100M    # Set the OpenMP stack size.
+
+time \
+../bin/dynamic 32000_cluster.xyz 100 1.0 10.0 298.0 1.0 -k 32000_cluster.key #> 32000_cluster.log
+

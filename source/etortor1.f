@@ -108,21 +108,21 @@ c
 c
 c     compute the values of the torsional angles
 c
-         xia = x(ia)
-         yia = y(ia)
-         zia = z(ia)
-         xib = x(ib)
-         yib = y(ib)
-         zib = z(ib)
-         xic = x(ic)
-         yic = y(ic)
-         zic = z(ic)
-         xid = x(id)
-         yid = y(id)
-         zid = z(id)
-         xie = x(ie)
-         yie = y(ie)
-         zie = z(ie)
+         xia = pos(1,ia)
+         yia = pos(2,ia)
+         zia = pos(3,ia)
+         xib = pos(1,ib)
+         yib = pos(2,ib)
+         zib = pos(3,ib)
+         xic = pos(1,ic)
+         yic = pos(2,ic)
+         zic = pos(3,ic)
+         xid = pos(1,id)
+         yid = pos(2,id)
+         zid = pos(3,id)
+         xie = pos(1,ie)
+         yie = pos(2,ie)
+         zie = pos(3,ie)
          xba = xib - xia
          yba = yib - yia
          zba = zib - zia
@@ -398,15 +398,15 @@ c
 c     compute the signed parallelpiped volume at central site
 c
          if (ia .ne. 0) then
-            xac = x(ia) - x(ic)
-            yac = y(ia) - y(ic)
-            zac = z(ia) - z(ic)
-            xbc = x(ib) - x(ic)
-            ybc = y(ib) - y(ic)
-            zbc = z(ib) - z(ic)
-            xdc = x(id) - x(ic)
-            ydc = y(id) - y(ic)
-            zdc = z(id) - z(ic)
+            xac = pos(1,ia) - pos(1,ic)
+            yac = pos(2,ia) - pos(2,ic)
+            zac = pos(3,ia) - pos(3,ic)
+            xbc = pos(1,ib) - pos(1,ic)
+            ybc = pos(2,ib) - pos(2,ic)
+            zbc = pos(3,ib) - pos(3,ic)
+            xdc = pos(1,id) - pos(1,ic)
+            ydc = pos(2,id) - pos(2,ic)
+            zdc = pos(3,id) - pos(3,ic)
             c1 = ybc*zdc - zbc*ydc
             c2 = ydc*zac - zdc*yac
             c3 = yac*zbc - zac*ybc

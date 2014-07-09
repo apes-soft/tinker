@@ -49,9 +49,9 @@ LINKDIR = /usr/local/bin
 # If none specified the default is: GenericGfortranOpenMP
 
 #COMPARCH=GenericGfortran
-#COMPARCH=GenericGfortranOpenMP
+COMPARCH=GenericGfortranOpenMP
 #COMPARCH=LinuxIntel
-COMPARCH=LinuxIntelOpenMP
+#COMPARCH=LinuxIntelOpenMP
 #COMPARCH=MacIntel
 #COMPARCH=MacIntelOpenMP
 #COMPARCH=MacXeonIntelOpenMP
@@ -80,7 +80,8 @@ else ifeq ($(COMPARCH),GenericGfortranOpenMP)
 
   FC        = gfortran
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
-  FCFLAGS   = -Wall -c
+  WARNINGS  = -Warray-temporaries -Wcharacter-truncation -Wextra -Wsurprising 
+  FCFLAGS   = -Wall $(WARNINGS) -c
   OPTFLAGS  = -ffast-math -fopenmp -O3
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
@@ -95,7 +96,7 @@ else ifeq ($(COMPARCH),LinuxIntel)
 
   FC        = ifort
   LIBS      =
-  FCFLAGS   = -c -xHost
+  FCFLAGS   = -c -warn all -xHost
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
@@ -109,10 +110,22 @@ else ifeq ($(COMPARCH),LinuxIntelOpenMP)
   ##  Compiler: Intel Fortran for Linux 14.0
   ##  Parallel: OpenMP
 
+  # Compiler warning flags that could be useful:
+  #  
+  # -check bounds: run time checking of array bounds.
+  # -check all: turn on all checks 
+  # -traceback: generate extra information in the object file 
+  #             to provide source file  traceback  information
+  #             when a severe error occurs at run time.
+  # -fp-stack-check: generate  extra code after every
+  #                function call to ensure that the floating-point  stack  is
+  #                in the expected state.
+  #
+
   FC        = ifort
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_threads -lfftw3
-  FCFLAGS   = -c -xHost
-  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
+  FCFLAGS   = -c #-warn all 
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp -xHost
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc -static-intel
@@ -370,15 +383,15 @@ EXEFILES = dynamic.x
 	${FC} ${LINKFLAGS} -o $@ $< -L . -ltinker ${LIBS}
 	# strip $@
 
+install: all rename
+
 all:	${EXEFILES}
 
 clean:
-	rm -f *.o *.mod *.a *.x
+	rm -f *.o *.mod *.a *.x *__genmod.f90
 
 listing:
 	cat *.i *.f *.c > tinker.txt
-
-install: all rename
 
 rename:
 	mkdir -p $(BINDIR)

@@ -118,9 +118,9 @@ c
       do i = 1, n
          tag(i) = 0
          name(i) = '   '
-         x(i) = 0.0d0
-         y(i) = 0.0d0
-         z(i) = 0.0d0
+         pos(1,i) = 0.0d0
+         pos(2,i) = 0.0d0
+         pos(3,i) = 0.0d0
          type(i) = 0
          do j = 1, maxval
             i12(j,i) = 0
@@ -157,8 +157,8 @@ c              use_bounds = .true.
          next = 1
          call getword (record,name(i),next)
          string = record(next:120)
-         read (string,*,err=70,end=70)  x(i),y(i),z(i),type(i),
-     &                                  (i12(j,i),j=1,maxval)
+         read (string,*,err=70,end=70)  pos(1,i),pos(2,i),pos(3,i),
+     &                                  type(i),(i12(j,i),j=1,maxval)
    70    continue
       end do
       quit = .false.
