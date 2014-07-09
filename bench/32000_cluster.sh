@@ -45,7 +45,7 @@ do
      fi
 
      # Output files
-     resultfile=$outdir/bench7-$num-$num2".txt"
+     resultfile=$outdir/32000cluster-$num-$num2".txt"
 
      # Create an output file specifying how many threads are being used.
      echo "Running on $numthreads thread(s)." > $resultfile
