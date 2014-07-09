@@ -30,6 +30,7 @@ do
 
   # Set the number of threads that are to be used.
   export OMP_NUM_THREADS=$numthreads
+  export OMP_STACKSIZE=100M
 
   # Repeat the loop a number of times.
   for run in 1 2 
