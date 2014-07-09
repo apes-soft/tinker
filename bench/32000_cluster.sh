@@ -30,6 +30,7 @@ do
 
   # Set the number of threads that are to be used.
   export OMP_NUM_THREADS=$numthreads
+  export OMP_STACKSIZE=100M
 
   # Repeat the loop a number of times.
   for run in 1 2 
@@ -44,7 +45,7 @@ do
      fi
 
      # Output files
-     resultfile=$outdir/bench7-$num-$num2".txt"
+     resultfile=$outdir/32000cluster-$num-$num2".txt"
 
      # Create an output file specifying how many threads are being used.
      echo "Running on $numthreads thread(s)." > $resultfile
@@ -63,7 +64,7 @@ do
      # $resultfile ; } &>> $resultfile
 
      # This works on BASH_VERSION 3 (and hopefully 4 as well)
-     { $timecom ../bin/dynamic 32000_cluster.xyz 100 1.0 100.1 298.0 1.0 \
+     { $timecom ../bin/dynamic 32000_cluster.xyz 100 1.0 10.0 298.0 1.0 \
                 -k 32000_cluster.key >> $resultfile ; } >> $resultfile 2>&1
      
   done
