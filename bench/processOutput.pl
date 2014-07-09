@@ -5,6 +5,13 @@
 # The input directory is specified in the outdir directory and 
 # this same name is used to create the output csv file.
 #
+# expected output filename:
+#
+#  file-N-R.txt
+#
+# where N can be used for the number of threads or array size and
+# R to indicate whether a number of runs has been used.
+#
 # Author: Mario Antonioletti (mario@epcc.ed.ac.uk)
 #
 
@@ -38,7 +45,7 @@ my %results;
 # Get a list of the output files with the timings.
 my @files = `ls -1 $outdir/*.txt`;
 
-# Some keynames
+# Name for the first two columns.
 my $runlabel    = "0Run";
 my $threadlabel = "00N";
 
@@ -60,14 +67,17 @@ foreach my $file (@files){
 
     # Grab the number of threads and run number
     # from the file name.
-    $file  =~ /\w+\-((\d+)\-(\d+))\.txt/;
-    my $id                      = $1;
-    $results{$id}{$threadlabel} = $2;
-    $results{$id}{$runlabel}    = $3;
+    $file  =~ /\w+\-(\d+)\-(\d+)\.txt/;
+    my $ln = $1;
+    my $lr = $2;
 
     # Strip a leading 0 if there is one.
-    $results{$id}{$threadlabel} =~ s/^0//;
-    $results{$id}{$runlabel}    =~ s/^0//;
+    $ln =~ s/^0//;
+    $lr =~ s/^0//;
+
+    my $id  = "$ln-$lr";
+    $results{$id}{$threadlabel} = $ln;
+    $results{$id}{$runlabel}    = $lr;
 
     # Count the number of runs per thread
     if($results{$id}{$runlabel} > $numruns ){
@@ -78,15 +88,15 @@ foreach my $file (@files){
     my $start=0;
 
     open(FILE,"<",$file) or die("Could not open $file: $!\n");
+
     while(<FILE>){
 
-        if(/Command being timed/) {
+        if(/Command being timed/) {# Expect this to be the first line of timings
           $start = 1;
         }
         next if not $start;
-        next if(/nn$/);     # Skip temporary glitch in output
 
-        # Remove label that makes split harder.
+        # Remove label that makes split harder (i.e. the colons).
         s/\(h:mm:ss or m:ss\)/(seconds)/;
 
         # Split along the colon
@@ -97,7 +107,7 @@ foreach my $file (@files){
 
         # Convert the wall clock into seconds.
         if($label =~ /wall clock/){
-	    # split populates the array from left to right
+	    # The split command populates the array from left to right.
 	    my @time = split(":",$value);
             my $size = @time;  # Size of the array
 
@@ -117,7 +127,7 @@ foreach my $file (@files){
 
         # Store the results.
         $results{$id}{"$label"}=$value;
-	#print "\t",$label," --- ",$value,"\n";
+	#print "\t\"$id ",$label,"\" --- ",$value,"\n";
     }
 
     # Close the input file
@@ -138,9 +148,9 @@ my @ids = keys(%results);
 my @N;
 foreach my $id (@ids){
     my($n,$r) = split("-",$id);
+    next if($r != 1);           # Only pick the first run for uniqueness.
     push(@N,$n);
 }
-
 
 # Now get the labels
 my @labels = sort keys(%{$results{$ids[0]}});
@@ -161,14 +171,15 @@ print OUT join(",",sort @labels),"\n";
 # Want the different run data to be printed in sequence.
 # This is a clunky way of doing it but could not come up
 # with a better way of doign it.
-for(my $r=1; $r <= $numruns; $r++){
-    # Loop round the run ids
-    foreach my $n (sort {$a <=> $b} @N){
+for(my $r=1; $r <= $numruns; $r++){       # Loop over repeated runs
+    
+    foreach my $n (sort {$a <=> $b} @N){  # Loop over threads/array sizes
         my $id ="$n-$r";
+        
 	for(my $i=0; $i < $numitems-1;$i++){
 	    print OUT "$results{$id}{$labels[$i]},";
 	}
-	print OUT "$results{$id}{$labels[$numitems-1]}\n";
+        print OUT "$results{$id}{$labels[$numitems-1]}\n";
     }
 }
 
