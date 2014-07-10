@@ -11,6 +11,11 @@ with restricted options of what can be run. The main aim of this work is to:
 Enumerate in reverse chronological order the rationale for
 changes made to the `tinkerLite` code base.
 
+* Have collapsed the distinct `x(N)`, `y(N)` and `z(N)`
+  into a single array `pos(3)(N)`. Testing has shown that this has
+  no major impact on performance but the change will simplify a
+  distributed memory parallelisation by reducing the number of explicit
+  message passes required to exchange coordinate information.
 * Removed `freeunit.f` and moved the definition of specific 
   unit numbers to deal with io of different types to `iounit.f`.
 * Had a further cull of unused variables as reported by the
