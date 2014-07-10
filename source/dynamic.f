@@ -61,6 +61,7 @@ c
       else
          write(iout,*) "Need to specify the number of dynamic steps ", 
      &                 "to be taken at the command line."
+         call usage
          call fatal
       end if
    10 continue
@@ -75,6 +76,7 @@ c
       if (dt .lt. 0.0d0) then
          write (iout,*) "The time step length in Femtoseconds ",
      &                  "must be specified at the command line."
+         call usage
          call fatal
       end if
       dt = 0.001d0 * dt
@@ -93,6 +95,7 @@ c
       if (dtdump .lt. 0.0d0) then
          write (iout,*) "The time between dumps in Picoseconds ",
      &                  "must be specified at the command line."
+         call usage
          call fatal
       end if
       iwrite = nint(dtdump/dt)
@@ -108,6 +111,7 @@ c
       if  (kelvin .lt. 0.0d0) then
          write (iout,*) "The Desired Temperature in Degrees K ",
      &                  "must be specified at the command line."
+         call usage
          call fatal
       end if 
 
@@ -119,6 +123,7 @@ c
       if (atmsph .lt. 0.0d0) then
          write(iout,*) "The Desired Pressure in Atm ",
      &                 "must be specified at the command line."
+         call usage
          call fatal 
       end if
 
