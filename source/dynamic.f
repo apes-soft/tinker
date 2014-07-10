@@ -60,7 +60,7 @@ c
          query = .false.
       else
          write(iout,*) "Need to specify the number of dynamic steps ", 
-     &                 "to be taken in the key file."
+     &                 "to be taken at the command line."
          call fatal
       end if
    10 continue
@@ -74,7 +74,7 @@ c
    40 continue
       if (dt .lt. 0.0d0) then
          write (iout,*) "The time step length in Femtoseconds ",
-     &                  "must be specified in the key file."
+     &                  "must be specified at the command line."
          call fatal
       end if
       dt = 0.001d0 * dt
@@ -92,7 +92,7 @@ c
    80 continue
       if (dtdump .lt. 0.0d0) then
          write (iout,*) "The time between dumps in Picoseconds ",
-     &                  "must be specified in the key file."
+     &                  "must be specified at the command line."
          call fatal
       end if
       iwrite = nint(dtdump/dt)
@@ -107,7 +107,7 @@ c
   170 continue
       if  (kelvin .lt. 0.0d0) then
          write (iout,*) "The Desired Temperature in Degrees K ",
-     &                  "must be specified in the key file."
+     &                  "must be specified at the command line."
          call fatal
       end if 
 
@@ -118,7 +118,7 @@ c
   210 continue
       if (atmsph .lt. 0.0d0) then
          write(iout,*) "The Desired Pressure in Atm ",
-     &                 "must be specified in the key file."
+     &                 "must be specified at the command line."
          call fatal 
       end if
 
