@@ -37,8 +37,9 @@ c
 c     terminate execution if Cartesian coordinate file is not provided
 c
       do while (.not. exist)
-         write (iout,*) "The Cartesian Coordinate file name must be ",
-     &                  "specified in the key file."
+         write (iout,*) "The Cartesian Coordinate file base name must ",
+     &                  "be specified at the command line."
+         call usage
          call fatal
       end do
 c

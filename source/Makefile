@@ -359,6 +359,7 @@ OBJS = angbnd.o \
        units.o \
        uprior.o \
        urey.o \
+       usage.o \
        urypot.o \
        usolve.o \
        vdw.o \
