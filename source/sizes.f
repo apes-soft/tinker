@@ -54,50 +54,36 @@ c
 c
       module sizes
       implicit none
-      integer maxatm,maxval
-      integer maxgrp,maxref
-      integer maxtyp,maxclass
-      integer maxprm,maxkey
-      integer maxrot,maxvar
-      integer maxopt,maxlight
-      integer maxvlst,maxelst
-      integer maxulst,maxfft
-      integer maxfix,maxvib
-      integer maxgeo,maxcell
-      integer maxring,maxbio
-      integer maxres,maxele
-      integer maxamino,maxnuc
-      integer maxbnd,maxang
-      integer maxtors,maxbitor
-      parameter (maxatm=1000000)
-      parameter (maxval=8)
-      parameter (maxgrp=1000)
-      parameter (maxref=10)
-      parameter (maxtyp=5000)
-      parameter (maxclass=1000)
-      parameter (maxprm=25000)
-      parameter (maxkey=25000)
-      parameter (maxrot=1000)
-      parameter (maxvar=3*maxatm)
-      parameter (maxopt=1000)
-      parameter (maxlight=8*maxatm)
-      parameter (maxvlst=1800)
-      parameter (maxelst=1200)
-      parameter (maxulst=100)
-      parameter (maxfft=250)
-      parameter (maxfix=maxatm)
-      parameter (maxvib=1000)
-      parameter (maxgeo=2500)
-      parameter (maxcell=10000)
-      parameter (maxring=10000)
-      parameter (maxbio=10000)
-      parameter (maxres=10000)
-      parameter (maxele=112)
-      parameter (maxamino=38)
-      parameter (maxnuc=12)
-      parameter (maxbnd=2*maxatm)
-      parameter (maxang=4*maxatm)
-      parameter (maxtors=6*maxatm)
-      parameter (maxbitor=8*maxatm)
+      integer, parameter:: maxatm=1000000
+      integer, parameter:: maxval=8
+      integer, parameter:: maxgrp=1000
+      integer, parameter:: maxref=10
+      integer, parameter:: maxtyp=5000
+      integer, parameter:: maxclass=1000
+      integer, parameter:: maxprm=25000
+      integer, parameter:: maxkey=25000
+      integer, parameter:: maxrot=1000
+      integer, parameter:: maxvar=3*maxatm
+      integer, parameter:: maxopt=1000
+      integer, parameter:: maxlight=8*maxatm
+      integer, parameter:: maxvlst=1800
+      integer, parameter:: maxelst=1200
+      integer, parameter:: maxulst=100
+      integer, parameter:: maxfft=250
+      integer, parameter:: maxfix=maxatm
+      integer, parameter:: maxvib=1000
+      integer, parameter:: maxgeo=2500
+      integer, parameter:: maxcell=10000
+      integer, parameter:: maxring=10000
+      integer, parameter:: maxbio=10000
+      integer, parameter:: maxres=10000
+      integer, parameter:: maxele=112
+      integer, parameter:: maxamino=38
+      integer, parameter:: maxnuc=12
+      integer, parameter:: maxbnd=2*maxatm
+      integer, parameter:: maxang=4*maxatm
+      integer, parameter:: maxtors=6*maxatm
+      integer, parameter:: maxbitor=8*maxatm
+
       save
       end
