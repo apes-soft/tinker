@@ -21,9 +21,12 @@ c
 c
       module atoms
       use sizes
+
       implicit none
-      integer n
-      integer type(maxatm)
-      real*8 pos(3,maxatm)
+
+      integer:: n
+      integer:: type(maxatm)
+      real (kind=8):: pos(3,maxatm)
+
       save
       end

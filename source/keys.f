@@ -17,9 +17,13 @@ c     keyline   contents of each individual keyword file line
 c
 c
       module keys
+
       use sizes
+
       implicit none
-      integer nkey
-      character*120 keyline(maxkey)
+
+      integer:: nkey
+      character (LEN=120), dimension(maxkey):: keyline
+
       save
       end
