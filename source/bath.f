@@ -38,23 +38,25 @@ c     volscale    choice of scaling method for Monte Carlo barostat
 c
 c
       module bath
+
       implicit none
-      integer maxnose
-      parameter (maxnose=4)
-      integer voltrial
-      real*8 kelvin,atmsph
-      real*8 tautemp,taupres
-      real*8 compress,collide
-      real*8 eta,volmove
-      real*8 vbar,qbar,gbar
-      real*8 vnh(maxnose)
-      real*8 qnh(maxnose)
-      real*8 gnh(maxnose)
+
+      integer, parameter:: maxnose=4
+      integer:: voltrial
+      real (kind=8):: kelvin,atmsph
+      real (kind=8):: tautemp,taupres
+      real (kind=8):: compress,collide
+      real (kind=8):: eta,volmove
+      real (kind=8):: vbar,qbar,gbar
+      real (kind=8), dimension(maxnose):: vnh
+      real (kind=8), dimension(maxnose):: qnh
+      real (kind=8), dimension(maxnose):: gnh
       logical isothermal
       logical isobaric
       logical anisotrop
-      character*9 volscale
-      character*11 barostat
-      character*11 thermostat
+      character (LEN=9):: volscale
+      character (LEN=11):: barostat
+      character (LEN=11):: thermostat
+
       save
       end
