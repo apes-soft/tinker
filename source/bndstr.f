@@ -22,7 +22,7 @@ c
       implicit none
       integer nbond
       integer, allocatable :: ibnd(:,:)
-      real*8, allocatable :: bk(:)
-      real*8, allocatable :: bl(:)
+      real (kind=8), allocatable :: bk(:)
+      real (kind=8), allocatable :: bl(:)
       save
       end
