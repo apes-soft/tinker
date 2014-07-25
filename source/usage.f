@@ -31,7 +31,8 @@ c
       write (iout,*)
       write (iout,*) "-K keyfile : to specify the key file."
       write (iout,*) "-V : sets verbose mode."
-      write (iout,*) "-D : sets debug mode (also switches on verbose mode)."
+      write (iout,*) "-D : sets debug mode (also switches on",
+     &               " verbose mode)."
       write (iout,*)
 
 
