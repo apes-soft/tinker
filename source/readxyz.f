@@ -135,12 +135,12 @@ c
                if (name(i) .ne. '   ')  goto 60
                read (record,*,err=60,end=60)  xlen,ylen,zlen,
      &                                        aang,bang,gang
-               size = 0
-               xbox = xlen
-               ybox = ylen
-               zbox = zlen
+               size  = 0
+               xbox  = xlen
+               ybox  = ylen
+               zbox  = zlen
                alpha = aang
-               beta = bang
+               beta  = bang
                gamma = gang
 c              use_bounds = .true.
                call lattice
@@ -170,7 +170,7 @@ c
 c     for each atom, count and sort its attached atoms
 c
       do i = 1, n
-         n12(i) = 0
+         n12(i) = 0 ! Count of the number of attached atoms
          do j = maxval, 1, -1
             if (i12(j,i) .ne. 0) then
                n12(i) = j
@@ -183,7 +183,7 @@ c
 c
 c     perform dynamic allocation of some local arrays
 c
-      nmax = 0
+      nmax = 0  ! Stores the maximum atom tag.
       do i = 1, n
          nmax = max(tag(i),nmax)
          do j = 1, n12(i)
@@ -194,6 +194,9 @@ c
 c
 c     check for scrambled atom order and attempt to renumber
 c
+      ! Ordering is important as the bond attachment is done
+      ! via absolute addressing to the corresponding tag.
+      ! tag(i) is what I am, list(tag(i))= i is what I should be.
       reorder = .false.
       do i = 1, n
          list(tag(i)) = i
