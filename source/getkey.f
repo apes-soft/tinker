@@ -45,12 +45,6 @@ c
             keyfile = arg(i+1)
             call suffix (keyfile,'key','old')
             inquire (file=keyfile,exist=exist)
-            if (.not. exist) then
-               write (iout,10)
-   10          format (/,' GETKEY  --  Keyfile Specified',
-     &                    ' on Command Line was not Found')
-               call fatal
-            end if
          end if
       end do
 c
@@ -94,6 +88,9 @@ c
          end do
    40    continue
          close (unit=ikey)
+      else
+         write(iout,*) "GETKEY  --  no keyfile specified. Terminating."
+         call fatal
       end if
 c
 c     check for comment lines to be echoed to the output
