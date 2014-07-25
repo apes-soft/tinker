@@ -27,7 +27,7 @@ c
 c     initialize the command argument as a blank string
 c
       string = '          '
-      exist = .false.
+      exist  = .false.
 c
 c     get the next command line argument and mark it as used
 c
@@ -36,8 +36,8 @@ c
          do i = 1, narg
             if (listarg(i)) then
                listarg(i) = .false.
-               string = arg(i)(1:length)
-               exist = .true.
+               string     = arg(i)(1:length)
+               exist      = .true.
                goto 10
             end if
          end do

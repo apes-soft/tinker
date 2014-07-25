@@ -77,7 +77,7 @@ c
          do while (.true.)
             read (ikey,20,err=40,end=40)  record
    20       format (a120)
-            nkey = nkey + 1
+            nkey          = nkey + 1
             keyline(nkey) = record
             if (nkey .ge. maxkey) then
                write (iout,30)
@@ -97,13 +97,13 @@ c     check for comment lines to be echoed to the output
 c
       header = .true.
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:5) .eq. 'ECHO ') then
             comment = record(next:120)
-            length = trimtext (comment)
+            length  = trimtext (comment)
             if (header) then
                header = .false.
                write (iout,50)
