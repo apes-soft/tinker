@@ -26,6 +26,13 @@ c
      &               " the system in Kelvin."
       write (iout,*) " pres   : real number value of pressure of the",
      &               " system in atmospheres."
+      write (iout,*)
+      write (iout,*) "Other valid flags that can be used are:"
+      write (iout,*)
+      write (iout,*) "-K keyfile : to specify the key file."
+      write (iout,*) "-V : sets verbose mode."
+      write (iout,*) "-D : sets debug mode (also switches on verbose mode)."
+      write (iout,*)
 
 
       end subroutine usage
