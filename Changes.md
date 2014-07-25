@@ -68,6 +68,8 @@ Park thoughts about future changes that could be made.
 
 List issues that need looking at or resolving.
 
+* `version.f` is asking for user input: "filename for the coordiante output".
+   Need to disable this.
 * The compilation of a non-OpenMP version of `dynamic` breaks because of
   the lines:
 ```
