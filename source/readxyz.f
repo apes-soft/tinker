@@ -68,20 +68,19 @@ c
 c
 c     read first line and return if already at end of file
 c
-      quit = .false.
+      quit  = .false.
       abort = .true.
-      size = 0
+      size  = 0
       do while (size .eq. 0)
          read (ixyz,20,err=80,end=80)  record
    20    format (a120)
          size = trimtext (record)
       end do
       abort = .false.
-      quit = .true.
+      quit  = .true.
 c
 c     parse the title line to get the number of atoms
 c
-      i = 0
       next = 1
       call gettext (record,string,next)
       read (string,*,err=80,end=80)  n
@@ -89,13 +88,13 @@ c
 c     extract the title and determine its length
 c
       string = record(next:120)
-      first = nexttext (string)
-      last = trimtext (string)
+      first  = nexttext (string)
+      last   = trimtext (string)
       if (last .eq. 0) then
-         title = ' '
+         title  = ' '
          ltitle = 0
       else
-         title = string(first:last)
+         title  = string(first:last)
          ltitle = trimtext (title)
       end if
 c
@@ -115,17 +114,12 @@ c
 c
 c     initialize coordinates and connectivities for each atom
 c
-      do i = 1, n
-         tag(i) = 0
-         name(i) = '   '
-         pos(1,i) = 0.0d0
-         pos(2,i) = 0.0d0
-         pos(3,i) = 0.0d0
-         type(i) = 0
-         do j = 1, maxval
-            i12(j,i) = 0
-         end do
-      end do
+      tag  = 0
+      name = '   '
+      pos  = 0.0d0
+      type = 0
+      i12  = 0
+
 c
 c     read the coordinates and connectivities for each atom
 c
