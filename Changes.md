@@ -70,7 +70,7 @@ List issues that need looking at or resolving.
 
 * `version.f` is asking for user input: "filename for the coordiante output".
    Need to disable this.
-* The compilation of a non-OpenMP version of `dynamic` breaks because of
+* ~~The compilation of a non-OpenMP version of `dynamic` breaks because of
   the lines:
 ```
 !$OMP PARALLEL shared(nthread)
@@ -80,7 +80,9 @@ List issues that need looking at or resolving.
 !$OMP END PARALLEL
 
 ```
-  because it wants to link in `opm_num_threads()`.
+  because it wants to link in `opm_num_threads()`~~.
+  Fixed this by adding a `!$` at the beginning of the
+  offending line.
 
 ## Outstanding compilation warnings
 
