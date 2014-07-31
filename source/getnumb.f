@@ -42,16 +42,16 @@ c
 c
 c     initialize number and get the input text string length
 c
-      number = 0
-      negate = .false.
+      number  = 0
+      negate  = .false.
       numeral = .false.
-      length = trimtext(string(next:))
+      length  = trimtext(string(next:))
 c
 c     move through the string one character at a time,
 c     searching for the first run of numeric characters
 c
-      first = next
-      last = 0
+      first   = next
+      last    = 0
       initial = next
       final = next + length - 1
       do i = initial, final
@@ -60,7 +60,7 @@ c
          if (letter.ge.'0' .and. letter.le.'9') then
             if (.not. numeral) then
                numeral = .true.
-               first = i
+               first   = i
             end if
             if (i .eq. final) then
                last = final

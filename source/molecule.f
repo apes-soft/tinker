@@ -30,8 +30,8 @@ c
 c
 c     perform dynamic allocation of some global arrays
 c
-      if (.not. allocated(imol))  allocate (imol(2,n))
-      if (.not. allocated(kmol))  allocate (kmol(n))
+      if (.not. allocated(imol))     allocate (imol(2,n))
+      if (.not. allocated(kmol))     allocate (kmol(n))
       if (.not. allocated(molcule))  allocate (molcule(n))
       if (.not. allocated(molmass))  allocate (molmass(n))
 c
@@ -46,12 +46,12 @@ c     assign each atom to its respective molecule
 c
       do i = 1, n
          if (molcule(i) .eq. 0) then
-            nmol = nmol + 1
+            nmol       = nmol + 1
             molcule(i) = nmol
          end if
          mi = molcule(i)
-         do ii = 1, n12(i)
-            j = i12(ii,i)
+         do ii = 1, n12(i)    ! Loop over neighbours
+            j  = i12(ii,i)    
             mj = molcule(j)
             if (mj .eq. 0) then
                molcule(j) = mi
@@ -99,7 +99,7 @@ c
          j = list(i)
          if (j .ne. k) then
             imol(2,k) = i - 1
-            k = j
+            k         = j
             imol(1,k) = i
          end if
       end do

@@ -29,12 +29,13 @@ c
 c
 c     perform dynamic allocation of some global arrays
 c
-      if (.not. allocated(ibnd))  allocate (ibnd(2,2*n))
-      if (.not. allocated(bndlist))  allocate (bndlist(maxval,n))
+      if (.not. allocated(ibnd))    allocate (ibnd(2,2*n))
+      if (.not. allocated(bndlist)) allocate (bndlist(maxval,n))
 c
 c     loop over all atoms, storing the atoms in each bond
 c
-      nbond = 0
+      nbond = 0 ! Total number of bonds
+
       do i = 1, n
          do j = 1, n12(i)
             k = i12(j,i)
@@ -48,7 +49,7 @@ c
                end if
                ibnd(1,nbond) = i
                ibnd(2,nbond) = k
-               bndlist(j,i) = nbond
+               bndlist(j,i)  = nbond
                do m = 1, n12(k)
                   if (i .eq. i12(m,k)) then
                      bndlist(m,k) = nbond

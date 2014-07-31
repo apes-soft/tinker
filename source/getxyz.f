@@ -48,7 +48,7 @@ c
       coordtype = 'CARTESIAN'
       open (unit=ixyz,file=xyzfile,status='old')
       rewind (unit=ixyz)
-      call readxyz ()
+      call readxyz
       close (unit=ixyz)
 c
 c     quit if the Cartesian coordinates file contains no atoms

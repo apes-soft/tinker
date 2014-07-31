@@ -29,8 +29,8 @@ c
       do i = 1, 6
          ampli(i) = vt(i)
          phase(i) = st(i)
-         vt(i) = 0.0d0
-         st(i) = 0.0d0
+         vt(i)    = 0.0d0
+         st(i)    = 0.0d0
       end do
 c
 c     shift the phase angles into the standard range

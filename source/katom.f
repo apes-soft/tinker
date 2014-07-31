@@ -46,13 +46,13 @@ c
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:5) .eq. 'ATOM ') then
-            k = 0
-            cls = 0
-            symb = ' '
+            k      = 0
+            cls    = 0
+            symb   = ' '
             notice = ' '
-            atn = 0
-            wght = 0.0d0
-            lig = 0
+            atn    = 0
+            wght   = 0.0d0
+            lig    = 0
             call getnumb (record,k,next)
             call getnumb (record,cls,next)
             if (cls .eq. 0)  cls = k
@@ -69,11 +69,11 @@ c
      &                    //,5x,'Type  Class  Symbol  Description',
      &                       15x,'Atomic',4x,'Mass',3x,'Valence',/)
                end if
-               symbol(k) = symb
+               symbol(k)   = symb
                describe(k) = notice
-               atmnum(k) = atn
-               weight(k) = wght
-               ligand(k) = lig
+               atmnum(k)   = atn
+               weight(k)   = wght
+               ligand(k)   = lig
                if (.not. silent) then
                   write (iout,20)  k,cls,symb,notice,atn,wght,lig
    20             format (2x,i6,1x,i6,5x,a3,3x,a24,i6,f11.3,i6)
@@ -93,18 +93,18 @@ c
       do i = 1, n
          k = type(i)
          if (k .eq. 0) then
-            class(i) = 0
-            atomic(i) = 0
-            mass(i) = 0.0d0
+            class(i)   = 0
+            atomic(i)  = 0
+            mass(i)    = 0.0d0
             valence(i) = 0
-            story(i) = 'Undefined Atom Type     '
+            story(i)   = 'Undefined Atom Type     '
          else
             if (symbol(k) .ne. '   ')  name(i) = symbol(k)
-            class(i) = atmcls(k)
-            atomic(i) = atmnum(k)
-            mass(i) = weight(k)
+            class(i)   = atmcls(k)
+            atomic(i)  = atmnum(k)
+            mass(i)    = weight(k)
             valence(i) = ligand(k)
-            story(i) = describe(k)
+            story(i)   = describe(k)
          end if
       end do
 c
@@ -117,12 +117,12 @@ c
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:5) .eq. 'ATOM ') then
-            k = 0
-            symb = ' '
+            k      = 0
+            symb   = ' '
             notice = ' '
-            atn = 0
-            wght = 0.0d0
-            lig = 0
+            atn    = 0
+            wght   = 0.0d0
+            lig    = 0
             call getnumb (record,k,next)
             call getnumb (record,cls,next)
             call gettext (record,symb,next)
@@ -140,11 +140,11 @@ c
                end if
                k = -k
                if (cls .eq. 0)  cls = k
-               class(k) = cls
-               name(k) = symb
-               story(k) = notice
-               atomic(k) = atn
-               mass(k) = wght
+               class(k)   = cls
+               name(k)    = symb
+               story(k)   = notice
+               atomic(k)  = atn
+               mass(k)    = wght
                valence(k) = lig
                if (.not. silent) then
                   write (iout,60)  k,cls,symb,notice,atn,wght,lig
@@ -159,7 +159,7 @@ c     check for presence of undefined atom types or classes
 c
       header = .true.
       do i = 1, n
-         k = type(i)
+         k   = type(i)
          cls = class(i)
          if (k.lt.1 .or. k.gt.maxtyp
      &          .or. cls.lt.1 .or. cls.gt.maxclass) then
