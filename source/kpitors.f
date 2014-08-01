@@ -44,17 +44,17 @@ c
 c
 c     process keywords containing pi-orbital torsion parameters
 c
-      blank = '        '
+      blank  = '        '
       header = .true.
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:7) .eq. 'PITORS ') then
-            ia = 0
-            ib = 0
-            tp = 0.0d0
+            ia     = 0
+            ib     = 0
+            tp     = 0.0d0
             string = record(next:120)
             read (string,*,err=10,end=10)  ia,ib,tp
    10       continue
@@ -79,7 +79,7 @@ c
             end if
             do j = 1, maxnpt
                if (kpt(j).eq.blank .or. kpt(j).eq.pt) then
-                  kpt(j) = pt
+                  kpt(j)   = pt
                   ptcon(j) = tp
                   goto 50
                end if
@@ -112,8 +112,8 @@ c
             ia = ibnd(1,i)
             ib = ibnd(2,i)
             if (n12(ia).eq.3 .and. n12(ib).eq.3) then
-               ita = class(ia)
-               itb = class(ib)
+               ita  = class(ia)
+               itb  = class(ib)
                size = 4
                call numeral (ita,pa,size)
                call numeral (itb,pb,size)
@@ -124,8 +124,8 @@ c
                end if
                do j = 1, npt
                   if (kpt(j) .eq. pt) then
-                     npitors = npitors + 1
-                     kpit(npitors) = ptcon(j)
+                     npitors         = npitors + 1
+                     kpit(npitors)   = ptcon(j)
                      ipit(1,npitors) = i12(1,ia)
                      ipit(2,npitors) = i12(2,ia)
                      ipit(3,npitors) = ia

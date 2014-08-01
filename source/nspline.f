@@ -40,7 +40,7 @@ c
 c     find the intervals to be used
 c
       do i = 0, n-1
-         h(i) = x0(i+1) - x0(i)
+         h(i)  = x0(i+1) - x0(i)
          dy(i) = (y0(i+1)-y0(i)) / h(i)
       end do
 c
@@ -49,7 +49,7 @@ c
       do i = 1, n-1
          dla(i) = h(i) / (h(i)+h(i-1))
          dmu(i) = 1.0d0 - dla(i)
-         g(i) = 3.0d0 * (dla(i)*dy(i-1)+dmu(i)*dy(i))
+         g(i)   = 3.0d0 * (dla(i)*dy(i-1)+dmu(i)*dy(i))
       end do
 c
 c     set the initial value via natural boundary condition
@@ -58,17 +58,17 @@ c
       dla(0) = 0.0d0
       dmu(n) = 0.0d0
       dmu(0) = 1.0d0
-      g(0) = 3.0d0*dy(0) - 0.5d0*h(0)*y21
-      g(n) = 3.0d0*dy(n-1) + 0.5d0*h(n-1)*y2n
+      g(0)   = 3.0d0*dy(0) - 0.5d0*h(0)*y21
+      g(n)   = 3.0d0*dy(n-1) + 0.5d0*h(n-1)*y2n
 c
 c     solve the triagonal system of linear equations
 c
       dmu(0) = 0.5d0 * dmu(0)
       g(0) = 0.5d0 * g(0)
       do i = 1, n
-         t = 2.0d0 - dmu(i-1)*dla(i)
+         t      = 2.0d0 - dmu(i-1)*dla(i)
          dmu(i) = dmu(i) / t
-         g(i) = (g(i)-g(i-1)*dla(i)) / t
+         g(i)   = (g(i)-g(i-1)*dla(i)) / t
       end do
       do i = n-1, 0, -1
          g(i) = g(i) - dmu(i)*g(i+1)

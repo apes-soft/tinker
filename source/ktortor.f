@@ -58,10 +58,10 @@ c
 c
 c     process keywords containing torsion-torsion parameters
 c
-      blank = '                    '
+      blank  = '                    '
       header = .true.
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
@@ -151,9 +151,9 @@ c     increasing order and the first index changing most rapidly
 c
       do i = 1, ntt
          cyclic = .true.
-         eps = 0.000001d0
-         nx = tnx(i) - 1
-         ny = tny(i) - 1
+         eps    = 0.000001d0
+         nx     = tnx(i) - 1
+         ny     = tny(i) - 1
          if (abs(abs(ttx(1,i)-ttx(tnx(i),i))-360.0d0) .gt. eps)
      &      cyclic = .false.
          if (abs(abs(tty(1,i)-tty(tny(i),i))-360.0d0) .gt. eps)
@@ -172,7 +172,7 @@ c
                if (abs(tbf(j,i)-tbf(j+k,i)) .gt. eps) then
                   write (iout,70)  tbf(j,i),tbf(j+k,i)
    70             format (/,' KTORTOR  --  Warning, Unequal Tor-Tor',
-     &                        ' Values',3x,2f12.5)
+     &                      ' Values',3x,2f12.5)
                end if
             end do
          end if
@@ -248,16 +248,16 @@ c     assign torsion-torsion parameters for each bitorsion
 c
       ntortor = 0
       do i = 1, nbitor
-         ia = ibitor(1,i)
-         ib = ibitor(2,i)
-         ic = ibitor(3,i)
-         id = ibitor(4,i)
-         ie = ibitor(5,i)
-         ita = class(ia)
-         itb = class(ib)
-         itc = class(ic)
-         itd = class(id)
-         ite = class(ie)
+         ia   = ibitor(1,i)
+         ib   = ibitor(2,i)
+         ic   = ibitor(3,i)
+         id   = ibitor(4,i)
+         ie   = ibitor(5,i)
+         ita  = class(ia)
+         itb  = class(ib)
+         itc  = class(ic)
+         itd  = class(id)
+         ite  = class(ie)
          size = 4
          call numeral (ita,pa,size)
          call numeral (itb,pb,size)
@@ -271,13 +271,13 @@ c     find parameters for this torsion-torsion interaction
 c
          do j = 1, ntt
             if (ktt(j) .eq. pt1) then
-               ntortor = ntortor + 1
+               ntortor        = ntortor + 1
                itt(1,ntortor) = i
                itt(2,ntortor) = j
                itt(3,ntortor) = 1
                goto 80
             else if (ktt(j) .eq. pt2) then
-               ntortor = ntortor + 1
+               ntortor        = ntortor + 1
                itt(1,ntortor) = i
                itt(2,ntortor) = j
                itt(3,ntortor) = -1

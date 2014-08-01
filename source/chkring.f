@@ -28,7 +28,7 @@ c
 c     initialize the ring size and number of atoms to test
 c
       iring = 0
-      nset = 0
+      nset  = 0
       if (ia .gt. 0)  nset = 1
       if (ib .gt. 0)  nset = 2
       if (ic .gt. 0)  nset = 3
@@ -37,7 +37,7 @@ c
 c     cannot be in a ring if the terminal atoms are univalent
 c
       if (nset .eq. 1) then
-         if (n12(ia) .le. 1)  nset = 0
+         if (n12(ia) .le. 1)               nset = 0
       else if (nset .eq. 2) then
          if (min(n12(ia),n12(ib)) .le. 1)  nset = 0
       else if (nset .eq. 3) then

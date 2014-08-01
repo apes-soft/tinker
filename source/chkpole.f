@@ -35,9 +35,9 @@ c
       do i = 1, npole
          check = .true.
          if (polaxe(i) .ne. 'Z-then-X')  check = .false.
-         if (yaxis(i) .eq. 0)  check = .false.
+         if (yaxis(i) .eq. 0)            check = .false.
          if (check) then
-            k = yaxis(i)
+            k  = yaxis(i)
             ia = ipole(i)
             ib = zaxis(i)
             ic = xaxis(i)
@@ -54,19 +54,19 @@ c
             xcd = pos(1,ic) - pos(1,id)
             ycd = pos(2,ic) - pos(2,id)
             zcd = pos(3,ic) - pos(3,id)
-            c1 = ybd*zcd - zbd*ycd
-            c2 = ycd*zad - zcd*yad
-            c3 = yad*zbd - zad*ybd
+            c1  = ybd*zcd - zbd*ycd
+            c2  = ycd*zad - zcd*yad
+            c3  = yad*zbd - zad*ybd
             vol = xad*c1 + xbd*c2 + xcd*c3
 c
 c     invert atomic multipole components involving the y-axis
 c
             if (k.lt.0.and.vol.gt.0.0d0 .or.
      &          k.gt.0.and.vol.lt.0.0d0) then
-               yaxis(i) = -k
-               pole(3,i) = -pole(3,i)
-               pole(6,i) = -pole(6,i)
-               pole(8,i) = -pole(8,i)
+               yaxis(i)   = -k
+               pole(3,i)  = -pole(3,i)
+               pole(6,i)  = -pole(6,i)
+               pole(8,i)  = -pole(8,i)
                pole(10,i) = -pole(10,i)
                pole(12,i) = -pole(12,i)
             end if

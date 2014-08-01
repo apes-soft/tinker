@@ -52,9 +52,9 @@ c
 c
 c     process keywords containing out-of-plane bend parameters
 c
-      blank = '                '
-      zero4 = '0000'
-      zero8 = '00000000'
+      blank  = '                '
+      zero4  = '0000'
+      zero8  = '00000000'
       header = .true.
       do i = 1, nkey
          next = 1
@@ -62,11 +62,11 @@ c
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:7) .eq. 'OPBEND ') then
-            ia = 0
-            ib = 0
-            ic = 0
-            id = 0
-            fopb = 0.0d0
+            ia     = 0
+            ib     = 0
+            ic     = 0
+            id     = 0
+            fopb   = 0.0d0
             string = record(next:120)
             read (string,*,err=10,end=10)  ia,ib,ic,id,fopb
    10       continue
@@ -125,15 +125,15 @@ c
       end do
       do i = 1, maxnopb
          if (kopb(i) .eq. blank)  goto 60
-         it = number(kopb(i)(5:8))
+         it       = number(kopb(i)(5:8))
          jopb(it) = .true.
       end do
    60 continue
 c
 c     perform dynamic allocation of some global arrays
 c
-      if (.not. allocated(iopb))  allocate (iopb(nangle))
-      if (.not. allocated(opbk))  allocate (opbk(nangle))
+      if (.not. allocated(iopb))    allocate (iopb(nangle))
+      if (.not. allocated(opbk))    allocate (opbk(nangle))
       if (.not. allocated(angtyp))  allocate (angtyp(nangle))
 c
 c     assign out-of-plane bending parameters for each angle
@@ -142,15 +142,15 @@ c
       if (nopb .ne. 0) then
          header = .true.
          do i = 1, nangle
-            ib = iang(2,i)
+            ib  = iang(2,i)
             itb = class(ib)
             if (jopb(itb) .and. n12(ib).eq.3) then
-               ia = iang(1,i)
-               ita = class(ia)
-               ic = iang(3,i)
-               itc = class(ic)
-               id = iang(4,i)
-               itd = class(id)
+               ia   = iang(1,i)
+               ita  = class(ia)
+               ic   = iang(3,i)
+               itc  = class(ic)
+               id   = iang(4,i)
+               itd  = class(id)
                size = 4
                call numeral (ita,pa,size)
                call numeral (itb,pb,size)
@@ -161,33 +161,33 @@ c
                else
                   pt = pd//pb//pc//pa
                end if
-               pt1 = pd//pb//zero8
-               pt0 = zero4//pb//zero8
+               pt1  = pd//pb//zero8
+               pt0  = zero4//pb//zero8
                done = .false.
                do j = 1, nopb
                   if (kopb(j) .eq. pt) then
-                     nopbend = nopbend + 1
+                     nopbend       = nopbend + 1
                      iopb(nopbend) = i
                      opbk(nopbend) = opbn(j)
-                     done = .true.
+                     done          = .true.
                      goto 70
                   end if
                end do
                do j = 1, nopb
                   if (kopb(j) .eq. pt1) then
-                     nopbend = nopbend + 1
+                     nopbend       = nopbend + 1
                      iopb(nopbend) = i
                      opbk(nopbend) = opbn(j)
-                     done = .true.
+                     done          = .true.
                      goto 70
                   end if
                end do
                do j = 1, nopb
                   if (kopb(j) .eq. pt0) then
-                     nopbend = nopbend + 1
+                     nopbend       = nopbend + 1
                      iopb(nopbend) = i
                      opbk(nopbend) = opbn(j)
-                     done = .true.
+                     done          = .true.
                      goto 70
                   end if
                end do

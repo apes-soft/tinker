@@ -44,12 +44,12 @@ c     process keywords containing polarizability parameters
 c
       header = .true.
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:9) .eq. 'POLARIZE ') then
-            k = 0
+            k   = 0
             pol = 0.0d0
             thl = -1.0d0
             do j = 1, maxval
@@ -96,35 +96,35 @@ c
 c     perform dynamic allocation of some global arrays
 c
       if (.not. allocated(polarity))  allocate (polarity(n))
-      if (.not. allocated(thole))  allocate (thole(n))
-      if (.not. allocated(pdamp))  allocate (pdamp(n))
-      if (.not. allocated(uind))  allocate (uind(3,n))
-      if (.not. allocated(uinp))  allocate (uinp(3,n))
-      if (.not. allocated(uinds))  allocate (uinds(3,n))
-      if (.not. allocated(uinps))  allocate (uinps(3,n))
+      if (.not. allocated(thole))     allocate (thole(n))
+      if (.not. allocated(pdamp))     allocate (pdamp(n))
+      if (.not. allocated(uind))      allocate (uind(3,n))
+      if (.not. allocated(uinp))      allocate (uinp(3,n))
+      if (.not. allocated(uinds))     allocate (uinds(3,n))
+      if (.not. allocated(uinps))     allocate (uinps(3,n))
 c
 c     find and store the atomic dipole polarizability parameters
 c
       do i = 1, n
          polarity(i) = polr(type(i))
-         thole(i) = athl(type(i))
+         thole(i)    = athl(type(i))
       end do
 c
 c     process keywords containing atom specific polarizabilities
 c
       header = .true.
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:9) .eq. 'POLARIZE ') then
-            k = 0
+            k   = 0
             pol = 0.0d0
             thl = 0.0d0
             call getnumb (record,k,next)
             if (k.lt.0 .and. k.ge.-n) then
-               k = -k
+               k      = -k
                string = record(next:120)
                read (string,*,err=60,end=60)  pol,thl
    60          continue
@@ -147,23 +147,23 @@ c
 c
 c     remove zero and undefined polarizable sites from the list
 c
-      npole = 0
+      npole  = 0
       npolar = 0
       do i = 1, n
          if (polsiz(i).ne.0 .or. polarity(i).ne.0.0d0) then
-            npole = npole + 1
-            ipole(npole) = i
-            pollist(i) = npole
-            zaxis(npole) = zaxis(i)
-            xaxis(npole) = xaxis(i)
-            yaxis(npole) = yaxis(i)
+            npole         = npole + 1
+            ipole(npole)  = i
+            pollist(i)    = npole
+            zaxis(npole)  = zaxis(i)
+            xaxis(npole)  = xaxis(i)
+            yaxis(npole)  = yaxis(i)
             polaxe(npole) = polaxe(i)
             do k = 1, maxpole
                pole(k,npole) = pole(k,i)
             end do
             if (polarity(i) .ne. 0.0d0)  npolar = npolar + 1
             polarity(npole) = polarity(i)
-            thole(npole) = thole(i)
+            thole(npole)    = thole(i)
          end if
       end do
 c
@@ -188,14 +188,14 @@ c
 c
 c     turn off polarizable multipole potential if it is not used
 c
-      if (npole .eq. 0)  use_mpole = .false.
+      if (npole .eq. 0)   use_mpole = .false.
       if (npolar .eq. 0)  use_polar = .false.
 c
 c     perform dynamic allocation of some global arrays
 c
       if (use_polar) then
          if (.not. allocated(mindex))  allocate (mindex(npole))
-         if (.not. allocated(minv))  allocate (minv(3*maxulst*npole))
+         if (.not. allocated(minv))    allocate (minv(3*maxulst*npole))
       end if
       return
       end
@@ -257,7 +257,7 @@ c
 c     find the directly connected group members for each atom
 c
       do i = 1, n
-         np11(i) = 1
+         np11(i)   = 1
          ip11(1,i) = i
          it = type(i)
          do j = 1, n12(i)
@@ -294,13 +294,13 @@ c
          mask(i) = 0
       end do
       do i = 1, n
-         done = .false.
+         done  = .false.
          start = 1
          stop = np11(i)
          do j = start, stop
             jj = ip11(j,i)
             if (jj .lt. i) then
-               done = .true.
+               done    = .true.
                np11(i) = np11(jj)
                do k = 1, np11(i)
                   ip11(k,i) = ip11(k,jj)
@@ -331,9 +331,9 @@ c
                end do
             end do
             if (np11(i) .ne. stop) then
-               done = .false.
+               done  = .false.
                start = stop + 1
-               stop = np11(i)
+               stop  = np11(i)
             end if
          end do
          call sort (np11(i),ip11(1,i))
@@ -347,7 +347,7 @@ c
       end do
       do i = 1, n
          do j = 1, np11(i)
-            jj = ip11(j,i)
+            jj       = ip11(j,i)
             mask(jj) = i
          end do
          nkeep = 0
@@ -356,7 +356,7 @@ c
             do k = 1, n12(jj)
                kk = i12(k,jj)
                if (mask(kk) .ne. i) then
-                  nkeep = nkeep + 1
+                  nkeep       = nkeep + 1
                   keep(nkeep) = kk
                end if
             end do
@@ -365,8 +365,8 @@ c
          do j = 1, nkeep
             jj = keep(j)
             do k = 1, np11(jj)
-               kk = ip11(k,jj)
-               nlist = nlist + 1
+               kk          = ip11(k,jj)
+               nlist       = nlist + 1
                list(nlist) = kk
             end do
          end do
@@ -393,11 +393,11 @@ c
       end do
       do i = 1, n
          do j = 1, np11(i)
-            jj = ip11(j,i)
+            jj       = ip11(j,i)
             mask(jj) = i
          end do
          do j = 1, np12(i)
-            jj = ip12(j,i)
+            jj       = ip12(j,i)
             mask(jj) = i
          end do
          nlist = 0
@@ -406,7 +406,7 @@ c
             do k = 1, np12(jj)
                kk = ip12(k,jj)
                if (mask(kk) .ne. i) then
-                  nlist = nlist + 1
+                  nlist       = nlist + 1
                   list(nlist) = kk
                end if
             end do
@@ -434,15 +434,15 @@ c
       end do
       do i = 1, n
          do j = 1, np11(i)
-            jj = ip11(j,i)
+            jj       = ip11(j,i)
             mask(jj) = i
          end do
          do j = 1, np12(i)
-            jj = ip12(j,i)
+            jj       = ip12(j,i)
             mask(jj) = i
          end do
          do j = 1, np13(i)
-            jj = ip13(j,i)
+            jj       = ip13(j,i)
             mask(jj) = i
          end do
          nlist = 0
@@ -451,7 +451,7 @@ c
             do k = 1, np12(jj)
                kk = ip12(k,jj)
                if (mask(kk) .ne. i) then
-                  nlist = nlist + 1
+                  nlist       = nlist + 1
                   list(nlist) = kk
                end if
             end do

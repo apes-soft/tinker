@@ -55,8 +55,8 @@ c
       ffttyp = 'FFTPACK'
       if (nthread .gt. 1)  ffttyp = 'FFTW'
       boundary = 'TINFOIL'
-      bsorder = 5
-      dens = 1.2d0
+      bsorder  = 5
+      dens     = 1.2d0
 c
 c     estimate an optimal value for the Ewald coefficient
 c
@@ -76,7 +76,7 @@ c     search keywords for Ewald summation commands
 c
       do i = 1, nkey
          record = keyline(i)
-         next = 1
+         next   = 1
          call upcase (record)
          call gettext (record,keyword,next)
          string = record(next:120)
@@ -143,7 +143,7 @@ c
       if (.not. allocated(thetai1))  allocate (thetai1(4,bsorder,n))
       if (.not. allocated(thetai2))  allocate (thetai2(4,bsorder,n))
       if (.not. allocated(thetai3))  allocate (thetai3(4,bsorder,n))
-      if (.not. allocated(qgrid))  allocate (qgrid(2,nfft1,nfft2,nfft3))
+      if (.not. allocated(qgrid)) allocate (qgrid(2,nfft1,nfft2,nfft3))
       if (.not. allocated(qfac))  allocate (qfac(nfft1,nfft2,nfft3))
       if (.not. allocated(pmetable))  allocate (pmetable(n,nchunk))
 c
@@ -194,8 +194,8 @@ c
 c     get approximate value from cutoff and tolerance
 c
       ratio = eps + 1.0d0
-      x = 0.5d0
-      i = 0
+      x     = 0.5d0
+      i     = 0
       do while (ratio .ge. eps)
          i = i + 1
          x = 2.0d0 * x
@@ -205,12 +205,12 @@ c
 c
 c     use a binary search to refine the coefficient
 c
-      k = i + 60
+      k   = i + 60
       xlo = 0.0d0
       xhi = x
       do i = 1, k
-         x = (xlo+xhi) / 2.0d0
-         y = x * cutoff
+         x     = (xlo+xhi) / 2.0d0
+         y     = x * cutoff
          ratio = erfc(y) / cutoff
          if (ratio .ge. eps) then
             xlo = x
@@ -286,23 +286,23 @@ c
 c     initialize total chunks and number along each axis
 c
       nchunk = 1
-      nchk1 = 1
-      nchk2 = 1
-      nchk3 = 1
+      nchk1  = 1
+      nchk2  = 1
+      nchk3  = 1
 c
 c     evaluate use of two to six chunks along each axis
 c
       do i = 2, 6
          if (nthread.gt.nchunk .and. mod(nfft1,i).eq.0) then
-            nchk1 = i
+            nchk1  = i
             nchunk = nchk1 * nchk2 * nchk3
          end if
          if (nthread.gt.nchunk .and. mod(nfft2,i).eq.0) then
-            nchk2 = i
+            nchk2  = i
             nchunk = nchk1 * nchk2 * nchk3
          end if
          if (nthread.gt.nchunk .and. mod(nfft3,i).eq.0) then
-            nchk3 = i
+            nchk3  = i
             nchunk = nchk1 * nchk2 * nchk3
          end if
       end do
@@ -315,8 +315,8 @@ c
 c
 c     set grid points to left and right, and B-spline offset
 c
-      nlpts = (bsorder-1) / 2
-      nrpts = bsorder - nlpts - 1
+      nlpts  = (bsorder-1) / 2
+      nrpts  = bsorder - nlpts - 1
       grdoff = (bsorder+1)/2 + 1
       return
       end
@@ -387,7 +387,7 @@ c     compute standard B-spline recursion to n-th order
 c
       do k = 3, n
          denom = 1.0d0 / dble(k-1)
-         c(k) = x * c(k-1) * denom
+         c(k)  = x * c(k-1) * denom
          do i = 1, k-2
             c(k-i) = ((x+dble(i))*c(k-i-1)
      &                  + (dble(k-i)-x)*c(k-i)) * denom
@@ -429,7 +429,7 @@ c
          sum1 = 0.0d0
          sum2 = 0.0d0
          do j = 1, nfft
-            arg = factor * dble((i-1)*(j-1))
+            arg  = factor * dble((i-1)*(j-1))
             sum1 = sum1 + bsarray(j)*cos(arg)
             sum2 = sum2 + bsarray(j)*sin(arg)
          end do
@@ -456,16 +456,16 @@ c
          if (k .eq. 0) then
             zeta = 1.0d0
          else
-            sum1 = 1.0d0
-            sum2 = 1.0d0
+            sum1   = 1.0d0
+            sum2   = 1.0d0
             factor = pi * dble(k) / dble(nfft)
             do j = 1, jcut
-               arg = factor / (factor+pi*dble(j))
+               arg  = factor / (factor+pi*dble(j))
                sum1 = sum1 + arg**order
                sum2 = sum2 + arg**order2
             end do
             do j = 1, jcut
-               arg = factor / (factor-pi*dble(j))
+               arg  = factor / (factor-pi*dble(j))
                sum1 = sum1 + arg**order
                sum2 = sum2 + arg**order2
             end do

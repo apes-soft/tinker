@@ -51,19 +51,19 @@ c
 c
 c     process keywords containing van der Waals parameters
 c
-      blank = '        '
+      blank  = '        '
       header = .true.
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:4) .eq. 'VDW ') then
             call getnumb (record,k,next)
             if (k.ge.1 .and. k.le.maxclass) then
-               rd = rad(k)
-               ep = eps(k)
-               rdn = reduct(k)
+               rd     = rad(k)
+               ep     = eps(k)
+               rdn    = reduct(k)
                string = record(next:120)
                read (string,*,err=10,end=10)  rd,ep,rdn
    10          continue
@@ -81,8 +81,8 @@ c
      &                          'Epsilon',5x,'Reduction',/)
                   end if
                end if
-               rad(k) = rd
-               eps(k) = ep
+               rad(k)    = rd
+               eps(k)    = ep
                reduct(k) = rdn
                if (.not. silent) then
                   write (iout,40)  k,rd,ep,rdn
@@ -101,15 +101,15 @@ c     process keywords containing 1-4 van der Waals parameters
 c
       header = .true.
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:6) .eq. 'VDW14 ') then
             call getnumb (record,k,next)
             if (k.ge.1 .and. k.le.maxclass) then
-               rd = rad4(k)
-               ep = eps4(k)
+               rd     = rad4(k)
+               ep     = eps4(k)
                string = record(next:120)
                read (string,*,err=60,end=60)  rd,ep
    60          continue
@@ -148,15 +148,15 @@ c     process keywords containing specific pair vdw parameters
 c
       header = .true.
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:6) .eq. 'VDWPR ') then
-            ia = 0
-            ib = 0
-            rd = 0.0d0
-            ep = 0.0d0
+            ia     = 0
+            ib     = 0
+            rd     = 0.0d0
+            ep     = 0.0d0
             string = record(next:120)
             read (string,*,err=150,end=150)  ia,ib,rd,ep
             if (header .and. .not.silent) then
@@ -189,7 +189,7 @@ c
             end if
             do k = 1, maxnvp
                if (kvpr(k).eq.blank .or. kvpr(k).eq.pt) then
-                  kvpr(k) = pt
+                  kvpr(k)  = pt
                   radpr(k) = rd
                   epspr(k) = ep
                   goto 150
@@ -212,10 +212,10 @@ c
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:6) .eq. 'HBOND ') then
-            ia = 0
-            ib = 0
-            rd = 0.0d0
-            ep = 0.0d0
+            ia     = 0
+            ib     = 0
+            rd     = 0.0d0
+            ep     = 0.0d0
             string = record(next:120)
             read (string,*,err=200,end=200)  ia,ib,rd,ep
             if (header .and. .not.silent) then
@@ -301,18 +301,18 @@ c
          if (rad4(i) .eq. 0.0d0)  rad4(i) = rad(i)
          if (eps4(i) .eq. 0.0d0)  eps4(i) = eps(i)
          if (radtyp .eq. 'SIGMA') then
-            rad(i) = twosix * rad(i)
+            rad(i)  = twosix * rad(i)
             rad4(i) = twosix * rad4(i)
          end if
          if (radsiz .eq. 'DIAMETER') then
-            rad(i) = 0.5d0 * rad(i)
+            rad(i)  = 0.5d0 * rad(i)
             rad4(i) = 0.5d0 * rad4(i)
          end if
-         srad(i) = sqrt(rad(i))
-         eps(i) = abs(eps(i))
-         seps(i) = sqrt(eps(i))
+         srad(i)  = sqrt(rad(i))
+         eps(i)   = abs(eps(i))
+         seps(i)  = sqrt(eps(i))
          srad4(i) = sqrt(rad4(i))
-         eps4(i) = abs(eps4(i))
+         eps4(i)  = abs(eps4(i))
          seps4(i) = sqrt(eps4(i))
       end do
 c
@@ -425,15 +425,15 @@ c
          if (kvpr(i) .eq. blank)  goto 220
          ia = number(kvpr(i)(1:4))
          ib = number(kvpr(i)(5:8))
-         if (rad(ia) .eq. 0.0d0)  rad(ia) = 0.001d0
-         if (rad(ib) .eq. 0.0d0)  rad(ib) = 0.001d0
+         if (rad(ia) .eq. 0.0d0)   rad(ia)  = 0.001d0
+         if (rad(ib) .eq. 0.0d0)   rad(ib)  = 0.001d0
          if (radtyp .eq. 'SIGMA')  radpr(i) = twosix * radpr(i)
-         radmin(ia,ib) = radpr(i)
-         radmin(ib,ia) = radpr(i)
-         epsilon(ia,ib) = abs(epspr(i))
-         epsilon(ib,ia) = abs(epspr(i))
-         radmin4(ia,ib) = radpr(i)
-         radmin4(ib,ia) = radpr(i)
+         radmin(ia,ib)   = radpr(i)
+         radmin(ib,ia)   = radpr(i)
+         epsilon(ia,ib)  = abs(epspr(i))
+         epsilon(ib,ia)  = abs(epspr(i))
+         radmin4(ia,ib)  = radpr(i)
+         radmin4(ib,ia)  = radpr(i)
          epsilon4(ia,ib) = abs(epspr(i))
          epsilon4(ib,ia) = abs(epspr(i))
       end do
@@ -454,7 +454,7 @@ c     set coefficients for Gaussian fit to eps=1 and radmin=1
 c
       if (vdwtyp .eq. 'GAUSSIAN') then
          if (gausstyp .eq. 'LJ-4') then
-            ngauss = 4
+            ngauss      = 4
             igauss(1,1) = 846706.7d0
             igauss(2,1) = 15.464405d0 * twosix**2
             igauss(1,2) = 2713.651d0
@@ -464,25 +464,25 @@ c
             igauss(1,4) = -0.7154420d0
             igauss(2,4) = 0.639621d0 * twosix**2
          else if (gausstyp .eq. 'LJ-2') then
-            ngauss = 2
+            ngauss      = 2
             igauss(1,1) = 14487.1d0
             igauss(2,1) = 9.05148d0 * twosix**2
             igauss(1,2) = -5.55338d0
             igauss(2,2) = 1.22536d0 * twosix**2
          else if (gausstyp .eq. 'MM3-2') then
-            ngauss = 2
+            ngauss      = 2
             igauss(1,1) = 2438.886d0
             igauss(2,1) = 9.342616d0
             igauss(1,2) = -6.197368d0
             igauss(2,2) = 1.564486d0
          else if (gausstyp .eq. 'MM2-2') then
-            ngauss = 2
+            ngauss      = 2
             igauss(1,1) = 3423.562d0
             igauss(2,1) = 9.692821d0
             igauss(1,2) = -6.503760d0
             igauss(2,2) = 1.585344d0
          else if (gausstyp .eq. 'IN-PLACE') then
-            ngauss = 2
+            ngauss      = 2
             igauss(1,1) = 500.0d0
             igauss(2,1) = 6.143d0
             igauss(1,2) = -18.831d0
@@ -495,7 +495,7 @@ c
       nvdw = 0
       do i = 1, n
          if (rad(jvdw(i)) .ne. 0.0d0) then
-            nvdw = nvdw + 1
+            nvdw       = nvdw + 1
             ivdw(nvdw) = i
          end if
       end do
