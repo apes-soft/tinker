@@ -36,51 +36,51 @@ c
 c
 c     zero out each of the potential energy components
 c
-      eb = 0.0d0
-      ea = 0.0d0
-      eba = 0.0d0
-      eub = 0.0d0
+      eb   = 0.0d0
+      ea   = 0.0d0
+      eba  = 0.0d0
+      eub  = 0.0d0
       eopb = 0.0d0
-      et = 0.0d0
-      ept = 0.0d0
-      ett = 0.0d0
-      ev = 0.0d0
-      em = 0.0d0
-      ep = 0.0d0
+      et   = 0.0d0
+      ept  = 0.0d0
+      ett  = 0.0d0
+      ev   = 0.0d0
+      em   = 0.0d0
+      ep   = 0.0d0
 c
 c     perform dynamic allocation of some global arrays
 c
       if (first) then
          first = .false.
          if (.not. allocated(desum))  allocate (desum(3,n))
-         if (.not. allocated(deb))  allocate (deb(3,n))
-         if (.not. allocated(dea))  allocate (dea(3,n))
-         if (.not. allocated(deba))  allocate (deba(3,n))
-         if (.not. allocated(deub))  allocate (deub(3,n))
+         if (.not. allocated(deb))    allocate (deb(3,n))
+         if (.not. allocated(dea))    allocate (dea(3,n))
+         if (.not. allocated(deba))   allocate (deba(3,n))
+         if (.not. allocated(deub))   allocate (deub(3,n))
          if (.not. allocated(deopb))  allocate (deopb(3,n))
-         if (.not. allocated(det))  allocate (det(3,n))
-         if (.not. allocated(dept))  allocate (dept(3,n))
-         if (.not. allocated(dett))  allocate (dett(3,n))
-         if (.not. allocated(dev))  allocate (dev(3,n))
-         if (.not. allocated(dem))  allocate (dem(3,n))
-         if (.not. allocated(dep))  allocate (dep(3,n))
+         if (.not. allocated(det))    allocate (det(3,n))
+         if (.not. allocated(dept))   allocate (dept(3,n))
+         if (.not. allocated(dett))   allocate (dett(3,n))
+         if (.not. allocated(dev))    allocate (dev(3,n))
+         if (.not. allocated(dem))    allocate (dem(3,n))
+         if (.not. allocated(dep))    allocate (dep(3,n))
       end if
 c
 c     zero out each of the first derivative components
 c
       do i = 1, n
          do j = 1, 3
-            deb(j,i) = 0.0d0
-            dea(j,i) = 0.0d0
-            deba(j,i) = 0.0d0
-            deub(j,i) = 0.0d0
+            deb(j,i)   = 0.0d0
+            dea(j,i)   = 0.0d0
+            deba(j,i)  = 0.0d0
+            deub(j,i)  = 0.0d0
             deopb(j,i) = 0.0d0
-            det(j,i) = 0.0d0
-            dept(j,i) = 0.0d0
-            dett(j,i) = 0.0d0
-            dev(j,i) = 0.0d0
-            dem(j,i) = 0.0d0
-            dep(j,i) = 0.0d0
+            det(j,i)   = 0.0d0
+            dept(j,i)  = 0.0d0
+            dett(j,i)  = 0.0d0
+            dev(j,i)   = 0.0d0
+            dem(j,i)   = 0.0d0
+            dep(j,i)   = 0.0d0
          end do
       end do
 c

@@ -82,9 +82,9 @@ c
 c
 c     set the replicated cell length and the half width
 c
-      xcell = dble(nx) * xbox
-      ycell = dble(ny) * ybox
-      zcell = dble(nz) * zbox
+      xcell  = dble(nx) * xbox
+      ycell  = dble(ny) * ybox
+      zcell  = dble(nz) * zbox
       xcell2 = 0.5d0 * xcell
       ycell2 = 0.5d0 * ycell
       zcell2 = 0.5d0 * zcell
@@ -106,7 +106,7 @@ c
          do j = 0, ny-1
             do i = 0, nx-1
                if (k.ne.0 .or. j.ne.0 .or. i.ne.0) then
-                  ncell = ncell + 1
+                  ncell          = ncell + 1
                   icell(1,ncell) = i
                   icell(2,ncell) = j
                   icell(3,ncell) = k

@@ -40,16 +40,16 @@ c
          ymid = 0.0d0
          zmid = 0.0d0
          do j = init, stop
-            k = kmol(j)
+            k     = kmol(j)
             weigh = mass(k)
-            xmid = xmid + pos(1,k)*weigh
-            ymid = ymid + pos(2,k)*weigh
-            zmid = zmid + pos(3,k)*weigh
+            xmid  = xmid + pos(1,k)*weigh
+            ymid  = ymid + pos(2,k)*weigh
+            zmid  = zmid + pos(3,k)*weigh
          end do
          weigh = molmass(i)
-         xmid = xmid / weigh
-         ymid = ymid / weigh
-         zmid = zmid / weigh
+         xmid  = xmid / weigh
+         ymid  = ymid / weigh
+         zmid  = zmid / weigh
 c
 c     get fractional coordinates of center of mass
 c
@@ -117,7 +117,7 @@ c
 c     translate coordinates via offset from center of mass
 c
          do j = init, stop
-            k = kmol(j)
+            k        = kmol(j)
             pos(1,k) = pos(1,k) - xmid + xcom
             pos(2,k) = pos(2,k) - ymid + ycom
             pos(3,k) = pos(3,k) - zmid + zcom
