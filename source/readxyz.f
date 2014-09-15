@@ -118,7 +118,7 @@ c     initialize coordinates and connectivities for each atom
 c
 
       do i = 1, n
-         tag(i) = 0
+         atom(i)%tag = 0
          name(i) = '   '
          atom(i)%pos(1) = 0.0d0
          atom(i)%pos(2) = 0.0d0
@@ -155,7 +155,7 @@ c              use_bounds = .true.
             end if
    60       continue
          end do
-         read (record,*,err=80,end=80)  tag(i)
+         read (record,*,err=80,end=80)  atom(i)%tag
          next = 1
          call getword (record,name(i),next)
          string = record(next:120)
@@ -193,7 +193,7 @@ c     perform dynamic allocation of some local arrays
 c
       nmax = 0
       do i = 1, n
-         nmax = max(tag(i),nmax)
+         nmax = max(atom(i)%tag,nmax)
          do j = 1, n12(i)
             nmax = max(i12(j,i),nmax)
          end do
@@ -204,15 +204,15 @@ c     check for scrambled atom order and attempt to renumber
 c
       reorder = .false.
       do i = 1, n
-         list(tag(i)) = i
-         if (tag(i) .ne. i)  reorder = .true.
+         list(atom(i)%tag) = i
+         if (atom(i)%tag .ne. i)  reorder = .true.
       end do
       if (reorder) then
          write (iout,110)
   110    format (/,' READXYZ  --  Atom Labels not Sequential,',
      &              ' Attempting to Renumber')
          do i = 1, n
-            tag(i) = i
+            atom(i)%tag = i
             do j = 1, n12(i)
                i12(j,i) = list(i12(j,i))
             end do

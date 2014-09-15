@@ -1,4 +1,4 @@
-c
+c 
 c
 c     ###################################################
 c     ##  COPYRIGHT (C)  1992  by  Jay William Ponder  ##
@@ -32,6 +32,7 @@ c
       type atomtype
       real(kind=8), dimension(3) :: pos
       real(kind=8) :: mass
+      integer :: tag
       end type atomtype
 
 

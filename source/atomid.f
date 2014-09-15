@@ -24,7 +24,7 @@ c
       module atomid
       use sizes
       implicit none
-      integer tag(maxatm)
+c      integer tag(maxatm)
       integer class(maxatm)
       integer atomic(maxatm)
       integer valence(maxatm)
