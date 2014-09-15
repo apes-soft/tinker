@@ -186,7 +186,6 @@ OBJS = angbnd.o \
        fields.o \
        files.o \
        final.o \
-       freeunit.o \
        getkey.o \
        getnumb.o \
        getprm.o \
@@ -399,7 +398,6 @@ libtinker.a: ${OBJS}
         fields.o \
         files.o \
         final.o \
-        freeunit.o \
         getkey.o \
         getnumb.o \
         getprm.o \
@@ -587,7 +585,6 @@ field.o: keys.o potent.o sizes.o
 fields.o: sizes.o
 files.o:
 final.o: angbnd.o atmlst.o bitor.o bndstr.o chunks.o couple.o deriv.o inform.o iounit.o light.o molcul.o moldyn.o mpole.o neigh.o opbend.o pitors.o pme.o polar.o polgrp.o ring.o sizes.o strbnd.o tarray.o tors.o tortor.o uprior.o urey.o vdw.o
-freeunit.o: iounit.o
 getkey.o: argue.o files.o iounit.o keys.o openmp.o sizes.o
 getnumb.o: ascii.o
 getprm.o: files.o iounit.o keys.o params.o sizes.o
