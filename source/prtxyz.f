@@ -54,8 +54,10 @@ c
       crdmin = 0.0d0
       crdmax = 0.0d0
       do i = 1, n
-         crdmin = min(crdmin,pos(1,i),pos(2,i),pos(3,i))
-         crdmax = max(crdmax,pos(1,i),pos(2,i),pos(3,i))
+         crdmin = min(crdmin,atom(i)%pos(1),atom(i)%pos(2),
+     &        atom(i)%pos(3))
+         crdmax = max(crdmax,atom(i)%pos(1),atom(i)%pos(2),
+     &        atom(i)%pos(3))
       end do
       crdsiz = 6
       if (crdmin .le. -1000.0d0)  crdsiz = 7
@@ -95,8 +97,8 @@ c
       fstr = '('//atmc//',2x,a3,3f'//crdc//
      &          '.'//digc//',i6,8'//atmc//')'
       do i = 1, n
-         write (ixyz,fstr)  i,name(i),pos(1,i),pos(2,i),pos(3,i),
-     &                      type(i),(i12(k,i),k=1,n12(i))
+         write (ixyz,fstr)  i,name(i),atom(i)%pos(1),atom(i)%pos(2),
+     &        atom(i)%pos(3),type(i),(i12(k,i),k=1,n12(i))
       end do
 c
 c     close the output unit if opened by this routine

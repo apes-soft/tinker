@@ -19,6 +19,7 @@ c     y       current y-coordinate for each atom in the system
 c     z       current z-coordinate for each atom in the system
 c
 c
+
       module atoms
       use sizes
 
@@ -26,7 +27,16 @@ c
 
       integer:: n
       integer:: type(maxatm)
-      real (kind=8):: pos(3,maxatm)
+c      real (kind=8):: pos(3,maxatm)
+
+
+      type atomtype
+      real(kind=8), dimension(3) :: pos
+      end type atomtype
+
+
 
       save
+      type(atomtype) atom(maxatm)
+
       end

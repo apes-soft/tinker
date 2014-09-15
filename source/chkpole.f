@@ -45,15 +45,15 @@ c
 c
 c     compute the signed parallelpiped volume at chiral site
 c
-            xad = pos(1,ia) - pos(1,id)
-            yad = pos(2,ia) - pos(2,id)
-            zad = pos(3,ia) - pos(3,id)
-            xbd = pos(1,ib) - pos(1,id)
-            ybd = pos(2,ib) - pos(2,id)
-            zbd = pos(3,ib) - pos(3,id)
-            xcd = pos(1,ic) - pos(1,id)
-            ycd = pos(2,ic) - pos(2,id)
-            zcd = pos(3,ic) - pos(3,id)
+            xad = atom(ia)%pos(1) - atom(id)%pos(1)
+            yad = atom(ia)%pos(2) - atom(id)%pos(2)
+            zad = atom(ia)%pos(3) - atom(id)%pos(3)
+            xbd = atom(ib)%pos(1) - atom(id)%pos(1)
+            ybd = atom(ib)%pos(2) - atom(id)%pos(2)
+            zbd = atom(ib)%pos(3) - atom(id)%pos(3)
+            xcd = atom(ic)%pos(1) - atom(id)%pos(1)
+            ycd = atom(ic)%pos(2) - atom(id)%pos(2)
+            zcd = atom(ic)%pos(3) - atom(id)%pos(3)
             c1 = ybd*zcd - zbd*ycd
             c2 = ycd*zad - zcd*yad
             c3 = yad*zbd - zad*ybd

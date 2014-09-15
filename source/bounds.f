@@ -42,9 +42,9 @@ c
          do j = init, stop
             k = kmol(j)
             weigh = mass(k)
-            xmid = xmid + pos(1,k)*weigh
-            ymid = ymid + pos(2,k)*weigh
-            zmid = zmid + pos(3,k)*weigh
+            xmid = xmid + atom(k)%pos(1)*weigh
+            ymid = ymid + atom(k)%pos(2)*weigh
+            zmid = zmid + atom(k)%pos(3)*weigh
          end do
          weigh = molmass(i)
          xmid = xmid / weigh
@@ -118,9 +118,9 @@ c     translate coordinates via offset from center of mass
 c
          do j = init, stop
             k = kmol(j)
-            pos(1,k) = pos(1,k) - xmid + xcom
-            pos(2,k) = pos(2,k) - ymid + ycom
-            pos(3,k) = pos(3,k) - zmid + zcom
+            atom(k)%pos(1) = atom(k)%pos(1) - xmid + xcom
+            atom(k)%pos(2) = atom(k)%pos(2) - ymid + ycom
+            atom(k)%pos(3) = atom(k)%pos(3) - zmid + zcom
          end do
       end do
       return

@@ -53,9 +53,9 @@ c
 c
 c     compute the value of the 1-3 distance deviation
 c
-         xac = pos(1,ia) - pos(1,ic)
-         yac = pos(2,ia) - pos(2,ic)
-         zac = pos(3,ia) - pos(3,ic)
+         xac = atom(ia)%pos(1) - atom(ic)%pos(1)
+         yac = atom(ia)%pos(2) - atom(ic)%pos(2)
+         zac = atom(ia)%pos(3) - atom(ic)%pos(3)
          rac = sqrt(xac*xac + yac*yac + zac*zac)
          dt = rac - ideal
          dt2 = dt * dt

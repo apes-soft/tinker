@@ -108,21 +108,21 @@ c
 c
 c     compute the values of the torsional angles
 c
-         xia = pos(1,ia)
-         yia = pos(2,ia)
-         zia = pos(3,ia)
-         xib = pos(1,ib)
-         yib = pos(2,ib)
-         zib = pos(3,ib)
-         xic = pos(1,ic)
-         yic = pos(2,ic)
-         zic = pos(3,ic)
-         xid = pos(1,id)
-         yid = pos(2,id)
-         zid = pos(3,id)
-         xie = pos(1,ie)
-         yie = pos(2,ie)
-         zie = pos(3,ie)
+         xia = atom(ia)%pos(1)
+         yia = atom(ia)%pos(2)
+         zia = atom(ia)%pos(3)
+         xib = atom(ib)%pos(1)
+         yib = atom(ib)%pos(2)
+         zib = atom(ib)%pos(3)
+         xic = atom(ic)%pos(1)
+         yic = atom(ic)%pos(2)
+         zic = atom(ic)%pos(3)
+         xid = atom(id)%pos(1)
+         yid = atom(id)%pos(2)
+         zid = atom(id)%pos(3)
+         xie = atom(ie)%pos(1)
+         yie = atom(ie)%pos(2)
+         zie = atom(ie)%pos(3)
          xba = xib - xia
          yba = yib - yia
          zba = zib - zia
@@ -398,15 +398,15 @@ c
 c     compute the signed parallelpiped volume at central site
 c
          if (ia .ne. 0) then
-            xac = pos(1,ia) - pos(1,ic)
-            yac = pos(2,ia) - pos(2,ic)
-            zac = pos(3,ia) - pos(3,ic)
-            xbc = pos(1,ib) - pos(1,ic)
-            ybc = pos(2,ib) - pos(2,ic)
-            zbc = pos(3,ib) - pos(3,ic)
-            xdc = pos(1,id) - pos(1,ic)
-            ydc = pos(2,id) - pos(2,ic)
-            zdc = pos(3,id) - pos(3,ic)
+            xac = atom(ia)%pos(1) - atom(ic)%pos(1)
+            yac = atom(ia)%pos(2) - atom(ic)%pos(2)
+            zac = atom(ia)%pos(3) - atom(ic)%pos(3)
+            xbc = atom(ib)%pos(1) - atom(ic)%pos(1)
+            ybc = atom(ib)%pos(2) - atom(ic)%pos(2)
+            zbc = atom(ib)%pos(3) - atom(ic)%pos(3)
+            xdc = atom(id)%pos(1) - atom(ic)%pos(1)
+            ydc = atom(id)%pos(2) - atom(ic)%pos(2)
+            zdc = atom(id)%pos(3) - atom(ic)%pos(3)
             c1 = ybc*zdc - zbc*ydc
             c2 = ydc*zac - zdc*yac
             c3 = yac*zbc - zac*ybc
