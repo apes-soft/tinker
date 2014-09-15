@@ -74,6 +74,13 @@ List issues that need looking at or resolving.
 
 ## Outstanding compilation warnings
 
+### Picked up by the pgf90 compiler
+
+* Predefined intrinsic maxval loses intrinsic property (sizes.f: 58) -
+  variable masks the Fortran 90 `maxval` intrinsic.
+* Predefined intrinsic digits loses intrinsic property (inform.f: 28) -
+  variable masks the Fortran 90 `digits` intrinsic.
+
 ### gfortran
 
 Switched on as many compilation switches to find out if there are
