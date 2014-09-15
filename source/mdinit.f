@@ -128,8 +128,8 @@ c
 c     make sure all atoms or groups have a nonzero mass
 c
       do i = 1, n
-         if (mass(i).le.0.0d0 .and. atomic(i).ne.0) then
-            mass(i) = 1.0d0
+         if (atom(i)%mass.le.0.0d0 .and. atomic(i).ne.0) then
+            atom(i)%mass = 1.0d0
             totmass = totmass + 1.0d0
             write (iout,30)  i
    30       format (/,' MDINIT  --  Warning, Mass of Atom',i6,
@@ -227,12 +227,12 @@ c
          allocate (derivs(3,n))
          call gradient (e,derivs)
          do i = 1, n
-            if (mass(i).ne.0.0d0) then
-               speed = maxwell (mass(i),kelvin)
+            if (atom(i)%mass.ne.0.0d0) then
+               speed = maxwell (atom(i)%mass,kelvin)
                call ranvec (vec)
                do j = 1, 3
                   v(j,i) = speed * vec(j)
-                  a(j,i) = -convert * derivs(j,i) / mass(i)
+                  a(j,i) = -convert * derivs(j,i) / atom(i)%mass
                   aalt(j,i) = a(j,i)
                end do
             else

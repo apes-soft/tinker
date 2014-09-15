@@ -28,7 +28,7 @@ c
       integer class(maxatm)
       integer atomic(maxatm)
       integer valence(maxatm)
-      real*8 mass(maxatm)
+c      real*8 mass(maxatm)
       character*3 name(maxatm)
       character*24 story(maxatm)
       save

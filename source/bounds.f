@@ -41,7 +41,7 @@ c
          zmid = 0.0d0
          do j = init, stop
             k = kmol(j)
-            weigh = mass(k)
+            weigh = atom(k)%mass
             xmid = xmid + atom(k)%pos(1)*weigh
             ymid = ymid + atom(k)%pos(2)*weigh
             zmid = zmid + atom(k)%pos(3)*weigh

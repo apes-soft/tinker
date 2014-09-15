@@ -95,14 +95,14 @@ c
          if (k .eq. 0) then
             class(i) = 0
             atomic(i) = 0
-            mass(i) = 0.0d0
+            atom(i)%mass = 0.0d0
             valence(i) = 0
             story(i) = 'Undefined Atom Type     '
          else
             if (symbol(k) .ne. '   ')  name(i) = symbol(k)
             class(i) = atmcls(k)
             atomic(i) = atmnum(k)
-            mass(i) = weight(k)
+            atom(i)%mass = weight(k)
             valence(i) = ligand(k)
             story(i) = describe(k)
          end if
@@ -144,7 +144,7 @@ c
                name(k) = symb
                story(k) = notice
                atomic(k) = atn
-               mass(k) = wght
+               atom(k)%mass = wght
                valence(k) = lig
                if (.not. silent) then
                   write (iout,60)  k,cls,symb,notice,atn,wght,lig

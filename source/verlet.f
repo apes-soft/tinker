@@ -66,7 +66,7 @@ c     find the full-step velocities using the Verlet recursion
 c
       do i = 1, n
          do j = 1, 3
-            a(j,i) = -convert * derivs(j,i) / mass(i)
+            a(j,i) = -convert * derivs(j,i) / atom(i)%mass
             v(j,i) = v(j,i) + a(j,i)*dt_2
          end do
       end do

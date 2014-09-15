@@ -119,10 +119,10 @@ c
 c     if all atomic masses are zero, set them all to unity
 c
       do i = 1, n
-         if (mass(i) .ne. 0.0d0)  goto 10
+         if (atom(i)%mass .ne. 0.0d0)  goto 10
       end do
       do i = 1, n
-         mass(i) = 1.0d0
+         atom(i)%mass = 1.0d0
       end do
    10 continue
 c
@@ -132,7 +132,7 @@ c
       do i = 1, nmol
          molmass(i) = 0.0d0
          do k = imol(1,i), imol(2,i)
-            molmass(i) = molmass(i) + mass(kmol(k))
+            molmass(i) = molmass(i) + atom(kmol(k))%mass
          end do
          totmass = totmass + molmass(i)
       end do

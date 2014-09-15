@@ -27,11 +27,11 @@ c
 
       integer:: n
       integer:: type(maxatm)
-c      real (kind=8):: pos(3,maxatm)
 
 
       type atomtype
       real(kind=8), dimension(3) :: pos
+      real(kind=8) :: mass
       end type atomtype
 
 
