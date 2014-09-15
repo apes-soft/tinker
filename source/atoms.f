@@ -34,6 +34,7 @@ c      integer:: type(maxatm)
       real(kind=8) :: mass
       integer :: tag
       integer :: type
+      integer :: class 
       end type atomtype
 
 

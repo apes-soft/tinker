@@ -143,14 +143,14 @@ c
          header = .true.
          do i = 1, nangle
             ib = iang(2,i)
-            itb = class(ib)
+            itb = atom(ib)%class
             if (jopb(itb) .and. n12(ib).eq.3) then
                ia = iang(1,i)
-               ita = class(ia)
+               ita = atom(ia)%class
                ic = iang(3,i)
-               itc = class(ic)
+               itc = atom(ic)%class
                id = iang(4,i)
-               itd = class(id)
+               itd = atom(id)%class
                size = 4
                call numeral (ita,pa,size)
                call numeral (itb,pb,size)

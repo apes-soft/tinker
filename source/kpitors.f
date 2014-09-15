@@ -112,8 +112,8 @@ c
             ia = ibnd(1,i)
             ib = ibnd(2,i)
             if (n12(ia).eq.3 .and. n12(ib).eq.3) then
-               ita = class(ia)
-               itb = class(ib)
+               ita = atom(ia)%class
+               itb = atom(ib)%class
                size = 4
                call numeral (ita,pa,size)
                call numeral (itb,pb,size)

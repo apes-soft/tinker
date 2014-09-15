@@ -236,10 +236,10 @@ c
          ib = itors(2,i)
          ic = itors(3,i)
          id = itors(4,i)
-         ita = class(ia)
-         itb = class(ib)
-         itc = class(ic)
-         itd = class(id)
+         ita = atom(ia)%class
+         itb = atom(ib)%class
+         itc = atom(ic)%class
+         itd = atom(id)%class
          size = 4
          call numeral (ita,pa,size)
          call numeral (itb,pb,size)

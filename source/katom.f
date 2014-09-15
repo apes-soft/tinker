@@ -93,14 +93,14 @@ c
       do i = 1, n
          k = atom(i)%type
          if (k .eq. 0) then
-            class(i) = 0
+            atom(i)%class = 0
             atomic(i) = 0
             atom(i)%mass = 0.0d0
             valence(i) = 0
             story(i) = 'Undefined Atom Type     '
          else
             if (symbol(k) .ne. '   ')  name(i) = symbol(k)
-            class(i) = atmcls(k)
+            atom(i)%class = atmcls(k)
             atomic(i) = atmnum(k)
             atom(i)%mass = weight(k)
             valence(i) = ligand(k)
@@ -140,7 +140,7 @@ c
                end if
                k = -k
                if (cls .eq. 0)  cls = k
-               class(k) = cls
+               atom(k)%class = cls
                name(k) = symb
                story(k) = notice
                atomic(k) = atn
@@ -160,7 +160,7 @@ c
       header = .true.
       do i = 1, n
          k = atom(i)%type
-         cls = class(i)
+         cls = atom(i)%class
          if (k.lt.1 .or. k.gt.maxtyp
      &          .or. cls.lt.1 .or. cls.gt.maxclass) then
             abort = .true.

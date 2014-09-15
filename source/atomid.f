@@ -25,7 +25,7 @@ c
       use sizes
       implicit none
 c      integer tag(maxatm)
-      integer class(maxatm)
+c      integer class(maxatm)
       integer atomic(maxatm)
       integer valence(maxatm)
 c      real*8 mass(maxatm)

@@ -186,8 +186,8 @@ c
       do i = 1, nbond
          ia = ibnd(1,i)
          ib = ibnd(2,i)
-         ita = class(ia)
-         itb = class(ib)
+         ita = atom(ia)%class
+         itb = atom(ib)%class
          size = 4
          call numeral (ita,pa,size)
          call numeral (itb,pb,size)
