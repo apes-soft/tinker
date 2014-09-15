@@ -98,7 +98,7 @@ c
      &          '.'//digc//',i6,8'//atmc//')'
       do i = 1, n
          write (ixyz,fstr)  i,name(i),atom(i)%pos(1),atom(i)%pos(2),
-     &        atom(i)%pos(3),type(i),(i12(k,i),k=1,n12(i))
+     &        atom(i)%pos(3),atom(i)%type,(i12(k,i),k=1,n12(i))
       end do
 c
 c     close the output unit if opened by this routine

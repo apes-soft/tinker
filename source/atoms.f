@@ -26,13 +26,14 @@ c
       implicit none
 
       integer:: n
-      integer:: type(maxatm)
+c      integer:: type(maxatm)
 
 
       type atomtype
       real(kind=8), dimension(3) :: pos
       real(kind=8) :: mass
       integer :: tag
+      integer :: type
       end type atomtype
 
 

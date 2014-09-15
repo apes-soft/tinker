@@ -91,7 +91,7 @@ c
 c     transfer atom type values to individual atoms
 c
       do i = 1, n
-         k = type(i)
+         k = atom(i)%type
          if (k .eq. 0) then
             class(i) = 0
             atomic(i) = 0
@@ -159,7 +159,7 @@ c     check for presence of undefined atom types or classes
 c
       header = .true.
       do i = 1, n
-         k = type(i)
+         k = atom(i)%type
          cls = class(i)
          if (k.lt.1 .or. k.gt.maxtyp
      &          .or. cls.lt.1 .or. cls.gt.maxclass) then
@@ -189,7 +189,7 @@ c
      &                 //,' Type',11x,'Atom Name',6x,'Atom Type',7x,
      &                    'Expected',4x,'Found',/)
             end if
-            write (iout,110)  i,name(i),type(i),valence(i),n12(i)
+            write (iout,110)  i,name(i),atom(i)%type,valence(i),n12(i)
   110       format (' Valence',7x,i5,'-',a3,8x,i5,10x,i5,5x,i5)
          end if
       end do

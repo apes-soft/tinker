@@ -390,8 +390,8 @@ c
             end if
          end do
          ia = 0
-         if (type(j) .gt. type(k))  ia = j
-         if (type(k) .gt. type(j))  ia = k
+         if (atom(j)%type .gt. atom(k)%type)  ia = j
+         if (atom(k)%type .gt. atom(k)%type)  ia = k
          if (atomic(j) .gt. atomic(k))  ia = j
          if (atomic(k) .gt. atomic(j))  ia = k
 c

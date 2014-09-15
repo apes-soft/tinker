@@ -123,7 +123,7 @@ c
          atom(i)%pos(1) = 0.0d0
          atom(i)%pos(2) = 0.0d0
          atom(i)%pos(3) = 0.0d0
-         type(i) = 0
+         atom(i)%type = 0
          do j = 1, maxval
             i12(j,i) = 0
          end do
@@ -160,7 +160,7 @@ c              use_bounds = .true.
          call getword (record,name(i),next)
          string = record(next:120)
          read (string,*,err=70,end=70)  atom(i)%pos(1),atom(i)%pos(2),
-     &        atom(i)%pos(3),type(i),(i12(j,i),j=1,maxval)
+     &        atom(i)%pos(3),atom(i)%type,(i12(j,i),j=1,maxval)
    70    continue
       end do
       quit = .false.

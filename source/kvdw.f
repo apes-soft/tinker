@@ -278,7 +278,7 @@ c
       k = 0
       do i = 1, n
          jvdw(i) = class(i)
-         if (vdwindex .eq. 'TYPE')  jvdw(i) = type(i)
+         if (vdwindex .eq. 'TYPE')  jvdw(i) = atom(i)%type
          k = max(k,jvdw(i))
       end do
       if (k .gt. maxclass) then

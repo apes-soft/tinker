@@ -106,8 +106,8 @@ c
 c     find and store the atomic dipole polarizability parameters
 c
       do i = 1, n
-         polarity(i) = polr(type(i))
-         thole(i) = athl(type(i))
+         polarity(i) = polr(atom(i)%type)
+         thole(i) = athl(atom(i)%type)
       end do
 c
 c     process keywords containing atom specific polarizabilities
@@ -259,10 +259,10 @@ c
       do i = 1, n
          np11(i) = 1
          ip11(1,i) = i
-         it = type(i)
+         it = atom(i)%type
          do j = 1, n12(i)
             jj = i12(j,i)
-            jt = type(jj)
+            jt = atom(jj)%type
             do k = 1, maxval
                kk = pgrp(k,it)
                if (kk .eq. 0)  goto 20
