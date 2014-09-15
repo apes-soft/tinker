@@ -4,7 +4,7 @@ Using this to develop `tinkerLite` - a cut down version of tinker,
 basically `dynamic` with restricted options of what can be run. The main
 aim of this work is to:
 
-1. Try and improve serial performance and scalability.
+1. See if we can improve serial performance and scalability.
 2. Produce a distributed memory version of `dynamic` using MPI.
 
 # Changes Made
