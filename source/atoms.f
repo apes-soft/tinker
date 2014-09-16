@@ -40,6 +40,7 @@ c      integer:: type(maxatm)
       character(len=24) :: story
       character(len=3) :: name
       integer :: n12         ! number of atoms directly bonded to the atom
+      integer, dimension(maxval) :: i12  ! atom numbers of atoms directly conneced to each atom
       end type atomtype
 
 

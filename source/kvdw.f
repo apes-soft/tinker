@@ -415,7 +415,7 @@ c
          if (atom(i)%n12.ne.1 .or. kred(i).eq.0.0d0) then
             ired(i) = i
          else
-            ired(i) = i12(1,i)
+            ired(i) = atom(i)%i12(1)
          end if
       end do
 c

@@ -39,10 +39,10 @@ c
          ib = ibnd(1,i)
          ic = ibnd(2,i)
          do j = 1, atom(ib)%n12
-            ia = i12(j,ib)
+            ia = atom(ib)%i12(j)
             if (ia .ne. ic) then
                do k = 1, atom(ic)%n12
-                  id = i12(k,ic)
+                  id = atom(ic)%i12(k)
                   if (id.ne.ib .and. id.ne.ia) then
                      ntors = ntors + 1
                      if (ntors .gt. maxtors) then
