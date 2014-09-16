@@ -111,7 +111,7 @@ c
          do i = 1, nbond
             ia = ibnd(1,i)
             ib = ibnd(2,i)
-            if (n12(ia).eq.3 .and. n12(ib).eq.3) then
+            if (atom(ia)%n12.eq.3 .and. atom(ib)%n12.eq.3) then
                ita = atom(ia)%class
                itb = atom(ib)%class
                size = 4

@@ -40,8 +40,8 @@ c
       nangle = 0
       do i = 1, n
          m = 0
-         do j = 1, n12(i)-1
-            do k = j+1, n12(i)
+         do j = 1, atom(i)%n12-1
+            do k = j+1, atom(i)%n12
                nangle = nangle + 1
                if (nangle .gt. maxang) then
                   write (iout,10)
@@ -60,7 +60,7 @@ c
 c
 c     set the out-of-plane atom for angles at trivalent centers
 c
-         if (n12(i) .eq. 3) then
+         if (atom(i)%n12 .eq. 3) then
             iang(4,nangle) = i12(1,i)
             iang(4,nangle-1) = i12(2,i)
             iang(4,nangle-2) = i12(3,i)

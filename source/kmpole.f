@@ -264,11 +264,11 @@ c
                ztyp = mpz(imp)
                xtyp = mpx(imp)
                ytyp = mpy(imp)
-               do j = 1, n12(i)
+               do j = 1, atom(i)%n12
                   ji = i12(j,i)
                   jt = atom(ji)%type
                   if (jt .eq. ztyp) then
-                     do k = 1, n12(i)
+                     do k = 1, atom(i)%n12
                         ki = i12(k,i)
                         kt = atom(ki)%type
                         if (kt.eq.xtyp .and. ki.ne.ji) then
@@ -281,7 +281,7 @@ c
                               end do
                               goto 140
                            end if
-                           do l = 1, n12(i)
+                           do l = 1, atom(i)%n12
                               li = i12(l,i)
                               lt = atom(li)%type
                               if (lt.eq.ytyp .and. li.ne.ji
@@ -310,7 +310,7 @@ c
                ztyp = mpz(imp)
                xtyp = mpx(imp)
                ytyp = mpy(imp)
-               do j = 1, n12(i)
+               do j = 1, atom(i)%n12
                   ji = i12(j,i)
                   jt = atom(ji)%type
                   if (jt .eq. ztyp) then
@@ -318,7 +318,7 @@ c
                         ki = i13(k,i)
                         kt = atom(ki)%type
                         path = .false.
-                        do m = 1, n12(ki)
+                        do m = 1, atom(ki)%n12
                            if (i12(m,ki) .eq. ji)  path = .true.
                         end do
                         if (kt.eq.xtyp .and. path) then
@@ -335,7 +335,7 @@ c
                               li = i13(l,i)
                               lt = atom(li)%type
                               path = .false.
-                              do m = 1, n12(li)
+                              do m = 1, atom(li)%n12
                                  if (i12(m,li) .eq. ji)  path = .true.
                               end do
                               if (lt.eq.ytyp .and. li.ne.ki
@@ -364,7 +364,7 @@ c
                ztyp = mpz(imp)
                xtyp = mpx(imp)
                ytyp = mpy(imp)
-               do j = 1, n12(i)
+               do j = 1, atom(i)%n12
                   ji = i12(j,i)
                   jt = atom(ji)%type
                   if (jt .eq. ztyp) then

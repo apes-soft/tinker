@@ -138,7 +138,7 @@ c
             do j = 1, nsb
                if (ksb(j) .eq. pt) then
                   nstrbnd = nstrbnd + 1
-                  do k = 1, n12(ib)
+                  do k = 1, atom(ib)%n12
                      if (i12(k,ib) .eq. ia)  nba = bndlist(k,ib)
                      if (i12(k,ib) .eq. ic)  nbc = bndlist(k,ib)
                   end do

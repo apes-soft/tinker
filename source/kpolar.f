@@ -260,7 +260,7 @@ c
          np11(i) = 1
          ip11(1,i) = i
          it = atom(i)%type
-         do j = 1, n12(i)
+         do j = 1, atom(i)%n12
             jj = i12(j,i)
             jt = atom(jj)%type
             do k = 1, maxval
@@ -353,7 +353,7 @@ c
          nkeep = 0
          do j = 1, np11(i)
             jj = ip11(j,i)
-            do k = 1, n12(jj)
+            do k = 1, atom(jj)%n12
                kk = i12(k,jj)
                if (mask(kk) .ne. i) then
                   nkeep = nkeep + 1

@@ -50,7 +50,7 @@ c
             molcule(i) = nmol
          end if
          mi = molcule(i)
-         do ii = 1, n12(i)
+         do ii = 1, atom(i)%n12
             j = i12(ii,i)
             mj = molcule(j)
             if (mj .eq. 0) then

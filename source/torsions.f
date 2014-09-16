@@ -38,10 +38,10 @@ c
       do i = 1, nbond
          ib = ibnd(1,i)
          ic = ibnd(2,i)
-         do j = 1, n12(ib)
+         do j = 1, atom(ib)%n12
             ia = i12(j,ib)
             if (ia .ne. ic) then
-               do k = 1, n12(ic)
+               do k = 1, atom(ic)%n12
                   id = i12(k,ic)
                   if (id.ne.ib .and. id.ne.ia) then
                      ntors = ntors + 1

@@ -180,7 +180,7 @@ c     check the number of atoms attached to each atom
 c
       header = .true.
       do i = 1, n
-         if (n12(i) .ne. atom(i)%valence) then
+         if (atom(i)%n12 .ne. atom(i)%valence) then
             if (header) then
                header = .false.
                write (iout,100)
@@ -190,7 +190,7 @@ c
      &                    'Expected',4x,'Found',/)
             end if
             write (iout,110)  i,atom(i)%name,atom(i)%type,
-     &           atom(i)%valence,n12(i)
+     &           atom(i)%valence,atom(i)%n12
   110       format (' Valence',7x,i5,'-',a3,8x,i5,10x,i5,5x,i5)
          end if
       end do

@@ -47,12 +47,12 @@ c     note "n12" and "i12" have already been setup elsewhere
 c
       do i = 1, n
          n13(i) = 0
-         do j = 1, n12(i)
+         do j = 1, atom(i)%n12
             jj = i12(j,i)
-            do k = 1, n12(jj)
+            do k = 1, atom(jj)%n12
                kk = i12(k,jj)
                if (kk .eq. i)  goto 10
-               do m = 1, n12(i)
+               do m = 1, atom(i)%n12
                   if (kk .eq. i12(m,i))  goto 10
                end do
                n13(i) = n13(i) + 1
@@ -75,10 +75,10 @@ c
          n14(i) = 0
          do j = 1, n13(i)
             jj = i13(j,i)
-            do k = 1, n12(jj)
+            do k = 1, atom(jj)%n12
                kk = i12(k,jj)
                if (kk .eq. i)  goto 30
-               do m = 1, n12(i)
+               do m = 1, atom(i)%n12
                   if (kk .eq. i12(m,i))  goto 30
                end do
                do m = 1, n13(i)
@@ -104,10 +104,10 @@ c
          n15(i) = 0
          do j = 1, n14(i)
             jj = i14(j,i)
-            do k = 1, n12(jj)
+            do k = 1, atom(jj)%n12
                kk = i12(k,jj)
                if (kk .eq. i)  goto 50
-               do m = 1, n12(i)
+               do m = 1, atom(i)%n12
                   if (kk .eq. i12(m,i))  goto 50
                end do
                do m = 1, n13(i)

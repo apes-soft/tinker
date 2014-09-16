@@ -178,15 +178,15 @@ c
 c     for each atom, count and sort its attached atoms
 c
       do i = 1, n
-         n12(i) = 0
+         atom(i)%n12 = 0
          do j = maxval, 1, -1
             if (i12(j,i) .ne. 0) then
-               n12(i) = j
+               atom(i)%n12 = j
                goto 100
             end if
          end do
   100    continue
-         call sort (n12(i),i12(1,i))
+         call sort (atom(i)%n12,i12(1,i))
       end do
 c
 c     perform dynamic allocation of some local arrays
@@ -194,7 +194,7 @@ c
       nmax = 0
       do i = 1, n
          nmax = max(atom(i)%tag,nmax)
-         do j = 1, n12(i)
+         do j = 1, atom(i)%n12
             nmax = max(i12(j,i),nmax)
          end do
       end do
@@ -213,10 +213,10 @@ c
      &              ' Attempting to Renumber')
          do i = 1, n
             atom(i)%tag = i
-            do j = 1, n12(i)
+            do j = 1, atom(i)%n12
                i12(j,i) = list(i12(j,i))
             end do
-            call sort (n12(i),i12(1,i))
+            call sort (atom(i)%n12,i12(1,i))
          end do
       end if
 c
@@ -232,9 +232,9 @@ c
 c     make sure that all connectivities are bidirectional
 c
       do i = 1, n
-         do j = 1, n12(i)
+         do j = 1, atom(i)%n12
             k = i12(j,i)
-            do m = 1, n12(k)
+            do m = 1, atom(k)%n12
                if (i12(m,k) .eq. i)  goto 130
             end do
             write (iout,120)  k,i

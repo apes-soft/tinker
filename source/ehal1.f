@@ -17,6 +17,7 @@ c     its first derivatives with respect to Cartesian coordinates
 c
 c
       subroutine ehal1
+      use atoms
       use energi
       use limits
       use vdwpot
@@ -160,7 +161,7 @@ c
 c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(private) shared(nvdw,ivdw,ired,kred,
-!$OMP& jvdw,xred,yred,zred,nvlst,vlst,n12,n13,n14,n15,
+!$OMP& jvdw,xred,yred,zred,nvlst,vlst,atom,n13,n14,n15,
 !$OMP& i12,i13,i14,i15,v2scale,v3scale,v4scale,v5scale,
 !$OMP& off2,radmin,epsilon,radmin4,epsilon4,ghal,dhal,
 !$OMP& cut2,c0,c1,c2,c3,c4,c5,molcule)
@@ -181,7 +182,7 @@ c
 c
 c     set interaction scaling coefficients for connected atoms
 c
-         do j = 1, n12(i)
+         do j = 1, atom(i)%n12
             vscale(i12(j,i)) = v2scale
          end do
          do j = 1, n13(i)
@@ -308,7 +309,7 @@ c
 c
 c     reset interaction scaling coefficients for connected atoms
 c
-         do j = 1, n12(i)
+         do j = 1, atom(i)%n12
             vscale(i12(j,i)) = 1.0d0
          end do
          do j = 1, n13(i)

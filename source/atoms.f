@@ -39,6 +39,7 @@ c      integer:: type(maxatm)
       integer :: valence 
       character(len=24) :: story
       character(len=3) :: name
+      integer :: n12         ! number of atoms directly bonded to the atom
       end type atomtype
 
 

@@ -335,7 +335,7 @@ c
 c
 c     set interaction scaling coefficients for connected atoms
 c
-         do j = 1, n12(ii)
+         do j = 1, atom(ii)%n12
             mscale(i12(j,ii)) = m2scale
             pscale(i12(j,ii)) = p2scale
          end do
@@ -1095,7 +1095,7 @@ c
 c
 c     reset interaction scaling coefficients for connected atoms
 c
-         do j = 1, n12(ii)
+         do j = 1, atom(ii)%n12
             mscale(i12(j,ii)) = 1.0d0
             pscale(i12(j,ii)) = 1.0d0
          end do

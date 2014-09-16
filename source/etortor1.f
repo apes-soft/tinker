@@ -377,7 +377,7 @@ c
 c     test for chirality at the central torsion-torsion site
 c
       sign = 1.0d0
-      if (n12(ic) .eq. 4) then
+      if (atom(ic)%n12 .eq. 4) then
          j = 0
          do i = 1, 4
             m = i12(i,ic)

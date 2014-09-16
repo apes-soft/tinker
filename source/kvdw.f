@@ -412,7 +412,7 @@ c     vdw reduction factor information for each individual atom
 c
       do i = 1, n
          kred(i) = reduct(jvdw(i))
-         if (n12(i).ne.1 .or. kred(i).eq.0.0d0) then
+         if (atom(i)%n12.ne.1 .or. kred(i).eq.0.0d0) then
             ired(i) = i
          else
             ired(i) = i12(1,i)
