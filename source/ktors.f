@@ -497,8 +497,8 @@ c
             label = 'Torsion'
             if (iring .eq. 5)  label = '5-Ring '
             if (iring .eq. 4)  label = '4-Ring '
-            write (iout,130)  label,ia,name(ia),ib,name(ib),ic,
-     &                        name(ic),id,name(id),ita,itb,itc,itd
+            write (iout,130)  label,ia,atom(ia)%name,ib,atom(ib)%name,
+     &           ic,atom(ic)%name,id,atom(id)%name,ita,itb,itc,itd
   130       format (1x,a7,4x,4(i6,'-',a3),5x,4i5)
          end if
       end do

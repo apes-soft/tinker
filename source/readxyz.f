@@ -119,7 +119,7 @@ c
 
       do i = 1, n
          atom(i)%tag = 0
-         name(i) = '   '
+         atom(i)%name = '   '
          atom(i)%pos(1) = 0.0d0
          atom(i)%pos(2) = 0.0d0
          atom(i)%pos(3) = 0.0d0
@@ -139,8 +139,8 @@ c
             size = trimtext (record)
             if (i .eq. 1) then
                next = 1
-               call getword (record,name(i),next)
-               if (name(i) .ne. '   ')  goto 60
+               call getword (record,atom(i)%name,next)
+               if (atom(i)%name .ne. '   ')  goto 60
                read (record,*,err=60,end=60)  xlen,ylen,zlen,
      &                                        aang,bang,gang
                size = 0
@@ -157,7 +157,7 @@ c              use_bounds = .true.
          end do
          read (record,*,err=80,end=80)  atom(i)%tag
          next = 1
-         call getword (record,name(i),next)
+         call getword (record,atom(i)%name,next)
          string = record(next:120)
          read (string,*,err=70,end=70)  atom(i)%pos(1),atom(i)%pos(2),
      &        atom(i)%pos(3),atom(i)%type,(i12(j,i),j=1,maxval)

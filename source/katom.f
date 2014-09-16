@@ -99,7 +99,7 @@ c
             atom(i)%valence = 0
             atom(i)%story = 'Undefined Atom Type     '
          else
-            if (symbol(k) .ne. '   ')  name(i) = symbol(k)
+            if (symbol(k) .ne. '   ')  atom(i)%name = symbol(k)
             atom(i)%class = atmcls(k)
             atom(i)%atomic = atmnum(k)
             atom(i)%mass = weight(k)
@@ -141,7 +141,7 @@ c
                k = -k
                if (cls .eq. 0)  cls = k
                atom(k)%class = cls
-               name(k) = symb
+               atom(k)%name = symb
                atom(k)%story = notice
                atom(k)%atomic = atn
                atom(k)%mass = wght
@@ -189,8 +189,8 @@ c
      &                 //,' Type',11x,'Atom Name',6x,'Atom Type',7x,
      &                    'Expected',4x,'Found',/)
             end if
-            write (iout,110)  i,name(i),atom(i)%type,atom(i)%valence,
-     &           n12(i)
+            write (iout,110)  i,atom(i)%name,atom(i)%type,
+     &           atom(i)%valence,n12(i)
   110       format (' Valence',7x,i5,'-',a3,8x,i5,10x,i5,5x,i5)
          end if
       end do

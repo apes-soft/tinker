@@ -438,8 +438,8 @@ c
             if (iring .eq. 5)  label = '5-Ring'
             if (iring .eq. 4)  label = '4-Ring'
             if (iring .eq. 3)  label = '3-Ring'
-            write (iout,230)  label,ia,name(ia),ib,name(ib),
-     &                        ic,name(ic),ita,itb,itc
+            write (iout,230)  label,ia,atom(ia)%name,ib,atom(ib)%name,
+     &                        ic,atom(ic)%name,ita,itb,itc
   230       format (1x,a6,5x,3(i6,'-',a3),7x,3i5)
          end if
       end do

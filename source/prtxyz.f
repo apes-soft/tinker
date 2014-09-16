@@ -97,7 +97,7 @@ c
       fstr = '('//atmc//',2x,a3,3f'//crdc//
      &          '.'//digc//',i6,8'//atmc//')'
       do i = 1, n
-         write (ixyz,fstr)  i,name(i),atom(i)%pos(1),atom(i)%pos(2),
+         write (ixyz,fstr) i,atom(i)%name,atom(i)%pos(1),atom(i)%pos(2),
      &        atom(i)%pos(3),atom(i)%type,(i12(k,i),k=1,n12(i))
       end do
 c
