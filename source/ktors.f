@@ -482,7 +482,8 @@ c
 c     warning if suitable torsional parameter not found
 c
   110    continue
-         minat = min(atomic(ia),atomic(ib),atomic(ic),atomic(id))
+         minat = min(atom(ia)%atomic,atom(ib)%atomic,atom(ic)%atomic,
+     &        atom(id)%atomic)
          if (minat .eq. 0)  done = .true.
          if (.not.done) then
             abort = .true.

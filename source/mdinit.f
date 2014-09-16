@@ -128,7 +128,7 @@ c
 c     make sure all atoms or groups have a nonzero mass
 c
       do i = 1, n
-         if (atom(i)%mass.le.0.0d0 .and. atomic(i).ne.0) then
+         if (atom(i)%mass.le.0.0d0 .and. atom(i)%atomic.ne.0) then
             atom(i)%mass = 1.0d0
             totmass = totmass + 1.0d0
             write (iout,30)  i

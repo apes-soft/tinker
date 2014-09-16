@@ -26,7 +26,7 @@ c
       implicit none
 c      integer tag(maxatm)
 c      integer class(maxatm)
-      integer atomic(maxatm)
+c      integer atomic(maxatm)
       integer valence(maxatm)
 c      real*8 mass(maxatm)
       character*3 name(maxatm)

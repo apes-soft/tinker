@@ -391,9 +391,9 @@ c
          end do
          ia = 0
          if (atom(j)%type .gt. atom(k)%type)  ia = j
-         if (atom(k)%type .gt. atom(k)%type)  ia = k
-         if (atomic(j) .gt. atomic(k))  ia = j
-         if (atomic(k) .gt. atomic(j))  ia = k
+         if (atom(k)%type .gt. atom(j)%type)  ia = k
+         if (atom(j)%atomic .gt. atom(k)%atomic)  ia = j
+         if (atom(k)%atomic .gt. atom(j)%atomic)  ia = k
 c
 c     compute the signed parallelpiped volume at central site
 c

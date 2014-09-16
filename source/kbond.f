@@ -263,7 +263,7 @@ c
 c     warning if suitable bond stretching parameter not found
 c
   130    continue
-         minat = min(atomic(ia),atomic(ib))
+         minat = min(atom(ia)%atomic,atom(ib)%atomic)
          if (minat .eq. 0)  done = .true.
          if (.not.done) then
             abort = .true.

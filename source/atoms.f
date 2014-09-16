@@ -35,6 +35,7 @@ c      integer:: type(maxatm)
       integer :: tag
       integer :: type
       integer :: class 
+      integer :: atomic
       end type atomtype
 
 

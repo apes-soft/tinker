@@ -341,7 +341,7 @@ c
          nh = 1
          do j = 1, n12(ib)
             ih = i12(j,ib)
-            if (ih.ne.ia .and. ih.ne.ic .and. atomic(ih).eq.1)
+            if (ih.ne.ia .and. ih.ne.ic .and. atom(ih)%atomic.eq.1)
      &         nh = nh + 1
          end do
 c
@@ -423,7 +423,7 @@ c
 c     warning if suitable angle bending parameter not found
 c
   210    continue
-         minat = min(atomic(ia),atomic(ib),atomic(ic))
+         minat = min(atom(ia)%atomic,atom(ib)%atomic,atom(ic)%atomic)
          if (minat .eq. 0)  done = .true.
          if (.not.done) then
             abort = .true.
