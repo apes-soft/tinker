@@ -37,6 +37,7 @@ c      integer:: type(maxatm)
       integer :: class 
       integer :: atomic
       integer :: valence 
+      character(len=24) :: story 
       end type atomtype
 
 

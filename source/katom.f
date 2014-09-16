@@ -97,14 +97,14 @@ c
             atom(i)%atomic = 0
             atom(i)%mass = 0.0d0
             atom(i)%valence = 0
-            story(i) = 'Undefined Atom Type     '
+            atom(i)%story = 'Undefined Atom Type     '
          else
             if (symbol(k) .ne. '   ')  name(i) = symbol(k)
             atom(i)%class = atmcls(k)
             atom(i)%atomic = atmnum(k)
             atom(i)%mass = weight(k)
             atom(i)%valence = ligand(k)
-            story(i) = describe(k)
+            atom(i)%story = describe(k)
          end if
       end do
 c
@@ -142,7 +142,7 @@ c
                if (cls .eq. 0)  cls = k
                atom(k)%class = cls
                name(k) = symb
-               story(k) = notice
+               atom(k)%story = notice
                atom(k)%atomic = atn
                atom(k)%mass = wght
                atom(k)%valence = lig

@@ -30,6 +30,6 @@ c      integer atomic(maxatm)
 c      integer valence(maxatm)
 c      real*8 mass(maxatm)
       character*3 name(maxatm)
-      character*24 story(maxatm)
+c      character*24 story(maxatm)
       save
       end
