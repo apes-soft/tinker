@@ -96,14 +96,14 @@ c
             atom(i)%class = 0
             atom(i)%atomic = 0
             atom(i)%mass = 0.0d0
-            valence(i) = 0
+            atom(i)%valence = 0
             story(i) = 'Undefined Atom Type     '
          else
             if (symbol(k) .ne. '   ')  name(i) = symbol(k)
             atom(i)%class = atmcls(k)
             atom(i)%atomic = atmnum(k)
             atom(i)%mass = weight(k)
-            valence(i) = ligand(k)
+            atom(i)%valence = ligand(k)
             story(i) = describe(k)
          end if
       end do
@@ -145,7 +145,7 @@ c
                story(k) = notice
                atom(k)%atomic = atn
                atom(k)%mass = wght
-               valence(k) = lig
+               atom(k)%valence = lig
                if (.not. silent) then
                   write (iout,60)  k,cls,symb,notice,atn,wght,lig
    60             format (2x,i6,1x,i6,5x,a3,3x,a24,i6,f11.3,i6)
@@ -180,7 +180,7 @@ c     check the number of atoms attached to each atom
 c
       header = .true.
       do i = 1, n
-         if (n12(i) .ne. valence(i)) then
+         if (n12(i) .ne. atom(i)%valence) then
             if (header) then
                header = .false.
                write (iout,100)
@@ -189,7 +189,8 @@ c
      &                 //,' Type',11x,'Atom Name',6x,'Atom Type',7x,
      &                    'Expected',4x,'Found',/)
             end if
-            write (iout,110)  i,name(i),atom(i)%type,valence(i),n12(i)
+            write (iout,110)  i,name(i),atom(i)%type,atom(i)%valence,
+     &           n12(i)
   110       format (' Valence',7x,i5,'-',a3,8x,i5,10x,i5,5x,i5)
          end if
       end do

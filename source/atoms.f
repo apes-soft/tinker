@@ -36,6 +36,7 @@ c      integer:: type(maxatm)
       integer :: type
       integer :: class 
       integer :: atomic
+      integer :: valence 
       end type atomtype
 
 
