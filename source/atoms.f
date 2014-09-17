@@ -41,7 +41,7 @@ c      integer:: type(maxatm)
       character(len=3) :: name
       integer :: n12         ! number of atoms directly bonded to the atom
       integer, dimension(maxval) :: i12  ! atom numbers of atoms directly
-                                         ! conneced to each atom
+                                         !conneced to each atom
       integer :: n13
       integer :: n14
       integer :: n15
@@ -53,6 +53,6 @@ c      integer:: type(maxatm)
 
 
       save
-      type(atomtype) atom(maxatm)
+      type(atomtype), allocatable ::  atom(:)
 
       end

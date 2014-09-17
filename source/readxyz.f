@@ -113,6 +113,9 @@ c
          call fatal
       end if
 
+      allocate (atom(n))
+
+
 c
 c     initialize coordinates and connectivities for each atom
 c
