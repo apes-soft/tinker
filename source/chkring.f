@@ -103,9 +103,9 @@ c
             end do
          end do
          do j = 1, atom(ia)%n13-1
-            i = i13(j,ia)
+            i = atom(ia)%i13(j)
             do k = j+1, atom(ia)%n13
-               m = i13(k,ia)
+               m = atom(ia)%i13(k)
                do p = 1, atom(i)%n12
                   if (m .eq. atom(i)%i12(p)) then
                      iring = 5
@@ -113,7 +113,7 @@ c
                   end if
                end do
                do p = 1, atom(i)%n13
-                  if (m .eq. i13(p,i)) then
+                  if (m .eq. atom(i)%i13(p)) then
                      iring = 6
                      goto 20
                   end if
@@ -151,9 +151,9 @@ c
             end if
          end do
          do j = 1, atom(ia)%n13
-            i = i13(j,ia)
+            i = atom(ia)%i13(j)
             do k = 1, atom(ib)%n13
-               if (i .eq. i13(k,ib)) then
+               if (i .eq. atom(ib)%i13(k)) then
                   iring = 5
                   goto 30
                end if
@@ -163,9 +163,9 @@ c
             i = atom(ia)%i12(j)
             if (ib .ne. i) then
                do k = 1, atom(ib)%n13
-                  m = i13(k,ib)
+                  m = atom(ib)%i13(k)
                   do p = 1, atom(i)%n13
-                     if (m .eq. i13(p,i)) then
+                     if (m .eq. atom(i)%i13(p)) then
                         iring = 6
                         do q = 1, atom(ia)%n12
                            if (m .eq. atom(ia)%i12(q))  iring = 0
@@ -202,7 +202,7 @@ c
             i = atom(ia)%i12(j)
             if (ib .ne. i) then
                do k = 1, atom(ic)%n13
-                  if (i .eq. i13(k,ic)) then
+                  if (i .eq. atom(ic)%i13(k)) then
                      iring = 5
                      goto 40
                   end if
@@ -210,10 +210,10 @@ c
             end if
          end do
          do j = 1, atom(ia)%n13
-            i = i13(j,ia)
+            i = atom(ia)%i13(j)
             if (ic .ne. i) then
                do k = 1, atom(ic)%n13
-                  if (i .eq. i13(k,ic)) then
+                  if (i .eq. atom(ic)%i13(k)) then
                      iring = 6
                      goto 40
                   end if
@@ -246,7 +246,7 @@ c
             i = atom(ia)%i12(j)
             if (ib .ne. i) then
                do k = 1, atom(id)%n13
-                  if (i .eq. i13(k,id)) then
+                  if (i .eq. atom(id)%i13(k)) then
                      iring = 6
                      goto 50
                   end if

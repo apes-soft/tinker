@@ -162,7 +162,7 @@ c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(private) shared(nvdw,ivdw,ired,kred,
 !$OMP& jvdw,xred,yred,zred,nvlst,vlst,atom,
-!$OMP& i13,i14,i15,v2scale,v3scale,v4scale,v5scale,
+!$OMP& v2scale,v3scale,v4scale,v5scale,
 !$OMP& off2,radmin,epsilon,radmin4,epsilon4,ghal,dhal,
 !$OMP& cut2,c0,c1,c2,c3,c4,c5,molcule)
 !$OMP& firstprivate(vscale,iv14) shared(evt,devt,virt)
@@ -186,14 +186,14 @@ c
             vscale(atom(i)%i12(j)) = v2scale
          end do
          do j = 1, atom(i)%n13
-            vscale(i13(j,i)) = v3scale
+            vscale(atom(i)%i13(j)) = v3scale
          end do
          do j = 1, atom(i)%n14
-            vscale(i14(j,i)) = v4scale
-            iv14(i14(j,i)) = i
+            vscale(atom(i)%i14(j)) = v4scale
+            iv14(atom(i)%i14(j)) = i
          end do
          do j = 1, atom(i)%n15
-            vscale(i15(j,i)) = v5scale
+            vscale(atom(i)%i15(j)) = v5scale
          end do
 c
 c     decide whether to compute the current interaction
@@ -313,13 +313,13 @@ c
             vscale(atom(i)%i12(j)) = 1.0d0
          end do
          do j = 1, atom(i)%n13
-            vscale(i13(j,i)) = 1.0d0
+            vscale(atom(i)%i13(j)) = 1.0d0
          end do
          do j = 1, atom(i)%n14
-            vscale(i14(j,i)) = 1.0d0
+            vscale(atom(i)%i14(j)) = 1.0d0
          end do
          do j = 1, atom(i)%n15
-            vscale(i15(j,i)) = 1.0d0
+            vscale(atom(i)%i15(j)) = 1.0d0
          end do
       end do
 c

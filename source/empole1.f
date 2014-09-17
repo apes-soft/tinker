@@ -340,20 +340,20 @@ c
             pscale(atom(ii)%i12(j)) = p2scale
          end do
          do j = 1, atom(ii)%n13
-            mscale(i13(j,ii)) = m3scale
-            pscale(i13(j,ii)) = p3scale
+            mscale(atom(ii)%i13(j)) = m3scale
+            pscale(atom(ii)%i13(j)) = p3scale
          end do
          do j = 1, atom(ii)%n14
-            mscale(i14(j,ii)) = m4scale
-            pscale(i14(j,ii)) = p4scale
+            mscale(atom(ii)%i14(j)) = m4scale
+            pscale(atom(ii)%i14(j)) = p4scale
             do k = 1, np11(ii)
-                if (i14(j,ii) .eq. ip11(k,ii))
-     &            pscale(i14(j,ii)) = p4scale * p41scale
+                if (atom(ii)%i14(j) .eq. ip11(k,ii))
+     &            pscale(atom(ii)%i14(j)) = p4scale * p41scale
             end do
          end do
          do j = 1, atom(ii)%n15
-            mscale(i15(j,ii)) = m5scale
-            pscale(i15(j,ii)) = p5scale
+            mscale(atom(ii)%i15(j)) = m5scale
+            pscale(atom(ii)%i15(j)) = p5scale
          end do
          do j = 1, np11(ii)
             dscale(ip11(j,ii)) = d1scale
@@ -1100,16 +1100,16 @@ c
             pscale(atom(ii)%i12(j)) = 1.0d0
          end do
          do j = 1, atom(ii)%n13
-            mscale(i13(j,ii)) = 1.0d0
-            pscale(i13(j,ii)) = 1.0d0
+            mscale(atom(ii)%i13(j)) = 1.0d0
+            pscale(atom(ii)%i13(j)) = 1.0d0
          end do
          do j = 1, atom(ii)%n14
-            mscale(i14(j,ii)) = 1.0d0
-            pscale(i14(j,ii)) = 1.0d0
+            mscale(atom(ii)%i14(j)) = 1.0d0
+            pscale(atom(ii)%i14(j)) = 1.0d0
          end do
          do j = 1, atom(ii)%n15
-            mscale(i15(j,ii)) = 1.0d0
-            pscale(i15(j,ii)) = 1.0d0
+            mscale(atom(ii)%i15(j)) = 1.0d0
+            pscale(atom(ii)%i15(j)) = 1.0d0
          end do
          do j = 1, np11(ii)
             dscale(ip11(j,ii)) = 1.0d0

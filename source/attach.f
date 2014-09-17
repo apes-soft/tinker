@@ -38,9 +38,10 @@ c
 c      if (.not. allocated(n13))  allocate (n13(n))
 c      if (.not. allocated(n14))  allocate (n14(n))
 c      if (.not. allocated(n15))  allocate (n15(n))
-      if (.not. allocated(i13))  allocate (i13(maxn13,n))
-      if (.not. allocated(i14))  allocate (i14(maxn14,n))
-      if (.not. allocated(i15))  allocate (i15(maxn15,n))
+c      if (.not. allocated(i13))  allocate (i13(maxn13,n))
+c      if (.not. allocated(i14))  allocate (i14(maxn14,n))
+c      if (.not. allocated(i15))  allocate (i15(maxn15,n))
+
 c
 c     loop over all atoms finding all the 1-3 relationships;
 c     note "n12" and "i12" have already been setup elsewhere
@@ -56,7 +57,7 @@ c
                   if (kk .eq. atom(i)%i12(m))  goto 10
                end do
                atom(i)%n13 = atom(i)%n13 + 1
-               i13(atom(i)%n13,i) = kk
+               atom(i)%i13(atom(i)%n13) = kk
    10          continue
             end do
          end do
@@ -66,7 +67,7 @@ c
      &                 ' Attached to Atom',i6)
             call fatal
          end if
-         call sort (atom(i)%n13,i13(1,i))
+         call sort (atom(i)%n13,atom(i)%i13(1))
       end do
 c
 c     loop over all atoms finding all the 1-4 relationships
@@ -74,7 +75,7 @@ c
       do i = 1, n
          atom(i)%n14 = 0
          do j = 1, atom(i)%n13
-            jj = i13(j,i)
+            jj = atom(i)%i13(j)
             do k = 1, atom(jj)%n12
                kk = atom(jj)%i12(k)
                if (kk .eq. i)  goto 30
@@ -82,10 +83,10 @@ c
                   if (kk .eq. atom(i)%i12(m))  goto 30
                end do
                do m = 1, atom(i)%n13
-                  if (kk .eq. i13(m,i))  goto 30
+                  if (kk .eq. atom(i)%i13(m))  goto 30
                end do
                atom(i)%n14 = atom(i)%n14 + 1
-               i14(atom(i)%n14,i) = kk
+               atom(i)%i14(atom(i)%n14) = kk
    30          continue
             end do
          end do
@@ -95,7 +96,7 @@ c
      &                 ' Attached to Atom',i6)
             call fatal
          end if
-         call sort (atom(i)%n14,i14(1,i))
+         call sort (atom(i)%n14,atom(i)%i14(1))
       end do
 c
 c     loop over all atoms finding all the 1-5 relationships
@@ -103,7 +104,7 @@ c
       do i = 1, n
          atom(i)%n15 = 0
          do j = 1, atom(i)%n14
-            jj = i14(j,i)
+            jj = atom(i)%i14(j)
             do k = 1, atom(jj)%n12
                kk = atom(jj)%i12(k)
                if (kk .eq. i)  goto 50
@@ -111,13 +112,13 @@ c
                   if (kk .eq. atom(i)%i12(m))  goto 50
                end do
                do m = 1, atom(i)%n13
-                  if (kk .eq. i13(m,i))  goto 50
+                  if (kk .eq. atom(i)%i13(m))  goto 50
                end do
                do m = 1, atom(i)%n14
-                  if (kk .eq. i14(m,i))  goto 50
+                  if (kk .eq. atom(i)%i14(m))  goto 50
                end do
                atom(i)%n15 = atom(i)%n15 + 1
-               i15(atom(i)%n15,i) = kk
+               atom(i)%i15(atom(i)%n15) = kk
    50          continue
             end do
          end do
@@ -127,7 +128,7 @@ c
      &                 ' Attached to Atom',i6)
             call fatal
          end if
-         call sort (atom(i)%n15,i15(1,i))
+         call sort (atom(i)%n15,atom(i)%i15(1))
       end do
       return
       end

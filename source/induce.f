@@ -684,8 +684,8 @@ c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(private) shared(n,npole,ipole,atom,pdamp,thole,
 !$OMP& rpole,p2scale,p3scale,p4scale,p41scale,p5scale,d1scale,d2scale,
-!$OMP& d3scale,d4scale,u1scale,u2scale,u3scale,u4scale,i13,
-!$OMP& i14,i15,np11,ip11,np12,ip12,np13,ip13,np14,ip14,nelst,
+!$OMP& d3scale,d4scale,u1scale,u2scale,u3scale,u4scale,
+!$OMP& np11,ip11,np12,ip12,np13,ip13,np14,ip14,nelst,
 !$OMP& elst,cut2,aewald,aesq2,aesq2n,poltyp,ntpair,tindex,tdipdip,
 !$OMP& toffset,toffset0,field,fieldp,fieldt,fieldtp,maxlocal)
 !$OMP& firstprivate(pscale,dscale,uscale,nlocal)
@@ -727,17 +727,17 @@ c
             pscale(atom(ii)%i12(j)) = p2scale
          end do
          do j = 1, atom(ii)%n13
-            pscale(i13(j,ii)) = p3scale
+            pscale(atom(ii)%i13(j)) = p3scale
          end do
          do j = 1, atom(ii)%n14
-            pscale(i14(j,ii)) = p4scale
+            pscale(atom(ii)%i14(j)) = p4scale
             do k = 1, np11(ii)
-               if (i14(j,ii) .eq. ip11(k,ii))
-     &            pscale(i14(j,ii)) = p4scale * p41scale
+               if (atom(ii)%i14(j) .eq. ip11(k,ii))
+     &            pscale(atom(ii)%i14(j)) = p4scale * p41scale
             end do
          end do
          do j = 1, atom(ii)%n15
-            pscale(i15(j,ii)) = p5scale
+            pscale(atom(ii)%i15(j)) = p5scale
          end do
          do j = 1, np11(ii)
             dscale(ip11(j,ii)) = d1scale
@@ -885,13 +885,13 @@ c
             pscale(atom(ii)%i12(j)) = 1.0d0
          end do
          do j = 1, atom(ii)%n13
-            pscale(i13(j,ii)) = 1.0d0
+            pscale(atom(ii)%i13(j)) = 1.0d0
          end do
          do j = 1, atom(ii)%n14
-            pscale(i14(j,ii)) = 1.0d0
+            pscale(atom(ii)%i14(j)) = 1.0d0
          end do
          do j = 1, atom(ii)%n15
-            pscale(i15(j,ii)) = 1.0d0
+            pscale(atom(ii)%i15(j)) = 1.0d0
          end do
          do j = 1, np11(ii)
             uscale(ip11(j,ii)) = 1.0d0
