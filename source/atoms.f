@@ -41,6 +41,13 @@ c      integer:: type(maxatm)
       character(len=3) :: name
       integer :: n12         ! number of atoms directly bonded to the atom
       integer, dimension(maxval) :: i12  ! atom numbers of atoms directly conneced to each atom
+      integer :: n13
+      integer :: n14
+      integer :: n15
+
+c      integer, allocatable, target :: n13
+c      integer, allocatable :: n14
+c      integer, allocatable :: n15
       end type atomtype
 
 

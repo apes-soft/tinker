@@ -339,11 +339,11 @@ c
             mscale(atom(ii)%i12(j)) = m2scale
             pscale(atom(ii)%i12(j)) = p2scale
          end do
-         do j = 1, n13(ii)
+         do j = 1, atom(ii)%n13
             mscale(i13(j,ii)) = m3scale
             pscale(i13(j,ii)) = p3scale
          end do
-         do j = 1, n14(ii)
+         do j = 1, atom(ii)%n14
             mscale(i14(j,ii)) = m4scale
             pscale(i14(j,ii)) = p4scale
             do k = 1, np11(ii)
@@ -351,7 +351,7 @@ c
      &            pscale(i14(j,ii)) = p4scale * p41scale
             end do
          end do
-         do j = 1, n15(ii)
+         do j = 1, atom(ii)%n15
             mscale(i15(j,ii)) = m5scale
             pscale(i15(j,ii)) = p5scale
          end do
@@ -1099,15 +1099,15 @@ c
             mscale(atom(ii)%i12(j)) = 1.0d0
             pscale(atom(ii)%i12(j)) = 1.0d0
          end do
-         do j = 1, n13(ii)
+         do j = 1, atom(ii)%n13
             mscale(i13(j,ii)) = 1.0d0
             pscale(i13(j,ii)) = 1.0d0
          end do
-         do j = 1, n14(ii)
+         do j = 1, atom(ii)%n14
             mscale(i14(j,ii)) = 1.0d0
             pscale(i14(j,ii)) = 1.0d0
          end do
-         do j = 1, n15(ii)
+         do j = 1, atom(ii)%n15
             mscale(i15(j,ii)) = 1.0d0
             pscale(i15(j,ii)) = 1.0d0
          end do

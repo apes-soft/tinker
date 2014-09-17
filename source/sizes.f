@@ -54,7 +54,7 @@ c
 c
       module sizes
       implicit none
-      integer, parameter:: maxatm=1000000
+      integer, parameter:: maxatm=24000
       integer, parameter:: maxval=8
       integer, parameter:: maxgrp=1000
       integer, parameter:: maxref=10

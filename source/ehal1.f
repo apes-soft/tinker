@@ -161,7 +161,7 @@ c
 c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(private) shared(nvdw,ivdw,ired,kred,
-!$OMP& jvdw,xred,yred,zred,nvlst,vlst,atom,n13,n14,n15,
+!$OMP& jvdw,xred,yred,zred,nvlst,vlst,atom,
 !$OMP& i13,i14,i15,v2scale,v3scale,v4scale,v5scale,
 !$OMP& off2,radmin,epsilon,radmin4,epsilon4,ghal,dhal,
 !$OMP& cut2,c0,c1,c2,c3,c4,c5,molcule)
@@ -185,14 +185,14 @@ c
          do j = 1, atom(i)%n12
             vscale(atom(i)%i12(j)) = v2scale
          end do
-         do j = 1, n13(i)
+         do j = 1, atom(i)%n13
             vscale(i13(j,i)) = v3scale
          end do
-         do j = 1, n14(i)
+         do j = 1, atom(i)%n14
             vscale(i14(j,i)) = v4scale
             iv14(i14(j,i)) = i
          end do
-         do j = 1, n15(i)
+         do j = 1, atom(i)%n15
             vscale(i15(j,i)) = v5scale
          end do
 c
@@ -312,13 +312,13 @@ c
          do j = 1, atom(i)%n12
             vscale(atom(i)%i12(j)) = 1.0d0
          end do
-         do j = 1, n13(i)
+         do j = 1, atom(i)%n13
             vscale(i13(j,i)) = 1.0d0
          end do
-         do j = 1, n14(i)
+         do j = 1, atom(i)%n14
             vscale(i14(j,i)) = 1.0d0
          end do
-         do j = 1, n15(i)
+         do j = 1, atom(i)%n15
             vscale(i15(j,i)) = 1.0d0
          end do
       end do

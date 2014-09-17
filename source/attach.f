@@ -35,9 +35,9 @@ c
       maxn13 = 3 * maxval
       maxn14 = 9 * maxval
       maxn15 = 27 * maxval
-      if (.not. allocated(n13))  allocate (n13(n))
-      if (.not. allocated(n14))  allocate (n14(n))
-      if (.not. allocated(n15))  allocate (n15(n))
+c      if (.not. allocated(n13))  allocate (n13(n))
+c      if (.not. allocated(n14))  allocate (n14(n))
+c      if (.not. allocated(n15))  allocate (n15(n))
       if (.not. allocated(i13))  allocate (i13(maxn13,n))
       if (.not. allocated(i14))  allocate (i14(maxn14,n))
       if (.not. allocated(i15))  allocate (i15(maxn15,n))
@@ -46,7 +46,7 @@ c     loop over all atoms finding all the 1-3 relationships;
 c     note "n12" and "i12" have already been setup elsewhere
 c
       do i = 1, n
-         n13(i) = 0
+         atom(i)%n13 = 0
          do j = 1, atom(i)%n12
             jj = atom(i)%i12(j)
             do k = 1, atom(jj)%n12
@@ -55,25 +55,25 @@ c
                do m = 1, atom(i)%n12
                   if (kk .eq. atom(i)%i12(m))  goto 10
                end do
-               n13(i) = n13(i) + 1
-               i13(n13(i),i) = kk
+               atom(i)%n13 = atom(i)%n13 + 1
+               i13(atom(i)%n13,i) = kk
    10          continue
             end do
          end do
-         if (n13(i) .gt. maxn13) then
+         if (atom(i)%n13 .gt. maxn13) then
             write (iout,20)  i
    20       format (/,' ATTACH  --  Too many 1-3 Connected Atoms',
      &                 ' Attached to Atom',i6)
             call fatal
          end if
-         call sort (n13(i),i13(1,i))
+         call sort (atom(i)%n13,i13(1,i))
       end do
 c
 c     loop over all atoms finding all the 1-4 relationships
 c
       do i = 1, n
-         n14(i) = 0
-         do j = 1, n13(i)
+         atom(i)%n14 = 0
+         do j = 1, atom(i)%n13
             jj = i13(j,i)
             do k = 1, atom(jj)%n12
                kk = atom(jj)%i12(k)
@@ -81,28 +81,28 @@ c
                do m = 1, atom(i)%n12
                   if (kk .eq. atom(i)%i12(m))  goto 30
                end do
-               do m = 1, n13(i)
+               do m = 1, atom(i)%n13
                   if (kk .eq. i13(m,i))  goto 30
                end do
-               n14(i) = n14(i) + 1
-               i14(n14(i),i) = kk
+               atom(i)%n14 = atom(i)%n14 + 1
+               i14(atom(i)%n14,i) = kk
    30          continue
             end do
          end do
-         if (n14(i) .gt. maxn14) then
+         if (atom(i)%n14 .gt. maxn14) then
             write (iout,40)  i
    40       format (/,' ATTACH  --  Too many 1-4 Connected Atoms',
      &                 ' Attached to Atom',i6)
             call fatal
          end if
-         call sort (n14(i),i14(1,i))
+         call sort (atom(i)%n14,i14(1,i))
       end do
 c
 c     loop over all atoms finding all the 1-5 relationships
 c
       do i = 1, n
-         n15(i) = 0
-         do j = 1, n14(i)
+         atom(i)%n15 = 0
+         do j = 1, atom(i)%n14
             jj = i14(j,i)
             do k = 1, atom(jj)%n12
                kk = atom(jj)%i12(k)
@@ -110,24 +110,24 @@ c
                do m = 1, atom(i)%n12
                   if (kk .eq. atom(i)%i12(m))  goto 50
                end do
-               do m = 1, n13(i)
+               do m = 1, atom(i)%n13
                   if (kk .eq. i13(m,i))  goto 50
                end do
-               do m = 1, n14(i)
+               do m = 1, atom(i)%n14
                   if (kk .eq. i14(m,i))  goto 50
                end do
-               n15(i) = n15(i) + 1
-               i15(n15(i),i) = kk
+               atom(i)%n15 = atom(i)%n15 + 1
+               i15(atom(i)%n15,i) = kk
    50          continue
             end do
          end do
-         if (n15(i) .gt. maxn15) then
+         if (atom(i)%n15 .gt. maxn15) then
             write (iout,60)  i
    60       format (/,' ATTACH  --  Too many 1-5 Connected Atoms',
      &                 ' Attached to Atom',i6)
             call fatal
          end if
-         call sort (n15(i),i15(1,i))
+         call sort (atom(i)%n15,i15(1,i))
       end do
       return
       end

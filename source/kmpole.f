@@ -314,7 +314,7 @@ c
                   ji = atom(i)%i12(j)
                   jt = atom(ji)%type
                   if (jt .eq. ztyp) then
-                     do k = 1, n13(i)
+                     do k = 1, atom(i)%n13
                         ki = i13(k,i)
                         kt = atom(ki)%type
                         path = .false.
@@ -331,7 +331,7 @@ c
                               end do
                               goto 140
                            end if
-                           do l = 1, n13(i)
+                           do l = 1, atom(i)%n13
                               li = i13(l,i)
                               lt = atom(li)%type
                               path = .false.

@@ -77,9 +77,9 @@ c
 c
 c     deallocation of global arrays from module couple
 c
-      if (allocated(n13))  deallocate (n13)
-      if (allocated(n14))  deallocate (n14)
-      if (allocated(n15))  deallocate (n15)
+c      if (allocated(n13))  deallocate (n13)
+c      if (allocated(n14))  deallocate (n14)
+c      if (allocated(n15))  deallocate (n15)
       if (allocated(i13))  deallocate (i13)
       if (allocated(i14))  deallocate (i14)
       if (allocated(i15))  deallocate (i15)
