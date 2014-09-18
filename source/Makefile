@@ -33,7 +33,7 @@
 ##  BINDIR       Hard Copies of TINKER Executables
 ##  LINKDIR      Linked Copies of TINKER Executables
 
-TINKERDIR = $(HOME)/tinker
+TINKERDIR = $(HOME)/tinkerLite
 BINDIR = $(TINKERDIR)/bin
 LINKDIR = /usr/local/bin
 
@@ -42,87 +42,148 @@ LINKDIR = /usr/local/bin
 ##  May Need Editing to Match Your Desired OS & Compiler Version  ##
 ####################################################################
 
-##  Machine:  Generic Linux or Macintosh
-##  CPU Type: Intel x86 Compatibles
-##  Compiler: GNU gfortran
+# Set the compiler option to use by uncommenting one of the options
+# below. If you are not clear what these mean look below under the
+# appropriate flag to see in detail what they mean.
+#
+# If none specified the default is: GenericGfortranOpenMP
 
-#F77 = /usr/local/bin/gfortran
-#LIBS =
-#F77FLAGS = -c
-#OPTFLAGS = -O3 -ffast-math
-#LIBFLAGS = -crusv
-#RANLIB =
-#LINKFLAGS = $(OPTFLAGS) -static-libgcc
+#COMPARCH=GenericGfortran
+#COMPARCH=GenericGfortranOpenMP
+COMPARCH=LinuxIntel
+#COMPARCH=LinuxIntelOpenMP
+#COMPARCH=MacIntel
+#COMPARCH=MacIntelOpenMP
+#COMPARCH=MacXeonIntelOpenMP
+#COMPARCH=LinuxIntelOpenMP
 
-##  Machine:  Generic Linux or Macintosh OS X
-##  CPU Type: Intel x86 Compatible
-##  Compiler: GNU gfortran
-##  Parallel: OpenMP
+ifeq ($(COMPARCH),GenericGfortran)
 
-#F77 = /usr/local/bin/gfortran
-#LIBS =
-#F77FLAGS = -c
-#OPTFLAGS = -O3 -ffast-math -fopenmp
-#LIBFLAGS = -crusv
-#RANLIB =
-#LINKFLAGS = $(OPTFLAGS) -static-libgcc
+  ##  Machine:  Generic Linux or Macintosh
+  ##  CPU Type: Intel x86 Compatibles
+  ##  Compiler: GNU gfortran
 
-##  Machine:  Generic Linux
-##  CPU Type: Intel x86 Compatible (also AMD)
-##  Oper Sys: Fedora Core
-##  Compiler: Intel Fortran for Linux 14.0
+  FC        = gfortran
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
+  FCFLAGS   = -Wall -c
+  OPTFLAGS  = -O3 -ffast-math 
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = $(OPTFLAGS) -static-libgcc
 
-#F77 = /opt/intel/bin/ifort
-#LIBS =
-#F77FLAGS = -c -xHost
-#OPTFLAGS = -O3 -no-ipo -no-prec-div -recursive
-#LIBFLAGS = -crusv
-#RANLIB =
-#LINKFLAGS = -static-libgcc -static-intel
+else ifeq ($(COMPARCH),GenericGfortranOpenMP)
 
-##  Machine:  Generic Linux
-##  CPU Type: Intel x86 Compatible (also AMD)
-##  Oper Sys: Fedora Core
-##  Compiler: Intel Fortran for Linux 14.0
-##  Parallel: OpenMP
+  ##  Machine:  Generic Linux or Macintosh OS X
+  ##  CPU Type: Intel x86 Compatible
+  ##  Compiler: GNU gfortran
+  ##  Parallel: OpenMP
 
-#F77 = /opt/intel/bin/ifort
-#LIBS = -L$(TINKERDIR)/fftw/lib -lfftw3_threads -lfftw3
-#F77FLAGS = -c -xHost
-#OPTFLAGS = -O3 -no-ipo -no-prec-div -recursive -openmp
-#LIBFLAGS = -crusv
-#RANLIB =
-#LINKFLAGS = $(OPTFLAGS) -static-libgcc -static-intel
+  FC        = gfortran
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
+  WARNINGS  = #-Warray-temporaries -Wcharacter-truncation -Wextra -Wsurprising 
+  FCFLAGS   = -Wall $(WARNINGS) -c
+  OPTFLAGS  = -ffast-math -fopenmp -O3
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = $(OPTFLAGS) -static-libgcc
 
-##  Machine:  Macintosh
-##  CPU Type: Intel Xeon
-##  Oper Sys: OS X 10.9 (Mavericks)
-##  Compiler: Intel Fortran for Mac 14.0
+else ifeq ($(COMPARCH),LinuxIntel)
 
-#F77 = /opt/intel/bin/ifort
-#LIBS =
-#F77FLAGS = -c -axSSSE3
-#OPTFLAGS = -O3 -no-ipo -no-prec-div -mdynamic-no-pic
-#LIBFLAGS = -crusv
-#RANLIB =
-#LINKFLAGS = $(OPTFLAGS) -static-intel -mmacosx-version-min=10.6 \
-#             -Wl,-stack_size,0x10000000
+  ##  Machine:  Generic Linux
+  ##  CPU Type: Intel x86 Compatible (also AMD)
+  ##  Oper Sys: Fedora Core
+  ##  Compiler: Intel Fortran for Linux 14.0
 
-##  Machine:  Macintosh
-##  CPU Type: Intel Xeon
-##  Oper Sys: OS X 10.9 (Mavericks)
-##  Compiler: Intel Fortran for Mac 14.0
-##  Parallel: OpenMP
+  FC        = ftn #ifort
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
+  FCFLAGS   = -c -axSSSE3
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = $(OPTFLAGS) -static-libgcc -static-intel 
 
-#F77 = ~/ompp/bin/kinst-ompp ftn 
-F90 = ftn
-LIBS = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
-F90FLAGS = -c -axSSSE3
-OPTFLAGS = -O3 -no-ipo -no-prec-div -openmp
-LIBFLAGS = -crusv
-RANLIB = /usr/bin/ranlib 
-LINKFLAGS = $(OPTFLAGS) -static-intel #-Wl,-stack_size,0x10000000
+else ifeq ($(COMPARCH),LinuxIntelOpenMP)
 
+  ##  Machine:  Generic Linux
+  ##  CPU Type: Intel x86 Compatible (also AMD)
+  ##  Oper Sys: Fedora Core
+  ##  Compiler: Intel Fortran for Linux 14.0
+  ##  Parallel: OpenMP
+
+  # Compiler warning flags that could be useful:
+  #  
+  # -check bounds: run time checking of array bounds.
+  # -check all: turn on all checks 
+  # -traceback: generate extra information in the object file 
+  #             to provide source file  traceback  information
+  #             when a severe error occurs at run time.
+  # -fp-stack-check: generate  extra code after every
+  #                function call to ensure that the floating-point  stack  is
+  #                in the expected state.
+  #
+
+  FC        = ifort
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_threads -lfftw3
+  FCFLAGS   = -c #-warn all 
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp -xHost
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = $(OPTFLAGS) -static-libgcc -static-intel
+
+else ifeq ($(COMPARCH),MacIntelOpenMP)
+
+  ##  Machine:  Macintosh
+  ##  CPU Type: Intel Xeon
+  ##  Oper Sys: OS X 10.9 (Mavericks)
+  ##  Compiler: Intel Fortran for Mac 14.0
+
+  FC        = ifort
+  LIBS      =
+  FCFLAGS   = -c -axSSSE3
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -mdynamic-no-pic
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = $(OPTFLAGS) -static-intel -mmacosx-version-min=10.6 \
+              -Wl,-stack_size,0x10000000
+
+else ifeq ($(COMPARCH),MacIntelXeonOpenMP)
+
+  ##  Machine:  Macintosh
+  ##  CPU Type: Intel Xeon
+  ##  Oper Sys: OS X 10.9 (Mavericks)
+  ##  Compiler: Intel Fortran for Mac 14.0
+  ##  Parallel: OpenMP
+
+  FC        = ifort
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
+  FCFLAGS   = -c -axSSSE3
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -openmp
+  LIBFLAGS  = -crusv
+  RANLIB    = /usr/bin/ranlib 
+  LINKFLAGS = $(OPTFLAGS) -static-intel #-Wl,-stack_size,0x10000000
+
+else
+
+  ##  Machine:  Generic Linux or Macintosh OS X
+  ##  CPU Type: Intel x86 Compatible
+  ##  Compiler: GNU gfortran
+  ##  Parallel: OpenMP
+
+  FC        = gfortran
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
+  FCFLAGS   = -c
+  OPTFLAGS  = -O3 -ffast-math -fopenmp
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = $(OPTFLAGS) -static-libgcc
+
+endif
+
+
+# This is a trick to always run a perl script to create a
+# gitversion.f file with the current git has id. Will work
+# for gmake - not sure about the other versions of make
+#RUNSCRIPT:=$(shell ./version.pl)
 
 #################################################################
 ##  Should not be Necessary to Change Things Below this Point  ##
@@ -299,6 +360,7 @@ OBJS = angbnd.o \
        units.o \
        uprior.o \
        urey.o \
+       usage.o \
        urypot.o \
        usolve.o \
        vdw.o \
@@ -308,23 +370,26 @@ OBJS = angbnd.o \
        virial.o \
        xyzatm.o \
        zclose.o \
-       zcoord.o
+       zcoord.o 
 
 EXEFILES = dynamic.x 
 
 %.o: %.f
-	${F90} ${F90FLAGS} ${OPTFLAGS} $< -o $@ 
+	${FC} ${FCFLAGS} ${OPTFLAGS} $< -o $@ 
 
 %.o: %.c
 	${CC} ${CFLAGS} ${INCLUDEDIR} ${OPTFLAGS} $<
 
 %.x: %.o libtinker.a
-	${F90} ${LINKFLAGS} -o $@ $^ ${LIBS}; strip $@
+	${FC} ${LINKFLAGS} -o $@ $< -L . -ltinker ${LIBS}
+	# strip $@
+
+install: all rename
 
 all:	${EXEFILES}
 
 clean:
-	rm -f *.o *.mod *.a *.x
+	rm -f *.o *.mod *.a *.x *__genmod.f90
 
 listing:
 	cat *.i *.f *.c > tinker.txt
@@ -340,187 +405,7 @@ create_links:
 	ln -s $(BINDIR)/dynamic    $(LINKDIR)/dynamic
 
 libtinker.a: ${OBJS} 
-	ar ${LIBFLAGS} libtinker.a \
-        angbnd.o \
-        angles.o \
-        angpot.o \
-        argue.o \
-        ascii.o \
-        atmlst.o \
-        atomid.o \
-        atoms.o \
-        attach.o \
-        basefile.o \
-        bath.o \
-        bicubic.o \
-        bitor.o \
-        bitors.o \
-        bndpot.o \
-        bndstr.o \
-        bonds.o \
-        bounds.o \
-        boxes.o \
-        calendar.o \
-        cell.o \
-        chgpot.o \
-        chkpole.o \
-        chkring.o \
-        chkxyz.o \
-        cholesky.o \
-        chunks.o \
-        column.o \
-        command.o \
-        connect.o \
-        control.o \
-        couple.o \
-        cspline.o \
-        cutoffs.o \
-        deriv.o \
-        eangle1.o \
-        ebond1.o \
-        ehal1.o \
-        empole1.o \
-        energi.o \
-        eopbend1.o \
-        epitors1.o \
-        erf.o \
-        estrbnd1.o \
-        etors1.o \
-        etortor1.o \
-        eurey1.o \
-        evcorr.o \
-        ewald.o \
-        fatal.o \
-        fft.o \
-        fft3d.o \
-        fftpack.o \
-        field.o \
-        fields.o \
-        files.o \
-        final.o \
-        getkey.o \
-        getnumb.o \
-        getprm.o \
-        getstring.o \
-        gettext.o \
-        getword.o \
-        getxyz.o \
-        gradient.o \
-        image.o \
-        induce.o \
-        inform.o \
-        initatom.o \
-        initial.o \
-        initprm.o \
-        iounit.o \
-        kangle.o \
-        kangs.o \
-        katom.o \
-        katoms.o \
-        kbond.o \
-        kbonds.o \
-        kewald.o \
-        keys.o \
-        kinetic.o \
-        kmpole.o \
-        kmulti.o \
-        kopbend.o \
-        kopbnd.o \
-        korbs.o \
-        kpitor.o \
-        kpitors.o \
-        kpolar.o \
-        kpolr.o \
-        kstbnd.o \
-        kstrbnd.o \
-        ktors.o \
-        ktorsn.o \
-        ktortor.o \
-        ktrtor.o \
-        kurey.o \
-        kurybr.o \
-        kvdw.o \
-        kvdwpr.o \
-        kvdws.o \
-        lattice.o \
-        light.o \
-        limits.o \
-        math.o \
-        maxwell.o \
-        mdinit.o \
-        mdrest.o \
-        mdsave.o \
-        mdstat.o \
-        mdstuf.o \
-        mechanic.o \
-        molcul.o \
-        moldyn.o \
-        molecule.o \
-        mplpot.o \
-        mpole.o \
-        nblist.o \
-        neigh.o \
-        nextarg.o \
-        nexttext.o \
-        nspline.o \
-        number.o \
-        numeral.o \
-        opbend.o \
-        openend.o \
-        openmp.o \
-        output.o \
-        params.o \
-        pitors.o \
-        pme.o \
-        pmestuff.o \
-        polar.o \
-        polgrp.o \
-        polpot.o \
-        potent.o \
-        pressure.o \
-        prmkey.o \
-        promo.o \
-        prtdyn.o \
-        prtxyz.o \
-        ptable.o \
-        random.o \
-        readdyn.o \
-        readprm.o \
-        readxyz.o \
-        replica.o \
-        ring.o \
-        rings.o \
-        rotpole.o \
-        shunt.o \
-        sizes.o \
-        sort.o \
-        strbnd.o \
-        suffix.o \
-        switch.o \
-        tarray.o \
-        temper.o \
-        titles.o \
-        torphase.o \
-        torpot.o \
-        torque.o \
-        tors.o \
-        torsions.o \
-        tortor.o \
-        trimtext.o \
-        unitcell.o \
-        units.o \
-        uprior.o \
-        urey.o \
-        urypot.o \
-        usolve.o \
-        vdw.o \
-        vdwpot.o \
-        verlet.o \
-        version.o \
-        virial.o \
-        xyzatm.o \
-        zclose.o \
-        zcoord.o
+	ar ${LIBFLAGS} libtinker.a $?
 	${RANLIB} libtinker.a
 
 ###############################################################

@@ -18,7 +18,7 @@ c
 c
       module atmlst
       implicit none
-      integer, allocatable :: bndlist(:,:)
+c      integer, allocatable :: bndlist(:,:)
       integer, allocatable :: anglist(:,:)
       save
       end
