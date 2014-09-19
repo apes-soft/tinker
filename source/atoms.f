@@ -41,9 +41,7 @@ c      integer:: type(maxatm)
       character(len=3) :: name
       end type atomtype
 
-
-
       save
-      type(atomtype) atom(maxatm)
+      type(atomtype), allocatable :: atom(:)
 
       end

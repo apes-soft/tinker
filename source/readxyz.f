@@ -113,6 +113,12 @@ c
       end if
 
 c
+c     creating atom data type for each atom in the system
+c
+
+      allocate (atom(n))
+
+c
 c     initialize coordinates and connectivities for each atom
 c
 
