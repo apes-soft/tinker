@@ -19,7 +19,6 @@ c
 c
       subroutine kvdw
       use sizes
-      use atomid
       use atoms
       use couple
       use fields

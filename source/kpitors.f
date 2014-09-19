@@ -18,7 +18,6 @@ c
 c
       subroutine kpitors
       use sizes
-      use atomid
       use atoms
       use bndstr
       use couple

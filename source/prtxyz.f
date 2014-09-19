@@ -18,7 +18,6 @@ c
 c
       subroutine prtxyz (ixyz)
       use sizes
-      use atomid
       use atoms
       use boxes
       use couple

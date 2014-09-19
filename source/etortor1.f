@@ -359,7 +359,6 @@ c
 c
       subroutine chkttor (ib,ic,id,sign,value1,value2)
       use sizes
-      use atomid
       use atoms
       use couple
       implicit none

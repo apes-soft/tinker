@@ -20,7 +20,6 @@ c
       use sizes
       use angbnd
       use angpot
-      use atomid
       use atoms
       use couple
       use fields

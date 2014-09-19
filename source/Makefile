@@ -134,7 +134,6 @@ OBJS = angbnd.o \
        argue.o \
        ascii.o \
        atmlst.o \
-       atomid.o \
        atoms.o \
        attach.o \
        basefile.o \
@@ -347,7 +346,6 @@ libtinker.a: ${OBJS}
         argue.o \
         ascii.o \
         atmlst.o \
-        atomid.o \
         atoms.o \
         attach.o \
         basefile.o \
@@ -533,7 +531,6 @@ angpot.o:
 argue.o:
 ascii.o:
 atmlst.o:
-atomid.o: sizes.o
 atoms.o: sizes.o
 attach.o: atoms.o couple.o iounit.o sizes.o
 basefile.o: ascii.o files.o
@@ -544,7 +541,7 @@ bitors.o: angbnd.o atoms.o bitor.o couple.o iounit.o sizes.o
 bndpot.o:
 bndstr.o:
 bonds.o: atmlst.o atoms.o bndstr.o couple.o iounit.o sizes.o
-bounds.o: atomid.o atoms.o boxes.o molcul.o sizes.o
+bounds.o:  atoms.o boxes.o molcul.o sizes.o
 boxes.o:
 calendar.o:
 cell.o: sizes.o
@@ -565,7 +562,7 @@ deriv.o:
 dynamic.o: atoms.o bath.o bndstr.o inform.o iounit.o keys.o mdstuf.o sizes.o
 eangle1.o: angbnd.o angpot.o atoms.o deriv.o energi.o math.o sizes.o virial.o
 ebond1.o: atoms.o bndpot.o bndstr.o deriv.o energi.o sizes.o virial.o
-ehal1.o: atomid.o atoms.o couple.o deriv.o energi.o limits.o molcul.o neigh.o shunt.o sizes.o vdw.o vdwpot.o virial.o
+ehal1.o:  atoms.o couple.o deriv.o energi.o limits.o molcul.o neigh.o shunt.o sizes.o vdw.o vdwpot.o virial.o
 empole1.o: atoms.o boxes.o cell.o chgpot.o couple.o deriv.o energi.o ewald.o limits.o math.o molcul.o mplpot.o mpole.o neigh.o pme.o polar.o polgrp.o polpot.o shunt.o sizes.o virial.o
 energi.o:
 eopbend1.o: angbnd.o angpot.o atoms.o deriv.o energi.o math.o opbend.o sizes.o virial.o
@@ -573,7 +570,7 @@ epitors1.o: atoms.o deriv.o energi.o pitors.o sizes.o torpot.o virial.o
 erf.o: iounit.o math.o
 estrbnd1.o: angbnd.o angpot.o atoms.o bndstr.o deriv.o energi.o math.o sizes.o strbnd.o virial.o
 etors1.o: atoms.o deriv.o energi.o sizes.o torpot.o tors.o virial.o
-etortor1.o: atomid.o atoms.o bitor.o couple.o deriv.o energi.o ktrtor.o math.o sizes.o torpot.o tortor.o virial.o
+etortor1.o:  atoms.o bitor.o couple.o deriv.o energi.o ktrtor.o math.o sizes.o torpot.o tortor.o virial.o
 eurey1.o: atoms.o deriv.o energi.o sizes.o urey.o urypot.o virial.o
 evcorr.o: atoms.o boxes.o limits.o math.o shunt.o sizes.o vdw.o vdwpot.o
 ewald.o:
@@ -600,33 +597,33 @@ initatom.o: ptable.o sizes.o
 initial.o: atoms.o bath.o boxes.o cell.o files.o inform.o iounit.o keys.o molcul.o neigh.o openmp.o output.o params.o sizes.o zclose.o
 initprm.o: angpot.o bndpot.o chgpot.o fields.o kangs.o katoms.o kbonds.o kmulti.o kopbnd.o korbs.o kpitor.o kpolr.o kstbnd.o ktorsn.o ktrtor.o kurybr.o kvdwpr.o kvdws.o math.o mplpot.o polpot.o sizes.o torpot.o units.o urypot.o vdwpot.o
 iounit.o:
-kangle.o: angbnd.o angpot.o atomid.o atoms.o couple.o fields.o inform.o iounit.o kangs.o keys.o potent.o sizes.o
+kangle.o: angbnd.o angpot.o atoms.o couple.o fields.o inform.o iounit.o kangs.o keys.o potent.o sizes.o
 kangs.o:
-katom.o: atomid.o atoms.o couple.o inform.o iounit.o katoms.o keys.o sizes.o
+katom.o:  atoms.o couple.o inform.o iounit.o katoms.o keys.o sizes.o
 katoms.o: sizes.o
-kbond.o: atomid.o atoms.o bndstr.o couple.o fields.o inform.o iounit.o kbonds.o keys.o potent.o sizes.o
+kbond.o:  atoms.o bndstr.o couple.o fields.o inform.o iounit.o kbonds.o keys.o potent.o sizes.o
 kbonds.o:
 kewald.o: atoms.o boxes.o chunks.o ewald.o fft.o inform.o iounit.o keys.o limits.o math.o openmp.o pme.o sizes.o
 keys.o: sizes.o
-kinetic.o: atomid.o atoms.o bath.o mdstuf.o moldyn.o sizes.o units.o
+kinetic.o:  atoms.o bath.o mdstuf.o moldyn.o sizes.o units.o
 kmpole.o: atoms.o couple.o inform.o iounit.o keys.o kmulti.o mpole.o polar.o polgrp.o potent.o sizes.o units.o
 kmulti.o:
-kopbend.o: angbnd.o angpot.o atomid.o atoms.o couple.o fields.o inform.o iounit.o keys.o kopbnd.o opbend.o potent.o sizes.o
+kopbend.o: angbnd.o angpot.o  atoms.o couple.o fields.o inform.o iounit.o keys.o kopbnd.o opbend.o potent.o sizes.o
 kopbnd.o:
 korbs.o: sizes.o
 kpitor.o:
-kpitors.o: atomid.o atoms.o bndstr.o couple.o inform.o iounit.o keys.o kpitor.o pitors.o sizes.o tors.o
+kpitors.o: atoms.o bndstr.o couple.o inform.o iounit.o keys.o kpitor.o pitors.o sizes.o tors.o
 kpolar.o: atoms.o couple.o inform.o iounit.o keys.o kpolr.o mpole.o polar.o polgrp.o polpot.o potent.o sizes.o usolve.o
 kpolr.o: sizes.o
 kstbnd.o:
-kstrbnd.o: angbnd.o angpot.o atmlst.o atomid.o atoms.o couple.o fields.o inform.o iounit.o keys.o kstbnd.o potent.o sizes.o strbnd.o
-ktors.o: atomid.o atoms.o couple.o fields.o inform.o iounit.o keys.o ktorsn.o math.o potent.o sizes.o tors.o
+kstrbnd.o: angbnd.o angpot.o atmlst.o  atoms.o couple.o fields.o inform.o iounit.o keys.o kstbnd.o potent.o sizes.o strbnd.o
+ktors.o:  atoms.o couple.o fields.o inform.o iounit.o keys.o ktorsn.o math.o potent.o sizes.o tors.o
 ktorsn.o:
-ktortor.o: atomid.o atoms.o bitor.o inform.o iounit.o keys.o ktrtor.o potent.o sizes.o tortor.o
+ktortor.o:  atoms.o bitor.o inform.o iounit.o keys.o ktrtor.o potent.o sizes.o tortor.o
 ktrtor.o:
-kurey.o: angbnd.o atomid.o atoms.o inform.o iounit.o keys.o kurybr.o potent.o sizes.o urey.o
+kurey.o: angbnd.o atoms.o inform.o iounit.o keys.o kurybr.o potent.o sizes.o urey.o
 kurybr.o:
-kvdw.o: atomid.o atoms.o couple.o fields.o inform.o iounit.o keys.o kvdwpr.o kvdws.o math.o potent.o sizes.o vdw.o vdwpot.o
+kvdw.o: atoms.o couple.o fields.o inform.o iounit.o keys.o kvdwpr.o kvdws.o math.o potent.o sizes.o vdw.o vdwpot.o
 kvdwpr.o:
 kvdws.o: sizes.o
 lattice.o: boxes.o cell.o inform.o iounit.o math.o sizes.o
@@ -634,15 +631,15 @@ light.o:
 limits.o:
 math.o:
 maxwell.o: units.o
-mdinit.o: atomid.o atoms.o bath.o files.o inform.o iounit.o keys.o mdstuf.o molcul.o moldyn.o mpole.o sizes.o units.o uprior.o
-mdrest.o: atomid.o atoms.o inform.o iounit.o mdstuf.o moldyn.o sizes.o units.o
-mdsave.o: atomid.o atoms.o boxes.o files.o inform.o iounit.o mdstuf.o moldyn.o mpole.o output.o polar.o sizes.o titles.o units.o
+mdinit.o:  atoms.o bath.o files.o inform.o iounit.o keys.o mdstuf.o molcul.o moldyn.o mpole.o sizes.o units.o uprior.o
+mdrest.o:  atoms.o inform.o iounit.o mdstuf.o moldyn.o sizes.o units.o
+mdsave.o:  atoms.o boxes.o files.o inform.o iounit.o mdstuf.o moldyn.o mpole.o output.o polar.o sizes.o titles.o units.o
 mdstat.o: atoms.o bath.o boxes.o inform.o iounit.o limits.o mdstuf.o molcul.o sizes.o units.o
 mdstuf.o:
 mechanic.o: inform.o iounit.o limits.o vdwpot.o
 molcul.o:
 moldyn.o:
-molecule.o: atomid.o atoms.o couple.o molcul.o sizes.o
+molecule.o:  atoms.o couple.o molcul.o sizes.o
 mplpot.o:
 mpole.o:
 nblist.o: atoms.o boxes.o cell.o iounit.o light.o mpole.o neigh.o sizes.o vdw.o
@@ -664,16 +661,16 @@ polar.o:
 polgrp.o:
 polpot.o:
 potent.o:
-pressure.o: atomid.o atoms.o bath.o boxes.o math.o mdstuf.o sizes.o units.o virial.o
+pressure.o: atoms.o bath.o boxes.o math.o mdstuf.o sizes.o units.o virial.o
 prmkey.o: angpot.o bndpot.o chgpot.o fields.o mplpot.o polpot.o potent.o torpot.o urypot.o vdwpot.o
 promo.o: iounit.o
 prtdyn.o: atoms.o boxes.o files.o mdstuf.o moldyn.o sizes.o titles.o
-prtxyz.o: atomid.o atoms.o boxes.o couple.o files.o inform.o sizes.o titles.o
+prtxyz.o: atoms.o boxes.o couple.o files.o inform.o sizes.o titles.o
 ptable.o: sizes.o
 random.o: inform.o iounit.o keys.o math.o sizes.o
 readdyn.o: atoms.o boxes.o files.o iounit.o mdstuf.o moldyn.o sizes.o
 readprm.o: fields.o iounit.o kangs.o katoms.o kbonds.o kmulti.o kopbnd.o korbs.o kpitor.o kpolr.o kstbnd.o ktorsn.o ktrtor.o kurybr.o kvdwpr.o kvdws.o params.o sizes.o
-readxyz.o: atomid.o atoms.o boxes.o couple.o files.o inform.o iounit.o sizes.o titles.o
+readxyz.o: atoms.o boxes.o couple.o files.o inform.o iounit.o sizes.o titles.o
 replica.o: boxes.o cell.o inform.o iounit.o sizes.o
 ring.o:
 rings.o: angbnd.o atoms.o bitor.o bndstr.o couple.o inform.o iounit.o ring.o sizes.o tors.o
@@ -685,7 +682,7 @@ strbnd.o:
 suffix.o: ascii.o
 switch.o: limits.o shunt.o sizes.o
 tarray.o:
-temper.o: atomid.o atoms.o bath.o mdstuf.o molcul.o moldyn.o sizes.o units.o
+temper.o: atoms.o bath.o mdstuf.o molcul.o moldyn.o sizes.o units.o
 titles.o:
 torphase.o:
 torpot.o:
@@ -702,7 +699,7 @@ urypot.o:
 usolve.o:
 vdw.o:
 vdwpot.o:
-verlet.o: atomid.o atoms.o moldyn.o sizes.o units.o
+verlet.o: atoms.o moldyn.o sizes.o units.o
 version.o: iounit.o output.o
 virial.o:
 xyzatm.o: atoms.o inform.o iounit.o math.o sizes.o

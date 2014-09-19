@@ -18,7 +18,6 @@ c
 c
       subroutine ktors
       use sizes
-      use atomid
       use atoms
       use couple
       use fields

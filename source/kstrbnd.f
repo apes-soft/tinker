@@ -21,7 +21,6 @@ c
       use angbnd
       use angpot
       use atmlst
-      use atomid
       use atoms
       use couple
       use fields

@@ -18,7 +18,6 @@ c
 c
       subroutine readxyz ()
       use sizes
-      use atomid
       use atoms
       use boxes
       use couple

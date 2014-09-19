@@ -18,7 +18,6 @@ c
 c
       subroutine ktortor
       use sizes
-      use atomid
       use atoms
       use bitor
       use inform

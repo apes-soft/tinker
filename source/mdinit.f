@@ -18,7 +18,6 @@ c
 c
       subroutine mdinit
       use sizes
-      use atomid
       use atoms
       use bath
       use files

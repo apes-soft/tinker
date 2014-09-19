@@ -18,7 +18,6 @@ c
 c
       subroutine mdrest (istep)
       use sizes
-      use atomid
       use atoms
       use inform
       use iounit

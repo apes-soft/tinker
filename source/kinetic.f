@@ -18,7 +18,6 @@ c
 c
       subroutine kinetic (eksum,ekin)
       use sizes
-      use atomid
       use atoms
       use bath
       use mdstuf

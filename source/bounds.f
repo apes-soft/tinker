@@ -18,7 +18,6 @@ c
 c
       subroutine bounds
       use sizes
-      use atomid
       use atoms
       use boxes
       use molcul

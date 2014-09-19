@@ -20,7 +20,6 @@ c
       subroutine kurey
       use sizes
       use angbnd
-      use atomid
       use atoms
       use inform
       use iounit

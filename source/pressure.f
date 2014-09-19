@@ -76,7 +76,6 @@ c
 c
       subroutine pscale (dt,pres,stress)
       use sizes
-      use atomid
       use atoms
       use bath
       use boxes

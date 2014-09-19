@@ -18,7 +18,6 @@ c
 c
       subroutine molecule
       use sizes
-      use atomid
       use atoms
       use couple
       use molcul

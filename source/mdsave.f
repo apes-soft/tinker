@@ -19,7 +19,6 @@ c
 c
       subroutine mdsave (istep,dt,epot,eksum)
       use sizes
-      use atomid
       use atoms
       use boxes
       use files

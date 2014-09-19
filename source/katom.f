@@ -18,7 +18,6 @@ c
 c
       subroutine katom
       use sizes
-      use atomid
       use atoms
       use couple
       use inform
