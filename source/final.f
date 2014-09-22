@@ -18,6 +18,7 @@ c     necessary to avoid closing the execution window
 c
 c
       subroutine final
+      use atoms
       use sizes
       use angbnd
       use atmlst
@@ -247,6 +248,13 @@ c
       if (allocated(epsilon4))  deallocate (epsilon4)
       if (allocated(radhbnd))  deallocate (radhbnd)
       if (allocated(epshbnd))  deallocate (epshbnd)
+
+c
+c     deallocation of global data type atom
+c
+
+      deallocate (atom)
+
 c
 c     print a final status message before exiting TINKER
 c

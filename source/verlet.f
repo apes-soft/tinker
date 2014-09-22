@@ -18,7 +18,6 @@ c
 c
       subroutine verlet (istep,dt)
       use sizes
-      use atomid
       use atoms
       use moldyn
       use units
@@ -52,9 +51,9 @@ c
          do j = 1, 3
             v(j,i) = v(j,i) + a(j,i)*dt_2
          end do
-         pos(1,i) = pos(1,i) + v(1,i)*dt
-         pos(2,i) = pos(2,i) + v(2,i)*dt
-         pos(3,i) = pos(3,i) + v(3,i)*dt
+         atom(i)%pos(1) = atom(i)%pos(1) + v(1,i)*dt
+         atom(i)%pos(2) = atom(i)%pos(2) + v(2,i)*dt
+         atom(i)%pos(3) = atom(i)%pos(3) + v(3,i)*dt
       end do
 c
 c     get the potential energy and atomic forces
@@ -66,7 +65,7 @@ c     find the full-step velocities using the Verlet recursion
 c
       do i = 1, n
          do j = 1, 3
-            a(j,i) = -convert * derivs(j,i) / mass(i)
+            a(j,i) = -convert * derivs(j,i) / atom(i)%mass
             v(j,i) = v(j,i) + a(j,i)*dt_2
          end do
       end do

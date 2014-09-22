@@ -34,13 +34,16 @@ c
          inquire (file=xyzfile,exist=exist)
       end if
 c
-c     terminate execution if Cartesian coordinate file is not provided
+c     ask for the user specified input structure filename
 c
       do while (.not. exist)
-         write (iout,*) "The Cartesian Coordinate file base name must ",
-     &                  "be specified at the command line."
-         call usage
-         call fatal
+         write (iout,10)
+   10    format (/,' Enter Cartesian Coordinate File Name :  ',$)
+         read (input,20)  xyzfile
+   20    format (a120)
+         call basefile (xyzfile)
+         call suffix (xyzfile,'xyz','old')
+         inquire (file=xyzfile,exist=exist)
       end do
 c
 c     first open and then read the Cartesian coordinates file

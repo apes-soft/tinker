@@ -24,12 +24,12 @@ c
       module atomid
       use sizes
       implicit none
-      integer tag(maxatm)
-      integer class(maxatm)
-      integer atomic(maxatm)
-      integer valence(maxatm)
-      real*8 mass(maxatm)
-      character*3 name(maxatm)
-      character*24 story(maxatm)
+c      integer tag(maxatm)
+c      integer class(maxatm)
+c      integer atomic(maxatm)
+c      integer valence(maxatm)
+c      real*8 mass(maxatm)
+c      character*3 name(maxatm)
+c      character*24 story(maxatm)
       save
       end

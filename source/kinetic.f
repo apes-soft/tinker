@@ -18,7 +18,6 @@ c
 c
       subroutine kinetic (eksum,ekin)
       use sizes
-      use atomid
       use atoms
       use bath
       use mdstuf
@@ -43,7 +42,7 @@ c
 c     get the total kinetic energy and tensor for atomic sites
 c
       do i = 1, n
-         term = 0.5d0 * mass(i) / convert
+         term = 0.5d0 * atom(i)%mass / convert
          do j = 1, 3
             do k = 1, 3
                value = term * v(j,i) * v(k,i)

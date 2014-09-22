@@ -20,7 +20,6 @@ c
       use sizes
       use angbnd
       use angpot
-      use atomid
       use atoms
       use couple
       use fields
@@ -318,9 +317,9 @@ c
          ia = iang(1,i)
          ib = iang(2,i)
          ic = iang(3,i)
-         ita = class(ia)
-         itb = class(ib)
-         itc = class(ic)
+         ita = atom(ia)%class
+         itb = atom(ib)%class
+         itc = atom(ic)%class
          size = 4
          call numeral (ita,pa,size)
          call numeral (itb,pb,size)
@@ -341,7 +340,7 @@ c
          nh = 1
          do j = 1, n12(ib)
             ih = i12(j,ib)
-            if (ih.ne.ia .and. ih.ne.ic .and. atomic(ih).eq.1)
+            if (ih.ne.ia .and. ih.ne.ic .and. atom(ih)%atomic.eq.1)
      &         nh = nh + 1
          end do
 c
@@ -423,7 +422,7 @@ c
 c     warning if suitable angle bending parameter not found
 c
   210    continue
-         minat = min(atomic(ia),atomic(ib),atomic(ic))
+         minat = min(atom(ia)%atomic,atom(ib)%atomic,atom(ic)%atomic)
          if (minat .eq. 0)  done = .true.
          if (.not.done) then
             abort = .true.
@@ -438,8 +437,8 @@ c
             if (iring .eq. 5)  label = '5-Ring'
             if (iring .eq. 4)  label = '4-Ring'
             if (iring .eq. 3)  label = '3-Ring'
-            write (iout,230)  label,ia,name(ia),ib,name(ib),
-     &                        ic,name(ic),ita,itb,itc
+            write (iout,230)  label,ia,atom(ia)%name,ib,atom(ib)%name,
+     &                        ic,atom(ic)%name,ita,itb,itc
   230       format (1x,a6,5x,3(i6,'-',a3),7x,3i5)
          end if
       end do

@@ -21,7 +21,6 @@ c
       use sizes
       use angbnd
       use angpot
-      use atomid
       use atoms
       use couple
       use fields
@@ -143,14 +142,14 @@ c
          header = .true.
          do i = 1, nangle
             ib = iang(2,i)
-            itb = class(ib)
+            itb = atom(ib)%class
             if (jopb(itb) .and. n12(ib).eq.3) then
                ia = iang(1,i)
-               ita = class(ia)
+               ita = atom(ia)%class
                ic = iang(3,i)
-               itc = class(ic)
+               itc = atom(ic)%class
                id = iang(4,i)
-               itd = class(id)
+               itd = atom(id)%class
                size = 4
                call numeral (ita,pa,size)
                call numeral (itb,pb,size)
@@ -202,8 +201,8 @@ c
      &                       //,' Type',24x,'Atom Names',24x,
      &                          'Atom Classes',/)
                   end if
-                  write (iout,90)  id,name(id),ib,name(ib),ia,name(ia),
-     &                             ic,name(ic),itd,itb,ita,itc
+                  write (iout,90)  id,atom(id)%name,ib,atom(ib)%name,ia,
+     &                 atom(ia)%name,ic,atom(ic)%name,itd,itb,ita,itc
    90             format (' Angle-OP',3x,4(i6,'-',a3),5x,4i5)
                end if
             else

@@ -258,7 +258,7 @@ c
 c     assign multipole parameters via only 1-2 connected atoms
 c
       do i = 1, n
-         it = type(i)
+         it = atom(i)%type
          do imp = 1, nmp
             if (it .eq. mpt(imp)) then
                ztyp = mpz(imp)
@@ -266,11 +266,11 @@ c
                ytyp = mpy(imp)
                do j = 1, n12(i)
                   ji = i12(j,i)
-                  jt = type(ji)
+                  jt = atom(ji)%type
                   if (jt .eq. ztyp) then
                      do k = 1, n12(i)
                         ki = i12(k,i)
-                        kt = type(ki)
+                        kt = atom(ki)%type
                         if (kt.eq.xtyp .and. ki.ne.ji) then
                            if (ytyp .eq. 0) then
                               zaxis(i) = ji
@@ -283,7 +283,7 @@ c
                            end if
                            do l = 1, n12(i)
                               li = i12(l,i)
-                              lt = type(li)
+                              lt = atom(li)%type
                               if (lt.eq.ytyp .and. li.ne.ji
      &                               .and. li.ne.ki) then
                                  zaxis(i) = ji
@@ -312,11 +312,11 @@ c
                ytyp = mpy(imp)
                do j = 1, n12(i)
                   ji = i12(j,i)
-                  jt = type(ji)
+                  jt = atom(ji)%type
                   if (jt .eq. ztyp) then
                      do k = 1, n13(i)
                         ki = i13(k,i)
-                        kt = type(ki)
+                        kt = atom(ki)%type
                         path = .false.
                         do m = 1, n12(ki)
                            if (i12(m,ki) .eq. ji)  path = .true.
@@ -333,7 +333,7 @@ c
                            end if
                            do l = 1, n13(i)
                               li = i13(l,i)
-                              lt = type(li)
+                              lt = atom(li)%type
                               path = .false.
                               do m = 1, n12(li)
                                  if (i12(m,li) .eq. ji)  path = .true.
@@ -366,7 +366,7 @@ c
                ytyp = mpy(imp)
                do j = 1, n12(i)
                   ji = i12(j,i)
-                  jt = type(ji)
+                  jt = atom(ji)%type
                   if (jt .eq. ztyp) then
                      if (xtyp .eq. 0) then
                         zaxis(i) = ji

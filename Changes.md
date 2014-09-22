@@ -11,6 +11,36 @@ with restricted options of what can be run. The main aim of this work is to:
 Enumerate in reverse chronological order the rationale for
 changes made to the `tinkerLite` code base.
 
+* Made the derived data type atomtype into allocatable structure. 
+  The atomtype variable atom is initialised inside the readxyz.f file and
+  has n elements - the actual number of atoms in the modelled system (rather 
+  than the maxatm). Deallocation is done inside the final.f file.     
+
+* Removed the redundant atomid.f file. All the information is now in atoms.f 
+  file, stored as the elements of atomtype.  
+ 
+* Added class, atomic number, valence, story and name elements to the atomtype,
+  which resulted in small degradation in perfromance compared to previous 
+  versions.Overall, using the atomtype with the following elements:
+  pos, mass, tag, type, class, atomic, valence, story and name degraded the 
+  perfromance by up to 4.5% depending on the number of OpenMP threads used.    
+
+* Added tag and type elements to the atomtype - perfromance slightly degraded 
+  for larger number of threads. Can access tag and type information through
+  atom(N)%tag and atom(N)%type.  
+
+* Added mass element to the atomtype which resulted in a small degradation in 
+  perfromance for up to 8 threads and improvement for larger numbers of threads.
+  The mass elament is accessed by atom(N)%mass.  
+
+* Created derived data type - atomtype to keep the information about atoms
+  in one place. The elements of the atomtype have been added incrementally 
+  starting with position of the atoms. The pos(3)(N) array has been 
+  transformed into array element of atom derived data type - atom(N)%pos(3). 
+  The difference in the perfromance is negligible. After the modification the
+  code is slightly faster for up to 10 threads and slightly slower for larger 
+  numbers.    
+
 * Have collapsed the distinct `x(N)`, `y(N)` and `z(N)`
   into a single array `pos(3)(N)`. Testing has shown that this has
   no major impact on performance but the change will simplify a
@@ -21,8 +51,8 @@ changes made to the `tinkerLite` code base.
 * Had a further cull of unused variables as reported by the
   `gfortran` compiler with the `-Wall` flag.
 * Added a test directory. Only have one valid regression test
-  `dhfr` otherwise know as JAC. Could not import the files 
-  from the main `tiker` distribution as that usess a `Modified Beeman 
+  `dhfr` otherwise known as JAC. Could not import the files 
+  from the main `tinker` distribution as that uses a `Modified Beeman 
   Algorithm` while `tinkerLite` uses a `Velocity Verlet Algorithm`
   which gives a different result - enough to cause the test to 
   fail. Have taken an output from the current version, which has

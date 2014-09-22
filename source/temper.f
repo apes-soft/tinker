@@ -124,7 +124,6 @@ c
 c
       subroutine temper2 (dt,eksum,ekin,temp)
       use sizes
-      use atomid
       use atoms
       use bath
       use mdstuf

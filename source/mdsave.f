@@ -19,7 +19,6 @@ c
 c
       subroutine mdsave (istep,dt,epot,eksum)
       use sizes
-      use atomid
       use atoms
       use boxes
       use files
@@ -156,7 +155,7 @@ c
          write (ivel,220)  n,title(1:ltitle)
   220    format (i6,2x,a)
          do i = 1, n
-            write (ivel,230)  i,name(i),(v(j,i),j=1,3)
+            write (ivel,230)  i,atom(i)%name,(v(j,i),j=1,3)
   230       format (i6,2x,a3,3x,d13.6,3x,d13.6,3x,d13.6)
          end do
          close (unit=ivel)
@@ -184,8 +183,8 @@ c
          write (ifrc,250)  n,title(1:ltitle)
   250    format (i6,2x,a)
          do i = 1, n
-            wt = mass(i) / convert
-            write (ifrc,260)  i,name(i),(wt*a(j,i),j=1,3)
+            wt = atom(i)%mass / convert
+            write (ifrc,260)  i,atom(i)%name,(wt*a(j,i),j=1,3)
   260       format (i6,2x,a3,3x,d13.6,3x,d13.6,3x,d13.6)
          end do
          close (unit=ifrc)
@@ -215,7 +214,7 @@ c
          do i = 1, npole
             if (polarity(i) .ne. 0.0d0) then
                k = ipole(i)
-               write (iind,290)  k,name(k),(debye*uind(j,i),j=1,3)
+               write (iind,290)  k,atom(k)%name,(debye*uind(j,i),j=1,3)
   290          format (i6,2x,a3,3f12.6)
             end if
          end do

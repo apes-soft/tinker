@@ -18,7 +18,6 @@ c
 c
       subroutine ktortor
       use sizes
-      use atomid
       use atoms
       use bitor
       use inform
@@ -253,11 +252,11 @@ c
          ic = ibitor(3,i)
          id = ibitor(4,i)
          ie = ibitor(5,i)
-         ita = class(ia)
-         itb = class(ib)
-         itc = class(ic)
-         itd = class(id)
-         ite = class(ie)
+         ita = atom(ia)%class
+         itb = atom(ib)%class
+         itc = atom(ic)%class
+         itd = atom(id)%class
+         ite = atom(ie)%class
          size = 4
          call numeral (ita,pa,size)
          call numeral (itb,pb,size)

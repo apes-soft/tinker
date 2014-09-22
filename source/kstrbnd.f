@@ -21,7 +21,6 @@ c
       use angbnd
       use angpot
       use atmlst
-      use atomid
       use atoms
       use couple
       use fields
@@ -123,9 +122,9 @@ c
             ia = iang(1,i)
             ib = iang(2,i)
             ic = iang(3,i)
-            ita = class(ia)
-            itb = class(ib)
-            itc = class(ic)
+            ita = atom(ia)%class
+            itb = atom(ib)%class
+            itc = atom(ic)%class
             size = 4
             call numeral (ita,pa,size)
             call numeral (itb,pb,size)
