@@ -5,7 +5,8 @@ Using this to develop `tinkerLite` - a cut down version of tinker,
 basically `dynamic` with restricted options of what can be run. The
 main aim of this work is to:
 
-1. Try and improve serial performance and scalability.
+
+1. See if we can improve serial performance and scalability.
 2. Produce a distributed memory version of `dynamic` using MPI.
 
 # Changes Made
@@ -74,6 +75,13 @@ List issues that need looking at or resolving.
    Need to disable this.
 
 ## Outstanding compilation warnings
+
+### Picked up by the pgf90 compiler
+
+* Predefined intrinsic maxval loses intrinsic property (sizes.f: 58) -
+  variable masks the Fortran 90 `maxval` intrinsic.
+* Predefined intrinsic digits loses intrinsic property (inform.f: 28) -
+  variable masks the Fortran 90 `digits` intrinsic.
 
 ### gfortran
 
