@@ -50,8 +50,9 @@ LINKDIR = /usr/local/bin
 
 #COMPARCH=GenericGfortran
 #COMPARCH=GenericGfortranOpenMP
-COMPARCH=LinuxIntel
+#COMPARCH=LinuxIntel
 #COMPARCH=LinuxIntelOpenMP
+COMPARCH=OpenMPI
 #COMPARCH=MacIntel
 #COMPARCH=MacIntelOpenMP
 #COMPARCH=MacXeonIntelOpenMP
@@ -101,6 +102,21 @@ else ifeq ($(COMPARCH),LinuxIntel)
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc -static-intel 
+
+else ifeq ($(COMPARCH),OpenMPI)
+
+  ##  Machine:  Generic Linux
+  ##  CPU Type: Intel x86 Compatible (also AMD)
+  ##  Oper Sys: Fedora Core
+  ##  Compiler: Intel Fortran for Linux 14.0
+
+  FC        = mpif90
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_threads -lfftw3
+  FCFLAGS   = -c 
+  OPTFLAGS  = -O3 -fopenmp 
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = $(OPTFLAGS) -static-libgcc 
 
 else ifeq ($(COMPARCH),LinuxIntelOpenMP)
 
