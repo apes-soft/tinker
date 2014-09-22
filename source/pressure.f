@@ -76,7 +76,6 @@ c
 c
       subroutine pscale (dt,pres,stress)
       use sizes
-      use atomid
       use atoms
       use bath
       use boxes
@@ -108,9 +107,9 @@ c
 c     couple to pressure bath via atom scaling in Cartesian space
 c
       do i = 1, n
-         pos(1,i) = pos(1,i) * scale
-         pos(2,i) = pos(2,i) * scale
-         pos(3,i) = pos(3,i) * scale
+         atom(i)%pos(1) = atom(i)%pos(1) * scale
+         atom(i)%pos(2) = atom(i)%pos(2) * scale
+         atom(i)%pos(3) = atom(i)%pos(3) * scale
       end do
       return
       end

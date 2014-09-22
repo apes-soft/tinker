@@ -682,7 +682,7 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(private) shared(n,npole,ipole,pos,pdamp,thole,
+!$OMP PARALLEL default(private) shared(n,npole,ipole,atom,pdamp,thole,
 !$OMP& rpole,p2scale,p3scale,p4scale,p41scale,p5scale,d1scale,d2scale,
 !$OMP& d3scale,d4scale,u1scale,u2scale,u3scale,u4scale,n12,i12,n13,i13,
 !$OMP& n14,i14,n15,i15,np11,ip11,np12,ip12,np13,ip13,np14,ip14,nelst,
@@ -758,9 +758,9 @@ c
          do kkk = 1, nelst(i)
             k = elst(kkk,i)
             kk = ipole(k)
-            xr = pos(1,kk) - pos(1,ii)
-            yr = pos(2,kk) - pos(2,ii)
-            zr = pos(3,kk) - pos(3,ii)
+            xr = atom(kk)%pos(1) - atom(ii)%pos(1)
+            yr = atom(kk)%pos(2) - atom(ii)%pos(2)
+            zr = atom(kk)%pos(3) - atom(ii)%pos(3)
             call image (xr,yr,zr)
             r2 = xr*xr + yr* yr + zr*zr
             if (r2 .le. cut2) then
@@ -1344,7 +1344,7 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(private) shared(n,npole,ipole,pos,pdamp,
+!$OMP PARALLEL default(private) shared(n,npole,ipole,atom,pdamp,
 !$OMP& thole,polarity,u1scale,u2scale,u3scale,u4scale,np11,ip11,
 !$OMP& np12,ip12,np13,ip13,np14,ip14,nulst,ulst,mindex,minv)
 !$OMP& firstprivate (dscale)
@@ -1354,9 +1354,9 @@ c
 !$OMP DO schedule(guided)
          do i = 1, npole
             ii = ipole(i)
-            xi = pos(1,ii)
-            yi = pos(2,ii)
-            zi = pos(3,ii)
+            xi = atom(ii)%pos(1)
+            yi = atom(ii)%pos(2)
+            zi = atom(ii)%pos(3)
             pdi = pdamp(i)
             pti = thole(i)
             poli = polarity(i)
@@ -1376,9 +1376,9 @@ c
             do kkk = 1, nulst(i)
                k = ulst(kkk,i)
                kk = ipole(k)
-               xr = pos(1,kk) - xi
-               yr = pos(2,kk) - yi
-               zr = pos(3,kk) - zi
+               xr = atom(kk)%pos(1) - xi
+               yr = atom(kk)%pos(2) - yi
+               zr = atom(kk)%pos(3) - zi
                call image (xr,yr,zr)
                r2 = xr*xr + yr* yr + zr*zr
                r = sqrt(r2)

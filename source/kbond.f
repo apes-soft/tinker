@@ -19,7 +19,6 @@ c
 c
       subroutine kbond
       use sizes
-      use atomid
       use atoms
       use bndstr
       use couple
@@ -186,8 +185,8 @@ c
       do i = 1, nbond
          ia = ibnd(1,i)
          ib = ibnd(2,i)
-         ita = class(ia)
-         itb = class(ib)
+         ita = atom(ia)%class
+         itb = atom(ib)%class
          size = 4
          call numeral (ita,pa,size)
          call numeral (itb,pb,size)
@@ -263,7 +262,7 @@ c
 c     warning if suitable bond stretching parameter not found
 c
   130    continue
-         minat = min(atomic(ia),atomic(ib))
+         minat = min(atom(ia)%atomic,atom(ib)%atomic)
          if (minat .eq. 0)  done = .true.
          if (.not.done) then
             abort = .true.
@@ -278,7 +277,8 @@ c
             if (iring .eq. 5)  label = '5-Ring'
             if (iring .eq. 4)  label = '4-Ring'
             if (iring .eq. 3)  label = '3-Ring'
-            write (iout,150)  label,ia,name(ia),ib,name(ib),ita,itb
+            write (iout,150)  label,ia,atom(ia)%name,ib,atom(ib)%name,
+     &           ita,itb
   150       format (1x,a6,5x,i6,'-',a3,i6,'-',a3,7x,2i5)
          end if
       end do

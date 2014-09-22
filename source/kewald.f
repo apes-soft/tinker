@@ -247,13 +247,13 @@ c     search all atom pairs to find the largest distance
 c
       rmax = 0.0d0
       do i = 1, n-1
-         xi = pos(1,i)
-         yi = pos(2,i)
-         zi = pos(3,i)
+         xi = atom(i)%pos(1)
+         yi = atom(i)%pos(2)
+         zi = atom(i)%pos(3)
          do k = i+1, n
-            xk = pos(1,k)
-            yk = pos(2,k)
-            zk = pos(3,k)
+            xk = atom(k)%pos(1)
+            yk = atom(k)%pos(2)
+            zk = atom(k)%pos(3)
             r2 = (xi-xk)**2 + (yi-yk)**2 + (zi-zk)**2
             rmax = max(r2,rmax)
          end do

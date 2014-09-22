@@ -18,7 +18,6 @@ c
 c
       subroutine ktors
       use sizes
-      use atomid
       use atoms
       use couple
       use fields
@@ -236,10 +235,10 @@ c
          ib = itors(2,i)
          ic = itors(3,i)
          id = itors(4,i)
-         ita = class(ia)
-         itb = class(ib)
-         itc = class(ic)
-         itd = class(id)
+         ita = atom(ia)%class
+         itb = atom(ib)%class
+         itc = atom(ic)%class
+         itd = atom(id)%class
          size = 4
          call numeral (ita,pa,size)
          call numeral (itb,pb,size)
@@ -482,7 +481,8 @@ c
 c     warning if suitable torsional parameter not found
 c
   110    continue
-         minat = min(atomic(ia),atomic(ib),atomic(ic),atomic(id))
+         minat = min(atom(ia)%atomic,atom(ib)%atomic,atom(ic)%atomic,
+     &        atom(id)%atomic)
          if (minat .eq. 0)  done = .true.
          if (.not.done) then
             abort = .true.
@@ -496,8 +496,8 @@ c
             label = 'Torsion'
             if (iring .eq. 5)  label = '5-Ring '
             if (iring .eq. 4)  label = '4-Ring '
-            write (iout,130)  label,ia,name(ia),ib,name(ib),ic,
-     &                        name(ic),id,name(id),ita,itb,itc,itd
+            write (iout,130)  label,ia,atom(ia)%name,ib,atom(ib)%name,
+     &           ic,atom(ic)%name,id,atom(id)%name,ita,itb,itc,itd
   130       format (1x,a7,4x,4(i6,'-',a3),5x,4i5)
          end if
       end do

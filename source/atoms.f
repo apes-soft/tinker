@@ -1,4 +1,4 @@
-c
+c 
 c
 c     ###################################################
 c     ##  COPYRIGHT (C)  1992  by  Jay William Ponder  ##
@@ -19,14 +19,29 @@ c     y       current y-coordinate for each atom in the system
 c     z       current z-coordinate for each atom in the system
 c
 c
+
       module atoms
       use sizes
 
       implicit none
 
       integer:: n
-      integer:: type(maxatm)
-      real (kind=8):: pos(3,maxatm)
+c      integer:: type(maxatm)
+
+
+      type atomtype
+      real(kind=8), dimension(3) :: pos
+      real(kind=8) :: mass
+      integer :: tag
+      integer :: type
+      integer :: class 
+      integer :: atomic
+      integer :: valence 
+      character(len=24) :: story
+      character(len=3) :: name
+      end type atomtype
 
       save
+      type(atomtype), allocatable :: atom(:)
+
       end

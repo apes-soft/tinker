@@ -19,7 +19,6 @@ c
 c
       subroutine kvdw
       use sizes
-      use atomid
       use atoms
       use couple
       use fields
@@ -277,8 +276,8 @@ c     use atom class or type as index into vdw parameters
 c
       k = 0
       do i = 1, n
-         jvdw(i) = class(i)
-         if (vdwindex .eq. 'TYPE')  jvdw(i) = type(i)
+         jvdw(i) = atom(i)%class
+         if (vdwindex .eq. 'TYPE')  jvdw(i) = atom(i)%type
          k = max(k,jvdw(i))
       end do
       if (k .gt. maxclass) then

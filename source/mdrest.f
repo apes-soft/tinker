@@ -18,7 +18,6 @@ c
 c
       subroutine mdrest (istep)
       use sizes
-      use atomid
       use atoms
       use inform
       use iounit
@@ -46,7 +45,7 @@ c
 c     compute linear velocity of the system center of mass
 c
       do i = 1, n
-         weigh = mass(i)
+         weigh = atom(i)%mass
          totmass = totmass + weigh
          do j = 1, 3
             vtot(j) = vtot(j) + v(j,i)*weigh
