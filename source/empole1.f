@@ -311,7 +311,7 @@ c
 !$OMP& gfr,gfri,gti,gtri,dorl,dorli)
 !$OMP& firstprivate(mscale,pscale,dscale,uscale)
 !$OMP DO reduction(+:emtt,eptt,demt1,demt2,dept1,dept2,virt)
-!$OMP& schedule(guided)
+!$OMP& schedule(dynamic,16)
 c
 c     compute the real space portion of the Ewald summation
 c

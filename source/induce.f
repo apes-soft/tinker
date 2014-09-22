@@ -708,7 +708,7 @@ c
 c
 c     compute the real space portion of the Ewald summation
 c
-!$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
+!$OMP DO reduction(+:fieldt,fieldtp) schedule(dynamic,16)
       do i = 1, npole
          ii = ipole(i)
          pdi = pdamp(i)
@@ -1136,7 +1136,7 @@ c
 c
 c     find the field terms for each pairwise interaction
 c
-!$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
+!$OMP DO reduction(+:fieldt,fieldtp) schedule(dynamic,16)
       do m = 1, ntpair
          i = tindex(1,m)
          k = tindex(2,m)
@@ -1266,7 +1266,7 @@ c     use the off-diagonal preconditioner elements in second phase
 c
 !$OMP PARALLEL default(private) shared(npole,mindex,minv,nulst,ulst,
 !$OMP& rsd,rsdp,zrsd,zrsdp,zrsdt,zrsdtp)
-!$OMP DO reduction(+:zrsdt,zrsdtp) schedule(guided)
+!$OMP DO reduction(+:zrsdt,zrsdtp) schedule(dynamic,16)
          do i = 1, npole
             m = mindex(i)
             do kk = 1, nulst(i)
@@ -1351,7 +1351,7 @@ c
 c
 c     determine the off-diagonal elements of the preconditioner
 c
-!$OMP DO schedule(guided)
+!$OMP DO schedule(dynamic,16)
          do i = 1, npole
             ii = ipole(i)
             xi = atom(ii)%pos(1)
