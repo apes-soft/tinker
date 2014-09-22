@@ -1,6 +1,6 @@
 # Cumulative changes made to the code
 
-Using this to develop `tinkerLite` - a cut down version of tinker, basically `dynamic`
+Using this to develop `tinkerLite` -- a cut down version of tinker, basically `dynamic`
 with restricted options of what can be run. The main aim of this work is to:
 
 1. Try and improve serial performance and scalability.
@@ -11,35 +11,35 @@ with restricted options of what can be run. The main aim of this work is to:
 Enumerate in reverse chronological order the rationale for
 changes made to the `tinkerLite` code base.
 
-* Made the derived data type atomtype into allocatable structure. 
-  The atomtype variable atom is initialised inside the readxyz.f file and
-  has n elements - the actual number of atoms in the modelled system (rather 
-  than the maxatm). Deallocation is done inside the final.f file.     
+* Made the derived data type `atomtype` into allocatable structure. 
+  The `atomtype` variable atom is initialised inside the `readxyz.f` file and
+  has `n` elements - the actual number of atoms in the modelled system (rather 
+  than the `maxatm`). Deallocation is done inside the `final.f` file.     
 
-* Removed the redundant atomid.f file. All the information is now in atoms.f 
-  file, stored as the elements of atomtype.  
+* Removed the redundant `atomid.f` file. All the information is now in `atoms.f` 
+  file, stored as the elements of `atomtype`.  
  
-* Added class, atomic number, valence, story and name elements to the atomtype,
-  which resulted in small degradation in perfromance compared to previous 
-  versions.Overall, using the atomtype with the following elements:
-  pos, mass, tag, type, class, atomic, valence, story and name degraded the 
-  perfromance by up to 4.5% depending on the number of OpenMP threads used.    
+* Added `class`, `atomic` number, `valence`, `story` and `name` elements to the `atomtype`,
+  which resulted in small degradation in performance compared to previous 
+  versions. Overall, using the `atomtype` with the following elements:
+  `pos`, `mass`, `tag`, `type`, `class`, `atomic`, `valence`, `story` and `name` degraded the 
+  performance by up to 4.5% depending on the number of OpenMP threads used.    
 
-* Added tag and type elements to the atomtype - perfromance slightly degraded 
+* Added tag and type elements to the `atomtype` - performance slightly degraded 
   for larger number of threads. Can access tag and type information through
-  atom(N)%tag and atom(N)%type.  
+  `atom(N)%tag` and `atom(N)%type`.  
 
-* Added mass element to the atomtype which resulted in a small degradation in 
-  perfromance for up to 8 threads and improvement for larger numbers of threads.
-  The mass elament is accessed by atom(N)%mass.  
+* Added mass element to the `atomtype` which resulted in a small degradation in 
+  performance for up to 8 threads and improvement for larger numbers of threads.
+  The mass element is accessed by `atom(N)%mass`.  
 
-* Created derived data type - atomtype to keep the information about atoms
-  in one place. The elements of the atomtype have been added incrementally 
-  starting with position of the atoms. The pos(3)(N) array has been 
-  transformed into array element of atom derived data type - atom(N)%pos(3). 
-  The difference in the perfromance is negligible. After the modification the
+* Created a derived data type - `atomtype` to keep the information about atoms
+  in one place. The elements of `atomtype` have been added to incrementally 
+  starting with the position of the atoms. The `pos(3)(N)` array has been 
+  transformed into array element of an atom derived data type - `atom(N)%pos(3)`. 
+  The difference in the performance is negligible. After this modification the
   code is slightly faster for up to 10 threads and slightly slower for larger 
-  numbers.    
+  number of threads.    
 
 * Have collapsed the distinct `x(N)`, `y(N)` and `z(N)`
   into a single array `pos(3)(N)`. Testing has shown that this has
