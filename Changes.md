@@ -21,8 +21,8 @@ changes made to the `tinkerLite` code base.
 * Had a further cull of unused variables as reported by the
   `gfortran` compiler with the `-Wall` flag.
 * Added a test directory. Only have one valid regression test
-  `dhfr` otherwise know as JAC. Could not import the files 
-  from the main `tiker` distribution as that usess a `Modified Beeman 
+  `dhfr` otherwise known as JAC. Could not import the files 
+  from the main `tinker` distribution as that uses a `Modified Beeman 
   Algorithm` while `tinkerLite` uses a `Velocity Verlet Algorithm`
   which gives a different result - enough to cause the test to 
   fail. Have taken an output from the current version, which has
