@@ -42,15 +42,15 @@ c
 c     get the length of input string and output word
 c
       length = len(string(next:))
-      size = len(word)
+      size   = len(word)
 c
 c     move through the string one character at a time,
 c     searching for the first alphabetic character
 c
-      first = next
-      last = 0
+      first   = next
+      last    = 0
       initial = next
-      final = next + length - 1
+      final   = next + length - 1
       do i = initial, final
          letter = string(i:i)
          if ((letter.ge.'A' .and. letter.le.'Z') .or.

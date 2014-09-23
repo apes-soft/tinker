@@ -56,16 +56,16 @@ c
 c
 c     process keywords containing torsional angle parameters
 c
-      blank = '                '
-      zeros = '0000'
+      blank  = '                '
+      zeros  = '0000'
       header = .true.
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
          iring = -1
-         if (keyword(1:8) .eq. 'TORSION ')  iring = 0
+         if (keyword(1:8) .eq. 'TORSION ')   iring = 0
          if (keyword(1:9) .eq. 'TORSION5 ')  iring = 5
          if (keyword(1:9) .eq. 'TORSION4 ')  iring = 4
          if (iring .ge. 0) then
@@ -121,7 +121,7 @@ c
             if (iring .eq. 0) then
                do j = 1, maxnt
                   if (kt(j).eq.blank .or. kt(j).eq.pt) then
-                     kt(j) = pt
+                     kt(j)   = pt
                      t1(1,j) = vt(1)
                      t1(2,j) = st(1)
                      t2(1,j) = vt(2)
@@ -145,7 +145,7 @@ c
             else if (iring .eq. 5) then
                do j = 1, maxnt5
                   if (kt5(j).eq.blank .or. kt5(j).eq.pt) then
-                     kt5(j) = pt
+                     kt5(j)   = pt
                      t15(1,j) = vt(1)
                      t15(2,j) = st(1)
                      t25(1,j) = vt(2)
@@ -169,7 +169,7 @@ c
             else if (iring .eq. 4) then
                do j = 1, maxnt4
                   if (kt4(j).eq.blank .or. kt4(j).eq.pt) then
-                     kt4(j) = pt
+                     kt4(j)   = pt
                      t14(1,j) = vt(1)
                      t14(2,j) = st(1)
                      t24(1,j) = vt(2)
@@ -205,7 +205,7 @@ c
 c
 c     determine the total number of forcefield parameters
 c
-      nt = maxnt
+      nt  = maxnt
       nt5 = maxnt5
       nt4 = maxnt4
       do i = maxnt, 1, -1
@@ -231,10 +231,10 @@ c
       header = .true.
       nlist = 0
       do i = 1, ntors
-         ia = itors(1,i)
-         ib = itors(2,i)
-         ic = itors(3,i)
-         id = itors(4,i)
+         ia  = itors(1,i)
+         ib  = itors(2,i)
+         ic  = itors(3,i)
+         id  = itors(4,i)
          ita = atom(ia)%class
          itb = atom(ib)%class
          itc = atom(ic)%class
@@ -253,9 +253,9 @@ c
          else if (itd .lt. ita) then
             pt = pd//pc//pb//pa
          end if
-         pt2 = zeros//pt(5:16)
-         pt1 = pt(1:12)//zeros
-         pt0 = zeros//pt(5:12)//zeros
+         pt2        = zeros//pt(5:16)
+         pt1        = pt(1:12)//zeros
+         pt0        = zeros//pt(5:12)//zeros
          tors1(1,i) = 0.0d0
          tors1(2,i) = 0.0d0
          tors2(1,i) = 0.0d0
@@ -268,14 +268,14 @@ c
          tors5(2,i) = 0.0d0
          tors6(1,i) = 0.0d0
          tors6(2,i) = 0.0d0
-         done = .false.
+         done       = .false.
 c
 c     make a check for torsions inside small rings
 c
          iring = 0
          if (use_ring) then
             call chkring (iring,ia,ib,ic,id)
-            if (iring .eq. 6)  iring = 0
+            if (iring .eq. 6)               iring = 0
             if (iring.eq.5 .and. nt5.eq.0)  iring = 0
             if (iring.eq.4 .and. nt4.eq.0)  iring = 0
          end if
@@ -286,7 +286,7 @@ c
          if (iring .eq. 0) then
             do j = 1, nlist
                if (klist(j) .eq. pt) then
-                  ilist = kindex(j)
+                  ilist      = kindex(j)
                   tors1(1,i) = tors1(1,ilist)
                   tors1(2,i) = tors1(2,ilist)
                   tors2(1,i) = tors2(1,ilist)
@@ -299,28 +299,28 @@ c
                   tors5(2,i) = tors5(2,ilist)
                   tors6(1,i) = tors6(1,ilist)
                   tors6(2,i) = tors6(2,ilist)
-                  done = .true.
+                  done       = .true.
                   goto 110
                end if
             end do
             do j = 1, nt
                if (kt(j) .eq. pt) then
-                  nlist = nlist + 1
-                  klist(nlist) = pt
+                  nlist         = nlist + 1
+                  klist(nlist)  = pt
                   kindex(nlist) = i
-                  tors1(1,i) = t1(1,j)
-                  tors1(2,i) = t1(2,j)
-                  tors2(1,i) = t2(1,j)
-                  tors2(2,i) = t2(2,j)
-                  tors3(1,i) = t3(1,j)
-                  tors3(2,i) = t3(2,j)
-                  tors4(1,i) = t4(1,j)
-                  tors4(2,i) = t4(2,j)
-                  tors5(1,i) = t5(1,j)
-                  tors5(2,i) = t5(2,j)
-                  tors6(1,i) = t6(1,j)
-                  tors6(2,i) = t6(2,j)
-                  done = .true.
+                  tors1(1,i)    = t1(1,j)
+                  tors1(2,i)    = t1(2,j)
+                  tors2(1,i)    = t2(1,j)
+                  tors2(2,i)    = t2(2,j)
+                  tors3(1,i)    = t3(1,j)
+                  tors3(2,i)    = t3(2,j)
+                  tors4(1,i)    = t4(1,j)
+                  tors4(2,i)    = t4(2,j)
+                  tors5(1,i)    = t5(1,j)
+                  tors5(2,i)    = t5(2,j)
+                  tors6(1,i)    = t6(1,j)
+                  tors6(2,i)    = t6(2,j)
+                  done          = .true.
                   goto 110
                end if
             end do
@@ -338,7 +338,7 @@ c
                   tors5(2,i) = t5(2,j)
                   tors6(1,i) = t6(1,j)
                   tors6(2,i) = t6(2,j)
-                  done = .true.
+                  done       = .true.
                   goto 110
                end if
             end do
@@ -356,7 +356,7 @@ c
                   tors5(2,i) = t5(2,j)
                   tors6(1,i) = t6(1,j)
                   tors6(2,i) = t6(2,j)
-                  done = .true.
+                  done       = .true.
                   goto 110
                end if
             end do
@@ -378,7 +378,7 @@ c
                   tors5(2,i) = t55(2,j)
                   tors6(1,i) = t65(1,j)
                   tors6(2,i) = t65(2,j)
-                  done = .true.
+                  done       = .true.
                   goto 110
                end if
             end do
@@ -396,7 +396,7 @@ c
                   tors5(2,i) = t55(2,j)
                   tors6(1,i) = t65(1,j)
                   tors6(2,i) = t65(2,j)
-                  done = .true.
+                  done       = .true.
                   goto 110
                end if
             end do
@@ -414,7 +414,7 @@ c
                   tors5(2,i) = t55(2,j)
                   tors6(1,i) = t65(1,j)
                   tors6(2,i) = t65(2,j)
-                  done = .true.
+                  done       = .true.
                   goto 110
                end if
             end do
@@ -436,7 +436,7 @@ c
                   tors5(2,i) = t54(2,j)
                   tors6(1,i) = t64(1,j)
                   tors6(2,i) = t64(2,j)
-                  done = .true.
+                  done       = .true.
                   goto 110
                end if
             end do
@@ -454,7 +454,7 @@ c
                   tors5(2,i) = t54(2,j)
                   tors6(1,i) = t64(1,j)
                   tors6(2,i) = t64(2,j)
-                  done = .true.
+                  done       = .true.
                   goto 110
                end if
             end do
@@ -472,7 +472,7 @@ c
                   tors5(2,i) = t54(2,j)
                   tors6(1,i) = t64(1,j)
                   tors6(2,i) = t64(2,j)
-                  done = .true.
+                  done       = .true.
                   goto 110
                end if
             end do
@@ -510,22 +510,22 @@ c
 c     find the cosine and sine of phase angle for each torsion
 c
       do i = 1, ntors
-         angle = tors1(2,i) / radian
+         angle      = tors1(2,i) / radian
          tors1(3,i) = cos(angle)
          tors1(4,i) = sin(angle)
-         angle = tors2(2,i) / radian
+         angle      = tors2(2,i) / radian
          tors2(3,i) = cos(angle)
          tors2(4,i) = sin(angle)
-         angle = tors3(2,i) / radian
+         angle      = tors3(2,i) / radian
          tors3(3,i) = cos(angle)
          tors3(4,i) = sin(angle)
-         angle = tors4(2,i) / radian
+         angle      = tors4(2,i) / radian
          tors4(3,i) = cos(angle)
          tors4(4,i) = sin(angle)
-         angle = tors5(2,i) / radian
+         angle      = tors5(2,i) / radian
          tors5(3,i) = cos(angle)
          tors5(4,i) = sin(angle)
-         angle = tors6(2,i) / radian
+         angle      = tors6(2,i) / radian
          tors6(3,i) = cos(angle)
          tors6(4,i) = sin(angle)
       end do

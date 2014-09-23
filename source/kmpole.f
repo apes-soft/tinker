@@ -55,7 +55,7 @@ c
 c     count the number of existing multipole parameters
 c
       blank = '                '
-      nmp = maxnmp
+      nmp   = maxnmp
       do i = maxnmp, 1, -1
          if (kmp(i) .eq. blank)  nmp = i - 1
       end do
@@ -64,12 +64,12 @@ c     find and count new multipole parameters in the keyfile
 c
       imp = 0
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:10) .eq. 'MULTIPOLE ') then
-            k = 0
+            k      = 0
             string = record(next:120)
             read (string,*,err=10,end=10)  k,kz,kx,ky,mpl(1)
             goto 40
@@ -111,8 +111,8 @@ c     move existing parameters to make room for new values
 c
       if (imp .ne. 0) then
          do j = nmp, imp+1, -1
-            k = j - imp
-            kmp(j) = kmp(k)
+            k         = j - imp
+            kmp(j)    = kmp(k)
             mpaxis(j) = mpaxis(k)
             do m = 1, 13
                multip(m,j) = multip(m,k)
@@ -122,18 +122,18 @@ c
 c
 c     process keywords containing atomic multipole parameters
 c
-      imp = 0
+      imp    = 0
       header = .true.
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:10) .eq. 'MULTIPOLE ') then
-            k = 0
-            kz = 0
-            kx = 0
-            ky = 0
+            k   = 0
+            kz  = 0
+            kx  = 0
+            ky  = 0
             axt = 'Z-then-X'
             do j = 1, 13
                mpl(j) = 0.0d0
@@ -154,14 +154,14 @@ c
             read (string,*,err=130,end=130)  k,mpl(1)
   100       continue
             if (k .gt. 0) then
-               if (kz .eq. 0)  axt = 'None'
+               if (kz .eq. 0)              axt = 'None'
                if (kz.ne.0 .and. kx.eq.0)  axt = 'Z-Only'
-               if (kz.lt.0 .or. kx.lt.0)  axt = 'Bisector'
+               if (kz.lt.0 .or. kx.lt.0)   axt = 'Bisector'
                if (kx.lt.0 .and. ky.lt.0)  axt = 'Z-Bisect'
-               if (max(kz,kx,ky) .lt. 0)  axt = '3-Fold'
-               kz = abs(kz)
-               kx = abs(kx)
-               ky = abs(ky)
+               if (max(kz,kx,ky) .lt. 0)   axt = '3-Fold'
+               kz     = abs(kz)
+               kx     = abs(kx)
+               ky     = abs(ky)
                record = keyline(i+1)
                read (record,*,err=130,end=130)  mpl(2),mpl(3),mpl(4)
                record = keyline(i+2)
@@ -170,8 +170,8 @@ c
                read (record,*,err=130,end=130)  mpl(8),mpl(9)
                record = keyline(i+4)
                read (record,*,err=130,end=130)  mpl(11),mpl(12),mpl(13)
-               mpl(6) = mpl(8)
-               mpl(7) = mpl(11)
+               mpl(6)  = mpl(8)
+               mpl(7)  = mpl(11)
                mpl(10) = mpl(12)
                if (header .and. .not.silent) then
                   header = .false.
@@ -192,9 +192,9 @@ c
                call numeral (kz,pb,size)
                call numeral (kx,pc,size)
                call numeral (ky,pd,size)
-               pt = pa//pb//pc//pd
-               imp = imp + 1
-               kmp(imp) = pt
+               pt          = pa//pb//pc//pd
+               imp         = imp + 1
+               kmp(imp)    = pt
                mpaxis(imp) = axt
                do j = 1, 13
                   multip(j,imp) = mpl(j)
@@ -206,30 +206,30 @@ c
 c
 c     perform dynamic allocation of some global arrays
 c
-      if (.not. allocated(ipole))  allocate (ipole(n))
+      if (.not. allocated(ipole))   allocate (ipole(n))
       if (.not. allocated(polsiz))  allocate (polsiz(n))
-      if (.not. allocated(pollist))  allocate (pollist(n))
-      if (.not. allocated(zaxis))  allocate (zaxis(n))
-      if (.not. allocated(xaxis))  allocate (xaxis(n))
-      if (.not. allocated(yaxis))  allocate (yaxis(n))
-      if (.not. allocated(pole))  allocate (pole(maxpole,n))
-      if (.not. allocated(rpole))  allocate (rpole(maxpole,n))
+      if (.not. allocated(pollist)) allocate (pollist(n))
+      if (.not. allocated(zaxis))   allocate (zaxis(n))
+      if (.not. allocated(xaxis))   allocate (xaxis(n))
+      if (.not. allocated(yaxis))   allocate (yaxis(n))
+      if (.not. allocated(pole))    allocate (pole(maxpole,n))
+      if (.not. allocated(rpole))   allocate (rpole(maxpole,n))
       if (.not. allocated(polaxe))  allocate (polaxe(n))
-      if (.not. allocated(np11))  allocate (np11(n))
-      if (.not. allocated(np12))  allocate (np12(n))
-      if (.not. allocated(np13))  allocate (np13(n))
-      if (.not. allocated(np14))  allocate (np14(n))
+      if (.not. allocated(np11))    allocate (np11(n))
+      if (.not. allocated(np12))    allocate (np12(n))
+      if (.not. allocated(np13))    allocate (np13(n))
+      if (.not. allocated(np14))    allocate (np14(n))
 c
 c     zero out local axes, multipoles and polarization attachments
 c
       npole = n
       do i = 1, n
-         polsiz(i) = 0
+         polsiz(i)  = 0
          pollist(i) = 0
-         zaxis(i) = 0
-         xaxis(i) = 0
-         yaxis(i) = 0
-         polaxe(i) = '        '
+         zaxis(i)   = 0
+         xaxis(i)   = 0
+         yaxis(i)   = 0
+         polaxe(i)  = '        '
          do j = 1, 13
             pole(j,i) = 0.0d0
          end do
@@ -273,8 +273,8 @@ c
                         kt = atom(ki)%type
                         if (kt.eq.xtyp .and. ki.ne.ji) then
                            if (ytyp .eq. 0) then
-                              zaxis(i) = ji
-                              xaxis(i) = ki
+                              zaxis(i)  = ji
+                              xaxis(i)  = ki
                               polaxe(i) = mpaxis(imp)
                               do m = 1, 13
                                  pole(m,i) = multip(m,imp)
@@ -286,9 +286,9 @@ c
                               lt = atom(li)%type
                               if (lt.eq.ytyp .and. li.ne.ji
      &                               .and. li.ne.ki) then
-                                 zaxis(i) = ji
-                                 xaxis(i) = ki
-                                 yaxis(i) = li
+                                 zaxis(i)  = ji
+                                 xaxis(i)  = ki
+                                 yaxis(i)  = li
                                  polaxe(i) = mpaxis(imp)
                                  do m = 1, 13
                                     pole(m,i) = multip(m,imp)
@@ -323,8 +323,8 @@ c
                         end do
                         if (kt.eq.xtyp .and. path) then
                            if (ytyp .eq. 0) then
-                              zaxis(i) = ji
-                              xaxis(i) = ki
+                              zaxis(i)  = ji
+                              xaxis(i)  = ki
                               polaxe(i) = mpaxis(imp)
                               do m = 1, 13
                                  pole(m,i) = multip(m,imp)
@@ -340,9 +340,9 @@ c
                               end do
                               if (lt.eq.ytyp .and. li.ne.ki
      &                               .and. path) then
-                                 zaxis(i) = ji
-                                 xaxis(i) = ki
-                                 yaxis(i) = li
+                                 zaxis(i)  = ji
+                                 xaxis(i)  = ki
+                                 yaxis(i)  = li
                                  polaxe(i) = mpaxis(imp)
                                  do m = 1, 13
                                     pole(m,i) = multip(m,imp)
@@ -416,10 +416,10 @@ c
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:10) .eq. 'MULTIPOLE ') then
-            k = 0
-            kz = 0
-            kx = 0
-            ky = 0
+            k   = 0
+            kz  = 0
+            kx  = 0
+            ky  = 0
             axt = 'Z-then-X'
             do j = 1, 13
                mpl(j) = 0.0d0
@@ -443,12 +443,12 @@ c
                k = -k
                if (kz .eq. 0)  axt = 'None'
                if (kz.ne.0 .and. kx.eq.0)  axt = 'Z-Only'
-               if (kz.lt.0 .or. kx.lt.0)  axt = 'Bisector'
+               if (kz.lt.0 .or. kx.lt.0)   axt = 'Bisector'
                if (kx.lt.0 .and. ky.lt.0)  axt = 'Z-Bisect'
-               if (max(kz,kx,ky) .lt. 0)  axt = '3-Fold'
-               kz = abs(kz)
-               kx = abs(kx)
-               ky = abs(ky)
+               if (max(kz,kx,ky) .lt. 0)   axt = '3-Fold'
+               kz     = abs(kz)
+               kx     = abs(kx)
+               ky     = abs(ky)
                record = keyline(i+1)
                read (record,*,err=210,end=210)  mpl(2),mpl(3),mpl(4)
                record = keyline(i+2)
@@ -457,8 +457,8 @@ c
                read (record,*,err=210,end=210)  mpl(8),mpl(9)
                record = keyline(i+4)
                read (record,*,err=210,end=210)  mpl(11),mpl(12),mpl(13)
-               mpl(6) = mpl(8)
-               mpl(7) = mpl(11)
+               mpl(6)  = mpl(8)
+               mpl(7)  = mpl(11)
                mpl(10) = mpl(12)
                if (header .and. .not.silent) then
                   header = .false.
@@ -475,9 +475,9 @@ c
      &                       /,48x,3f9.5,/,48x,f9.5,
      &                       /,48x,2f9.5,/,48x,3f9.5)
                end if
-               zaxis(k) = kz
-               xaxis(k) = kx
-               yaxis(k) = ky
+               zaxis(k)  = kz
+               xaxis(k)  = kx
+               yaxis(k)  = ky
                polaxe(k) = axt
                do j = 1, 13
                   pole(j,k) = mpl(j)
@@ -517,8 +517,8 @@ c
 c     perform dynamic allocation of some global arrays
 c
       if (.not. use_polar) then
-         if (.not. allocated(uind))  allocate (uind(3,n))
-         if (.not. allocated(uinp))  allocate (uinp(3,n))
+         if (.not. allocated(uind))   allocate (uind(3,n))
+         if (.not. allocated(uinp))   allocate (uinp(3,n))
          if (.not. allocated(uinds))  allocate (uinds(3,n))
          if (.not. allocated(uinps))  allocate (uinps(3,n))
 c
@@ -526,8 +526,8 @@ c     if polarization not used, zero out induced dipoles
 c
          do i = 1, n
             do j = 1, 3
-               uind(j,i) = 0.0d0
-               uinp(j,i) = 0.0d0
+               uind(j,i)  = 0.0d0
+               uinp(j,i)  = 0.0d0
                uinds(j,i) = 0.0d0
                uinps(j,i) = 0.0d0
             end do
@@ -540,12 +540,12 @@ c
          npole = 0
          do i = 1, n
             if (polsiz(i) .ne. 0) then
-               npole = npole + 1
-               ipole(npole) = i
-               pollist(i) = npole
-               zaxis(npole) = zaxis(i)
-               xaxis(npole) = xaxis(i)
-               yaxis(npole) = yaxis(i)
+               npole         = npole + 1
+               ipole(npole)  = i
+               pollist(i)    = npole
+               zaxis(npole)  = zaxis(i)
+               xaxis(npole)  = xaxis(i)
+               yaxis(npole)  = yaxis(i)
                polaxe(npole) = polaxe(i)
                do j = 1, maxpole
                   pole(j,npole) = pole(j,i)

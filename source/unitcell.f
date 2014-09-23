@@ -33,15 +33,15 @@ c     set the default values for the unitcell variables
 c
       orthogonal = .true.
       monoclinic = .false.
-      triclinic = .false.
+      triclinic  = .false.
       octahedron = .false.
-      spacegrp = '          '
-      nosymm = .false.
+      spacegrp   = '          '
+      nosymm     = .false.
 c
 c     get keywords containing crystal lattice dimensions
 c
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
@@ -72,7 +72,7 @@ c
       if (ybox .eq. 0.0d0)  ybox = xbox
       if (zbox .eq. 0.0d0)  zbox = xbox
       alpha = 90.0d0
-      beta = 90.0d0
+      beta  = 90.0d0
       gamma = 90.0d0
 c
 c     check for proper use of truncated octahedron boundary

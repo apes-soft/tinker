@@ -26,6 +26,7 @@ c
       implicit none
 
       integer:: n
+
 c      integer:: type(maxatm)
 
 

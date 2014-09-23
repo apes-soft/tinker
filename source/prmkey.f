@@ -39,7 +39,7 @@ c
 c     parse the line to extract any possible keyword
 c
       record = text
-      next = 1
+      next   = 1
       call upcase (record)
       call gettext (record,keyword,next)
       string = record(next:120)
@@ -420,30 +420,30 @@ c
 c
 c     turn off the use of each of the potential energy functions
 c
-      use_bond = .false.
-      use_angle = .false.
+      use_bond   = .false.
+      use_angle  = .false.
       use_strbnd = .false.
-      use_urey = .false.
+      use_urey   = .false.
       use_angang = .false.
       use_opbend = .false.
       use_opdist = .false.
       use_improp = .false.
       use_imptor = .false.
-      use_tors = .false.
+      use_tors   = .false.
       use_pitors = .false.
       use_strtor = .false.
       use_angtor = .false.
       use_tortor = .false.
-      use_vdw = .false.
+      use_vdw    = .false.
       use_charge = .false.
       use_chgdpl = .false.
       use_dipole = .false.
-      use_mpole = .false.
-      use_polar = .false.
+      use_mpole  = .false.
+      use_polar  = .false.
       use_rxnfld = .false.
-      use_solv = .false.
-      use_metal = .false.
-      use_geom = .false.
-      use_extra = .false.
+      use_solv   = .false.
+      use_metal  = .false.
+      use_geom   = .false.
+      use_extra  = .false.
       return
       end

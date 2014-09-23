@@ -47,16 +47,16 @@ c     note "n12" and "i12" have already been setup elsewhere
 c
       do i = 1, n
          n13(i) = 0
-         do j = 1, n12(i)
-            jj = i12(j,i)
-            do k = 1, n12(jj)
-               kk = i12(k,jj)
-               if (kk .eq. i)  goto 10
-               do m = 1, n12(i)
-                  if (kk .eq. i12(m,i))  goto 10
+         do j = 1, n12(i)        ! Loop over my bonded atoms
+            jj = i12(j,i)        ! Pick one of my bonded atoms
+            do k = 1, n12(jj)    ! Loop over its bonded atoms
+               kk = i12(k,jj)    ! Pick one of its bonded atoms
+               if (kk .eq. i)  goto 10  ! Skip myself
+               do m = 1, n12(i)         ! Loop over its bonded atoms
+                  if (kk .eq. i12(m,i))  goto 10 ! Skip if it points at me
                end do
-               n13(i) = n13(i) + 1
-               i13(n13(i),i) = kk
+               n13(i) = n13(i) + 1  ! Increment counter
+               i13(n13(i),i) = kk   ! Keep a record of the atom
    10          continue
             end do
          end do

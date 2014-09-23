@@ -47,15 +47,15 @@ c
 c
 c     process keywords containing bond stretch parameters
 c
-      blank = '        '
+      blank  = '        '
       header = .true.
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
          iring = -1
-         if (keyword(1:5) .eq. 'BOND ')  iring = 0
+         if (keyword(1:5) .eq. 'BOND ')   iring = 0
          if (keyword(1:6) .eq. 'BOND5 ')  iring = 5
          if (keyword(1:6) .eq. 'BOND4 ')  iring = 4
          if (keyword(1:6) .eq. 'BOND3 ')  iring = 3
@@ -96,7 +96,7 @@ c
             if (iring .eq. 0) then
                do j = 1, maxnb
                   if (kb(j).eq.blank .or. kb(j).eq.pt) then
-                     kb(j) = pt
+                     kb(j)   = pt
                      bcon(j) = fc
                      blen(j) = bd
                      goto 60
@@ -110,7 +110,7 @@ c
             else if (iring .eq. 5) then
                do j = 1, maxnb5
                   if (kb5(j).eq.blank .or. kb5(j).eq.pt) then
-                     kb5(j) = pt
+                     kb5(j)   = pt
                      bcon5(j) = fc
                      blen5(j) = bd
                      goto 80
@@ -124,7 +124,7 @@ c
             else if (iring .eq. 4) then
                do j = 1, maxnb4
                   if (kb4(j).eq.blank .or. kb4(j).eq.pt) then
-                     kb4(j) = pt
+                     kb4(j)   = pt
                      bcon4(j) = fc
                      blen4(j) = bd
                      goto 100
@@ -138,7 +138,7 @@ c
             else if (iring .eq. 3) then
                do j = 1, maxnb3
                   if (kb3(j).eq.blank .or. kb3(j).eq.pt) then
-                     kb3(j) = pt
+                     kb3(j)   = pt
                      bcon3(j) = fc
                      blen3(j) = bd
                      goto 120
@@ -155,7 +155,7 @@ c
 c
 c     determine the total number of forcefield parameters
 c
-      nb = maxnb
+      nb  = maxnb
       nb5 = maxnb5
       nb4 = maxnb4
       nb3 = maxnb3
@@ -197,7 +197,7 @@ c
          end if
          bk(i) = 0.0d0
          bl(i) = 0.0d0
-         done = .false.
+         done  = .false.
 c
 c     make a check for bonds contained inside small rings
 c
@@ -217,7 +217,7 @@ c
                if (kb(j) .eq. pt) then
                   bk(i) = bcon(j)
                   bl(i) = blen(j)
-                  done = .true.
+                  done  = .true.
                   goto 130
                end if
             end do
@@ -229,7 +229,7 @@ c
                if (kb5(j) .eq. pt) then
                   bk(i) = bcon5(j)
                   bl(i) = blen5(j)
-                  done = .true.
+                  done  = .true.
                   goto 130
                end if
             end do
@@ -241,7 +241,7 @@ c
                if (kb4(j) .eq. pt) then
                   bk(i) = bcon4(j)
                   bl(i) = blen4(j)
-                  done = .true.
+                  done  = .true.
                   goto 130
                end if
             end do

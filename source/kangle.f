@@ -51,23 +51,23 @@ c
 c
 c     process keywords containing angle bending parameters
 c
-      blank = '         '
+      blank  = '         '
       header = .true.
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
          iring = -1
-         if (keyword(1:6) .eq. 'ANGLE ')  iring = 0
+         if (keyword(1:6) .eq. 'ANGLE ')   iring = 0
          if (keyword(1:7) .eq. 'ANGLE5 ')  iring = 5
          if (keyword(1:7) .eq. 'ANGLE4 ')  iring = 4
          if (keyword(1:7) .eq. 'ANGLE3 ')  iring = 3
          if (iring .ge. 0) then
-            ia = 0
-            ib = 0
-            ic = 0
-            fc = 0.0d0
+            ia  = 0
+            ib  = 0
+            ic  = 0
+            fc  = 0.0d0
             an1 = 0.0d0
             an2 = 0.0d0
             an3 = 0.0d0
@@ -132,8 +132,8 @@ c
             if (iring .eq. 0) then
                do j = 1, maxna
                   if (ka(j).eq.blank .or. ka(j).eq.pt) then
-                     ka(j) = pt
-                     acon(j) = fc
+                     ka(j)    = pt
+                     acon(j)  = fc
                      ang(1,j) = an1
                      ang(2,j) = an2
                      ang(3,j) = an3
@@ -147,8 +147,8 @@ c
             else if (iring .eq. 5) then
                do j = 1, maxna5
                   if (ka5(j).eq.blank .or. ka5(j).eq.pt) then
-                     ka5(j) = pt
-                     acon5(j) = fc
+                     ka5(j)    = pt
+                     acon5(j)  = fc
                      ang5(1,j) = an1
                      ang5(2,j) = an2
                      ang5(3,j) = an3
@@ -162,8 +162,8 @@ c
             else if (iring .eq. 4) then
                do j = 1, maxna4
                   if (ka4(j).eq.blank .or. ka4(j).eq.pt) then
-                     ka4(j) = pt
-                     acon4(j) = fc
+                     ka4(j)    = pt
+                     acon4(j)  = fc
                      ang4(1,j) = an1
                      ang4(2,j) = an2
                      ang4(3,j) = an3
@@ -177,8 +177,8 @@ c
             else if (iring .eq. 3) then
                do j = 1, maxna3
                   if (ka3(j).eq.blank .or. ka3(j).eq.pt) then
-                     ka3(j) = pt
-                     acon3(j) = fc
+                     ka3(j)    = pt
+                     acon3(j)  = fc
                      ang3(1,j) = an1
                      ang3(2,j) = an2
                      ang3(3,j) = an3
@@ -204,12 +204,12 @@ c
          call upcase (keyword)
          iring = -1
          if (keyword(1:7) .eq. 'ANGLEF ') then
-            ia = 0
-            ib = 0
-            ic = 0
-            fc = 0.0d0
-            an = 0.0d0
-            pr = 0.0d0
+            ia     = 0
+            ib     = 0
+            ic     = 0
+            fc     = 0.0d0
+            an     = 0.0d0
+            pr     = 0.0d0
             string = record(next:120)
             read (string,*,err=160,end=160)  ia,ib,ic,fc,an,pr
   160       continue
@@ -236,8 +236,8 @@ c
             end if
             do j = 1, maxnaf
                if (kaf(j).eq.blank .or. kaf(j).eq.pt) then
-                  kaf(j) = pt
-                  aconf(j) = fc
+                  kaf(j)    = pt
+                  aconf(j)  = fc
                   angf(1,j) = an
                   angf(2,j) = pr
                   goto 200
@@ -253,7 +253,7 @@ c
 c
 c     determine the total number of forcefield parameters
 c
-      na = maxna
+      na  = maxna
       na5 = maxna5
       na4 = maxna4
       na3 = maxna3
@@ -305,9 +305,9 @@ c
 c
 c     perform dynamic allocation of some global arrays
 c
-      if (.not. allocated(ak))  allocate (ak(nangle))
-      if (.not. allocated(anat))  allocate (anat(nangle))
-      if (.not. allocated(afld))  allocate (afld(nangle))
+      if (.not. allocated(ak))      allocate (ak(nangle))
+      if (.not. allocated(anat))    allocate (anat(nangle))
+      if (.not. allocated(afld))    allocate (afld(nangle))
       if (.not. allocated(angtyp))  allocate (angtyp(nangle))
 c
 c     assign ideal bond angle and force constant for each angle
@@ -329,11 +329,11 @@ c
          else
             pt = pc//pb//pa
          end if
-         ak(i) = 0.0d0
-         anat(i) = 0.0d0
-         afld(i) = 0.0d0
+         ak(i)     = 0.0d0
+         anat(i)   = 0.0d0
+         afld(i)   = 0.0d0
          angtyp(i) = 'HARMONIC'
-         done = .false.
+         done      = .false.
 c
 c     count number of non-angle hydrogens on the central atom
 c
@@ -360,9 +360,9 @@ c
          if (iring .eq. 0) then
             do j = 1, na
                if (ka(j).eq.pt .and. ang(nh,j).ne.0.0d0) then
-                  ak(i) = acon(j)
+                  ak(i)   = acon(j)
                   anat(i) = ang(nh,j)
-                  done = .true.
+                  done    = .true.
                   goto 210
                end if
             end do
@@ -372,9 +372,9 @@ c
          else if (iring .eq. 5) then
             do j = 1, na5
                if (ka5(j).eq.pt .and. ang5(nh,j).ne.0.0d0) then
-                  ak(i) = acon5(j)
+                  ak(i)   = acon5(j)
                   anat(i) = ang5(nh,j)
-                  done = .true.
+                  done    = .true.
                   goto 210
                end if
             end do
@@ -384,9 +384,9 @@ c
          else if (iring .eq. 4) then
             do j = 1, na4
                if (ka4(j).eq.pt .and. ang4(nh,j).ne.0.0d0) then
-                  ak(i) = acon4(j)
+                  ak(i)   = acon4(j)
                   anat(i) = ang4(nh,j)
-                  done = .true.
+                  done    = .true.
                   goto 210
                end if
             end do
@@ -396,9 +396,9 @@ c
          else if (iring .eq. 3) then
             do j = 1, na3
                if (ka3(j).eq.pt .and. ang3(nh,j).ne.0.0d0) then
-                  ak(i) = acon3(j)
+                  ak(i)   = acon3(j)
                   anat(i) = ang3(nh,j)
-                  done = .true.
+                  done    = .true.
                   goto 210
                end if
             end do
@@ -409,11 +409,11 @@ c
          if (.not. done) then
             do j = 1, naf
                if (kaf(j) .eq. pt) then
-                  ak(i) = aconf(j)
-                  anat(i) = angf(1,j)
-                  afld(i) = angf(2,j)
+                  ak(i)     = aconf(j)
+                  anat(i)   = angf(1,j)
+                  afld(i)   = angf(2,j)
                   angtyp(i) = 'FOURIER'
-                  done = .true.
+                  done      = .true.
                   goto 210
                end if
             end do

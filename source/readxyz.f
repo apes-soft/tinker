@@ -67,20 +67,19 @@ c
 c
 c     read first line and return if already at end of file
 c
-      quit = .false.
+      quit  = .false.
       abort = .true.
-      size = 0
+      size  = 0
       do while (size .eq. 0)
          read (ixyz,20,err=80,end=80)  record
    20    format (a120)
          size = trimtext (record)
       end do
       abort = .false.
-      quit = .true.
+      quit  = .true.
 c
 c     parse the title line to get the number of atoms
 c
-      i = 0
       next = 1
       call gettext (record,string,next)
       read (string,*,err=80,end=80)  n
@@ -88,13 +87,13 @@ c
 c     extract the title and determine its length
 c
       string = record(next:120)
-      first = nexttext (string)
-      last = trimtext (string)
+      first  = nexttext (string)
+      last   = trimtext (string)
       if (last .eq. 0) then
-         title = ' '
+         title  = ' '
          ltitle = 0
       else
-         title = string(first:last)
+         title  = string(first:last)
          ltitle = trimtext (title)
       end if
 c
@@ -123,16 +122,17 @@ c     initialize coordinates and connectivities for each atom
 c
 
       do i = 1, n
-         atom(i)%tag = 0
-         atom(i)%name = '   '
+         atom(i)%tag    = 0
+         atom(i)%name   = '   '
          atom(i)%pos(1) = 0.0d0
          atom(i)%pos(2) = 0.0d0
          atom(i)%pos(3) = 0.0d0
-         atom(i)%type = 0
+         atom(i)%type   = 0
          do j = 1, maxval
             i12(j,i) = 0
          end do
       end do
+
 c
 c     read the coordinates and connectivities for each atom
 c
@@ -148,12 +148,12 @@ c
                if (atom(i)%name .ne. '   ')  goto 60
                read (record,*,err=60,end=60)  xlen,ylen,zlen,
      &                                        aang,bang,gang
-               size = 0
-               xbox = xlen
-               ybox = ylen
-               zbox = zlen
+               size  = 0
+               xbox  = xlen
+               ybox  = ylen
+               zbox  = zlen
                alpha = aang
-               beta = bang
+               beta  = bang
                gamma = gang
 c              use_bounds = .true.
                call lattice
@@ -183,7 +183,7 @@ c
 c     for each atom, count and sort its attached atoms
 c
       do i = 1, n
-         n12(i) = 0
+         n12(i) = 0 ! Count of the number of attached atoms
          do j = maxval, 1, -1
             if (i12(j,i) .ne. 0) then
                n12(i) = j
@@ -196,7 +196,7 @@ c
 c
 c     perform dynamic allocation of some local arrays
 c
-      nmax = 0
+      nmax = 0  ! Stores the maximum atom tag.
       do i = 1, n
          nmax = max(atom(i)%tag,nmax)
          do j = 1, n12(i)
@@ -207,6 +207,9 @@ c
 c
 c     check for scrambled atom order and attempt to renumber
 c
+      ! Ordering is important as the bond attachment is done
+      ! via absolute addressing to the corresponding tag.
+      ! tag(i) is what I am, list(tag(i))= i is what I should be.
       reorder = .false.
       do i = 1, n
          list(atom(i)%tag) = i

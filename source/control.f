@@ -32,12 +32,12 @@ c
 c
 c     set default values for information and output variables
 c
-      digits = 4
-      abort = .false.
-      verbose = .false.
-      debug = .false.
-      holdup = .false.
-      archive = .false.
+      digits    = 4
+      abort     = .false.
+      verbose   = .false.
+      debug     = .false.
+      holdup    = .false.
+      archive   = .false.
       noversion = .false.
       overwrite = .false.
       cyclesave = .false.
@@ -51,7 +51,7 @@ c
          if (string(1:2) .eq. '-V') then
             verbose = .true.
          else if (string(1:2) .eq. '-D') then
-            debug = .true.
+            debug   = .true.
             verbose = .true.
          end if
       end do
@@ -59,22 +59,22 @@ c
 c     search keywords for various control parameters
 c
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:7) .eq. 'DIGITS ') then
-            string = record(next:120)
+            string    = record(next:120)
             read (string,*,err=10)  digits
          else if (keyword(1:8) .eq. 'VERBOSE ') then
-            verbose = .true.
+            verbose   = .true.
          else if (keyword(1:6) .eq. 'DEBUG ') then
-            debug = .true.
-            verbose = .true.
+            debug     = .true.
+            verbose   = .true.
          else if (keyword(1:11) .eq. 'EXIT-PAUSE ') then
-            holdup = .true.
+            holdup    = .true.
          else if (keyword(1:8) .eq. 'ARCHIVE ') then
-            archive = .true.
+            archive   = .true.
          else if (keyword(1:10) .eq. 'NOVERSION ') then
             noversion = .true.
          else if (keyword(1:10) .eq. 'OVERWRITE ') then

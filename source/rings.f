@@ -51,9 +51,9 @@ c
 c
 c     parse to find bonds, angles, torsions and bitorsions
 c
-      if (nbond .eq. 0)  call bonds
+      if (nbond .eq. 0)   call bonds
       if (nangle .eq. 0)  call angles
-      if (ntors .eq. 0)  call torsions
+      if (ntors .eq. 0)   call torsions
       if (nbitor .eq. 0)  call bitors
 c
 c     perform dynamic allocation of some global arrays
@@ -67,7 +67,7 @@ c     search for and store all of the 3-membered rings
 c
       do i = 1, nangle
          ia = iang(1,i)
-         ib = iang(2,i)
+         ib = iang(2,i)  ! angle pivot
          ic = iang(3,i)
          if (ib.lt.ia .and. ib.lt.ic) then
             do j = 1, n12(ia)
@@ -129,7 +129,7 @@ c
                         list3 = list(iring3(3,m))
                         if (list1.eq.nring4 .and. list2.eq.nring4
      &                          .and. list3.eq.nring4) then
-                           nring4 = nring4 - 1
+                           nring4   = nring4 - 1
                            list(ia) = 0
                            list(ib) = 0
                            list(ic) = 0

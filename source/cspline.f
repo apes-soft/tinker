@@ -48,8 +48,8 @@ c
      &             ' Values',2f12.5)
       end if
       average = 0.5d0 * (fn(0) + fn(n))
-      fn(0) = average
-      fn(n) = average
+      fn(0)   = average
+      fn(n)   = average
 c
 c     get auxiliary variables and matrix elements on first call
 c
@@ -70,7 +70,7 @@ c
       temp1 = (fn(1)-fn(0)) / h(0)
       do i = 1, n-1, 1
          temp2 = (fn(i+1)-fn(i)) / h(i)
-         rs(i)  = 3.0d0 * (temp2-temp1)
+         rs(i) = 3.0d0 * (temp2-temp1)
          temp1 = temp2
       end do
       rs(n) = 3.0d0 * ((fn(1)-fn(0))/h(0)-temp1)
@@ -159,7 +159,7 @@ c
 c
 c     set error bound and test for condition n greater than 2
 c
-      eps = 0.00000001d0
+      eps   = 0.00000001d0
       iflag = -2
       if (n .lt. 3)  return
 c
@@ -262,16 +262,16 @@ c
 c
 c     updating phase
 c
-      temp = rs(1)
+      temp  = rs(1)
       rs(1) = temp / dm(1)
-      sum = cr(1) * temp
+      sum   = cr(1) * temp
       do i = 2, n-1
-         temp = rs(i) - du(i-1)*temp
+         temp  = rs(i) - du(i-1)*temp
          rs(i) = temp / dm(i)
          if (i .ne. (n-1))  sum = sum + cr(i)*temp
       end do
-      temp = rs(n) - du(n-1)*temp
-      temp = temp - sum
+      temp  = rs(n) - du(n-1)*temp
+      temp  = temp - sum
       rs(n) = temp / dm(n)
 c
 c     back substitution phase

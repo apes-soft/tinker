@@ -47,19 +47,19 @@ c
 c
 c     process keywords containing stretch-bend parameters
 c
-      blank = '            '
+      blank  = '            '
       header = .true.
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:7) .eq. 'STRBND ') then
-            ia = 0
-            ib = 0
-            ic = 0
-            sb1 = 0.0d0
-            sb2 = 0.0d0
+            ia     = 0
+            ib     = 0
+            ic     = 0
+            sb1    = 0.0d0
+            sb2    = 0.0d0
             string = record(next:120)
             read (string,*,err=10,end=10)  ia,ib,ic,sb1,sb2
    10       continue
@@ -81,14 +81,14 @@ c
             if (ia .le. ic) then
                pt = pa//pb//pc
             else
-               pt = pc//pb//pa
+               pt   = pc//pb//pa
                temp = sb1
-               sb1 = sb2
-               sb2 = temp
+               sb1  = sb2
+               sb2  = temp
             end if
             do j = 1, maxnsb
                if (ksb(j).eq.blank .or. ksb(j).eq.pt) then
-                  ksb(j) = pt
+                  ksb(j)    = pt
                   stbn(1,j) = sb1
                   stbn(2,j) = sb2
                   goto 50
@@ -119,9 +119,9 @@ c
       nstrbnd = 0
       if (nsb .ne. 0) then
          do i = 1, nangle
-            ia = iang(1,i)
-            ib = iang(2,i)
-            ic = iang(3,i)
+            ia  = iang(1,i)
+            ib  = iang(2,i)
+            ic  = iang(3,i)
             ita = atom(ia)%class
             itb = atom(ib)%class
             itc = atom(ic)%class

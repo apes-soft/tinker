@@ -39,21 +39,21 @@ c
 c
 c     set replicated cell dimensions equal to the unitcell
 c
-      xcell = xbox
-      ycell = ybox
-      zcell = zbox
+      xcell  = xbox
+      ycell  = ybox
+      zcell  = zbox
       xcell2 = xbox2
       ycell2 = ybox2
       zcell2 = zbox2
 c
 c     get values needed for fractional coordinate computations
 c
-      alpha_cos = 0.0d0
-      beta_sin = 1.0d0
-      beta_cos = 0.0d0
-      gamma_sin = 1.0d0
-      gamma_cos = 0.0d0
-      beta_term = 0.0d0
+      alpha_cos  = 0.0d0
+      beta_sin   = 1.0d0
+      beta_cos   = 0.0d0
+      gamma_sin  = 1.0d0
+      gamma_cos  = 0.0d0
+      beta_term  = 0.0d0
       gamma_term = 1.0d0
 c
 c     determine the volume of the parent periodic box

@@ -45,13 +45,13 @@ c
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:5) .eq. 'ATOM ') then
-            k = 0
-            cls = 0
-            symb = ' '
+            k      = 0
+            cls    = 0
+            symb   = ' '
             notice = ' '
-            atn = 0
-            wght = 0.0d0
-            lig = 0
+            atn    = 0
+            wght   = 0.0d0
+            lig    = 0
             call getnumb (record,k,next)
             call getnumb (record,cls,next)
             if (cls .eq. 0)  cls = k
@@ -68,11 +68,11 @@ c
      &                    //,5x,'Type  Class  Symbol  Description',
      &                       15x,'Atomic',4x,'Mass',3x,'Valence',/)
                end if
-               symbol(k) = symb
+               symbol(k)   = symb
                describe(k) = notice
-               atmnum(k) = atn
-               weight(k) = wght
-               ligand(k) = lig
+               atmnum(k)   = atn
+               weight(k)   = wght
+               ligand(k)   = lig
                if (.not. silent) then
                   write (iout,20)  k,cls,symb,notice,atn,wght,lig
    20             format (2x,i6,1x,i6,5x,a3,3x,a24,i6,f11.3,i6)
@@ -116,12 +116,12 @@ c
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:5) .eq. 'ATOM ') then
-            k = 0
-            symb = ' '
+            k      = 0
+            symb   = ' '
             notice = ' '
-            atn = 0
-            wght = 0.0d0
-            lig = 0
+            atn    = 0
+            wght   = 0.0d0
+            lig    = 0
             call getnumb (record,k,next)
             call getnumb (record,cls,next)
             call gettext (record,symb,next)
@@ -158,7 +158,7 @@ c     check for presence of undefined atom types or classes
 c
       header = .true.
       do i = 1, n
-         k = atom(i)%type
+         k   = atom(i)%type
          cls = atom(i)%class
          if (k.lt.1 .or. k.gt.maxtyp
      &          .or. cls.lt.1 .or. cls.gt.maxclass) then

@@ -28,7 +28,7 @@ c
 c     store the input filename and find its full length
 c
       filename = string
-      leng = trimtext (string)
+      leng     = trimtext (string)
 c
 c     count the number of characters prior to any extension
 c

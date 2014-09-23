@@ -74,11 +74,11 @@ c
          iv = ired(ii)
          rdn = kred(ii)
          xred(i) = rdn*(atom(ii)%pos(1)-atom(iv)%pos(1)) 
-     &        + atom(iv)%pos(1)
+     &             + atom(iv)%pos(1)
          yred(i) = rdn*(atom(ii)%pos(2)-atom(iv)%pos(2)) 
-     &        + atom(iv)%pos(2)
+     &             + atom(iv)%pos(2)
          zred(i) = rdn*(atom(ii)%pos(3)-atom(iv)%pos(3)) 
-     &        + atom(iv)%pos(3)
+     &             + atom(iv)%pos(3)
       end do
 c
 c     neighbor list cannot be used with the replicates method
@@ -994,9 +994,9 @@ c
          if (.not. allocated(kex))  allocate (kex(nsite))
          if (.not. allocated(key))  allocate (key(nsite))
          if (.not. allocated(kez))  allocate (kez(nsite))
-         if (.not. allocated(locx))  allocate (locx(nlight))
-         if (.not. allocated(locy))  allocate (locy(nlight))
-         if (.not. allocated(locz))  allocate (locz(nlight))
+         if (.not. allocated(locx)) allocate (locx(nlight))
+         if (.not. allocated(locy)) allocate (locy(nlight))
+         if (.not. allocated(locz)) allocate (locz(nlight))
          if (.not. allocated(rgx))  allocate (rgx(nlight))
          if (.not. allocated(rgy))  allocate (rgy(nlight))
          if (.not. allocated(rgz))  allocate (rgz(nlight))
@@ -1024,7 +1024,7 @@ c
          k = locx(i)
          do while (xsort(i)-xsort(j)+box .le. xcut)
             if (j .eq. 1) then
-               j = nlight + 1
+               j   = nlight + 1
                box = xcell
             end if
             j = j - 1
@@ -1033,7 +1033,7 @@ c
    20    continue
          j = j + 1
          if (j .gt. nlight) then
-            j = 1
+            j   = 1
             box = 0.0d0
          end if
          kbx(k) = j
@@ -1047,7 +1047,7 @@ c
          k = locx(i)
          do while (xsort(j)-xsort(i)+box .lt. xcut)
             if (j .eq. nlight) then
-               j = 0
+               j   = 0
                box = xcell
             end if
             j = j + 1
@@ -1056,7 +1056,7 @@ c
    30    continue
          j = j - 1
          if (j .lt. 1) then
-            j = nlight
+            j   = nlight
             box = 0.0d0
          end if
          kex(k) = j
@@ -1070,7 +1070,7 @@ c
          k = locy(i)
          do while (ysort(i)-ysort(j)+box .le. ycut)
             if (j .eq. 1) then
-               j = nlight + 1
+               j   = nlight + 1
                box = ycell
             end if
             j = j - 1
@@ -1079,7 +1079,7 @@ c
    40    continue
          j = j + 1
          if (j .gt. nlight) then
-            j = 1
+            j   = 1
             box = 0.0d0
          end if
          kby(k) = j
@@ -1093,7 +1093,7 @@ c
          k = locy(i)
          do while (ysort(j)-ysort(i)+box .lt. ycut)
             if (j .eq. nlight) then
-               j = 0
+               j   = 0
                box = ycell
             end if
             j = j + 1
@@ -1102,7 +1102,7 @@ c
    50    continue
          j = j - 1
          if (j .lt. 1) then
-            j = nlight
+            j   = nlight
             box = 0.0d0
          end if
          key(k) = j
@@ -1116,7 +1116,7 @@ c
          k = locz(i)
          do while (zsort(i)-zsort(j)+box .le. zcut)
             if (j .eq. 1) then
-               j = nlight + 1
+               j   = nlight + 1
                box = zcell
             end if
             j = j - 1
@@ -1125,7 +1125,7 @@ c
    60    continue
          j = j + 1
          if (j .gt. nlight) then
-            j = 1
+            j   = 1
             box = 0.0d0
          end if
          kbz(k) = j
@@ -1139,7 +1139,7 @@ c
          k = locz(i)
          do while (zsort(j)-zsort(i)+box .lt. zcut)
             if (j .eq. nlight) then
-               j = 0
+               j   = 0
                box = zcell
             end if
             j = j + 1
@@ -1148,7 +1148,7 @@ c
    70    continue
          j = j - 1
          if (j .lt. 1) then
-            j = nlight
+            j   = nlight
             box = 0.0d0
          end if
          kez(k) = j

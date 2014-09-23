@@ -40,13 +40,13 @@ c
 c     search the keyword list for the parameter filename
 c
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
          if (keyword(1:11) .eq. 'PARAMETERS ') then
             string = record(next:120)
-            next = 1
+            next   = 1
             call getstring (string,prmfile,next)
             if (next .eq. 1)  call gettext (string,prmfile,next)
          end if
@@ -63,7 +63,7 @@ c
          none = prmfile(1:4)
          call upcase (none)
          if (none .eq. 'NONE') then
-            exist = .true.
+            exist  = .true.
             useprm = .false.
          end if
       end if

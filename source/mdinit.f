@@ -49,42 +49,42 @@ c
 c     set default parameters for the dynamics trajectory
 c
       integrate = 'VERLET'
-      bmnmix = 8
-      nfree = 0
-      irest = 1
-      velsave = .false.
-      frcsave = .false.
-      uindsave = .false.
-      use_pred = .false.
-      polpred = 'LSQR'
-      iprint = 100
+      bmnmix    = 8
+      nfree     = 0
+      irest     = 1
+      velsave   = .false.
+      frcsave   = .false.
+      uindsave  = .false.
+      use_pred  = .false.
+      polpred   = 'LSQR'
+      iprint    = 100
 c
 c     set default values for temperature and pressure control
 c
       thermostat = 'NOSE-HOOVER'
-      tautemp = 0.2d0
-      collide = 0.1d0
+      tautemp    = 0.2d0
+      collide    = 0.1d0
       do i = 1, maxnose
          vnh(i) = 0.0d0
          qnh(i) = 0.0d0
          gnh(i) = 0.0d0
       end do
-      barostat = 'BERENDSEN'
+      barostat  = 'BERENDSEN'
       anisotrop = .false.
-      taupres = 2.0d0
-      compress = 0.000046d0
-      vbar = 0.0d0
-      qbar = 0.0d0
-      gbar = 0.0d0
-      eta = 0.0d0
-      voltrial = 20
-      volmove = 100.0d0
-      volscale = 'ATOMIC'
+      taupres   = 2.0d0
+      compress  = 0.000046d0
+      vbar      = 0.0d0
+      qbar      = 0.0d0
+      gbar      = 0.0d0
+      eta       = 0.0d0
+      voltrial  = 20
+      volmove   = 100.0d0
+      volscale  = 'ATOMIC'
 c
 c     check for keywords containing any altered parameters
 c
       do i = 1, nkey
-         next = 1
+         next   = 1
          record = keyline(i)
          call gettext (record,keyword,next)
          call upcase (keyword)
@@ -191,7 +191,7 @@ c
 c
 c     set masses for Nose-Hoover thermostat and barostat
 c
-      ekt = gasconst * kelvin
+      ekt   = gasconst * kelvin
       qterm = ekt * tautemp * tautemp
       do j = 1, maxnose
          if (qnh(j) .eq. 0.0d0)  qnh(j) = qterm
@@ -205,8 +205,8 @@ c
 c
 c     perform dynamic allocation of some global arrays
 c
-      if (.not. allocated(v))  allocate (v(3,n))
-      if (.not. allocated(a))  allocate (a(3,n))
+      if (.not. allocated(v))     allocate (v(3,n))
+      if (.not. allocated(a))     allocate (a(3,n))
       if (.not. allocated(aalt))  allocate (aalt(3,n))
 c
 c     try to restart using prior velocities and accelerations

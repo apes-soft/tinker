@@ -46,9 +46,9 @@ c
             zmid = zmid + atom(k)%pos(3)*weigh
          end do
          weigh = molmass(i)
-         xmid = xmid / weigh
-         ymid = ymid / weigh
-         zmid = zmid / weigh
+         xmid  = xmid / weigh
+         ymid  = ymid / weigh
+         zmid  = zmid / weigh
 c
 c     get fractional coordinates of center of mass
 c

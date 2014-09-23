@@ -36,36 +36,36 @@ c
 c
 c     set defaults for spherical energy cutoff distances
 c
-      vdwcut = 9.0d0
-      chgcut = 9.0d0
-      dplcut = 9.0d0
+      vdwcut   = 9.0d0
+      chgcut   = 9.0d0
+      dplcut   = 9.0d0
       mpolecut = 9.0d0
       ewaldcut = 7.0d0
       usolvcut = 4.5d0
 c
 c     set defaults for tapering, Hessian cutoff and neighbor buffers
 c
-      vdwtaper = 0.90d0
-      chgtaper = 0.65d0
-      dpltaper = 0.75d0
+      vdwtaper   = 0.90d0
+      chgtaper   = 0.65d0
+      dpltaper   = 0.75d0
       mpoletaper = 0.65d0
-      lbuffer = 2.0d0
-      pbuffer = 2.0d0
+      lbuffer    = 2.0d0
+      pbuffer    = 2.0d0
 c
 c     set defaults for Ewald sum, tapering style and neighbor method
 c
-      use_ewald = .true.
-      truncate = .false.
+      use_ewald  = .true.
+      truncate   = .false.
       use_lights = .false.
-      use_list = .true.
-      use_vlist = .true.
-      use_clist = .false.
-      use_mlist = .true.
-      use_ulist = .true.
-      dovlst = .true.
-      doclst = .false.
-      domlst = .true.
-      doulst = .true.
+      use_list   = .true.
+      use_vlist  = .true.
+      use_clist  = .false.
+      use_mlist  = .true.
+      use_ulist  = .true.
+      dovlst     = .true.
+      doclst     = .false.
+      domlst     = .true.
+      doulst     = .true.
 c
 c     search the keywords for various cutoff parameters
 c
@@ -90,9 +90,9 @@ c     get the cutoff radii for potential energy functions
 c
          else if (keyword(1:7) .eq. 'CUTOFF ') then
             read (string,*,err=10,end=10)  value
-            vdwcut = value
-            chgcut = value
-            dplcut = value
+            vdwcut   = value
+            chgcut   = value
+            dplcut   = value
             mpolecut = value
             ewaldcut = value
          else if (keyword(1:11) .eq. 'VDW-CUTOFF ') then
@@ -108,9 +108,9 @@ c     get distance for initialization of energy switching
 c
          else if (keyword(1:6) .eq. 'TAPER ') then
             read (string,*,err=10,end=10)  value
-            vdwtaper = value
-            chgtaper = value
-            dpltaper = value
+            vdwtaper   = value
+            chgtaper   = value
+            dpltaper   = value
             mpoletaper = value
          else if (keyword(1:10) .eq. 'VDW-TAPER ') then
             read (string,*,err=10,end=10)  vdwtaper
@@ -137,14 +137,14 @@ c
 c
 c     apply any Ewald cutoff to charge and multipole terms
 c
-      chgcut = ewaldcut
+      chgcut   = ewaldcut
       mpolecut = ewaldcut
 c
 c     convert any tapering percentages to absolute distances
 c
-      if (vdwtaper .lt. 1.0d0)  vdwtaper = vdwtaper * vdwcut
-      if (chgtaper .lt. 1.0d0)  chgtaper = chgtaper * chgcut
-      if (dpltaper .lt. 1.0d0)  dpltaper = dpltaper * dplcut
+      if (vdwtaper .lt. 1.0d0)    vdwtaper   = vdwtaper * vdwcut
+      if (chgtaper .lt. 1.0d0)    chgtaper   = chgtaper * chgcut
+      if (dpltaper .lt. 1.0d0)    dpltaper   = dpltaper * dplcut
       if (mpoletaper .lt. 1.0d0)  mpoletaper = mpoletaper * mpolecut
 c
 c     set buffer region limits for pairwise neighbor lists

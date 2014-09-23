@@ -1,0 +1,343 @@
+This is the list of files that go to make the TINKER dynamic 
+executable.
+
+active.f
+align.i    - Converted to a Fortran 90 module.
+angang.i
+angle.i
+angles.f
+angpot.i
+argue.i     - Converted to a Fortran 90 module.
+ascii.i     - No longer needed (?)
+atmlst.i    - Converted to a Fortran 90 module.
+atmtyp.i    - Converted to a Fortran 90 module.
+atoms.i     - Converted to a Fortran 90 module.
+attach.f
+basefile.f  - Added a version.
+bath.i      - Converted to a Fortran 90 module.
+beeman.f
+bicubic.f
+bitor.i
+bitors.f
+bndpot.i
+bond.i
+bonds.f
+border.i
+born.f
+bound.i     - Converted to a Fortran 90 module.
+bounds.f
+boxes.i     - Converted to a Fortran 90 module.
+bussi.f
+calendar.f
+cell.i      - Converted to a Fortran 90 module.
+charge.i
+chgpot.i
+chkpole.f
+chkring.f
+chkxyz.f    - Converted to Fortran 90.
+cholesky.f
+chunks.i
+cluster.f
+command.f   - Converted to a Fortran 90 module.
+connolly.f
+control.f   - Converted to F90.
+couple.i    - Converted to a Fortran 90 module.
+cspline.f
+cutoff.i    - Converted to a Fortran 90 module.
+cutoffs.f   - Assimilated into the cutoff.f90 module.
+deriv.i
+dipole.i
+disgeo.i
+dynamic.f
+eangang1.f
+eangang.f
+eangle1.f
+eangle.f
+ebond1.f
+ebond.f
+ebuck1.f
+ebuck.f
+echarge1.f
+echarge.f
+echgdpl1.f
+echgdpl.f
+edipole1.f
+edipole.f
+egauss1.f
+egauss.f
+egeom1.f
+egeom.f
+ehal1.f
+ehal.f
+eimprop1.f
+eimprop.f
+eimptor1.f
+eimptor.f
+elj1.f
+elj.f
+emetal1.f
+emetal.f
+emm3hb1.f
+emm3hb.f
+empole1.f
+empole.f
+energi.i
+energy.f
+eopbend1.f
+eopbend.f
+eopdist1.f
+eopdist.f
+epitors1.f
+epitors.f
+erf.f
+erxnfld1.f
+erxnfld.f
+esolv1.f
+esolv.f
+estrbnd1.f
+estrbnd.f
+estrtor1.f
+estrtor.f
+etors1.f
+etors.f
+etortor1.f
+etortor.f
+eurey1.f
+eurey.f
+evcorr.f
+ewald.i
+extra1.f
+extra.f
+faces.i
+fatal.f     - Converted to a Fortran 90 module, uses MPI_Abort..
+fft3d.f
+fft.i
+fftpack.f
+field.f
+fields.i
+files.i     - Converted to Fortran 90.
+final.f     
+flatten.f
+freeunit.f  - Do not want to use this file.
+freeze.i
+geometry.f
+getkey.f    - Added a version.
+getnumb.f
+getprm.f
+getstring.f
+gettext.f   - Converted to a Fortran 90 module.
+getword.f   - Converted to a Fortran 90.
+getxyz.f
+ghmcstep.f
+gkstuf.i
+gradient.f
+group.i     - Converted to a Fortran 90 module.
+groups.f
+grpline.f
+hescut.i    - Converted to a Fortran 90 moule.
+hpmf.i
+image.f
+improp.i
+imptor.i
+induce.f
+inform.i    - Converted to a Fortran 90 module.
+initatom.f  - Converted to Fortran 90.
+initial.f   - Converted to a Fortran 90 module.
+initprm.f
+initres.f   - Converted to a Fortran 90 module.
+inter.i
+invbeta.f
+invert.f
+iounit.i    - Converted to a Fortran 90 module.
+jacobi.f
+kanang.i
+kangang.f
+kangle.f
+kangs.i
+katom.f
+katoms.i
+kbond.f
+kbonds.i
+kcharge.f
+kchrge.i
+kdipole.f
+kdipol.i
+kewald.f
+kextra.f
+keys.i      - Converted to a Fortran 90 module.
+kgeom.f
+kgeoms.i
+khbond.i
+kimprop.f
+kimptor.f
+kinetic.f
+kiprop.i
+kitors.i
+kmetal.f
+kmpole.f
+kmulti.i
+kopbend.f
+kopbnd.i
+kopdist.f
+kopdst.i
+korbit.f
+korbs.i
+kpitor.i
+kpitors.f
+kpolar.f
+kpolr.i
+ksolv.f
+kstbnd.i
+kstrbnd.f
+kstrtor.f
+ksttor.i
+ktors.f
+ktorsn.i
+ktortor.f
+ktrtor.i
+kurey.f
+kurybr.i
+kvdw.f
+kvdwpr.i
+kvdws.i
+lattice.f   - Converted to Fortran 90.
+light.i
+lights.f
+linmin.i    - Converted to a Fortran 90 module.
+math.i      - Converted to a Fortran 90 module.
+maxwell.f
+mdinit.f
+mdrest.f
+mdsave.f
+mdstat.f
+mdstuf.i
+mechanic.f
+merck.i
+minima.i    - Converted to a Fortran 90 module.
+molcul.i    - Converted to a Fortran 90 module.
+moldyn.i
+molecule.f
+mplpot.i
+mpole.i
+mutant.i    - Converted to a Fortran 90 module.
+mutate.f
+nblist.f
+neigh.i     - Converted to a Fortran 90 module.
+nextarg.f   - Converted to Fortran 90.
+nexttext.f  - Converted to a Fortran 90.
+nose.f
+npolar.i
+nspline.f
+number.f
+numeral.f
+opbend.i
+opdist.i
+openend.f
+openmp.i    - Converted to a Fortran 90 module.
+orbital.f
+orbits.i
+output.i
+overlap.f
+params.i    - Converted to a Fortran 90 module.
+paths.i
+pbstuf.i
+pdb.i       - Converted to a Fortran 90 module.
+picalc.f
+piorbs.i
+pistuf.i
+pitors.i
+pme.i
+pmestuff.f
+pmpb.f
+polar.i
+polgrp.i
+polpot.i    - Converted to a Fortran 90 module.
+polymer.f
+potent.i
+precise.f   - Also in the precis.f90 module.
+precis.i    - Converted to Fortran 90 module.
+pressure.f
+prmkey.f
+promo.f
+prtdyn.f
+prterr.f
+prtint.f
+prtxyz.f
+ptable.i    - Included in the precis.f90 module.
+random.f
+rattle.f
+readdyn.f
+readprm.f
+readxyz.f   - Converted to a Fortran 90 module.
+replica.f
+resdue.i    - Converted to Fortran 90 module.
+respa.f
+rgddyn.i
+rgdstep.f
+rigid.i     - Converted to Fortran 90 module.
+ring.i
+rings.f
+rotpole.f
+rxnfld.i
+rxnpot.i
+scales.i    - Converted to a Fortran 90 module.
+sdstep.f
+sequen.i    - Converted to a Fortran 90 module.
+server.f
+shakeup.f
+shunt.i
+sizes.i     - Converted to a Fortran 90 module.
+sktstuff.f
+socket.i    - Converted to a Fortran 90 module.
+solute.i
+sort.f      - Converted to a Fortran 90 module.
+stodyn.i
+strbnd.i
+strtor.i
+suffix.f    - Converted to Fortran 90.
+surface.f
+surfatom.f
+switch.f
+tarray.i    - Converted to a Fortran 90 module.
+temper.f
+titles.i    - Converted to a Fortran 90 module.
+torphase.f
+torpot.i
+torque.f
+tors.i
+torsions.f
+tortor.i
+trimtext.f  - Converted to Fortran 90.
+unitcell.f
+units.i
+uprior.i
+urey.i
+urypot.i
+usage.i
+usolve.i
+vdw.i
+vdwpot.i
+verlet.f
+version.f   - Converted to Fortran 90.
+vibs.i
+virial.i
+volume.f
+warp.i      - Converted to Fortran 90 module.
+zclose.i    - Converted to Fortran 90 module.
+zcoord.i
+
+Files no Longer Required
+========================
+
+ascii.i     -
+freeunit.f  - This file seems unnecessary to me.
+precise.f   - Content has gone into the precis module. 
+
+
+New files
+=========
+
+parallelparams.f90 - MPI parameters.
+redistribute.f90   - Redistribute atoms.
+sortAtoms.f90      - sort all atom in a particular direction
+

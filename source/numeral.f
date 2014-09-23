@@ -42,12 +42,12 @@ c     set justification and size bounds for numeral string
 c
       if (size .eq. 0) then
          right = .true.
-         size = 1
+         size  = 1
       else
          right = .false.
       end if
       minsize = size
-      length = len(string)
+      length  = len(string)
 c
 c     test the sign of the original number
 c
@@ -55,24 +55,24 @@ c
          negative = .false.
       else
          negative = .true.
-         number = -number
+         number   = -number
       end if
 c
 c     use modulo arithmetic to find place-holding digits
 c
-      million = number / 1000000
-      multi = 1000000 * million
-      hunthou = (number-multi) / 100000
-      multi = multi + 100000*hunthou
-      tenthou = (number-multi) / 10000
-      multi = multi + 10000*tenthou
+      million  = number / 1000000
+      multi    = 1000000 * million
+      hunthou  = (number-multi) / 100000
+      multi    = multi + 100000*hunthou
+      tenthou  = (number-multi) / 10000
+      multi    = multi + 10000*tenthou
       thousand = (number-multi) / 1000
-      multi = multi + 1000*thousand
-      hundred = (number-multi) / 100
-      multi = multi + 100*hundred
-      tens = (number-multi) / 10
-      multi = multi + 10*tens
-      ones = number - multi
+      multi    = multi + 1000*thousand
+      hundred  = (number-multi) / 100
+      multi    = multi + 100*hundred
+      tens     = (number-multi) / 10
+      multi    = multi + 10*tens
+      ones     = number - multi
 c
 c     find the correct length to be used for the numeral
 c

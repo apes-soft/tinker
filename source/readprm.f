@@ -73,37 +73,37 @@ c
 c
 c     initialize the counters for some parameter types
 c
-      nvp = 0
-      nhb = 0
-      nb = 0
-      nb5 = 0
-      nb4 = 0
-      nb3 = 0
-      nel = 0
-      na = 0
-      na5 = 0
-      na4 = 0
-      na3 = 0
-      naf = 0
-      nsb = 0
-      nu = 0
+      nvp  = 0
+      nhb  = 0
+      nb   = 0
+      nb5  = 0
+      nb4  = 0
+      nb3  = 0
+      nel  = 0
+      na   = 0
+      na5  = 0
+      na4  = 0
+      na3  = 0
+      naf  = 0
+      nsb  = 0
+      nu   = 0
       nopb = 0
       nopd = 0
-      ndi = 0
-      nti = 0
-      nt = 0
-      nt5 = 0
-      nt4 = 0
-      npt = 0
-      nbt = 0
-      nat = 0
-      ntt = 0
-      nd = 0
-      nd5 = 0
-      nd4 = 0
-      nd3 = 0
-      nmp = 0
-      npi = 0
+      ndi  = 0
+      nti  = 0
+      nt   = 0
+      nt5  = 0
+      nt4  = 0
+      npt  = 0
+      nbt  = 0
+      nat  = 0
+      ntt  = 0
+      nd   = 0
+      nd5  = 0
+      nd4  = 0
+      nd3  = 0
+      nmp  = 0
+      npi  = 0
       npi5 = 0
       npi4 = 0
 c
@@ -120,9 +120,9 @@ c     extract the keyword at the start of each line
 c
       icprm = 0
       dowhile (icprm .lt. nprm)
-         icprm = icprm + 1
+         icprm  = icprm + 1
          record = prmline(icprm)
-         next = 1
+         next   = 1
          call gettext (record,keyword,next)
          call upcase (keyword)
 c
@@ -151,11 +151,11 @@ c
 c     atom type definitions and parameters
 c
          else if (keyword(1:5) .eq. 'ATOM ') then
-            ia = 0
-            cls = 0
-            atn = 0
+            ia   = 0
+            cls  = 0
+            atn  = 0
             wght = 0.0d0
-            lig = 0
+            lig  = 0
             call getnumb (record,ia,next)
             call getnumb (record,cls,next)
             if (cls .eq. 0)  cls = ia
@@ -185,25 +185,25 @@ c
 c     van der Waals parameters for individual atom types
 c
          else if (keyword(1:4) .eq. 'VDW ') then
-            ia = 0
-            rd = 0.0d0
-            ep = 0.0d0
-            rdn = 0.0d0
+            ia     = 0
+            rd     = 0.0d0
+            ep     = 0.0d0
+            rdn    = 0.0d0
             string = record(next:120)
             read (string,*,err=70,end=70)  ia,rd,ep,rdn
    70       continue
             if (ia .ne. 0) then
-               rad(ia) = rd
-               eps(ia) = ep
+               rad(ia)    = rd
+               eps(ia)    = ep
                reduct(ia) = rdn
             end if
 c
 c     van der Waals 1-4 parameters for individual atom types
 c
          else if (keyword(1:6) .eq. 'VDW14 ') then
-            ia = 0
-            rd = 0.0d0
-            ep = 0.0d0
+            ia     = 0
+            rd     = 0.0d0
+            ep     = 0.0d0
             string = record(next:120)
             read (string,*,err=80,end=80)  ia,rd,ep
    80       continue
@@ -215,10 +215,10 @@ c
 c     van der Waals parameters for specific atom pairs
 c
          else if (keyword(1:6) .eq. 'VDWPR ') then
-            ia = 0
-            ib = 0
-            rd = 0.0d0
-            ep = 0.0d0
+            ia     = 0
+            ib     = 0
+            rd     = 0.0d0
+            ep     = 0.0d0
             string = record(next:120)
             read (string,*,err=90,end=90)  ia,ib,rd,ep
    90       continue
@@ -240,10 +240,10 @@ c
 c     bond stretching parameters
 c
          else if (keyword(1:5) .eq. 'BOND ') then
-            ia = 0
-            ib = 0
-            fc = 0.0d0
-            bd = 0.0d0
+            ia     = 0
+            ib     = 0
+            fc     = 0.0d0
+            bd     = 0.0d0
             string = record(next:120)
             read (string,*,err=110,end=110)  ia,ib,fc,bd
   110       continue
@@ -261,10 +261,10 @@ c
 c     bond stretching parameters for 5-membered rings
 c
          else if (keyword(1:6) .eq. 'BOND5 ') then
-            ia = 0
-            ib = 0
-            fc = 0.0d0
-            bd = 0.0d0
+            ia     = 0
+            ib     = 0
+            fc     = 0.0d0
+            bd     = 0.0d0
             string = record(next:120)
             read (string,*,err=120,end=120)  ia,ib,fc,bd
   120       continue
@@ -282,10 +282,10 @@ c
 c     bond stretching parameters for 4-membered rings
 c
          else if (keyword(1:6) .eq. 'BOND4 ') then
-            ia = 0
-            ib = 0
-            fc = 0.0d0
-            bd = 0.0d0
+            ia     = 0
+            ib     = 0
+            fc     = 0.0d0
+            bd     = 0.0d0
             string = record(next:120)
             read (string,*,err=130,end=130)  ia,ib,fc,bd
   130       continue
@@ -303,10 +303,10 @@ c
 c     bond stretching parameters for 3-membered rings
 c
          else if (keyword(1:6) .eq. 'BOND3 ') then
-            ia = 0
-            ib = 0
-            fc = 0.0d0
-            bd = 0.0d0
+            ia     = 0
+            ib     = 0
+            fc     = 0.0d0
+            bd     = 0.0d0
             string = record(next:120)
             read (string,*,err=140,end=140)  ia,ib,fc,bd
   140       continue
@@ -324,10 +324,10 @@ c
 c     electronegativity bond length correction parameters
 c
          else if (keyword(1:9) .eq. 'ELECTNEG ') then
-            ia = 0
-            ib = 0
-            ic = 0
-            dl = 0.0d0
+            ia     = 0
+            ib     = 0
+            ic     = 0
+            dl     = 0.0d0
             string = record(next:120)
             read (string,*,err=150,end=150)  ia,ib,ic,dl
   150       continue
@@ -345,13 +345,13 @@ c
 c     bond angle bending parameters
 c
          else if (keyword(1:6) .eq. 'ANGLE ') then
-            ia = 0
-            ib = 0
-            ic = 0
-            fc = 0.0d0
-            an1 = 0.0d0
-            an2 = 0.0d0
-            an3 = 0.0d0
+            ia     = 0
+            ib     = 0
+            ic     = 0
+            fc     = 0.0d0
+            an1    = 0.0d0
+            an2    = 0.0d0
+            an3    = 0.0d0
             string = record(next:120)
             read (string,*,err=160,end=160)  ia,ib,ic,fc,an1,an2,an3
   160       continue
@@ -364,7 +364,7 @@ c
             else
                ka(na) = pc//pb//pa
             end if
-            acon(na) = fc
+            acon(na)  = fc
             ang(1,na) = an1
             ang(2,na) = an2
             ang(3,na) = an3
@@ -372,13 +372,13 @@ c
 c     angle bending parameters for 5-membered rings
 c
          else if (keyword(1:7) .eq. 'ANGLE5 ') then
-            ia = 0
-            ib = 0
-            ic = 0
-            fc = 0.0d0
-            an1 = 0.0d0
-            an2 = 0.0d0
-            an3 = 0.0d0
+            ia     = 0
+            ib     = 0
+            ic     = 0
+            fc     = 0.0d0
+            an1    = 0.0d0
+            an2    = 0.0d0
+            an3    = 0.0d0
             string = record(next:120)
             read (string,*,err=170,end=170)  ia,ib,ic,fc,an1,an2,an3
   170       continue
@@ -391,7 +391,7 @@ c
             else
                ka5(na5) = pc//pb//pa
             end if
-            acon5(na5) = fc
+            acon5(na5)  = fc
             ang5(1,na5) = an1
             ang5(2,na5) = an2
             ang5(3,na5) = an3
@@ -399,13 +399,13 @@ c
 c     angle bending parameters for 4-membered rings
 c
          else if (keyword(1:7) .eq. 'ANGLE4 ') then
-            ia = 0
-            ib = 0
-            ic = 0
-            fc = 0.0d0
-            an1 = 0.0d0
-            an2 = 0.0d0
-            an3 = 0.0d0
+            ia     = 0
+            ib     = 0
+            ic     = 0
+            fc     = 0.0d0
+            an1    = 0.0d0
+            an2    = 0.0d0
+            an3    = 0.0d0
             string = record(next:120)
             read (string,*,err=180,end=180)  ia,ib,ic,fc,an1,an2,an3
   180       continue
@@ -418,7 +418,7 @@ c
             else
                ka4(na4) = pc//pb//pa
             end if
-            acon4(na4) = fc
+            acon4(na4)  = fc
             ang4(1,na4) = an1
             ang4(2,na4) = an2
             ang4(3,na4) = an3
@@ -426,13 +426,13 @@ c
 c     angle bending parameters for 3-membered rings
 c
          else if (keyword(1:7) .eq. 'ANGLE3 ') then
-            ia = 0
-            ib = 0
-            ic = 0
-            fc = 0.0d0
-            an1 = 0.0d0
-            an2 = 0.0d0
-            an3 = 0.0d0
+            ia     = 0
+            ib     = 0
+            ic     = 0
+            fc     = 0.0d0
+            an1    = 0.0d0
+            an2    = 0.0d0
+            an3    = 0.0d0
             string = record(next:120)
             read (string,*,err=190,end=190)  ia,ib,ic,fc,an1,an2,an3
   190       continue
@@ -445,7 +445,7 @@ c
             else
                ka3(na3) = pc//pb//pa
             end if
-            acon3(na3) = fc
+            acon3(na3)  = fc
             ang3(1,na3) = an1
             ang3(2,na3) = an2
             ang3(3,na3) = an3
@@ -453,12 +453,12 @@ c
 c     Fourier bond angle bending parameters
 c
          else if (keyword(1:7) .eq. 'ANGLEF ') then
-            ia = 0
-            ib = 0
-            ic = 0
-            fc = 0.0d0
-            an = 0.0d0
-            pr = 0.0d0
+            ia     = 0
+            ib     = 0
+            ic     = 0
+            fc     = 0.0d0
+            an     = 0.0d0
+            pr     = 0.0d0
             string = record(next:120)
             read (string,*,err=200,end=200)  ia,ib,ic,fc,an,pr
   200       continue
@@ -478,11 +478,11 @@ c
 c     stretch-bend parameters
 c
          else if (keyword(1:7) .eq. 'STRBND ') then
-            ia = 0
-            ib = 0
-            ic = 0
-            ba1 = 0.0d0
-            ba2 = 0.0d0
+            ia     = 0
+            ib     = 0
+            ic     = 0
+            ba1    = 0.0d0
+            ba2    = 0.0d0
             string = record(next:120)
             read (string,*,err=210,end=210)  ia,ib,ic,ba1,ba2
   210       continue
@@ -491,11 +491,11 @@ c
             call numeral (ic,pc,size)
             nsb = nsb + 1
             if (ia .le. ic) then
-               ksb(nsb) = pa//pb//pc
+               ksb(nsb)    = pa//pb//pc
                stbn(1,nsb) = ba1
                stbn(2,nsb) = ba2
             else
-               ksb(nsb) = pc//pb//pa
+               ksb(nsb)    = pc//pb//pa
                stbn(1,nsb) = ba2
                stbn(2,nsb) = ba1
             end if
@@ -503,11 +503,11 @@ c
 c     Urey-Bradley parameters
 c
          else if (keyword(1:9) .eq. 'UREYBRAD ') then
-            ia = 0
-            ib = 0
-            ic = 0
-            fc = 0.0d0
-            ds = 0.0d0
+            ia    = 0
+            ib    = 0
+            ic    = 0
+            fc    = 0.0d0
+            ds    = 0.0d0
             string = record(next:120)
             read (string,*,err=220,end=220)  ia,ib,ic,fc,ds
   220       continue
@@ -520,7 +520,7 @@ c
             else
                ku(nu) = pc//pb//pa
             end if
-            ucon(nu) = fc
+            ucon(nu)  = fc
             dst13(nu) = ds
 c
 c     angle-angle parameters
@@ -530,11 +530,11 @@ c
 c     out-of-plane bend parameters
 c
          else if (keyword(1:7) .eq. 'OPBEND ') then
-            ia = 0
-            ib = 0
-            ic = 0
-            id = 0
-            fc = 0.0d0
+            ia     = 0
+            ib     = 0
+            ic     = 0
+            id     = 0
+            fc     = 0.0d0
             string = record(next:120)
             read (string,*,err=240,end=240)  ia,ib,ic,id,fc
   240       continue
@@ -693,9 +693,9 @@ c
 c     pi-orbital torsion parameters
 c
          else if (keyword(1:7) .eq. 'PITORS ') then
-            ia = 0
-            ib = 0
-            pt = 0.0d0
+            ia     = 0
+            ib     = 0
+            pt     = 0.0d0
             string = record(next:120)
             read (string,*,err=310,end=310)  ia,ib,pt
   310       continue
@@ -720,13 +720,13 @@ c
 c     torsion-torsion parameters
 c
          else if (keyword(1:8) .eq. 'TORTORS ') then
-            ia = 0
-            ib = 0
-            ic = 0
-            id = 0
-            ie = 0
-            nx = 0
-            ny = 0
+            ia  = 0
+            ib  = 0
+            ic  = 0
+            id  = 0
+            ie  = 0
+            nx  = 0
+            ny  = 0
             nxy = 0
             do i = 1, maxtgrd2
                tx(i) = 0.0d0
@@ -776,10 +776,10 @@ c
 c     atomic multipole moment parameters
 c
          else if (keyword(1:10) .eq. 'MULTIPOLE ') then
-            ia = 0
-            ib = 0
-            ic = 0
-            id = 0
+            ia  = 0
+            ib  = 0
+            ic  = 0
+            id  = 0
             axt = 'Z-then-X'
             do i = 1, 13
                pl(i) = 0.0d0
@@ -814,9 +814,9 @@ c
   440       continue
             if (ib .eq. 0)  axt = 'None'
             if (ib.ne.0 .and. ic.eq.0)  axt = 'Z-Only'
-            if (ib.lt.0 .or. ic.lt.0)  axt = 'Bisector'
+            if (ib.lt.0 .or. ic.lt.0)   axt = 'Bisector'
             if (ic.lt.0 .and. id.lt.0)  axt = 'Z-Bisect'
-            if (max(ib,ic,id) .lt. 0)  axt = '3-Fold'
+            if (max(ib,ic,id) .lt. 0)   axt = '3-Fold'
             ib = abs(ib)
             ic = abs(ic)
             id = abs(id)
@@ -825,17 +825,17 @@ c
             call numeral (ic,pc,size)
             call numeral (id,pd,size)
             nmp = nmp + 1
-            kmp(nmp) = pa//pb//pc//pd
-            mpaxis(nmp) = axt
-            multip(1,nmp) = pl(1)
-            multip(2,nmp) = pl(2)
-            multip(3,nmp) = pl(3)
-            multip(4,nmp) = pl(4)
-            multip(5,nmp) = pl(5)
-            multip(6,nmp) = pl(8)
-            multip(7,nmp) = pl(11)
-            multip(8,nmp) = pl(8)
-            multip(9,nmp) = pl(9)
+            kmp(nmp)       = pa//pb//pc//pd
+            mpaxis(nmp)    = axt
+            multip(1,nmp)  = pl(1)
+            multip(2,nmp)  = pl(2)
+            multip(3,nmp)  = pl(3)
+            multip(4,nmp)  = pl(4)
+            multip(5,nmp)  = pl(5)
+            multip(6,nmp)  = pl(8)
+            multip(7,nmp)  = pl(11)
+            multip(8,nmp)  = pl(8)
+            multip(9,nmp)  = pl(9)
             multip(10,nmp) = pl(12)
             multip(11,nmp) = pl(11)
             multip(12,nmp) = pl(12)
@@ -844,7 +844,7 @@ c
 c     atomic dipole polarizability parameters
 c
          else if (keyword(1:9) .eq. 'POLARIZE ') then
-            ia = 0
+            ia  = 0
             pol = 0.0d0
             thl = 0.0d0
             do i = 1, maxval
@@ -865,26 +865,26 @@ c
 c     conjugated pisystem atom parameters
 c
          else if (keyword(1:7) .eq. 'PIATOM ') then
-            ia = 0
-            el = 0.0d0
-            iz = 0.0d0
-            rp = 0.0d0
+            ia     = 0
+            el     = 0.0d0
+            iz     = 0.0d0
+            rp     = 0.0d0
             string = record(next:120)
             read (string,*,err=460,end=460)  ia,el,iz,rp
   460       continue
             if (ia .ne. 0) then
                electron(ia) = el
-               ionize(ia) = iz
-               repulse(ia) = rp
+               ionize(ia)   = iz
+               repulse(ia)  = rp
             end if
 c
 c     conjugated pisystem bond parameters
 c
          else if (keyword(1:7) .eq. 'PIBOND ') then
-            ia = 0
-            ib = 0
-            ss = 0.0d0
-            ts = 0.0d0
+            ia     = 0
+            ib     = 0
+            ss     = 0.0d0
+            ts     = 0.0d0
             string = record(next:120)
             read (string,*,err=470,end=470)  ia,ib,ss,ts
   470       continue
@@ -902,10 +902,10 @@ c
 c     conjugated pisystem bond parameters for 5-membered rings
 c
          else if (keyword(1:8) .eq. 'PIBOND5 ') then
-            ia = 0
-            ib = 0
-            ss = 0.0d0
-            ts = 0.0d0
+            ia     = 0
+            ib     = 0
+            ss     = 0.0d0
+            ts     = 0.0d0
             string = record(next:120)
             read (string,*,err=480,end=480)  ia,ib,ss,ts
   480       continue
@@ -923,10 +923,10 @@ c
 c     conjugated pisystem bond parameters for 4-membered rings
 c
          else if (keyword(1:8) .eq. 'PIBOND4 ') then
-            ia = 0
-            ib = 0
-            ss = 0.0d0
-            ts = 0.0d0
+            ia     = 0
+            ib     = 0
+            ss     = 0.0d0
+            ts     = 0.0d0
             string = record(next:120)
             read (string,*,err=490,end=490)  ia,ib,ss,ts
   490       continue
@@ -951,8 +951,8 @@ c
 c     biopolymer atom type conversion definitions
 c
          else if (keyword(1:8) .eq. 'BIOTYPE ') then
-            ia = 0
-            ib = 0
+            ia     = 0
+            ib     = 0
             string = record(next:120)
             read (string,*,err=510,end=510)  ia
             call getword (record,string,next)

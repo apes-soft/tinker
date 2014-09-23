@@ -50,7 +50,7 @@ c
                   call fatal
                end if
                m = m + 1
-               anglist(m,i) = nangle
+               anglist(m,i)   = nangle
                iang(1,nangle) = i12(j,i)
                iang(2,nangle) = i
                iang(3,nangle) = i12(k,i)
@@ -61,7 +61,7 @@ c
 c     set the out-of-plane atom for angles at trivalent centers
 c
          if (n12(i) .eq. 3) then
-            iang(4,nangle) = i12(1,i)
+            iang(4,nangle)   = i12(1,i)
             iang(4,nangle-1) = i12(2,i)
             iang(4,nangle-2) = i12(3,i)
          end if

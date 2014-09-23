@@ -41,15 +41,15 @@ c
 c     get the length of input string and output text
 c
       length = len(string(next:))
-      size = len(text)
+      size   = len(text)
 c
 c     move through the string one character at a time,
 c     searching for the quoted text string characters
 c
-      first = next
-      last = 0
+      first   = next
+      last    = 0
       initial = next
-      final = next + length - 1
+      final   = next + length - 1
       do i = initial, final
          code = ichar(string(i:i))
          if (code .eq. quote) then
@@ -69,7 +69,7 @@ c
 c     trim the actual word if it is too long to return
 c
       extent = last - first + 1
-      final = first + size - 1
+      final  = first + size - 1
       if (extent .gt. size)  last = final
 c
 c     transfer the text into the return string

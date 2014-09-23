@@ -31,7 +31,7 @@ c
 c     initialize atom collision flag and distance tolerance
 c
       clash = .false.
-      eps = 0.000001d0
+      eps   = 0.000001d0
 c
 c     loop over atom pairs testing for identical coordinates
 c

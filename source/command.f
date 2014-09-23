@@ -53,7 +53,7 @@ c
             letter = arg(i)(2:2)
             call upcase (letter)
             if (letter.ge.'A' .and. letter.le.'Z') then
-               listarg(i) = .false.
+               listarg(i)   = .false.
                listarg(i+1) = .false.
             end if
          end if

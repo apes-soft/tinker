@@ -57,11 +57,11 @@ c
          i = 1
          do while (exist)
             i = i + 1
-            oldfile = newfile
+            oldfile  = newfile
             thousand = i / 1000
-            hundred = (i - 1000*thousand) / 100
-            tens = (i - 1000*thousand - 100*hundred) / 10
-            ones = i - 1000*thousand - 100*hundred - 10*tens
+            hundred  = (i - 1000*thousand) / 100
+            tens     = (i - 1000*thousand - 100*hundred) / 10
+            ones     = i - 1000*thousand - 100*hundred - 10*tens
             if (thousand .ne. 0) then
                newfile = filename(1:leng)//'_'//digit(thousand)
      &                      //digit(hundred)//digit(tens)//digit(ones)
