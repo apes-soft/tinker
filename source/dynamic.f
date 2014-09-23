@@ -26,7 +26,9 @@ c
       use iounit
       use keys
       use mdstuf
+      use parallelparams
       implicit none
+      integer:: provided ! Actual threading model provided by MPI
       integer i,istep,nstep
       integer mode,next
       real*8 dt,dtdump
@@ -34,6 +36,24 @@ c
       character*20 keyword
       character*120 record
       character*120 string
+
+      ! Allow for the usage of multithreaded applications but MPI
+      ! regions will be on a single thread
+      call MPI_Init_thread(MPI_THREAD_FUNNELED, provided, ierror)
+
+      ! Find out how many processes we have.
+      call MPI_Comm_size(MPI_COMM_WORLD, nprocs, ierror)
+
+      ! Find out my own rank.
+      call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierror)
+
+      ! Check that we are using one or a power of 2 number of processes,
+      ! nprocs should never be 0
+      if((nprocs.ne.1).and.(iand(nprocs,nprocs-1).ne.0)) then
+         write(iout,*) "Number of processes must be a power of 2."
+         call fatal
+      end if
+
 c
 c
 c     set up the structure and molecular mechanics calculation
@@ -44,10 +64,10 @@ c
 c
 c     initialize the temperature, pressure and coupling baths
 c
-      kelvin = 0.0d0
-      atmsph = 0.0d0
+      kelvin     = 0.0d0
+      atmsph     = 0.0d0
       isothermal = .false.
-      isobaric = .false.
+      isobaric   = .false.
 c
 c     check for keywords containing any altered parameters
 c
@@ -160,4 +180,8 @@ c
 c     perform any final tasks before program exit
 c
       call final
+
+      ! Finish the MPI execution
+      call MPI_Finalize(ierror)
+
       end
