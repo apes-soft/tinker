@@ -388,6 +388,10 @@ OBJS = angbnd.o \
        zclose.o \
        zcoord.o 
 
+# Create a variable for all the sources
+SRCS := $(OBJS:%.o=%.f)
+
+# Executable file to compile
 EXEFILES = dynamic.x 
 
 %.o: %.f
@@ -400,6 +404,7 @@ EXEFILES = dynamic.x
 	${FC} ${LINKFLAGS} -o $@ $< -L . -ltinker ${LIBS}
 	# strip $@
 
+# Default target
 install: all rename
 
 all:	${EXEFILES}
@@ -462,7 +467,7 @@ couple.o: sizes.o
 cspline.o: iounit.o
 cutoffs.o: atoms.o keys.o limits.o neigh.o polpot.o sizes.o tarray.o
 deriv.o:
-dynamic.o: atoms.o bath.o bndstr.o inform.o iounit.o keys.o mdstuf.o sizes.o
+dynamic.o: atoms.o bath.o bndstr.o inform.o iounit.o keys.o mdstuf.o parallelparams.o sizes.o 
 eangle1.o: angbnd.o angpot.o atoms.o deriv.o energi.o math.o sizes.o virial.o
 ebond1.o: atoms.o bndpot.o bndstr.o deriv.o energi.o sizes.o virial.o
 ehal1.o:  atoms.o couple.o deriv.o energi.o limits.o molcul.o neigh.o shunt.o sizes.o vdw.o vdwpot.o virial.o
@@ -556,6 +561,7 @@ opbend.o:
 openend.o:
 openmp.o:
 output.o:
+parallelparams.o:
 params.o: sizes.o
 pitors.o:
 pme.o: sizes.o
