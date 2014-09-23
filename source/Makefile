@@ -333,6 +333,7 @@ OBJS = angbnd.o \
        openend.o \
        openmp.o \
        output.o \
+       parallelparams.o \
        params.o \
        pitors.o \
        pme.o \
