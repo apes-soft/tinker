@@ -17,8 +17,14 @@ c     error or some other nonstandard condition
 c
 c
       subroutine fatal
+
       use iounit
+      use parallelparams
+
       implicit none
+
+      integer:: errcode=99  ! Specify an error code
+
 c
 c
 c     print a final warning message, then quit
@@ -26,5 +32,9 @@ c
       write (iout,10)
    10 format (/,' TINKER is Unable to Continue; Terminating',
      &           ' the Current Calculation',/)
+
+      ! Abort the MPI program
+      call MPI_Abort(MPI_COMM_WORLD,errcode,ierror)
+
       stop
       end

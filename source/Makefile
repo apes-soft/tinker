@@ -482,7 +482,7 @@ etortor1.o:  atoms.o bitor.o couple.o deriv.o energi.o ktrtor.o math.o sizes.o t
 eurey1.o: atoms.o deriv.o energi.o sizes.o urey.o urypot.o virial.o
 evcorr.o: atoms.o boxes.o limits.o math.o shunt.o sizes.o vdw.o vdwpot.o
 ewald.o:
-fatal.o: iounit.o
+fatal.o: iounit.o parallelparams.o
 fft.o: sizes.o
 fft3d.o: fft.o openmp.o pme.o sizes.o
 fftpack.o: math.o
