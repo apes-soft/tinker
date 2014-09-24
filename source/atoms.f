@@ -20,8 +20,6 @@ c
 
       integer:: n ! total number of atoms in the current system
 
-c      integer:: type(maxatm)
-
       type atomtype
       real(kind=8), dimension(3) :: pos  ! Atom position
       real(kind=8) :: mass               ! Atomic mass
