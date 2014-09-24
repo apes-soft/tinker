@@ -17,42 +17,44 @@ c     then reads in the coordinates file
 c
 c
       subroutine getxyz
+
       use inform
       use iounit
       use output
+      use parallelparams
+
       implicit none
+
       logical exist
       character*120 xyzfile
-c
-c
-c     try to get a filename from the command line arguments
-c
-      call nextarg (xyzfile,exist)
-      if (exist) then
-         call basefile (xyzfile)
-         call suffix (xyzfile,'xyz','old')
-         inquire (file=xyzfile,exist=exist)
+
+      ! only get process 0 to get file information
+      if(rank.eq.0) then 
+         ! try to get a filename from the command line arguments
+         call nextarg (xyzfile,exist)
+
+         if (exist) then
+            call basefile (xyzfile)
+            call suffix (xyzfile,'xyz','old')
+            inquire (file=xyzfile,exist=exist)
+         else
+            write (iout,*) ' GETXYZ  --  ',
+     &                     'No cartesian coordinates file specified.'
+            call fatal
+         end if
+
+         ! check if file does not exist
+         if (.not. exist) then
+            write (iout,*) ' GETXYZ -- the file ',xyzfile,
+     &                     ' does not exist.'
+            call fatal
+         end if
+
       end if
-c
-c     ask for the user specified input structure filename
-c
-      do while (.not. exist)
-         write (iout,10)
-   10    format (/,' Enter Cartesian Coordinate File Name :  ',$)
-         read (input,20)  xyzfile
-   20    format (a120)
-         call basefile (xyzfile)
-         call suffix (xyzfile,'xyz','old')
-         inquire (file=xyzfile,exist=exist)
-      end do
-c
-c     first open and then read the Cartesian coordinates file
-c
-      coordtype = 'CARTESIAN'
-      open (unit=ixyz,file=xyzfile,status='old')
-      rewind (unit=ixyz)
+
+      ! read the coordinate file
       call readxyz
-      close (unit=ixyz)
+
 c
 c     quit if the Cartesian coordinates file contains no atoms
 c
