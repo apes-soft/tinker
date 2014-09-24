@@ -112,7 +112,7 @@ else ifeq ($(COMPARCH),OpenMPI)
 
   FC        = mpif90
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_threads -lfftw3
-  FCFLAGS   = -c 
+  FCFLAGS   = -Wall -c 
   OPTFLAGS  = -O3 -fopenmp 
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
