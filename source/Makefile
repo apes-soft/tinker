@@ -502,7 +502,7 @@ image.o: boxes.o cell.o sizes.o
 induce.o: atoms.o boxes.o couple.o ewald.o inform.o iounit.o limits.o math.o mpole.o neigh.o openmp.o pme.o polar.o polgrp.o polpot.o shunt.o sizes.o tarray.o units.o uprior.o usolve.o
 inform.o:
 initatom.o: ptable.o sizes.o
-initial.o: atoms.o bath.o boxes.o cell.o files.o inform.o iounit.o keys.o molcul.o neigh.o openmp.o output.o params.o sizes.o zclose.o
+initial.o: atoms.o bath.o boxes.o cell.o files.o inform.o iounit.o keys.o molcul.o neigh.o openmp.o output.o parallelparams.o params.o sizes.o zclose.o
 initprm.o: angpot.o bndpot.o chgpot.o fields.o kangs.o katoms.o kbonds.o kmulti.o kopbnd.o korbs.o kpitor.o kpolr.o kstbnd.o ktorsn.o ktrtor.o kurybr.o kvdwpr.o kvdws.o math.o mplpot.o polpot.o sizes.o torpot.o units.o urypot.o vdwpot.o
 iounit.o:
 kangle.o: angbnd.o angpot.o  atoms.o couple.o fields.o inform.o iounit.o kangs.o keys.o potent.o sizes.o
