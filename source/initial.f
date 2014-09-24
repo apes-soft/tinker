@@ -28,17 +28,17 @@ c
       use molcul
       use neigh
       use openmp
+      use parallelparams
       use output
       use params
       use zclose
       implicit none
       integer omp_get_num_threads
-
 c
 c     cores, thread count and options for OpenMP
 c
      
-       nthread = 1
+      nthread = 1
 !$OMP PARALLEL shared(nthread) 
 !$OMP MASTER 
 !$    nthread = omp_get_num_threads()
@@ -54,11 +54,17 @@ c
 c
 c     display program banner and copyright notice
 c
-      call promo
+
+      ! only proc 0 displays banner and copyright notice
+      if(rank.eq.0) then
+         call promo
+      end if
+
 c
 c     command line arguments to the program
 c
       call command
+
 c
 c     number of lines in the keyfile
 c
