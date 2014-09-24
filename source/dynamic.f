@@ -29,12 +29,10 @@ c
       use parallelparams
       implicit none
       integer:: provided ! Actual threading model provided by MPI
-      integer i,istep,nstep
-      integer mode,next
+      integer istep,nstep
+      integer mode
       real*8 dt,dtdump
       logical exist,query
-      character*20 keyword
-      character*120 record
       character*120 string
 
       ! Allow for the usage of multithreaded applications but MPI
@@ -80,32 +78,29 @@ c
       if (exist) then
          read (string,*,err=10,end=10)  nstep
          query = .false.
+      else
+         write(iout,*) "Need to specify the number of dynamic steps ", 
+     &                 "to be taken at the command line."
+         call usage
+         call fatal
       end if
    10 continue
-      if (query) then
-         write (iout,20)
-   20    format (/,' Enter the Number of Dynamics Steps to be',
-     &              ' Taken :  ',$)
-         read (input,30)  nstep
-   30    format (i10)
-      end if
+
 c
 c     get the length of the dynamics time step in picoseconds
 c
       dt = -1.0d0
       call nextarg (string,exist)
-      if (exist)  read (string,*,err=40,end=40)  dt
+      if (exist) read (string,*,err=40,end=40)  dt
    40 continue
-      do while (dt .lt. 0.0d0)
-         write (iout,50)
-   50    format (/,' Enter the Time Step Length in Femtoseconds',
-     &              ' [1.0] :  ',$)
-         read (input,60,err=70)  dt
-   60    format (f20.0)
-         if (dt .le. 0.0d0)  dt = 1.0d0
-   70    continue
-      end do
+      if (dt .lt. 0.0d0) then
+         write (iout,*) "The time step length in Femtoseconds ",
+     &                  "must be specified at the command line."
+         call usage
+         call fatal
+      end if
       dt = 0.001d0 * dt
+
 c
 c     enforce bounds on thermostat and barostat coupling times
 c
@@ -118,48 +113,43 @@ c
       call nextarg (string,exist)
       if (exist)  read (string,*,err=80,end=80)  dtdump
    80 continue
-      do while (dtdump .lt. 0.0d0)
-         write (iout,90)
-   90    format (/,' Enter Time between Dumps in Picoseconds',
-     &              ' [0.1] :  ',$)
-         read (input,100,err=110)  dtdump
-  100    format (f20.0)
-         if (dtdump .le. 0.0d0)  dtdump = 0.1d0
-  110    continue
-      end do
+      if (dtdump .lt. 0.0d0) then
+         write (iout,*) "The time between dumps in Picoseconds ",
+     &                  "must be specified at the command line."
+         call usage
+         call fatal
+      end if
       iwrite = nint(dtdump/dt)
+c 
 c
 c     get choice of statistical ensemble for periodic system
 c
-      mode = 4
+      mode       = 4
       isothermal = .true.
-      kelvin = -1.0d0
+      kelvin     = -1.0d0
       call nextarg (string,exist)
       if (exist)  read (string,*,err=170,end=170)  kelvin
   170 continue
-      do while (kelvin .lt. 0.0d0)
-         write (iout,180)
-  180    format (/,' Enter the Desired Temperature in Degrees',
-     &                    ' K [298] :  ',$)
-         read (input,190,err=200)  kelvin
-  190    format (f20.0)
-         if (kelvin .le. 0.0d0)  kelvin = 298.0d0
-  200    continue
-      end do
+      if  (kelvin .lt. 0.0d0) then
+         write (iout,*) "The Desired Temperature in Degrees K ",
+     &                  "must be specified at the command line."
+         call usage
+         call fatal
+      end if 
+
       isobaric = .true.
-      atmsph = -1.0d0
+      atmsph   = -1.0d0
+
       call nextarg (string,exist)
       if (exist)  read (string,*,err=210,end=210)  atmsph
   210 continue
-      do while (atmsph .lt. 0.0d0)
-         write (iout,220)
-  220    format (/,' Enter the Desired Pressure in Atm',
-     &                    ' [1.0] :  ',$)
-         read (input,230,err=240)  atmsph
-  230    format (f20.0)
-         if (atmsph .le. 0.0d0)  atmsph = 1.0d0
-  240    continue
-      end do
+      if (atmsph .lt. 0.0d0) then
+         write(iout,*) "The Desired Pressure in Atm ",
+     &                 "must be specified at the command line."
+         call usage
+         call fatal 
+      end if
+
 c
 c     initialize any holonomic constraints and setup dynamics
 c
