@@ -10,6 +10,9 @@
       integer:: ierror       ! Error flag for MPI calls
       integer, dimension(MPI_STATUS_SIZE):: status ! MPI status for MPI calls
 
+      integer, save:: dn       ! Local number of atoms
+      integer, save:: numatoms ! Number of atoms allocated locally
+
       integer, save:: AtomTypeComm ! MPI derived type for atoms
 
       save
