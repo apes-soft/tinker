@@ -32,7 +32,8 @@ c
       character(len=3) :: name           ! Atom name
       end type atomtype
 
-      save
       type(atomtype), allocatable :: atom(:)
+
+      save
 
       end
