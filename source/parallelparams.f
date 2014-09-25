@@ -5,11 +5,14 @@
 
       implicit none
 
+      ! MPI required variables
       integer, save:: rank   ! Process id
-      integer, save:: nprocs ! Number of processes involved
-      integer:: ierror       ! Error flag for MPI calls
-      integer, dimension(MPI_STATUS_SIZE):: status ! MPI status for MPI calls
+      integer, save:: nprocs ! Total number of processes involved
+      integer:: ierror       ! Error flag required by MPI calls
+      integer, dimension(MPI_STATUS_SIZE):: status ! Status for MPI calls
 
+      ! dn is the actual number of atoms stored in the local process
+      ! while numatoms contains buffer space and halo atoms.
       integer, save:: dn       ! Local number of atoms
       integer, save:: numatoms ! Number of atoms allocated locally
 
