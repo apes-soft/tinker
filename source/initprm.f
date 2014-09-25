@@ -151,7 +151,7 @@ c
          reduct(i)   = 0.0d0
          polr(i)     = 0.0d0
          athl(i)     = 0.0d0
-         do j = 1, maxval
+         do j = 1, maxbonds
             pgrp(j,i) = 0
          end do
       end do

@@ -159,7 +159,7 @@ c
       atom%type   = 0
       do i = 1, numatoms
          atom(i)%pos = 0.0d0
-         do j = 1, maxval
+         do j = 1, maxbonds
             i12(j,i) = 0
          end do
       end do
@@ -199,7 +199,7 @@ c
      &                                    atom(i)%pos(2), 
      &                                    atom(i)%pos(3), 
      &                                    atom(i)%type,   
-     &                               (i12(j,i),j=1,maxval)
+     &                               (i12(j,i),j=1,maxbonds)
    30       continue
          end do
 
@@ -234,7 +234,7 @@ c
      &                                             atom(j)%pos(2), 
      &                                             atom(j)%pos(3), 
      &                                             atom(j)%type,   
-     &                                    (i12(k,j),k=1,maxval)
+     &                                    (i12(k,j),k=1,maxbonds)
    40                continue
                   end do ! end while
                   j = j+1 
@@ -293,7 +293,7 @@ c     for each atom, count and sort its attached atoms
 c
       do i = 1, n
          n12(i) = 0 ! Count of the number of attached atoms
-         do j = maxval, 1, -1
+         do j = maxbonds, 1, -1
             if (i12(j,i) .ne. 0) then
                n12(i) = j
                goto 100

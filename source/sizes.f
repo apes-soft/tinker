@@ -21,7 +21,7 @@ c
 c     parameter:      maximum allowed number of:
 c
 c     maxatm          atoms in the molecular system
-c     maxval          atoms directly bonded to an atom
+c     maxbonds        atoms directly bonded to an atom
 c     maxgrp          user-defined groups of atoms
 c     maxref          stored reference molecular systems
 c     maxtyp          force field atom type definitions
@@ -55,7 +55,7 @@ c
       module sizes
       implicit none
       integer, parameter:: maxatm=1000000
-      integer, parameter:: maxval=8
+      integer, parameter:: maxbonds=8
       integer, parameter:: maxgrp=1000
       integer, parameter:: maxref=10
       integer, parameter:: maxtyp=5000
