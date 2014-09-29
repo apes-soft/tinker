@@ -139,8 +139,9 @@ c
          dn = dn +1
       endif
 
-      ! Number of atoms to be allocated locally
-      ! NB this is currently an assumption
+      ! Number of atoms to be allocated locally - need more
+      ! for buffering and halo atoms.
+      ! NB the 2 multiplier is currently an assumption
       numatoms = 2*(dn+1)
 
       ! Allocate enough space to hold the atom list
@@ -203,22 +204,27 @@ c
 
          ! Read other atom information if more than one process used
          if(nprocs.gt.1) then
+
             ! Position after last sorted atom
             end = dn+1
 
             ! Read atoms for the other processes
             do proc=1,nprocs-1
+
                ! Number of atoms process "proc" has
                nlocal = n/nprocs
+
                ! Add additional atoms if there is a remainder
                if(proc.lt.MOD(n,nprocs)) then
                   nlocal = nlocal + 1
                endif
+
                ! Array start and end points
                start = end
                end   = start + nlocal - 1
                j = dn+1 ! Read new atoms after local atoms read in and reuse
                !print *, proc,start,end 
+
                do i= start, end
                   size=0
                   do while (size .eq. 0)
@@ -238,7 +244,7 @@ c
                   j = j+1 
                end do ! loop over atoms
 
-               ! Send the atoms to process proc
+               ! Send the atoms to process "proc"
                call MPI_Send(atom(dn+1),nlocal,AtomTypeComm, proc,  
      &                       100,MPI_COMM_WORLD,ierror)
 
@@ -248,7 +254,7 @@ c
          ! Read succeeded
          quit = .false.
 
-   80    continue ! if we come directly here something went wrong
+   80    continue ! if we arrive directly here something went wrong
 
          ! finished reading so close the input file
          close (unit=ixyz)
@@ -259,7 +265,8 @@ c
      &                            'Coordinate File at Atom', i
             call fatal
          end if
-      else if(nprocs.gt.1) then
+
+      else if(nprocs.gt.1) then ! receive atoms from proc 0
 
          ! Receive data from proc 0
          call MPI_Recv(atom(1),dn,AtomTypeComm,0,100,MPI_COMM_WORLD, 
@@ -267,6 +274,7 @@ c
 
       end if ! Proc 0
 
+      ! diagnostic message
       print "(A,I3,A,I6,A,I6,A,I6)","Process ",rank," has first atom ", 
      &        atom(1)%tag," and last ", atom(dn)%tag," dn =",dn
 
