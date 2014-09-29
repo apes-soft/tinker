@@ -288,6 +288,9 @@ c
         call lattice 
       !endif
 
+      ! redistribute the atoms
+      call redistribute
+
 c
 c     for each atom, count and sort its attached atoms
 c
