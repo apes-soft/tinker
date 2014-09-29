@@ -18,6 +18,16 @@
 
       integer, save:: AtomTypeComm ! MPI derived type for atoms
 
+      ! data type to store information about the split
+      type splitinfo
+        integer:: splitdir            ! splitting direction 
+        integer:: neighbor            ! rank to communicate with
+        integer:: above               ! above or below the split
+        real (kind=8):: splitcoord    ! bisection coordinate
+      end type splitinfo
+
+      type(splitinfo), dimension(:),allocatable, save:: splits
+
       save
 
       contains
@@ -66,6 +76,21 @@
       call MPI_Type_commit(AtomTypeComm, ierror)
 
       end subroutine createMPIAtomType
+
+! +-----------------------------------+
+! | Calculate the splitting direction |
+! +-----------------------------------+
+
+      function findSplit(dir)
+
+      implicit none
+
+      real (kind=8):: findSplit
+      integer, intent(in):: dir
+
+
+  
+      end function findSplit
 
       end module parallelparams
 
