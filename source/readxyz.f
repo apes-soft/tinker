@@ -36,9 +36,7 @@ c
       integer, allocatable :: list(:)
       integer:: proc, nlocal, start, end
       real (kind=8), dimension(6):: boxparams   ! system box
-      real*8 xlen,ylen,zlen
-      real*8 aang,bang,gang
-      logical exist,opened
+      logical exist
       logical quit,reorder
       logical clash
       character*120 xyzfile

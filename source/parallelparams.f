@@ -6,17 +6,17 @@
       implicit none
 
       ! MPI required variables
-      integer, save:: rank   ! Process id
-      integer, save:: nprocs ! Total number of processes involved
+      integer:: rank   ! Process id
+      integer:: nprocs ! Total number of processes involved
       integer:: ierror       ! Error flag required by MPI calls
       integer, dimension(MPI_STATUS_SIZE):: status ! Status for MPI calls
 
       ! dn is the actual number of atoms stored in the local process
       ! while numatoms contains buffer space and halo atoms.
-      integer, save:: dn       ! Local number of atoms
-      integer, save:: numatoms ! Number of atoms allocated locally
+      integer:: dn       ! Local number of atoms
+      integer:: numatoms ! Number of atoms allocated locally
 
-      integer, save:: AtomTypeComm ! MPI derived type for atoms
+      integer:: AtomTypeComm ! MPI derived type for atoms
 
       ! data type to store information about the split
       type splitinfo
@@ -26,7 +26,7 @@
         real (kind=8):: splitcoord    ! bisection coordinate
       end type splitinfo
 
-      type(splitinfo), dimension(:),allocatable, save:: splits
+      type(splitinfo), dimension(:),allocatable:: splits
 
       save
 
