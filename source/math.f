@@ -32,4 +32,17 @@ c
       parameter (sqrttwo=1.414213562373095049d0)
       parameter (twosix=1.122462048309372981d0)
       save
+
+      contains
+
+      function log2(x)
+
+      implicit none
+      
+      real (kind=8):: log2
+      real (kind=8):: x
+
+      log2 = log(x)/log(2.0)
+
+      end function log2
       end
