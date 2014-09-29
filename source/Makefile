@@ -352,6 +352,7 @@ OBJS = angbnd.o \
        readdyn.o \
        readprm.o \
        readxyz.o \
+       redistribute.o \
        replica.o \
        ring.o \
        rings.o \
@@ -580,6 +581,7 @@ random.o: inform.o iounit.o keys.o math.o sizes.o
 readdyn.o: atoms.o boxes.o files.o iounit.o mdstuf.o moldyn.o sizes.o
 readprm.o: fields.o iounit.o kangs.o katoms.o kbonds.o kmulti.o kopbnd.o korbs.o kpitor.o kpolr.o kstbnd.o ktorsn.o ktrtor.o kurybr.o kvdwpr.o kvdws.o params.o sizes.o
 readxyz.o:  atoms.o boxes.o couple.o files.o inform.o iounit.o parallelparams.o sizes.o titles.o
+redistribute.o: atoms.o math.o parallelparams.o
 replica.o: boxes.o cell.o inform.o iounit.o sizes.o
 ring.o:
 rings.o: angbnd.o atoms.o bitor.o bndstr.o couple.o inform.o iounit.o ring.o sizes.o tors.o
