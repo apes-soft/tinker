@@ -1,3 +1,6 @@
+!     Variables used for the parallel implementation here including, the
+!     process rank, size, etc as well as ancillary functions.
+
       module parallelparams
 
       use mpi
@@ -23,7 +26,9 @@
         integer:: splitdir            ! splitting direction 
         integer:: neighbor            ! rank to communicate with
         integer:: above               ! above or below the split
+        integer:: comm                ! MPI Communicator for this split
         real (kind=8):: splitcoord    ! bisection coordinate
+        real (kind=8), dimension(3):: minbox, maxbox ! systembox
       end type splitinfo
 
       type(splitinfo), dimension(:),allocatable:: splits
@@ -81,15 +86,39 @@
 ! | Calculate the splitting direction |
 ! +-----------------------------------+
 
-      function findSplit(dir)
+      ! Currently using the position of the atoms to determine a
+      ! splitting coordinate. This may not give the optimal split
+      ! - it would be better to use an atom cost or an interaction
+      ! count to weigh the atom cost and determine a splitting 
+      ! coordinate that splits the cost and not the atoms.
+      function findSplit(dir, minb, maxb)
 
       implicit none
 
-      real (kind=8):: findSplit
-      integer, intent(in):: dir
+      real (kind=8):: findSplit    ! return of the function
+      integer, intent(in):: dir    ! splitting direction
+      real (kind=8), dimension(3), intent(in):: minb, maxb
+      real (kind=8):: pivot        ! pivot to use to identify midpoint
+      integer:: order              ! Midpoint
+      real (kind=8), allocatable, dimension(:):: coords ! coordinates
 
 
+      ! Allocate a temporary to hold the coordinate information
+      allocate(coords(dn))
   
+      ! Populate a temporary array witht the coords in the 
+      ! splitting direction
+      coords = atom(:)%pos(dir)
+
+      ! Find a local pivot
+      order = ceiling(dn/2.0)
+
+      ! Free the temporary arrays
+      deallocate(coords)
+
+      ! Assign the value for the splitting coordinate
+      ! findSplit = 
+
       end function findSplit
 
       end module parallelparams
