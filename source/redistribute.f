@@ -5,7 +5,7 @@
 ! processes by half.
 !
 
-      subroutine redistribute
+      subroutine redistributeInit
 
       use atoms
       use math
@@ -56,35 +56,65 @@
          allocate(splits(nsplits))
       end if
 
+      ! Set the the min/max for the current domain.
+      splits(1)%minbox = minbox
+      splits(1)%maxbox = maxbox
+
       ! Loop over the number of splits
       do ns=1, nsplits
 
-        ! Determine the splitting direction - use the 
-        ! longest direction
-        splits(ns)%splitdir = maxloc(sysbox, dim=1)
+        ! Set the extent of the domain according to the 
+        ! previous split.
+        if(ns.gt.1) then 
+          splits(ns)%minbox = splits(ns-1)%minbox
+          splits(ns)%maxbox = splits(ns-1)%maxbox
+        end if
 
-        ! determine the splitting point
-        splits(ns)%splitcoord=findSplit(splits(ns)%splitdir)
+        ! Calculate the local domain extent.
+        lsysbox = splits(ns)%maxbox - splits(ns)%minbox
 
-        ! determine the comms channel
+        ! Determine the comms channel - use this to determin
+        ! neighbouring process and what side of the split 
+        ! this process belongs to.
         chan = ishft(1,(ns-1))
 
-        ! deteremine what the neighbouring process rank is - this
+        ! Deteremine what the neighbouring process rank is - this
         ! is based on a Gray code. Note ieor(neighbor,split)->rank.
         splits(ns)%neighbor = ieor(rank,chan)
 
-        ! determine whether we are above or below the split
+        ! Determine whether we are above or below the split
         splits(ns)%above = ishft(iand(rank,chan),-(ns-1))
+
+        ! Determine the splitting direction - use the 
+        ! longest direction
+        splits(ns)%splitdir = maxloc(lsysbox, dim=1)
+
+        ! Determine the splitting point
+        splits(ns)%splitcoord=findSplit(splits(ns)%splitdir,
+     &                                  splits(ns)%minbox,
+     &                                  splits(ns)%maxbox)
+
 
         ! NB not sure what the halo region should be - could be a 
         ! deal breaker.
         ! swap atoms across the splitting direction
         if (splits(ns)%above.eq.1) then
+
+           ! Above the split so the minbox moves up.
+           splits(ns)%minbox(splits(ns)%splitdir) = 
+     &           splits(ns)%splitcoord
+
+
            ! call MPI_Send(buff,count,datatype,neighbor,100,
     !&                     MPI_COMM_WORLD,ierror)
            ! call MPI_Recv(buff,count,datatype,neighbor,101,
     !&                     MPI_COMM_WORLD,ierror)
         else
+
+           ! Below the split so the maxbox moves down.
+           splits(ns)%maxbox(splits(ns)%splitdir) = 
+     &           splits(ns)%splitcoord
+
            ! call MPI_Recv(buff,count,datatype,neighbor,100,
     !&                     MPI_COMM_WORLD,ierror)
            ! call MPI_Send(buff,count,datatype,neighbor,101,
@@ -95,4 +125,4 @@
 
       ! NB Deallocate the atom distributions or keep?
 
-      end subroutine redistribute
+      end subroutine redistributeInit

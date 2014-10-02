@@ -295,7 +295,7 @@ c
       !endif
 
       ! redistribute the atoms
-      call redistribute
+      call redistributeInit
 
 c
 c     for each atom, count and sort its attached atoms
