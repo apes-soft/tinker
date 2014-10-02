@@ -110,7 +110,7 @@ c
          do i = 1, nbond
             ia = ibnd(1,i)
             ib = ibnd(2,i)
-            if (n12(ia).eq.3 .and. n12(ib).eq.3) then
+            if (atom(ia)%n12.eq.3 .and. atom(ib)%n12.eq.3) then
                ita = atom(ia)%class
                itb = atom(ib)%class
                size = 4
@@ -125,20 +125,20 @@ c
                   if (kpt(j) .eq. pt) then
                      npitors = npitors + 1
                      kpit(npitors) = ptcon(j)
-                     ipit(1,npitors) = i12(1,ia)
-                     ipit(2,npitors) = i12(2,ia)
+                     ipit(1,npitors) = atom(ia)%i12(1)
+                     ipit(2,npitors) = atom(ia)%i12(2)
                      ipit(3,npitors) = ia
                      ipit(4,npitors) = ib
-                     ipit(5,npitors) = i12(1,ib)
-                     ipit(6,npitors) = i12(2,ib)
-                     if (i12(1,ia) .eq. ib)
-     &                  ipit(1,npitors) = i12(3,ia)
-                     if (i12(2,ia) .eq. ib)
-     &                  ipit(2,npitors) = i12(3,ia)
-                     if (i12(1,ib) .eq. ia)
-     &                  ipit(5,npitors) = i12(3,ib)
-                     if (i12(2,ib) .eq. ia)
-     &                  ipit(6,npitors) = i12(3,ib)
+                     ipit(5,npitors) = atom(ib)%i12(1)
+                     ipit(6,npitors) = atom(ib)%i12(2)
+                     if (atom(ia)%i12(1) .eq. ib)
+     &                  ipit(1,npitors) = atom(ia)%i12(3)
+                     if (atom(ia)%i12(2) .eq. ib)
+     &                  ipit(2,npitors) = atom(ia)%i12(3)
+                     if (atom(ib)%i12(1) .eq. ia)
+     &                  ipit(5,npitors) = atom(ib)%i12(3)
+                     if (atom(ib)%i12(2) .eq. ia)
+     &                  ipit(6,npitors) = atom(ib)%i12(3)
                      goto 60
                   end if
                end do

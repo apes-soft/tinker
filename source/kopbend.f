@@ -143,7 +143,7 @@ c
          do i = 1, nangle
             ib = iang(2,i)
             itb = atom(ib)%class
-            if (jopb(itb) .and. n12(ib).eq.3) then
+            if (jopb(itb) .and. atom(ib)%n12.eq.3) then
                ia = iang(1,i)
                ita = atom(ia)%class
                ic = iang(3,i)

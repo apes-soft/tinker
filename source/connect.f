@@ -30,7 +30,7 @@ c
 c     zero out the number of atoms attached to each atom
 c
       do i = 1, n
-         n12(i) = 0
+         atom(i)%n12 = 0
       end do
 c
 c     loop over the bonds in the Z-matrix, adding each bond
@@ -44,10 +44,10 @@ c
             if ((i.eq.id1 .and. k.eq.id2) .or.
      &          (i.eq.id2 .and. k.eq.id1))  goto 10
          end do
-         n12(i) = n12(i) + 1
-         n12(k) = n12(k) + 1
-         i12(n12(i),i) = k
-         i12(n12(k),k) = i
+         atom(i)%n12 = atom(i)%n12 + 1
+         atom(k)%n12 = atom(k)%n12 + 1
+         atom(i)%i12(atom(i)%n12) = k
+         atom(k)%i12(atom(k)%n12) = i
    10    continue
       end do
 c
@@ -56,15 +56,15 @@ c
       do i = 1, nadd
          do j = 1, 2
             k = iadd(j,i)
-            n12(k) = n12(k) + 1
-            i12(n12(k),k) = iadd(3-j,i)
+            atom(k)%n12 = atom(k)%n12 + 1
+            atom(k)%i12(atom(k)%n12) = iadd(3-j,i)
          end do
       end do
 c
 c     sort the attached atom lists into ascending order
 c
       do i = 1, n
-         call sort (n12(i),i12(1,i))
+         call sort (atom(i)%n12,atom(i)%i12(1))
       end do
       return
       end

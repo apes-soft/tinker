@@ -264,12 +264,12 @@ c
                ztyp = mpz(imp)
                xtyp = mpx(imp)
                ytyp = mpy(imp)
-               do j = 1, n12(i)
-                  ji = i12(j,i)
+               do j = 1, atom(i)%n12
+                  ji = atom(i)%i12(j)
                   jt = atom(ji)%type
                   if (jt .eq. ztyp) then
-                     do k = 1, n12(i)
-                        ki = i12(k,i)
+                     do k = 1, atom(i)%n12
+                        ki = atom(i)%i12(k)
                         kt = atom(ki)%type
                         if (kt.eq.xtyp .and. ki.ne.ji) then
                            if (ytyp .eq. 0) then
@@ -281,8 +281,8 @@ c
                               end do
                               goto 140
                            end if
-                           do l = 1, n12(i)
-                              li = i12(l,i)
+                           do l = 1, atom(i)%n12
+                              li = atom(i)%i12(l)
                               lt = atom(li)%type
                               if (lt.eq.ytyp .and. li.ne.ji
      &                               .and. li.ne.ki) then
@@ -310,16 +310,16 @@ c
                ztyp = mpz(imp)
                xtyp = mpx(imp)
                ytyp = mpy(imp)
-               do j = 1, n12(i)
-                  ji = i12(j,i)
+               do j = 1, atom(i)%n12
+                  ji = atom(i)%i12(j)
                   jt = atom(ji)%type
                   if (jt .eq. ztyp) then
-                     do k = 1, n13(i)
-                        ki = i13(k,i)
+                     do k = 1, atom(i)%n13
+                        ki = atom(i)%i13(k)
                         kt = atom(ki)%type
                         path = .false.
-                        do m = 1, n12(ki)
-                           if (i12(m,ki) .eq. ji)  path = .true.
+                        do m = 1, atom(ki)%n12
+                           if (atom(ki)%i12(m) .eq. ji)  path = .true.
                         end do
                         if (kt.eq.xtyp .and. path) then
                            if (ytyp .eq. 0) then
@@ -331,12 +331,13 @@ c
                               end do
                               goto 140
                            end if
-                           do l = 1, n13(i)
-                              li = i13(l,i)
+                           do l = 1, atom(i)%n13
+                              li = atom(i)%i13(l)
                               lt = atom(li)%type
                               path = .false.
-                              do m = 1, n12(li)
-                                 if (i12(m,li) .eq. ji)  path = .true.
+                              do m = 1, atom(li)%n12
+                                 if (atom(li)%i12(m) .eq. ji)
+     &                                path = .true.
                               end do
                               if (lt.eq.ytyp .and. li.ne.ki
      &                               .and. path) then
@@ -364,8 +365,8 @@ c
                ztyp = mpz(imp)
                xtyp = mpx(imp)
                ytyp = mpy(imp)
-               do j = 1, n12(i)
-                  ji = i12(j,i)
+               do j = 1, atom(i)%n12
+                  ji = atom(i)%i12(j)
                   jt = atom(ji)%type
                   if (jt .eq. ztyp) then
                      if (xtyp .eq. 0) then

@@ -39,9 +39,23 @@ c      integer:: type(maxatm)
       integer :: valence 
       character(len=24) :: story
       character(len=3) :: name
+
+      integer :: n12         ! number of atoms directly bonded to the atom
+      integer, dimension(maxval) :: i12  ! atom numbers of atoms directly
+                                         !conneced to each atom
+      integer :: n13
+      integer :: n14
+      integer :: n15
+      integer, dimension(maxval*3) :: i13
+      integer, dimension(maxval*9) :: i14
+      integer, dimension(maxval*27) :: i15
+
+      integer, dimension(maxval) :: bndlist
+
       end type atomtype
 
       save
+
       type(atomtype), allocatable :: atom(:)
 
       end

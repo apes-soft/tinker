@@ -112,6 +112,9 @@ c
          call fatal
       end if
 
+      allocate (atom(n))
+
+
 c
 c     creating atom data type for each atom in the system
 c
@@ -130,7 +133,7 @@ c
          atom(i)%pos(3) = 0.0d0
          atom(i)%type = 0
          do j = 1, maxval
-            i12(j,i) = 0
+            atom(i)%i12(j) = 0
          end do
       end do
 c
@@ -165,7 +168,7 @@ c              use_bounds = .true.
          call getword (record,atom(i)%name,next)
          string = record(next:120)
          read (string,*,err=70,end=70)  atom(i)%pos(1),atom(i)%pos(2),
-     &        atom(i)%pos(3),atom(i)%type,(i12(j,i),j=1,maxval)
+     &        atom(i)%pos(3),atom(i)%type,(atom(i)%i12(j),j=1,maxval)
    70    continue
       end do
       quit = .false.
@@ -183,15 +186,15 @@ c
 c     for each atom, count and sort its attached atoms
 c
       do i = 1, n
-         n12(i) = 0
+         atom(i)%n12 = 0
          do j = maxval, 1, -1
-            if (i12(j,i) .ne. 0) then
-               n12(i) = j
+            if (atom(i)%i12(j) .ne. 0) then
+               atom(i)%n12 = j
                goto 100
             end if
          end do
   100    continue
-         call sort (n12(i),i12(1,i))
+         call sort (atom(i)%n12,atom(i)%i12(1))
       end do
 c
 c     perform dynamic allocation of some local arrays
@@ -199,8 +202,8 @@ c
       nmax = 0
       do i = 1, n
          nmax = max(atom(i)%tag,nmax)
-         do j = 1, n12(i)
-            nmax = max(i12(j,i),nmax)
+         do j = 1, atom(i)%n12
+            nmax = max(atom(i)%i12(j),nmax)
          end do
       end do
       allocate (list(nmax))
@@ -218,10 +221,10 @@ c
      &              ' Attempting to Renumber')
          do i = 1, n
             atom(i)%tag = i
-            do j = 1, n12(i)
-               i12(j,i) = list(i12(j,i))
+            do j = 1, atom(i)%n12
+               atom(i)%i12(j) = list(atom(i)%i12(j))
             end do
-            call sort (n12(i),i12(1,i))
+            call sort (atom(i)%n12,atom(i)%i12(1))
          end do
       end if
 c
@@ -237,10 +240,10 @@ c
 c     make sure that all connectivities are bidirectional
 c
       do i = 1, n
-         do j = 1, n12(i)
-            k = i12(j,i)
-            do m = 1, n12(k)
-               if (i12(m,k) .eq. i)  goto 130
+         do j = 1, atom(i)%n12
+            k = atom(i)%i12(j)
+            do m = 1, atom(k)%n12
+               if (atom(k)%i12(m) .eq. i)  goto 130
             end do
             write (iout,120)  k,i
   120       format (/,' READXYZ  --  Check Connection of Atom',

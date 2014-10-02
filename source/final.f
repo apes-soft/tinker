@@ -59,7 +59,7 @@ c
 c
 c     deallocation of global arrays from module atmlst
 c
-      if (allocated(bndlist))  deallocate (bndlist)
+c      if (allocated(bndlist))  deallocate (bndlist)
       if (allocated(anglist))  deallocate (anglist)
 c
 c     deallocation of global arrays from module bitor
@@ -78,12 +78,13 @@ c
 c
 c     deallocation of global arrays from module couple
 c
-      if (allocated(n13))  deallocate (n13)
-      if (allocated(n14))  deallocate (n14)
-      if (allocated(n15))  deallocate (n15)
-      if (allocated(i13))  deallocate (i13)
-      if (allocated(i14))  deallocate (i14)
-      if (allocated(i15))  deallocate (i15)
+c      if (allocated(n13))  deallocate (n13)
+c      if (allocated(n14))  deallocate (n14)
+c      if (allocated(n15))  deallocate (n15)
+c      if (allocated(i13))  deallocate (i13)
+c      if (allocated(i14))  deallocate (i14)
+c      if (allocated(i15))  deallocate (i15)
+
 c
 c     deallocation of global arrays from module deriv
 c
@@ -252,7 +253,7 @@ c
 c
 c     deallocation of global data type atom
 c
-
+   
       deallocate (atom)
 
 c

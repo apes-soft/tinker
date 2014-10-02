@@ -25,13 +25,13 @@ c
       module couple
       use sizes
       implicit none
-      integer n12(maxatm)
-      integer, allocatable :: n13(:)
-      integer, allocatable :: n14(:)
-      integer, allocatable :: n15(:)
-      integer i12(maxval,maxatm)
-      integer, allocatable :: i13(:,:)
-      integer, allocatable :: i14(:,:)
-      integer, allocatable :: i15(:,:)
+c      integer n12(maxatm)
+c      integer, allocatable :: n13(:)
+c      integer, allocatable :: n14(:)
+c      integer, allocatable :: n15(:)
+c      integer i12(maxval,maxatm)
+c      integer, allocatable :: i13(:,:)
+c      integer, allocatable :: i14(:,:)
+c      integer, allocatable :: i15(:,:)
       save
       end
