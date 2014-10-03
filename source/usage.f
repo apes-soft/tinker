@@ -4,8 +4,12 @@ c
       subroutine usage
 
       use iounit 
+      use parallelparams
 
       implicit none
+
+      ! Only want process 0 to print out the usage.
+      if(rank.eq.0) then 
 
       write (iout,*)
       write (iout,*) " Usage: "
@@ -35,6 +39,7 @@ c
      &               " verbose mode)."
       write (iout,*)
 
+      end if 
 
       end subroutine usage
 
