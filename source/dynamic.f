@@ -48,7 +48,7 @@ c
       ! Check that we are using one or a power of 2 number of processes,
       ! nprocs should never be 0
       if((nprocs.ne.1).and.(iand(nprocs,nprocs-1).ne.0)) then
-         if(proc.eq.0) then 
+         if(rank.eq.0) then 
             write(iout,*) "Number of processes must be a power of 2."
          end if
          call fatal(1)
@@ -81,8 +81,10 @@ c
          read (string,*,err=10,end=10)  nstep
          query = .false.
       else
-         write(iout,*) "Need to specify the number of dynamic steps ", 
-     &                 "to be taken at the command line."
+         if(rank.eq.0) then 
+           write(iout,*) "Need to specify the number of dynamic steps ", 
+     &                   "to be taken at the command line."
+         end if
          call usage
          call fatal(2)
       end if
@@ -96,8 +98,10 @@ c
       if (exist) read (string,*,err=40,end=40)  dt
    40 continue
       if (dt .lt. 0.0d0) then
-         write (iout,*) "The time step length in Femtoseconds ",
-     &                  "must be specified at the command line."
+         if(rank.eq.0) then 
+           write (iout,*) "The time step length in Femtoseconds ",
+     &                    "must be specified at the command line."
+         end if
          call usage
          call fatal(3)
       end if
@@ -116,8 +120,10 @@ c
       if (exist)  read (string,*,err=80,end=80)  dtdump
    80 continue
       if (dtdump .lt. 0.0d0) then
-         write (iout,*) "The time between dumps in Picoseconds ",
-     &                  "must be specified at the command line."
+         if(rank.eq.0) then 
+           write (iout,*) "The time between dumps in Picoseconds ",
+     &                    "must be specified at the command line."
+         end if
          call usage
          call fatal(4)
       end if
@@ -132,9 +138,11 @@ c
       call nextarg (string,exist)
       if (exist)  read (string,*,err=170,end=170)  kelvin
   170 continue
-      if  (kelvin .lt. 0.0d0) then
-         write (iout,*) "The Desired Temperature in Degrees K ",
-     &                  "must be specified at the command line."
+      if (kelvin .lt. 0.0d0) then
+         if(rank.eq.0) then        
+           write (iout,*) "The Desired Temperature in Degrees K ",
+     &                    "must be specified at the command line."
+         end if
          call usage
          call fatal(5)
       end if 
@@ -146,8 +154,10 @@ c
       if (exist)  read (string,*,err=210,end=210)  atmsph
   210 continue
       if (atmsph .lt. 0.0d0) then
-         write(iout,*) "The Desired Pressure in Atm ",
-     &                 "must be specified at the command line."
+         if(rank.eq.0) then 
+            write(iout,*) "The Desired Pressure in Atm ",
+     &                    "must be specified at the command line."
+         end if
          call usage
          call fatal(6) 
       end if
