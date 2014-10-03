@@ -297,6 +297,9 @@ c
       ! redistribute the atoms
       call redistributeInit
 
+      ! call fatal for now as the rest has not been 
+      ! converted
+      call fatal(999)
 c
 c     for each atom, count and sort its attached atoms
 c
