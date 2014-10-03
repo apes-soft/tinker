@@ -48,7 +48,9 @@ c
       ! Check that we are using one or a power of 2 number of processes,
       ! nprocs should never be 0
       if((nprocs.ne.1).and.(iand(nprocs,nprocs-1).ne.0)) then
-         write(iout,*) "Number of processes must be a power of 2."
+         if(proc.eq.0) then 
+            write(iout,*) "Number of processes must be a power of 2."
+         end if
          call fatal(1)
       end if
 
