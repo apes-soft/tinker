@@ -100,7 +100,9 @@
       real (kind=8), dimension(3), intent(in):: minb, maxb ! origin and max pt
       integer, intent(in):: comm   ! Communicator for domain
       real (kind=8):: pivot        ! pivot to use to identify midpoint
-      integer:: order              ! Midpoint
+      integer:: lnatoms            ! local number of atoms
+      integer:: gnatoms            ! global number of atoms
+      integer:: target             ! target number of atoms
       real (kind=8), allocatable, dimension(:):: coords ! coordinates
 
 
@@ -109,16 +111,53 @@
   
       ! Populate a temporary array witht the coords in the 
       ! splitting direction
-      coords = atom(:)%pos(dir)
+      coords = atom(1:dn)%pos(dir)
+
+      ! Global target number of atoms to hit - round up by
+      ! one if even.
+      target = ceiling(n/2.0)
 
       ! Find a local pivot
-      order = ceiling(dn/2.0)
+      pivot = 0.5*(maxb(dir)-minb(dir))
+
+      ! Count the local number of atoms below the pivot
+      lnatoms = count(coords < pivot)
+
+      ! Now get the global number of atoms below the pivot
+      call MPI_Allreduce(lnatoms,gnatoms, 1, MPI_INTEGER, MPI_SUM, 
+     &                   comm, ierror)
+
+      ! Find a valid splitting point
+      do while(gnatoms /= target)
+
+        ! Reset the pivot
+        if(gnatoms.lt.n/2) then 
+
+          pivot = 0.5*(pivot+maxb(dir))
+
+        else 
+       
+          pivot = 0.5*(pivot+minb(dir))
+
+        end if
+
+        ! Count the number of atoms below the new pivot
+        lnatoms = count(coords < pivot)
+
+        call MPI_Allreduce(lnatoms,gnatoms, 1, MPI_INTEGER, MPI_SUM, 
+     &                     comm, ierror)
+
+        if(rank.eq.0) then 
+          print "(A,I4,A,F7.4)","gnatoms =",gnatoms," pivot =",pivot
+        end if 
+
+      end do 
 
       ! Free the temporary arrays
       deallocate(coords)
 
       ! Assign the value for the splitting coordinate
-      ! findSplit = 
+      findSplit = pivot
 
       end function findSplit
 
