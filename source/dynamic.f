@@ -49,7 +49,7 @@ c
       ! nprocs should never be 0
       if((nprocs.ne.1).and.(iand(nprocs,nprocs-1).ne.0)) then
          write(iout,*) "Number of processes must be a power of 2."
-         call fatal
+         call fatal(1)
       end if
 
 c
@@ -82,7 +82,7 @@ c
          write(iout,*) "Need to specify the number of dynamic steps ", 
      &                 "to be taken at the command line."
          call usage
-         call fatal
+         call fatal(2)
       end if
    10 continue
 
@@ -97,7 +97,7 @@ c
          write (iout,*) "The time step length in Femtoseconds ",
      &                  "must be specified at the command line."
          call usage
-         call fatal
+         call fatal(3)
       end if
       dt = 0.001d0 * dt
 
@@ -117,7 +117,7 @@ c
          write (iout,*) "The time between dumps in Picoseconds ",
      &                  "must be specified at the command line."
          call usage
-         call fatal
+         call fatal(4)
       end if
       iwrite = nint(dtdump/dt)
 c 
@@ -134,7 +134,7 @@ c
          write (iout,*) "The Desired Temperature in Degrees K ",
      &                  "must be specified at the command line."
          call usage
-         call fatal
+         call fatal(5)
       end if 
 
       isobaric = .true.
@@ -147,7 +147,7 @@ c
          write(iout,*) "The Desired Pressure in Atm ",
      &                 "must be specified at the command line."
          call usage
-         call fatal 
+         call fatal(6) 
       end if
 
 c
