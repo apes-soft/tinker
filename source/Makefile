@@ -607,6 +607,7 @@ units.o:
 uprior.o:
 urey.o:
 urypot.o:
+usage.o: iounit.o parallelparams.o
 usolve.o:
 vdw.o:
 vdwpot.o:
