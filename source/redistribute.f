@@ -63,8 +63,8 @@
       ! Loop over the number of splits
       do ns=1, nsplits
 
-        ! Set the extent of the domain according to the 
-        ! previous split.
+        ! Set the extent of the domain to be the 
+        ! extent of the previous domain.
         if(ns.gt.1) then 
           splits(ns)%minbox = splits(ns-1)%minbox
           splits(ns)%maxbox = splits(ns-1)%maxbox
@@ -82,8 +82,26 @@
         ! is based on a Gray code. Note ieor(neighbor,split)->rank.
         splits(ns)%neighbor = ieor(rank,chan)
 
-        ! Determine whether we are above or below the split
+        ! Determine whether we are above or below the split.
+        ! This will return a 0 or a 1.
         splits(ns)%above = ishft(iand(rank,chan),-(ns-1))
+
+        ! Create a subcommunicator for each of the subdomains
+        ! so that we can carry out collective communications
+        ! for that subdomain. Only want these for collective
+        ! operations - point-to-point operations will still 
+        ! operate using MPI_COMM_WORLD.
+        if(ns.gt.1) then 
+           call MPI_Comm_split(splits(ns-1)%comm,
+     &                         splits(ns)%above,
+     &                         rank,
+     &                         splits(ns)%comm, ierror)
+        else
+           call MPI_Comm_split(MPI_COMM_WORLD,
+     &                         splits(ns)%above,
+     &                         rank,
+     &                         splits(ns)%comm, ierror)
+        end if
 
         ! Determine the splitting direction - use the 
         ! longest direction
@@ -92,7 +110,8 @@
         ! Determine the splitting point
         splits(ns)%splitcoord=findSplit(splits(ns)%splitdir,
      &                                  splits(ns)%minbox,
-     &                                  splits(ns)%maxbox)
+     &                                  splits(ns)%maxbox,
+     &                                  splits(ns)%comm)
 
 
         ! NB not sure what the halo region should be - could be a 

@@ -91,13 +91,14 @@
       ! - it would be better to use an atom cost or an interaction
       ! count to weigh the atom cost and determine a splitting 
       ! coordinate that splits the cost and not the atoms.
-      function findSplit(dir, minb, maxb)
+      function findSplit(dir, minb, maxb,comm)
 
       implicit none
 
       real (kind=8):: findSplit    ! return of the function
       integer, intent(in):: dir    ! splitting direction
-      real (kind=8), dimension(3), intent(in):: minb, maxb
+      real (kind=8), dimension(3), intent(in):: minb, maxb ! origin and max pt
+      integer, intent(in):: comm   ! Communicator for domain
       real (kind=8):: pivot        ! pivot to use to identify midpoint
       integer:: order              ! Midpoint
       real (kind=8), allocatable, dimension(:):: coords ! coordinates
