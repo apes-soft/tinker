@@ -16,14 +16,14 @@ c     "fatal" terminates execution due to a user request, a severe
 c     error or some other nonstandard condition
 c
 c
-      subroutine fatal
+      subroutine fatal(errcode)
 
       use iounit
       use parallelparams
 
       implicit none
 
-      integer:: errcode=99  ! Specify an error code
+      integer, optional, intent(in):: errcode  ! Specify an error code
 
 c
 c
