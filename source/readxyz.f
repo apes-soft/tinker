@@ -124,6 +124,12 @@ c
 
       end if ! rank 0
 
+      if(rank.eq.0) then
+         print "(A,I3,A,I5)","Rank ",rank," n ",n
+         print "(A,I3,A,A)","Title (",ltitle,"): ",title
+         call flush()
+      end if
+
       ! Broadcast the total number of atoms to other procs
       call MPI_Bcast(n, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,ierror)
 
@@ -132,6 +138,10 @@ c
 
       ! Broadcast the title to the other procs
       call MPI_Bcast(title,ltitle,MPI_CHAR,0,MPI_COMM_WORLD,ierror)
+
+      print "(A,I3,A,I5)","Rank ",rank," n ",n
+      print "(A,I3,A,A)","Title (",ltitle,"): ",title
+      call flush()
 
       ! Determine local number of atoms
       dn = n/nprocs
