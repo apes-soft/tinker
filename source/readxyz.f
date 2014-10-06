@@ -49,6 +49,8 @@ c
       ! create an MPI derived type to communicate atoms
       call createMPIAtomType
 
+      print "(A,I3,A,I3)", "Process ",rank," out of ", nprocs
+ 
       ! only process 0 opens the input file and redistributes to 
       ! the other processes. Read the number of atoms and 
       ! simulation title first
