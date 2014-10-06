@@ -16,12 +16,14 @@ else
    nprocs=1
 fi
 
+echo Using $nprocs processes
+
 # -np - number of processes
 # -mca btl tcp,sm,self - specify the message transport mechanism
 # --mca orte_base_help_aggregate 0  - disable error message aggregation
 
 if [ `hostname` = "mbp-ma.local" ]; then
-  mpirun -np $nprocs
+  mpirun -np $nprocs \
          ../bin/dynamic bench7 100 1.0 10.0 2 298.0
 fi
 
