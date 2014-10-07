@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script to run an mpi job. Options used for mpirun will
+# Script to run an mpi job for bench7. Options used for mpirun will
 # depend on the machine used. Usage:
 #
 # bench7-mpi.sh NumOfProcs
