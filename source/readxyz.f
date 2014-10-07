@@ -49,8 +49,9 @@ c
       ! create an MPI derived type to communicate atoms
       call createMPIAtomType
 
-      print "(A,I3,A,I3)", "Process ",rank," out of ", nprocs
- 
+      print "(A,I3,A,I3)", "readxyz: process ",rank," out of ", nprocs
+      call flush()
+
       ! only process 0 opens the input file and redistributes to 
       ! the other processes. Read the number of atoms and 
       ! simulation title first
@@ -130,18 +131,25 @@ c
          call flush()
       end if
 
+      print "(A,I3)","Broadcast 1: proc ",rank
+      call flush()
       ! Broadcast the total number of atoms to other procs
       call MPI_Bcast(n, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,ierror)
 
+      print "(A,I3)","Broadcast 2: proc ",rank
+      call flush()
       ! Bradcast the length of the title
       call MPI_Bcast(ltitle, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,ierror)
 
+      print "(A,I3)","Broadcast 3: proc ",rank
+      call flush()
       ! Broadcast the title to the other procs
       call MPI_Bcast(title,ltitle,MPI_CHAR,0,MPI_COMM_WORLD,ierror)
 
       print "(A,I3,A,I5)","Rank ",rank," n ",n
       print "(A,I3,A,A)","Title (",ltitle,"): ",title
       call flush()
+
 
       ! Determine local number of atoms
       dn = n/nprocs
