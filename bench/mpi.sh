@@ -23,14 +23,15 @@ echo Using $nprocs processes
 # --mca orte_base_help_aggregate 0  - disable error message aggregation
 
 if [ `hostname` = "mbp-ma.local" ]; then
+           #xterm -e ggdb -d ../source --args \
   mpirun -np $nprocs \
          ../bin/dynamic bench7 100 1.0 10.0 2 298.0
 fi
 
 if [ `hostname` = "indy0" ]; then
 
+           #xterm -e gdb -d ../source --args \
   mpirun -np $nprocs \
          -mca btl tcp,sm,self \
-           xterm -e gdb -d ../source --args \
          ../bin/dynamic bench7 100 1.0 10.0 2 298.0
 fi
