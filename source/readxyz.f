@@ -46,11 +46,11 @@ c
       ! initialize the total number of atoms in the system
       n = 0
 
+      ! initialize variables
+      boxparams = 0.0d0
+
       ! create an MPI derived type to communicate atoms
       call createMPIAtomType
-
-      print "(A,I3,A,I3)", "readxyz: process ",rank," out of ", nprocs
-      call flush()
 
       ! only process 0 opens the input file and redistributes to 
       ! the other processes. Read the number of atoms and 
@@ -73,13 +73,18 @@ c
          ! and return if already at end of file  NB - why?
          quit  = .true.
          abort = .false.
+
          size  = 0
+
          do while (size .eq. 0)
             read (ixyz,"(a120)", err=10, end=10)  record
             size = trimtext (record)   
          end do
+
+         ! everything worked, set the flags accordingly.
          quit  = .false.
          abort = .true.
+
 10       continue
 
          ! check if error occurred in reading the coordinate file
@@ -88,6 +93,8 @@ c
      &                 'File in the number of atoms and title line'
             call fatal
          end if
+
+         ! reset the flags
          quit  = .true.
          abort = .false.
  
@@ -125,31 +132,14 @@ c
 
       end if ! rank 0
 
-      if(rank.eq.0) then
-         print "(A,I3,A,I5)","Rank ",rank," n ",n
-         print "(A,I3,A,A)","Title (",ltitle,"): ",title
-         call flush()
-      end if
-
-      print "(A,I3)","Broadcast 1: proc ",rank
-      call flush()
       ! Broadcast the total number of atoms to other procs
       call MPI_Bcast(n, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,ierror)
 
-      print "(A,I3)","Broadcast 2: proc ",rank
-      call flush()
       ! Bradcast the length of the title
       call MPI_Bcast(ltitle, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,ierror)
 
-      print "(A,I3)","Broadcast 3: proc ",rank
-      call flush()
       ! Broadcast the title to the other procs
       call MPI_Bcast(title,ltitle,MPI_CHAR,0,MPI_COMM_WORLD,ierror)
-
-      print "(A,I3,A,I5)","Rank ",rank," n ",n
-      print "(A,I3,A,A)","Title (",ltitle,"): ",title
-      call flush()
-
 
       ! Determine local number of atoms
       dn = n/nprocs
@@ -172,7 +162,6 @@ c
      &                           " atoms out of ",n," atoms."
 
       ! Initialize local atoms
-
       atom%tag    = 0
       atom%name   = '   '
       atom%type   = 0

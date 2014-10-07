@@ -29,8 +29,8 @@ fi
 
 if [ `hostname` = "indy0" ]; then
 
-         #  xterm -e gdb -d ../source --args \
   mpirun -np $nprocs \
          -mca btl tcp,sm,self \
+           xterm -e gdb -d ../source --args \
          ../bin/dynamic bench7 100 1.0 10.0 2 298.0
 fi
