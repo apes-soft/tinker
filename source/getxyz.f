@@ -28,29 +28,35 @@ c
       logical exist
       character*120 xyzfile
 
-      ! only get process 0 to get file information
-      if(rank.eq.0) then 
-         ! try to get a filename from the command line arguments
-         call nextarg (xyzfile,exist)
+ 
+      ! try to get an xyz filename from the command line arguments
+      call nextarg (xyzfile,exist)
 
-         if (exist) then
-            call basefile (xyzfile)
-            call suffix (xyzfile,'xyz','old')
-            inquire (file=xyzfile,exist=exist)
-         else
-            write (iout,*) ' GETXYZ  --  ',
-     &                     'No cartesian coordinates file specified.'
-            call fatal
-         end if
+      if (exist) then
+         call basefile (xyzfile)
 
-         ! check if file does not exist
-         if (.not. exist) then
-            write (iout,*) ' GETXYZ -- the file ',xyzfile,
-     &                     ' does not exist.'
-            call fatal
-         end if
+         ! read and store the keywords from the keyfile
+         call getkey
 
+         ! get the information level and output style
+         call control
+
+         call suffix (xyzfile,'xyz','old')
+         inquire (file=xyzfile,exist=exist)
+      else
+         write (iout,*) ' GETXYZ  --  ',
+     &                  'No cartesian coordinates file specified.'
+         call fatal
       end if
+
+      ! check if file does not exist
+      if (.not. exist) then
+         write (iout,*) ' GETXYZ -- the file ',xyzfile,
+     &                  ' does not exist.'
+         call fatal
+      end if
+
+
 
       ! read the coordinate file
       call readxyz
