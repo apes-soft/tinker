@@ -45,6 +45,10 @@ c
       ! Find out my own rank.
       call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierror)
 
+      print "(A,I3,A,I3,A)", "Process ",rank," out of ", nprocs,
+     &                       " started."
+      call flush()
+
       ! Check that we are using one or a power of 2 number of processes,
       ! nprocs should never be 0
       if((nprocs.ne.1).and.(iand(nprocs,nprocs-1).ne.0)) then
