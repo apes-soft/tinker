@@ -33,6 +33,7 @@ c
       call nextarg (xyzfile,exist)
 
       if (exist) then
+
          call basefile (xyzfile)
 
          ! read and store the keywords from the keyfile
@@ -55,8 +56,6 @@ c
      &                  ' does not exist.'
          call fatal
       end if
-
-
 
       ! read the coordinate file
       call readxyz
