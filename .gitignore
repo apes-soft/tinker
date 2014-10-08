@@ -11,6 +11,7 @@
 core
 thirdparty/fftw/config.log
 thirdparty/fftw/configure
+fftw/
 
 # Ignore a bin directory and its contents
 bin/
