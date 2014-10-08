@@ -33,11 +33,11 @@ c
       end
 c
 c
-c     ################################################################
-c     ##                                                            ##
-c     ##  subroutine vlist  --  build van der Waals neighbor lists  ##
-c     ##                                                            ##
-c     ################################################################
+c     ##############################################################
+c     ##                                                          ##
+c     ##  subroutine vlist  --  get van der Waals neighbor lists  ##
+c     ##                                                          ##
+c     ##############################################################
 c
 c
 c     "vlist" performs an update or a complete rebuild of the
@@ -106,7 +106,8 @@ c
          return
       end if
 c
-c     test sites for displacement exceeding half the buffer
+c     test sites for displacement exceeding half the buffer, and
+c     rebuild the higher numbered neighbors of updated sites
 c
 !$OMP PARALLEL default(shared) private(i,j,k,xi,yi,zi,xr,yr,zr,r2)
 !$OMP DO schedule(guided)
@@ -125,19 +126,7 @@ c
             xvold(i) = xi
             yvold(i) = yi
             zvold(i) = zi
-         end if
-      end do
-!$OMP END DO
-c
-c     rebuild the higher numbered neighbors of updated sites
-c
-!$OMP DO schedule(guided)
-      do i = 1, nvdw
-         if (update(i)) then
-            xi = xred(i)
-            yi = yred(i)
-            zi = zred(i)
-            j = 0
+            nvlst(i) = 0
             do k = i+1, nvdw
                xr = xi - xred(k)
                yr = yi - yred(k)
@@ -145,14 +134,22 @@ c
                call imagen (xr,yr,zr)
                r2 = xr*xr + yr*yr + zr*zr
                if (r2 .le. vbuf2) then
-                  j = j + 1
-                  vlst(j,i) = k
+                  nvlst(i) = nvlst(i) + 1
+                  vlst(nvlst(i),i) = k
                end if
             end do
-            nvlst(i) = j
+         end if
+      end do
+!$OMP END DO
 c
 c     adjust lists of lower numbered neighbors of updated sites
 c
+!$OMP DO schedule(guided)
+      do i = 1, nvdw
+         if (update(i)) then
+            xi = xred(i)
+            yi = yred(i)
+            zi = zred(i)
             do k = 1, i-1
                if (.not. update(k)) then
                   xr = xi - xvold(k)
@@ -161,25 +158,25 @@ c
                   call imagen (xr,yr,zr)
                   r2 = xr*xr + yr*yr + zr*zr
                   if (r2 .le. vbuf2) then
+!$OMP CRITICAL
                      do j = 1, nvlst(k)
                         if (vlst(j,k) .eq. i)  goto 20
                      end do
-!$OMP CRITICAL
                      nvlst(k) = nvlst(k) + 1
                      vlst(nvlst(k),k) = i
-!$OMP END CRITICAL
    20                continue
+!$OMP END CRITICAL
                   else if (r2 .le. vbufx) then
+!$OMP CRITICAL
                      do j = 1, nvlst(k)
                         if (vlst(j,k) .eq. i) then
-!$OMP CRITICAL
                            vlst(j,k) = vlst(nvlst(k),k)
                            nvlst(k) = nvlst(k) - 1
-!$OMP END CRITICAL
                            goto 30
                         end if
                      end do
    30                continue
+!$OMP END CRITICAL
                   end if
                end if
             end do
@@ -189,7 +186,7 @@ c
 c
 c     check to see if any neighbor lists are too long
 c
-!$OMP DO
+!$OMP DO schedule(guided)
       do i = 1, nvdw
          if (nvlst(i) .ge. maxvlst) then
             write (iout,40)
@@ -237,10 +234,13 @@ c
       real*8 zred(*)
 c
 c
-c     store coordinates to reflect update of the site
+c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(shared) private(i,k,xi,yi,zi,xr,yr,zr,r2)
 !$OMP DO schedule(guided)
+c
+c     store coordinates to reflect update of the site
+c
       do i = 1, nvdw
          xi = xred(i)
          yi = yred(i)
@@ -273,17 +273,20 @@ c
             call fatal
          end if
       end do
+c
+c     end OpenMP directives for the major loop structure
+c
 !$OMP END DO
 !$OMP END PARALLEL
       return
       end
 c
 c
-c     ###############################################################
-c     ##                                                           ##
-c     ##  subroutine vlight  --  make vdw pair list for all sites  ##
-c     ##                                                           ##
-c     ###############################################################
+c     #############################################################
+c     ##                                                         ##
+c     ##  subroutine vlight  --  build vdw pair list via lights  ##
+c     ##                                                         ##
+c     #############################################################
 c
 c
 c     "vlight" performs a complete rebuild of the van der Waals
@@ -344,18 +347,21 @@ c
       deallocate (ysort)
       deallocate (zsort)
 c
-c     loop over all atoms computing the neighbor lists
+c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(shared) private(i,j,k,xi,yi,zi,
 !$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
 !$OMP DO schedule(guided)
+c
+c     loop over all atoms computing the neighbor lists
+c
       do i = 1, nvdw
          xi = xred(i)
          yi = yred(i)
          zi = zred(i)
          if (kbx(i) .le. kex(i)) then
             repeat = .false.
-            start = kbx(i) + 1
+            start = kbx(i)
             stop = kex(i)
          else
             repeat = .true.
@@ -391,7 +397,7 @@ c
          end do
          if (repeat) then
             repeat = .false.
-            start = kbx(i) + 1
+            start = kbx(i)
             stop = nvdw
             goto 10
          end if
@@ -405,17 +411,20 @@ c
             call fatal
          end if
       end do
+c
+c     end OpenMP directives for the major loop structure
+c
 !$OMP END DO
 !$OMP END PARALLEL
       return
       end
 c
 c
-c     #################################################################
-c     ##                                                             ##
-c     ##  subroutine clist  --  build partial charge neighbor lists  ##
-c     ##                                                             ##
-c     #################################################################
+c     ###############################################################
+c     ##                                                           ##
+c     ##  subroutine clist  --  get partial charge neighbor lists  ##
+c     ##                                                           ##
+c     ###############################################################
 c
 c
 c     "clist" performs an update or a complete rebuild of the
@@ -466,7 +475,8 @@ c
          return
       end if
 c
-c     test sites for displacement exceeding half the buffer
+c     test sites for displacement exceeding half the buffer, and
+c     rebuild the higher numbered neighbors of updated sites
 c
 !$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
 !$OMP DO schedule(guided)
@@ -486,20 +496,7 @@ c
             xcold(i) = xi
             ycold(i) = yi
             zcold(i) = zi
-         end if
-      end do
-!$OMP END DO
-c
-c     rebuild the higher numbered neighbors of updated sites
-c
-!$OMP DO schedule(guided)
-       do i = 1, nion
-         if (update(i)) then
-            ii = kion(i)
-            xi = x(ii)
-            yi = y(ii)
-            zi = z(ii)
-            j = 0
+            nelst(i) = 0
             do k = i+1, nion
                kk = kion(k)
                xr = xi - x(kk)
@@ -508,14 +505,23 @@ c
                call imagen (xr,yr,zr)
                r2 = xr*xr + yr*yr + zr*zr
                if (r2 .le. cbuf2) then
-                  j = j + 1
-                  elst(j,i) = k
+                  nelst(i) = nelst(i) + 1
+                  elst(nelst(i),i) = k
                end if
             end do
-            nelst(i) = j
+         end if
+      end do
+!$OMP END DO
 c
 c     adjust lists of lower numbered neighbors of updated sites
 c
+!$OMP DO schedule(guided)
+      do i = 1, nion
+         if (update(i)) then
+            ii = kion(i)
+            xi = x(ii)
+            yi = y(ii)
+            zi = z(ii)
             do k = 1, i-1
                if (.not. update(k)) then
                   xr = xi - xcold(k)
@@ -524,25 +530,25 @@ c
                   call imagen (xr,yr,zr)
                   r2 = xr*xr + yr*yr + zr*zr
                   if (r2 .le. cbuf2) then
+!$OMP CRITICAL
                      do j = 1, nelst(k)
                         if (elst(j,k) .eq. i)  goto 20
                      end do
-!$OMP CRITICAL
                      nelst(k) = nelst(k) + 1
                      elst(nelst(k),k) = i
-!$OMP END CRITICAL
    20                continue
+!$OMP END CRITICAL
                   else if (r2 .le. cbufx) then
+!$OMP CRITICAL
                      do j = 1, nelst(k)
                         if (elst(j,k) .eq. i) then
-!$OMP CRITICAL
                            elst(j,k) = elst(nelst(k),k)
                            nelst(k) = nelst(k) - 1
-!$OMP END CRITICAL
                            goto 30
                         end if
                      end do
    30                continue
+!$OMP END CRITICAL
                   end if
                end if
             end do
@@ -552,7 +558,7 @@ c
 c
 c     check to see if any neighbor lists are too long
 c
-!$OMP DO
+!$OMP DO schedule(guided)
       do i = 1, nion
          if (nelst(i) .ge. maxelst) then
             write (iout,40)
@@ -596,10 +602,13 @@ c
       real*8 xr,yr,zr,r2
 c
 c
-c     store new coordinates to reflect update of the site
+c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(shared) private(i,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
 !$OMP DO schedule(guided)
+c
+c     store new coordinates to reflect update of the site
+c
       do i = 1, nion
          ii = kion(i)
          xi = x(ii)
@@ -634,17 +643,20 @@ c
             call fatal
          end if
       end do
+c
+c     end OpenMP directives for the major loop structure
+c
 !$OMP END DO
 !$OMP END PARALLEL
       return
       end
 c
 c
-c     ##################################################################
-c     ##                                                              ##
-c     ##  subroutine clight  --  make charge pair list for all sites  ##
-c     ##                                                              ##
-c     ##################################################################
+c     #################################################################
+c     ##                                                             ##
+c     ##  subroutine clight  --  get partial charge list via lights  ##
+c     ##                                                             ##
+c     #################################################################
 c
 c
 c     "clight" performs a complete rebuild of the partial charge
@@ -704,11 +716,14 @@ c
       deallocate (ysort)
       deallocate (zsort)
 c
-c     loop over all atoms computing the neighbor lists
+c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,
 !$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
 !$OMP DO schedule(guided)
+c
+c     loop over all atoms computing the neighbor lists
+c
       do i = 1, nion
          ii = kion(i)
          xi = x(ii)
@@ -716,7 +731,7 @@ c
          zi = z(ii)
          if (kbx(i) .le. kex(i)) then
             repeat = .false.
-            start = kbx(i) + 1
+            start = kbx(i)
             stop = kex(i)
          else
             repeat = .true.
@@ -753,7 +768,7 @@ c
          end do
          if (repeat) then
             repeat = .false.
-            start = kbx(i) + 1
+            start = kbx(i)
             stop = nion
             goto 10
          end if
@@ -767,6 +782,9 @@ c
             call fatal
          end if
       end do
+c
+c     end OpenMP directives for the major loop structure
+c
 !$OMP END DO
 !$OMP END PARALLEL
       return
@@ -775,7 +793,7 @@ c
 c
 c     #################################################################
 c     ##                                                             ##
-c     ##  subroutine mlist  --  build atom multipole neighbor lists  ##
+c     ##  subroutine mlist  --  get atomic multipole neighbor lists  ##
 c     ##                                                             ##
 c     #################################################################
 c
@@ -828,7 +846,8 @@ c
          return
       end if
 c
-c     test sites for displacement exceeding half the buffer
+c     test sites for displacement exceeding half the buffer, and
+c     rebuild the higher numbered neighbors of updated sites
 c
 !$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
 !$OMP DO schedule(guided)
@@ -848,20 +867,7 @@ c
             xmold(i) = xi
             ymold(i) = yi
             zmold(i) = zi
-         end if
-      end do
-!$OMP END DO
-c
-c     rebuild the higher numbered neighbors of updated sites
-c
-!$OMP DO schedule(guided)
-       do i = 1, npole
-         if (update(i)) then
-            ii = ipole(i)
-            xi = x(ii)
-            yi = y(ii)
-            zi = z(ii)
-            j = 0
+            nelst(i) = 0
             do k = i+1, npole
                kk = ipole(k)
                xr = xi - x(kk)
@@ -870,14 +876,23 @@ c
                call imagen (xr,yr,zr)
                r2 = xr*xr + yr*yr + zr*zr
                if (r2 .le. mbuf2) then
-                  j = j + 1
-                  elst(j,i) = k
+                  nelst(i) = nelst(i) + 1
+                  elst(nelst(i),i) = k
                end if
             end do
-            nelst(i) = j
+         end if
+      end do
+!$OMP END DO
 c
 c     adjust lists of lower numbered neighbors of updated sites
 c
+!$OMP DO schedule (guided)
+      do i = 1, npole
+         if (update(i)) then
+            ii = ipole(i)
+            xi = x(ii)
+            yi = y(ii)
+            zi = z(ii)
             do k = 1, i-1
                if (.not. update(k)) then
                   xr = xi - xmold(k)
@@ -886,25 +901,25 @@ c
                   call imagen (xr,yr,zr)
                   r2 = xr*xr + yr*yr + zr*zr
                   if (r2 .le. mbuf2) then
+!$OMP CRITICAL
                      do j = 1, nelst(k)
                         if (elst(j,k) .eq. i)  goto 20
                      end do
-!$OMP CRITICAL
                      nelst(k) = nelst(k) + 1
                      elst(nelst(k),k) = i
-!$OMP END CRITICAL
    20                continue
+!$OMP END CRITICAL
                   else if (r2 .le. mbufx) then
+!$OMP CRITICAL
                      do j = 1, nelst(k)
                         if (elst(j,k) .eq. i) then
-!$OMP CRITICAL
                            elst(j,k) = elst(nelst(k),k)
                            nelst(k) = nelst(k) - 1
-!$OMP END CRITICAL
                            goto 30
                         end if
                      end do
    30                continue
+!$OMP END CRITICAL
                   end if
                end if
             end do
@@ -914,7 +929,7 @@ c
 c
 c     check to see if any neighbor lists are too long
 c
-!$OMP DO
+!$OMP DO schedule(guided)
       do i = 1, npole
          if (nelst(i) .ge. maxelst) then
             write (iout,40)
@@ -933,11 +948,11 @@ c
       end
 c
 c
-c     ############################################################
-c     ##                                                        ##
-c     ##  subroutine mbuild  --  make mpole list for all sites  ##
-c     ##                                                        ##
-c     ############################################################
+c     #############################################################
+c     ##                                                         ##
+c     ##  subroutine mbuild  --  build mpole list for all sites  ##
+c     ##                                                         ##
+c     #############################################################
 c
 c
 c     "mbuild" performs a complete rebuild of the atomic multipole
@@ -958,10 +973,13 @@ c
       real*8 xr,yr,zr,r2
 c
 c
-c     store new coordinates to reflect update of the site
+c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(shared) private(i,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
 !$OMP DO schedule(guided)
+c
+c     store new coordinates to reflect update of the site
+c
       do i = 1, npole
          ii = ipole(i)
          xi = x(ii)
@@ -996,6 +1014,9 @@ c
             call fatal
          end if
       end do
+c
+c     end OpenMP directives for the major loop structure
+c
 !$OMP END DO
 !$OMP END PARALLEL
       return
@@ -1004,7 +1025,7 @@ c
 c
 c     #################################################################
 c     ##                                                             ##
-c     ##  subroutine mlight  --  make mpole pair list for all sites  ##
+c     ##  subroutine mlight  --  get multipole pair list via lights  ##
 c     ##                                                             ##
 c     #################################################################
 c
@@ -1066,11 +1087,14 @@ c
       deallocate (ysort)
       deallocate (zsort)
 c
-c     loop over all atoms computing the neighbor lists
+c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,
 !$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
 !$OMP DO schedule(guided)
+c
+c     loop over all atoms computing the neighbor lists
+c
       do i = 1, npole
          ii = ipole(i)
          xi = x(ii)
@@ -1078,7 +1102,7 @@ c
          zi = z(ii)
          if (kbx(i) .le. kex(i)) then
             repeat = .false.
-            start = kbx(i) + 1
+            start = kbx(i)
             stop = kex(i)
          else
             repeat = .true.
@@ -1115,7 +1139,7 @@ c
          end do
          if (repeat) then
             repeat = .false.
-            start = kbx(i) + 1
+            start = kbx(i)
             stop = npole
             goto 10
          end if
@@ -1129,17 +1153,20 @@ c
             call fatal
          end if
       end do
+c
+c     end OpenMP directives for the major loop structure
+c
 !$OMP END DO
 !$OMP END PARALLEL
       return
       end
 c
 c
-c     #################################################################
-c     ##                                                             ##
-c     ##  subroutine ulist  --  build preconditioner neighbor lists  ##
-c     ##                                                             ##
-c     #################################################################
+c     ###############################################################
+c     ##                                                           ##
+c     ##  subroutine ulist  --  get preconditioner neighbor lists  ##
+c     ##                                                           ##
+c     ###############################################################
 c
 c
 c     "ulist" performs an update or a complete rebuild of the
@@ -1190,7 +1217,8 @@ c
          return
       end if
 c
-c     test sites for displacement exceeding half the buffer
+c     test sites for displacement exceeding half the buffer, and
+c     rebuild the higher numbered neighbors of updated sites
 c
 !$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
 !$OMP DO schedule(guided)
@@ -1210,20 +1238,7 @@ c
             xuold(i) = xi
             yuold(i) = yi
             zuold(i) = zi
-         end if
-      end do
-!$OMP END DO
-c
-c     rebuild the higher numbered neighbors of updated sites
-c
-!$OMP DO schedule(guided)
-      do i = 1, npole
-         if (update(i)) then
-            ii = ipole(i)
-            xi = x(ii)
-            yi = y(ii)
-            zi = z(ii)
-            j = 0
+            nulst(i) = 0
             do k = i+1, npole
                kk = ipole(k)
                xr = xi - x(kk)
@@ -1232,14 +1247,23 @@ c
                call imagen (xr,yr,zr)
                r2 = xr*xr + yr*yr + zr*zr
                if (r2 .le. ubuf2) then
-                  j = j + 1
-                  ulst(j,i) = k
+                  nulst(i) = nulst(i) + 1
+                  ulst(nulst(i),i) = k
                end if
             end do
-            nulst(i) = j
+         end if
+      end do
+!$OMP END DO
 c
 c     adjust lists of lower numbered neighbors of updated sites
 c
+!$OMP DO schedule(guided)
+      do i = 1, npole
+         if (update(i)) then
+            ii = ipole(i)
+            xi = x(ii)
+            yi = y(ii)
+            zi = z(ii)
             do k = 1, i-1
                if (.not. update(k)) then
                   xr = xi - xuold(k)
@@ -1248,25 +1272,25 @@ c
                   call imagen (xr,yr,zr)
                   r2 = xr*xr + yr*yr + zr*zr
                   if (r2 .le. ubuf2) then
+!$OMP CRITICAL
                      do j = 1, nulst(k)
                         if (ulst(j,k) .eq. i)  goto 20
                      end do
-!$OMP CRITICAL
                      nulst(k) = nulst(k) + 1
                      ulst(nulst(k),k) = i
-!$OMP END CRITICAL
    20                continue
+!$OMP END CRITICAL
                   else if (r2 .le. ubufx) then
+!$OMP CRITICAL
                      do j = 1, nulst(k)
                         if (ulst(j,k) .eq. i) then
-!$OMP CRITICAL
                            ulst(j,k) = ulst(nulst(k),k)
                            nulst(k) = nulst(k) - 1
-!$OMP END CRITICAL
                            goto 30
                         end if
                      end do
    30                continue
+!$OMP END CRITICAL
                   end if
                end if
             end do
@@ -1276,7 +1300,7 @@ c
 c
 c     check to see if any neighbor lists are too long
 c
-!$OMP DO
+!$OMP DO schedule(guided)
       do i = 1, npole
          if (nulst(i) .ge. maxulst) then
             write (iout,40)
@@ -1320,10 +1344,13 @@ c
       real*8 xr,yr,zr,r2
 c
 c
-c     store new coordinates to reflect update of the site
+c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(shared) private(i,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
 !$OMP DO schedule(guided)
+c
+c     store new coordinates to reflect update of the site
+c
       do i = 1, npole
          ii = ipole(i)
          xi = x(ii)
@@ -1358,17 +1385,20 @@ c
             call fatal
          end if
       end do
+c
+c     end OpenMP directives for the major loop structure
+c
 !$OMP END DO
 !$OMP END PARALLEL
       return
       end
 c
 c
-c     ################################################################
-c     ##                                                            ##
-c     ##  subroutine ulight  --  preconditioner list for all sites  ##
-c     ##                                                            ##
-c     ################################################################
+c     #################################################################
+c     ##                                                             ##
+c     ##  subroutine ulight  --  get preconditioner list via lights  ##
+c     ##                                                             ##
+c     #################################################################
 c
 c
 c     "ulight" performs a complete rebuild of the polarization
@@ -1429,11 +1459,14 @@ c
       deallocate (ysort)
       deallocate (zsort)
 c
-c     loop over all atoms computing the neighbor lists
+c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,
 !$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
 !$OMP DO schedule(guided)
+c
+c     loop over all atoms computing the neighbor lists
+c
       do i = 1, npole
          ii = ipole(i)
          xi = x(ii)
@@ -1441,7 +1474,7 @@ c
          zi = z(ii)
          if (kbx(i) .le. kex(i)) then
             repeat = .false.
-            start = kbx(i) + 1
+            start = kbx(i)
             stop = kex(i)
          else
             repeat = .true.
@@ -1478,7 +1511,7 @@ c
          end do
          if (repeat) then
             repeat = .false.
-            start = kbx(i) + 1
+            start = kbx(i)
             stop = npole
             goto 10
          end if
@@ -1492,6 +1525,9 @@ c
             call fatal
          end if
       end do
+c
+c     end OpenMP directives for the major loop structure
+c
 !$OMP END DO
 !$OMP END PARALLEL
       return

@@ -63,8 +63,8 @@ c
       use minima
       implicit none
       integer maxlsq,maxrsd
-      parameter (maxlsq=50)
-      parameter (maxrsd=100)
+      parameter (maxlsq=100)
+      parameter (maxrsd=200)
       integer i,j,k
       integer icode,next
       integer niter,ncalls
@@ -385,7 +385,7 @@ c              goto 90
             end if
          end if
       end do
-   90 continue
+c  90 continue
 c
 c     evaluate the Jacobian at the new point using finite
 c     differences; replace loop with user routine if desired
@@ -481,7 +481,7 @@ c              goto 120
 c              goto 120
             end if
          end do
-  120    continue
+c 120    continue
       end if
 c     end if
 c

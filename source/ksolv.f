@@ -217,8 +217,10 @@ c
 c
 c     perform dynamic allocation of some global arrays
 c
-      if (.not. allocated(rsolv))  allocate (rsolv(n))
-      if (.not. allocated(asolv))  allocate (asolv(n))
+      if (allocated(rsolv))  deallocate (rsolv)
+      if (allocated(asolv))  deallocate (asolv)
+      allocate (rsolv(n))
+      allocate (asolv(n))
 c
 c     assign the Eisenberg-McLachlan ASP solvation parameters;
 c     parameters only available for protein-peptide groups
@@ -375,20 +377,31 @@ c
 c
 c     perform dynamic allocation of some global arrays
 c
-      if (.not. allocated(rsolv))  allocate (rsolv(n))
-      if (.not. allocated(asolv))  allocate (asolv(n))
-      if (.not. allocated(rborn))  allocate (rborn(n))
-      if (.not. allocated(drb))  allocate (drb(n))
-      if (.not. allocated(drobc))  allocate (drobc(n))
-      if (.not. allocated(gpol))  allocate (gpol(n))
-      if (.not. allocated(shct))  allocate (shct(n))
-      if (.not. allocated(aobc))  allocate (aobc(n))
-      if (.not. allocated(bobc))  allocate (bobc(n))
-      if (.not. allocated(gobc))  allocate (gobc(n))
-      if (.not. allocated(vsolv))  allocate (vsolv(n))
       if (.not. allocated(wace))  allocate (wace(maxclass,maxclass)) 
       if (.not. allocated(s2ace))  allocate (s2ace(maxclass,maxclass)) 
       if (.not. allocated(uace))  allocate (uace(maxclass,maxclass)) 
+      if (allocated(rsolv))  deallocate (rsolv)
+      if (allocated(asolv))  deallocate (asolv)
+      if (allocated(rborn))  deallocate (rborn)
+      if (allocated(drb))  deallocate (drb)
+      if (allocated(drobc))  deallocate (drobc)
+      if (allocated(gpol))  deallocate (gpol)
+      if (allocated(shct))  deallocate (shct)
+      if (allocated(aobc))  deallocate (aobc)
+      if (allocated(bobc))  deallocate (bobc)
+      if (allocated(gobc))  deallocate (gobc)
+      if (allocated(vsolv))  deallocate (vsolv)
+      allocate (rsolv(n))
+      allocate (asolv(n))
+      allocate (rborn(n))
+      allocate (drb(n))
+      allocate (drobc(n))
+      allocate (gpol(n))
+      allocate (shct(n))
+      allocate (aobc(n))
+      allocate (bobc(n))
+      allocate (gobc(n))
+      allocate (vsolv(n))
 c
 c     set offset and scaling values for analytical Still method
 c
@@ -826,12 +839,18 @@ c
 c
 c     perform dynamic allocation of some global arrays
 c
-      if (.not. allocated(rsolv))  allocate (rsolv(n))
-      if (.not. allocated(rborn))  allocate (rborn(n))
-      if (.not. allocated(drb))  allocate (drb(n))
-      if (.not. allocated(drbp))  allocate (drbp(n))
-      if (.not. allocated(drobc))  allocate (drobc(n))
-      if (.not. allocated(shct))  allocate (shct(n))
+      if (allocated(rsolv))  deallocate (rsolv)
+      if (allocated(rborn))  deallocate (rborn)
+      if (allocated(drb))  deallocate (drb)
+      if (allocated(drbp))  deallocate (drbp)
+      if (allocated(drobc))  deallocate (drobc)
+      if (allocated(shct))  deallocate (shct)
+      allocate (rsolv(n))
+      allocate (rborn(n))
+      allocate (drb(n))
+      allocate (drbp(n))
+      allocate (drobc(n))
+      allocate (shct(n))
 c
 c     set default value for exponent in the GB/GK function
 c
@@ -973,7 +992,7 @@ c
             end if
          end do
 c
-c     assign base atomic radii as traditional Bondi values
+c     assign base atomic radii as consensus Bondi values
 c
       else
          do i = 1, n
@@ -1143,8 +1162,10 @@ c
 c
 c     perform dynamic allocation of some global arrays
 c
-      if (.not. allocated(rsolv))  allocate (rsolv(n))
-      if (.not. allocated(shct))  allocate (shct(n))
+      if (allocated(rsolv))  deallocate (rsolv)
+      if (allocated(shct))  deallocate (shct)
+      allocate (rsolv(n))
+      allocate (shct(n))
 c
 c     assign some default APBS configuration parameters
 c
@@ -1421,7 +1442,7 @@ c
          end if
       end do
 c
-c     assign base atomic radii from the van der Waals values
+c     assign base atomic radii from consensus vdw values
 c
       if (radtyp .eq. 'VDW') then
          do i = 1, n
@@ -1493,7 +1514,7 @@ c
             end if
          end do
 c
-c     assign base atomic radii from traditional Bondi values
+c     assign base atomic radii from consensus vdw values
 c
       else
          do i = 1, n
@@ -1690,10 +1711,14 @@ c
 c
 c     perform dynamic allocation of some global arrays
 c
-      if (.not. allocated(asolv))  allocate (asolv(n))
-      if (.not. allocated(rcav))  allocate (rcav(n))
-      if (.not. allocated(rdisp))  allocate (rdisp(n))
-      if (.not. allocated(cdisp))  allocate (cdisp(n))
+      if (allocated(asolv))  deallocate (asolv)
+      if (allocated(rcav))  deallocate (rcav)
+      if (allocated(rdisp))  deallocate (rdisp)
+      if (allocated(cdisp))  deallocate (cdisp)
+      allocate (asolv(n))
+      allocate (rcav(n))
+      allocate (rdisp(n))
+      allocate (cdisp(n))
 c
 c     assign surface area factors for nonpolar solvation
 c
@@ -1773,17 +1798,21 @@ c
       use atoms
       use couple
       use hpmf
+      use ptable
       implicit none
       integer i,j,k
-      integer nh,atmnum
+      integer nh,atn
       logical keep
 c
 c
 c     perform dynamic allocation of some global arrays
 c
-      if (.not. allocated(ipmf))  allocate (ipmf(n))
-      if (.not. allocated(rpmf))  allocate (rpmf(n))
-      if (.not. allocated(acsa))  allocate (acsa(n))
+      if (allocated(ipmf))  deallocate (ipmf)
+      if (allocated(rpmf))  deallocate (rpmf)
+      if (allocated(acsa))  deallocate (acsa)
+      allocate (ipmf(n))
+      allocate (rpmf(n))
+      allocate (acsa(n))
 c
 c     get carbons for PMF and set surface area screening values
 c
@@ -1812,31 +1841,19 @@ c
          end if
       end do
 c
-c     assign HPMF atomic radii from traditional Bondi values
+c     assign HPMF atomic radii from consensus vdw values
 c
       do i = 1, n
-         rpmf(i) = 2.0d0
-         atmnum = atomic(i)
-         if (atmnum .eq. 0)  rpmf(i) = 0.00d0
-         if (atmnum .eq. 1)  rpmf(i) = 1.20d0
-         if (atmnum .eq. 2)  rpmf(i) = 1.40d0
-         if (atmnum .eq. 5)  rpmf(i) = 1.80d0
-         if (atmnum .eq. 6)  rpmf(i) = 1.70d0
-         if (atmnum .eq. 7)  rpmf(i) = 1.55d0
-c        if (atmnum .eq. 8)  rpmf(i) = 1.52d0
-         if (atmnum .eq. 8)  rpmf(i) = 1.50d0
-         if (atmnum .eq. 9)  rpmf(i) = 1.47d0
-         if (atmnum .eq. 10)  rpmf(i) = 1.54d0
-         if (atmnum .eq. 14)  rpmf(i) = 2.10d0
-         if (atmnum .eq. 15)  rpmf(i) = 1.80d0
-         if (atmnum .eq. 16)  rpmf(i) = 1.80d0
-         if (atmnum .eq. 17)  rpmf(i) = 1.75d0
-         if (atmnum .eq. 18)  rpmf(i) = 1.88d0
-         if (atmnum .eq. 34)  rpmf(i) = 1.90d0
-         if (atmnum .eq. 35)  rpmf(i) = 1.85d0
-         if (atmnum .eq. 36)  rpmf(i) = 2.02d0
-         if (atmnum .eq. 53)  rpmf(i) = 1.98d0
-         if (atmnum .eq. 54)  rpmf(i) = 2.16d0
+         rpmf(i) = 1.0d0
+         atn = atomic(i)
+         if (atn .eq. 0) then 
+            rpmf(i) = 0.00d0
+         else
+            rpmf(i) = vdwrad(atn)
+         end if
+         if (atn .eq. 5)  rpmf(i) = 1.80d0
+         if (atn .eq. 8)  rpmf(i) = 1.50d0
+         if (atn .eq. 35)  rpmf(i) = 1.85d0
       end do
       return
       end

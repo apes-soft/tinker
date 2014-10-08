@@ -35,12 +35,18 @@ c
       maxn13 = 3 * maxval
       maxn14 = 9 * maxval
       maxn15 = 27 * maxval
-      if (.not. allocated(n13))  allocate (n13(n))
-      if (.not. allocated(n14))  allocate (n14(n))
-      if (.not. allocated(n15))  allocate (n15(n))
-      if (.not. allocated(i13))  allocate (i13(maxn13,n))
-      if (.not. allocated(i14))  allocate (i14(maxn14,n))
-      if (.not. allocated(i15))  allocate (i15(maxn15,n))
+      if (allocated(n13))  deallocate (n13)
+      if (allocated(n14))  deallocate (n14)
+      if (allocated(n15))  deallocate (n15)
+      if (allocated(i13))  deallocate (i13)
+      if (allocated(i14))  deallocate (i14)
+      if (allocated(i15))  deallocate (i15)
+      allocate (n13(n))
+      allocate (n14(n))
+      allocate (n15(n))
+      allocate (i13(maxn13,n))
+      allocate (i14(maxn14,n))
+      allocate (i15(maxn15,n))
 c
 c     loop over all atoms finding all the 1-3 relationships;
 c     note "n12" and "i12" have already been setup elsewhere
@@ -66,7 +72,7 @@ c
      &                 ' Attached to Atom',i6)
             call fatal
          end if
-         call sort (n13(i),i13(1,i))
+         call sort8 (n13(i),i13(1,i))
       end do
 c
 c     loop over all atoms finding all the 1-4 relationships
@@ -95,7 +101,7 @@ c
      &                 ' Attached to Atom',i6)
             call fatal
          end if
-         call sort (n14(i),i14(1,i))
+         call sort8 (n14(i),i14(1,i))
       end do
 c
 c     loop over all atoms finding all the 1-5 relationships
@@ -127,7 +133,7 @@ c
      &                 ' Attached to Atom',i6)
             call fatal
          end if
-         call sort (n15(i),i15(1,i))
+         call sort8 (n15(i),i15(1,i))
       end do
       return
       end

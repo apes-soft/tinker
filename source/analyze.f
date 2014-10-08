@@ -115,6 +115,10 @@ c
                read (string,*,err=50,end=50)  list(i)
             end do
    50       continue
+            if (list(1) .eq. 0) then
+               list(1) = -1
+               list(2) = n
+            end if
          else
             write (iout,60)
    60       format (/,' List Atoms for which Output is Desired',
@@ -487,7 +491,7 @@ c
    60    format (' Urey-Bradley',21x,i15)
       end if
       if (use_angang .and. nangang.ne.0) then
-         write (iout,60)  nangang
+         write (iout,70)  nangang
    70    format (' Angle-Angles',21x,i15)
       end if
       if (use_opbend .and. nopbend.ne.0) then
@@ -1738,7 +1742,7 @@ c
    80    format (' Urey-Bradley',14x,i15)
       end if
       if (nangang .ne. 0) then
-         write (iout,80)  nangang
+         write (iout,90)  nangang
    90    format (' Angle-Angles',14x,i15)
       end if
       if (nopbend .ne. 0) then
