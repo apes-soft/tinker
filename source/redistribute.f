@@ -103,8 +103,8 @@
      &                         splits(ns)%comm, ierror)
         end if
 
-        ! Determine the splitting direction - use the 
-        ! longest direction
+        ! Determine the splitting direction - choose the 
+        ! longest direction as the one to split across.
         splits(ns)%splitdir = maxloc(lsysbox, dim=1)
 
         ! Determine the splitting point
