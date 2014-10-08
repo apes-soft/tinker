@@ -47,7 +47,7 @@ c
 
       print "(A,I3,A,I3,A)", "Process ",rank," out of ", nprocs,
      &                       " started."
-      call flush()
+      call flush(iout)
 
       ! Check that we are using one or a power of 2 number of processes,
       ! nprocs should never be 0

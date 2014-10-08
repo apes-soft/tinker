@@ -187,7 +187,8 @@ c
                   next = 1
                   call getword (record,atom(i)%name,next)
                   if (atom(i)%name .ne. '   ')  goto 20
-                  print *,"Reading box parameters."; call flush
+                  print *,"Reading box parameters."
+                  call flush(iout)
                   read (record,*,err=20,end=20) (boxparams(j),j=1,6)
                   size       = 0
                   xbox       = boxparams(1)
