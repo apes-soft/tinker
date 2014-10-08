@@ -292,8 +292,8 @@ c
 
       ! Broadcast the box parameters if bounds are being used
       !if(use_bounds.eqv..true.) then
-        call MPI_Bcast(boxparams,6,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,
-     &                 ierror)
+        call MPI_Bcast(boxparams,6,MPI_DOUBLE_PRECISION,MPI_COMM_WORLD,
+     &                 0,ierror)
         xbox       = boxparams(1)
         ybox       = boxparams(2)
         zbox       = boxparams(3)
