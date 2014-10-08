@@ -119,6 +119,7 @@ c
 
          ! check we have more than 0 atoms 
          ! and the total atoms less than maxatms, NB necessary still?
+         ! while there is a dependency in the static allocation there is.
          if (n .le. 0) then
             write (iout,*) ' READXYZ  --  The Coordinate File Does Not',
      &                     ' Contain Any Atoms'
