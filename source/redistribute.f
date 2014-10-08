@@ -113,6 +113,11 @@
      &                                  splits(ns)%maxbox,
      &                                  splits(ns)%comm)
 
+        if(rank.eq.0) then
+          print "(A,I3,A,I2,A,F7.3)","Split: ",ns," splitdir ",
+     &          splits(ns)%splitdir," splitcoord: ", 
+     &          splits(ns)%splitcoord
+        end if
 
         ! NB not sure what the halo region should be - could be a 
         ! deal breaker.
