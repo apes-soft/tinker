@@ -43,7 +43,6 @@ c
 c     find unit cell type, lattice parameters and cutoff values
 c
       call unitcell
-      call lattice
       call cutoffs
 c
 c     assign atom types, classes and other atomic information

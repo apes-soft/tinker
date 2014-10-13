@@ -34,6 +34,8 @@ c
 
       if (exist) then
 
+         ! get the basefile name for the xyz file 
+         ! (potentially also the keyfile)
          call basefile (xyzfile)
 
          ! read and store the keywords from the keyfile
@@ -50,12 +52,15 @@ c
          call fatal
       end if
 
-      ! check if file does not exist
+      ! terminate if file does not exist
       if (.not. exist) then
          write (iout,*) ' GETXYZ -- the file ',xyzfile,
      &                  ' does not exist.'
          call fatal
       end if
+
+      ! read information about the cutoffs
+      call lattice
 
       ! read the coordinate file
       call readxyz
