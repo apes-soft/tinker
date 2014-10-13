@@ -20,6 +20,7 @@ c
 
       use inform
       use iounit
+      use limits
       use output
       use parallelparams
 
@@ -60,7 +61,7 @@ c
       end if
 
       ! read information about the cutoffs
-      call lattice
+      call cutoffs
 
       ! read the coordinate file
       call readxyz
