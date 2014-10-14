@@ -491,7 +491,7 @@ c
    60    format (' Urey-Bradley',21x,i15)
       end if
       if (use_angang .and. nangang.ne.0) then
-         write (iout,70)  nangang
+         write (iout,60)  nangang
    70    format (' Angle-Angles',21x,i15)
       end if
       if (use_opbend .and. nopbend.ne.0) then
@@ -1188,7 +1188,7 @@ c
                end if
                write (iout,750)  i,ia,polarity(i),thole(i),
      &                           (ip11(j,ia),j=1,np11(ia))
-  750          format (i6,3x,i6,6x,f10.4,f9.3,3x,20i6)
+  750          format (i6,3x,i6,6x,f10.4,f9.3,3x,40i6)
             end if
          end do
       end if
@@ -1742,7 +1742,7 @@ c
    80    format (' Urey-Bradley',14x,i15)
       end if
       if (nangang .ne. 0) then
-         write (iout,90)  nangang
+         write (iout,80)  nangang
    90    format (' Angle-Angles',14x,i15)
       end if
       if (nopbend .ne. 0) then
@@ -2408,7 +2408,7 @@ c
                end if
                write (iout,740)  i,ia,polarity(i),
      &                           (ip11(j,ia),j=1,np11(ia))
-  740          format (i6,3x,i6,10x,f10.4,5x,20i6)
+  740          format (i6,3x,i6,10x,f10.4,5x,40i6)
             end if
          end do
       end if
