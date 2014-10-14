@@ -76,7 +76,8 @@ c
                expterm = exp(-vnh(2)*dt8)
                vnh(1) = expterm * (vnh(1)*expterm+gnh(1)*dt4)
                scale = scale * exp(-vnh(1)*dt2)
-               eksum = eksum * scale * scale
+c               eksum = eksum * scale * scale : OLD LINE
+               eksum = eksum * exp(-vnh(1)*dt2) * exp(-vnh(1)*dt2) !Albaugh correction
                gnh(1) = (2.0d0*eksum-dble(nfree)*ekt) / qnh(1)
                expterm = exp(-vnh(2)*dt8)
                vnh(1) = expterm * (vnh(1)*expterm+gnh(1)*dt4)
@@ -305,7 +306,8 @@ c
                expterm = exp(-vnh(2)*dt8)
                vnh(1) = expterm * (vnh(1)*expterm+gnh(1)*dt4)
                scale = scale * exp(-vnh(1)*dt2)
-               eksum = eksum * scale * scale
+c               eksum = eksum * scale * scale : OLD LINE
+               eksum = eksum * exp(-vnh(1)*dt2) * exp(-vnh(1)*dt2) !Albaugh correction
                gnh(1) = (2.0d0*eksum-dble(nfree)*ekt) / qnh(1)
                expterm = exp(-vnh(2)*dt8)
                vnh(1) = expterm * (vnh(1)*expterm+gnh(1)*dt4)
