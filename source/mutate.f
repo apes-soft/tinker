@@ -56,6 +56,7 @@ c
       elambda = 1.0d0
       scexp = 5.0d0
       scalpha = 0.7d0
+      mutintra = .false.
 c
 c     zero number of hybrid atoms and hybrid atom list
 c
@@ -84,6 +85,7 @@ c
             string = record(next:120)
             read (string,*,err=20)  elambda
          else if (keyword(1:7) .eq. 'MUTATE ') then
+            mutintra = .true.
             string = record(next:120)
             read (string,*,err=20)  ihyb,it0,it1
             nmut = nmut + 1
@@ -94,6 +96,7 @@ c
             class0(nmut) = atmcls(it0)
             class1(nmut) = atmcls(it1)
          else if (keyword(1:7) .eq. 'LIGAND ') then
+            mutintra = .false.
             string = record(next:120)
             read (string,*,err=10,end=10)  (list(k),k=1,20)
    10       continue
@@ -139,6 +142,14 @@ c
          write (iout,40)  elambda
    40    format (' Free Energy Perturbation :',f15.3,
      &              ' Lambda for Electrostatics')
+      end if
+      if (nmut.ne.0 .and. mutintra .and. .not.silent) then
+         write (iout,50)  vlambda
+   50    format (' Intra-mutant vdW scaling :',f15.3,
+     &              ' Lambda ')
+      else if (nmut.ne.0 .and. .not.mutintra .and. .not.silent) then
+         write (iout,60)
+   60    format (' NO intra-mutant vdW scaling is being performed ')
       end if
       return
       end

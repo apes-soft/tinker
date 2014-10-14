@@ -24,7 +24,7 @@ c     elambda    state weighting value for van der Waals potentials
 c     scexp      scale factor for soft core buffered 14-7 potential
 c     scalpha    scale factor for soft core buffered 14-7 potential
 c     mut        true if an atom is to be mutated, false otherwise
-c
+c     mutintra   true if intramutant vdw are scaled, false otherwise
 c
       module mutant
       implicit none
@@ -40,5 +40,6 @@ c
       real*8 scexp
       real*8 scalpha
       logical, allocatable :: mut(:)
+      logical mutintra
       save
       end

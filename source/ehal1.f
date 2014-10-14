@@ -214,32 +214,65 @@ c
 c
 c     get the energy and gradient, via soft core if necessary
 c
-                  if ((muti .and. .not.mutk) .or.
-     &                (mutk .and. .not.muti)) then
-                     rho = rik / rv
-                     rho6 = rho**6
-                     rho7 = rho6 * rho
-                     eps = eps * vlambda**scexp
-                     scal = scalpha * (1.0d0-vlambda)**2
-                     s1 = 1.0d0 / (scal+(rho+dhal)**7)
-                     s2 = 1.0d0 / (scal+rho7+ghal)
-                     t1 = (1.0d0+dhal)**7 * s1
-                     t2 = (1.0d0+ghal) * s2
-                     dt1drho = -7.0d0*(rho+dhal)**6 * t1 * s1
-                     dt2drho = -7.0d0*rho6 * t2 * s2
-                     e = eps * t1 * (t2-2.0d0)
-                     de = eps * (dt1drho*(t2-2.0d0)+t1*dt2drho) / rv
+c     RTB - first check if intra-mutant vdW are also scaled
+c
+                  if (mutintra) then
+                     if ((muti .and. .not.mutk) .or.
+     &                   (mutk .and. .not.muti) .or.
+     &                   (mutk .and. muti)) then
+                        rho = rik / rv
+                        rho6 = rho**6
+                        rho7 = rho6 * rho
+                        eps = eps * vlambda**scexp
+                        scal = scalpha * (1.0d0-vlambda)**2
+                        s1 = 1.0d0 / (scal+(rho+dhal)**7)
+                        s2 = 1.0d0 / (scal+rho7+ghal)
+                        t1 = (1.0d0+dhal)**7 * s1
+                        t2 = (1.0d0+ghal) * s2
+                        dt1drho = -7.0d0*(rho+dhal)**6 * t1 * s1
+                        dt2drho = -7.0d0*rho6 * t2 * s2
+                        e = eps * t1 * (t2-2.0d0)
+                        de = eps * (dt1drho*(t2-2.0d0)+t1*dt2drho) / rv
+                     else
+                        rv7 = rv**7
+                        rik6 = rik2**3
+                        rik7 = rik6 * rik
+                        rho = rik7 + ghal*rv7
+                        tau = (dhal+1.0d0) / (rik + dhal*rv)
+                        tau7 = tau**7
+                        dtau = tau / (dhal+1.0d0)
+                        gtau = eps*tau7*rik6*(ghal+1.0d0)*(rv7/rho)**2
+                        e = eps*tau7*rv7*((ghal+1.0d0)*rv7/rho-2.0d0)
+                        de = -7.0d0 * (dtau*e+gtau)
+                     end if
                   else
-                     rv7 = rv**7
-                     rik6 = rik2**3
-                     rik7 = rik6 * rik
-                     rho = rik7 + ghal*rv7
-                     tau = (dhal+1.0d0) / (rik + dhal*rv)
-                     tau7 = tau**7
-                     dtau = tau / (dhal+1.0d0)
-                     gtau = eps*tau7*rik6*(ghal+1.0d0)*(rv7/rho)**2
-                     e = eps*tau7*rv7*((ghal+1.0d0)*rv7/rho-2.0d0)
-                     de = -7.0d0 * (dtau*e+gtau)
+                     if ((muti .and. .not.mutk) .or.
+     &                   (mutk .and. .not.muti)) then
+                        rho = rik / rv
+                        rho6 = rho**6
+                        rho7 = rho6 * rho
+                        eps = eps * vlambda**scexp
+                        scal = scalpha * (1.0d0-vlambda)**2
+                        s1 = 1.0d0 / (scal+(rho+dhal)**7)
+                        s2 = 1.0d0 / (scal+rho7+ghal)
+                        t1 = (1.0d0+dhal)**7 * s1
+                        t2 = (1.0d0+ghal) * s2
+                        dt1drho = -7.0d0*(rho+dhal)**6 * t1 * s1
+                        dt2drho = -7.0d0*rho6 * t2 * s2
+                        e = eps * t1 * (t2-2.0d0)
+                        de = eps * (dt1drho*(t2-2.0d0)+t1*dt2drho) / rv
+                     else
+                        rv7 = rv**7
+                        rik6 = rik2**3
+                        rik7 = rik6 * rik
+                        rho = rik7 + ghal*rv7
+                        tau = (dhal+1.0d0) / (rik + dhal*rv)
+                        tau7 = tau**7
+                        dtau = tau / (dhal+1.0d0)
+                        gtau = eps*tau7*rik6*(ghal+1.0d0)*(rv7/rho)**2
+                        e = eps*tau7*rv7*((ghal+1.0d0)*rv7/rho-2.0d0)
+                        de = -7.0d0 * (dtau*e+gtau)
+                     end if
                   end if
 c
 c     use energy switching if near the cutoff distance
@@ -417,32 +450,68 @@ c
 c
 c     get the energy and gradient, via soft core if necessary
 c
-                     if ((muti .and. .not.mutk) .or.
-     &                   (mutk .and. .not.muti)) then
-                        rho = rik / rv
-                        rho6 = rho**6
-                        rho7 = rho6 * rho
-                        eps = eps * vlambda**scexp
-                        scal = scalpha * (1.0d0-vlambda)**2
-                        s1 = 1.0d0 / (scal+(rho+dhal)**7)
-                        s2 = 1.0d0 / (scal+rho7+ghal)
-                        t1 = (1.0d0+dhal)**7 * s1
-                        t2 = (1.0d0+ghal) * s2
-                        dt1drho = -7.0d0*(rho+dhal)**6 * t1 * s1
-                        dt2drho = -7.0d0*rho6 * t2 * s2
-                        e = eps * t1 * (t2-2.0d0)
-                        de = eps * (dt1drho*(t2-2.0d0)+t1*dt2drho) / rv
+c     RTB - first check if intra-mutant vdw are also scaled
+                     if (mutintra) then
+                        if ((muti .and. .not.mutk) .or.
+     &                      (mutk .and. .not.muti) .or.
+     &                      (mutk .and. muti)) then
+                           rho = rik / rv
+                           rho6 = rho**6
+                           rho7 = rho6 * rho
+                           eps = eps * vlambda**scexp
+                           scal = scalpha * (1.0d0-vlambda)**2
+                           s1 = 1.0d0 / (scal+(rho+dhal)**7)
+                           s2 = 1.0d0 / (scal+rho7+ghal)
+                           t1 = (1.0d0+dhal)**7 * s1
+                           t2 = (1.0d0+ghal) * s2
+                           dt1drho = -7.0d0*(rho+dhal)**6 * t1 * s1
+                           dt2drho = -7.0d0*rho6 * t2 * s2
+                           e = eps * t1 * (t2-2.0d0)
+                           de = eps * (dt1drho*(t2-2.0d0)+t1*dt2drho)
+     &                                                           / rv
+                        else
+                           rv7 = rv**7
+                           rik6 = rik2**3
+                           rik7 = rik6 * rik
+                           rho = rik7 + ghal*rv7
+                           tau = (dhal+1.0d0) / (rik + dhal*rv)
+                           tau7 = tau**7
+                           dtau = tau / (dhal+1.0d0)
+                           gtau = eps*tau7*rik6*(ghal+1.0d0)
+     &                                         *(rv7/rho)**2
+                           e = eps*tau7*rv7*((ghal+1.0d0)*rv7/rho-2.0d0)
+                           de = -7.0d0 * (dtau*e+gtau)
+                        end if
                      else
-                        rv7 = rv**7
-                        rik6 = rik2**3
-                        rik7 = rik6 * rik
-                        rho = rik7 + ghal*rv7
-                        tau = (dhal+1.0d0) / (rik + dhal*rv)
-                        tau7 = tau**7
-                        dtau = tau / (dhal+1.0d0)
-                        gtau = eps*tau7*rik6*(ghal+1.0d0)*(rv7/rho)**2
-                        e = eps*tau7*rv7*((ghal+1.0d0)*rv7/rho-2.0d0)
-                        de = -7.0d0 * (dtau*e+gtau)
+                        if ((muti .and. .not.mutk) .or.
+     &                      (mutk .and. .not.muti)) then
+                           rho = rik / rv
+                           rho6 = rho**6
+                           rho7 = rho6 * rho
+                           eps = eps * vlambda**scexp
+                           scal = scalpha * (1.0d0-vlambda)**2
+                           s1 = 1.0d0 / (scal+(rho+dhal)**7)
+                           s2 = 1.0d0 / (scal+rho7+ghal)
+                           t1 = (1.0d0+dhal)**7 * s1
+                           t2 = (1.0d0+ghal) * s2
+                           dt1drho = -7.0d0*(rho+dhal)**6 * t1 * s1
+                           dt2drho = -7.0d0*rho6 * t2 * s2
+                           e = eps * t1 * (t2-2.0d0)
+                           de = eps * (dt1drho*(t2-2.0d0)+t1*dt2drho)
+     &                                                           / rv
+                        else
+                           rv7 = rv**7
+                           rik6 = rik2**3
+                           rik7 = rik6 * rik
+                           rho = rik7 + ghal*rv7
+                           tau = (dhal+1.0d0) / (rik + dhal*rv)
+                           tau7 = tau**7
+                           dtau = tau / (dhal+1.0d0)
+                           gtau = eps*tau7*rik6*(ghal+1.0d0)
+     &                                         *(rv7/rho)**2
+                           e = eps*tau7*rv7*((ghal+1.0d0)*rv7/rho-2.0d0)
+                           de = -7.0d0 * (dtau*e+gtau)
+                        end if
                      end if
 c
 c     use energy switching if near the cutoff distance
@@ -790,32 +859,65 @@ c
 c
 c     get the energy and gradient, via soft core if necessary
 c
-                  if ((muti .and. .not.mutk) .or.
-     &                (mutk .and. .not.muti)) then
-                     rho = rik / rv
-                     rho6 = rho**6
-                     rho7 = rho6 * rho
-                     eps = eps * vlambda**scexp
-                     scal = scalpha * (1.0d0-vlambda)**2
-                     s1 = 1.0d0 / (scal+(rho+dhal)**7)
-                     s2 = 1.0d0 / (scal+rho7+ghal)
-                     t1 = (1.0d0+dhal)**7 * s1
-                     t2 = (1.0d0+ghal) * s2
-                     dt1drho = -7.0d0*(rho+dhal)**6 * t1 * s1
-                     dt2drho = -7.0d0*rho6 * t2 * s2
-                     e = eps * t1 * (t2-2.0d0)
-                     de = eps * (dt1drho*(t2-2.0d0)+t1*dt2drho) / rv
+c     RTB - first check if intra-mutant vdW are also scaled
+c
+                  if (mutintra) then
+                     if ((muti .and. .not.mutk) .or.
+     &                   (mutk .and. .not.muti) .or.
+     &                   (mutk .and. muti)) then
+                        rho = rik / rv
+                        rho6 = rho**6
+                        rho7 = rho6 * rho
+                        eps = eps * vlambda**scexp
+                        scal = scalpha * (1.0d0-vlambda)**2
+                        s1 = 1.0d0 / (scal+(rho+dhal)**7)
+                        s2 = 1.0d0 / (scal+rho7+ghal)
+                        t1 = (1.0d0+dhal)**7 * s1
+                        t2 = (1.0d0+ghal) * s2
+                        dt1drho = -7.0d0*(rho+dhal)**6 * t1 * s1
+                        dt2drho = -7.0d0*rho6 * t2 * s2
+                        e = eps * t1 * (t2-2.0d0)
+                        de = eps * (dt1drho*(t2-2.0d0)+t1*dt2drho) / rv
+                     else
+                        rv7 = rv**7
+                        rik6 = rik2**3
+                        rik7 = rik6 * rik
+                        rho = rik7 + ghal*rv7
+                        tau = (dhal+1.0d0) / (rik + dhal*rv)
+                        tau7 = tau**7
+                        dtau = tau / (dhal+1.0d0)
+                        gtau = eps*tau7*rik6*(ghal+1.0d0)*(rv7/rho)**2
+                        e = eps*tau7*rv7*((ghal+1.0d0)*rv7/rho-2.0d0)
+                        de = -7.0d0 * (dtau*e+gtau)
+                     end if
                   else
-                     rv7 = rv**7
-                     rik6 = rik2**3
-                     rik7 = rik6 * rik
-                     rho = rik7 + ghal*rv7
-                     tau = (dhal+1.0d0) / (rik + dhal*rv)
-                     tau7 = tau**7
-                     dtau = tau / (dhal+1.0d0)
-                     gtau = eps*tau7*rik6*(ghal+1.0d0)*(rv7/rho)**2
-                     e = eps*tau7*rv7*((ghal+1.0d0)*rv7/rho-2.0d0)
-                     de = -7.0d0 * (dtau*e+gtau)
+                     if ((muti .and. .not.mutk) .or.
+     &                   (mutk .and. .not.muti)) then
+                        rho = rik / rv
+                        rho6 = rho**6
+                        rho7 = rho6 * rho
+                        eps = eps * vlambda**scexp
+                        scal = scalpha * (1.0d0-vlambda)**2
+                        s1 = 1.0d0 / (scal+(rho+dhal)**7)
+                        s2 = 1.0d0 / (scal+rho7+ghal)
+                        t1 = (1.0d0+dhal)**7 * s1
+                        t2 = (1.0d0+ghal) * s2
+                        dt1drho = -7.0d0*(rho+dhal)**6 * t1 * s1
+                        dt2drho = -7.0d0*rho6 * t2 * s2
+                        e = eps * t1 * (t2-2.0d0)
+                        de = eps * (dt1drho*(t2-2.0d0)+t1*dt2drho) / rv
+                     else
+                        rv7 = rv**7
+                        rik6 = rik2**3
+                        rik7 = rik6 * rik
+                        rho = rik7 + ghal*rv7
+                        tau = (dhal+1.0d0) / (rik + dhal*rv)
+                        tau7 = tau**7
+                        dtau = tau / (dhal+1.0d0)
+                        gtau = eps*tau7*rik6*(ghal+1.0d0)*(rv7/rho)**2
+                        e = eps*tau7*rv7*((ghal+1.0d0)*rv7/rho-2.0d0)
+                        de = -7.0d0 * (dtau*e+gtau)
+                     end if
                   end if
 c
 c     use energy switching if near the cutoff distance
@@ -1067,7 +1169,8 @@ c
 !$OMP& jvdw,xred,yred,zred,use,nvlst,vlst,n12,n13,n14,n15,
 !$OMP& i12,i13,i14,i15,v2scale,v3scale,v4scale,v5scale,
 !$OMP& use_group,off2,radmin,epsilon,radmin4,epsilon4,ghal,dhal,
-!$OMP& cut2,vlambda,scalpha,scexp,mut,c0,c1,c2,c3,c4,c5,molcule)
+!$OMP& cut2,vlambda,scalpha,scexp,mut,mutintra,
+!$OMP& c0,c1,c2,c3,c4,c5,molcule)
 !$OMP& firstprivate(vscale,iv14) shared(evo,devo,viro,eintero)
 !$OMP DO reduction(+:evo,devo,viro,eintero) schedule(guided)
 c
@@ -1135,32 +1238,64 @@ c
 c
 c     get the energy and gradient, via soft core if necessary
 c
-                  if ((muti .and. .not.mutk) .or.
-     &                (mutk .and. .not.muti)) then
-                     rho = rik / rv
-                     rho6 = rho**6
-                     rho7 = rho6 * rho
-                     eps = eps * vlambda**scexp
-                     scal = scalpha * (1.0d0-vlambda)**2
-                     s1 = 1.0d0 / (scal+(rho+dhal)**7)
-                     s2 = 1.0d0 / (scal+rho7+ghal)
-                     t1 = (1.0d0+dhal)**7 * s1
-                     t2 = (1.0d0+ghal) * s2
-                     dt1drho = -7.0d0*(rho+dhal)**6 * t1 * s1
-                     dt2drho = -7.0d0*rho6 * t2 * s2
-                     e = eps * t1 * (t2-2.0d0)
-                     de = eps * (dt1drho*(t2-2.0d0)+t1*dt2drho) / rv
+c     RTB - first check if intra-mutant vdW are also scaled
+                  if (mutintra) then
+                     if ((muti .and. .not.mutk) .or.
+     &                   (mutk .and. .not.muti) .or.
+     &                   (mutk .and. muti)) then
+                        rho = rik / rv
+                        rho6 = rho**6
+                        rho7 = rho6 * rho
+                        eps = eps * vlambda**scexp
+                        scal = scalpha * (1.0d0-vlambda)**2
+                        s1 = 1.0d0 / (scal+(rho+dhal)**7)
+                        s2 = 1.0d0 / (scal+rho7+ghal)
+                        t1 = (1.0d0+dhal)**7 * s1
+                        t2 = (1.0d0+ghal) * s2
+                        dt1drho = -7.0d0*(rho+dhal)**6 * t1 * s1
+                        dt2drho = -7.0d0*rho6 * t2 * s2
+                        e = eps * t1 * (t2-2.0d0)
+                        de = eps * (dt1drho*(t2-2.0d0)+t1*dt2drho) / rv
+                     else
+                        rv7 = rv**7
+                        rik6 = rik2**3
+                        rik7 = rik6 * rik
+                        rho = rik7 + ghal*rv7
+                        tau = (dhal+1.0d0) / (rik + dhal*rv)
+                        tau7 = tau**7
+                        dtau = tau / (dhal+1.0d0)
+                        gtau = eps*tau7*rik6*(ghal+1.0d0)*(rv7/rho)**2
+                        e = eps*tau7*rv7*((ghal+1.0d0)*rv7/rho-2.0d0)
+                        de = -7.0d0 * (dtau*e+gtau)
+                     end if
                   else
-                     rv7 = rv**7
-                     rik6 = rik2**3
-                     rik7 = rik6 * rik
-                     rho = rik7 + ghal*rv7
-                     tau = (dhal+1.0d0) / (rik + dhal*rv)
-                     tau7 = tau**7
-                     dtau = tau / (dhal+1.0d0)
-                     gtau = eps*tau7*rik6*(ghal+1.0d0)*(rv7/rho)**2
-                     e = eps*tau7*rv7*((ghal+1.0d0)*rv7/rho-2.0d0)
-                     de = -7.0d0 * (dtau*e+gtau)
+                     if ((muti .and. .not.mutk) .or.
+     &                   (mutk .and. .not.muti)) then
+                        rho = rik / rv
+                        rho6 = rho**6
+                        rho7 = rho6 * rho
+                        eps = eps * vlambda**scexp
+                        scal = scalpha * (1.0d0-vlambda)**2
+                        s1 = 1.0d0 / (scal+(rho+dhal)**7)
+                        s2 = 1.0d0 / (scal+rho7+ghal)
+                        t1 = (1.0d0+dhal)**7 * s1
+                        t2 = (1.0d0+ghal) * s2
+                        dt1drho = -7.0d0*(rho+dhal)**6 * t1 * s1
+                        dt2drho = -7.0d0*rho6 * t2 * s2
+                        e = eps * t1 * (t2-2.0d0)
+                        de = eps * (dt1drho*(t2-2.0d0)+t1*dt2drho) / rv
+                     else
+                        rv7 = rv**7
+                        rik6 = rik2**3
+                        rik7 = rik6 * rik
+                        rho = rik7 + ghal*rv7
+                        tau = (dhal+1.0d0) / (rik + dhal*rv)
+                        tau7 = tau**7
+                        dtau = tau / (dhal+1.0d0)
+                        gtau = eps*tau7*rik6*(ghal+1.0d0)*(rv7/rho)**2
+                        e = eps*tau7*rv7*((ghal+1.0d0)*rv7/rho-2.0d0)
+                        de = -7.0d0 * (dtau*e+gtau)
+                     end if
                   end if
 c
 c     use energy switching if near the cutoff distance
