@@ -33,6 +33,9 @@
 
       type(splitinfo), dimension(:),allocatable:: splits
 
+      ! cutoff distance.
+      real (kind=8):: maxcutoff
+
       save
 
       contains
@@ -163,6 +166,8 @@
 
       ! Free the temporary arrays
       deallocate(coords)
+
+      print "(A,f7.4,A,I3)","Split = ",pivot," from rank ", rank
 
       ! Assign the value for the splitting coordinate
       findSplit = pivot
