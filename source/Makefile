@@ -513,7 +513,7 @@ getprm.o: files.o iounit.o keys.o params.o sizes.o
 getstring.o: ascii.o
 gettext.o: ascii.o
 getword.o: ascii.o
-getxyz.o: inform.o iounit.o output.o parallelparams.o
+getxyz.o: inform.o iounit.o limits.o output.o parallelparams.o
 gradient.o: atoms.o deriv.o energi.o iounit.o limits.o sizes.o vdwpot.o virial.o
 image.o: boxes.o cell.o sizes.o
 induce.o: atoms.o boxes.o couple.o ewald.o inform.o iounit.o limits.o math.o mpole.o neigh.o openmp.o pme.o polar.o polgrp.o polpot.o shunt.o sizes.o tarray.o units.o uprior.o usolve.o
@@ -578,7 +578,7 @@ opbend.o:
 openend.o:
 openmp.o:
 output.o:
-parallelparams.o: atoms.o
+parallelparams.o: atoms.o math.o
 params.o: sizes.o
 pitors.o:
 pme.o: sizes.o
