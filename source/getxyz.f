@@ -60,8 +60,13 @@ c
          call fatal
       end if
 
-      ! read information about the cutoffs
+      ! read information about the cutoffs from the keyfile
       call cutoffs
+
+      ! establish the maximum cutoff size
+      maxcutoff = max(vdwcut, chgcut, dplcut, mpolecut, 
+     &                ewaldcut, usolvcut)
+
 
       ! read the coordinate file
       call readxyz
