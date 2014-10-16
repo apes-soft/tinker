@@ -64,7 +64,7 @@
      &         /)  
 
       ! Specify how many of each type there are
-      blocks = (/4, 5, 24, 3 /)
+      blocks = (/4, 6, 24, 3 /)
 
       ! specify the memory layout
       call MPI_Get_address(myatom%pos(1), baseAddress, ierror)

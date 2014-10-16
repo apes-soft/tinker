@@ -166,6 +166,7 @@ c
       atom%tag    = 0
       atom%name   = '   '
       atom%type   = 0
+      atom%halo   = 0
       do i = 1, numatoms
          atom(i)%pos = 0.0d0
          do j = 1, maxbonds

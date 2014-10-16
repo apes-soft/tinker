@@ -28,6 +28,7 @@ c
       integer :: class                   ! Atom class number
       integer :: atomic                  ! Atomic number
       integer :: valence                 ! Valence number for atom
+      integer :: halo                    ! Indicate whether atom is in halo
       character(len=24) :: story         ! Descriptive type for atom
       character(len=3) :: name           ! Atom name
       end type atomtype
