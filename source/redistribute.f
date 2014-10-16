@@ -66,6 +66,9 @@
       splits(1)%minbox = minbox
       splits(1)%maxbox = maxbox
 
+      ! Default communicator to be used for the first split.
+      splits(ns)%comm=MPI_COMM_WORLD
+
       ! Loop over the recursive bisections
       do ns=1, nsplits
 
@@ -104,10 +107,7 @@
      &                         splits(ns)%above,
      &                         rank,
      &                         splits(ns)%comm, ierror)
-        else
-           ! For the first split default to the global coordinate
-           splits(ns)%comm=MPI_COMM_WORLD
-        end if
+         end if
 
         ! Determine the splitting direction, i.e. split 
         ! along the longest systems direction
