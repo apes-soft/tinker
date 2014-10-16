@@ -16,6 +16,7 @@
       integer:: nsplits   ! number of splits
       integer:: ns        ! split loop counter
       integer:: chan      ! communications channel
+      integer:: end       ! end index for local atoms
       real (kind=8), dimension(3):: lminbox ! local min coord
       real (kind=8), dimension(3):: lmaxbox ! local max coord
       real (kind=8), dimension(3):: minbox  ! global min coord
@@ -69,6 +70,9 @@
       ! Default communicator to be used for the first split.
       splits(ns)%comm=MPI_COMM_WORLD
 
+      ! Last index for local atoms.
+      end = dn
+
       ! Loop over the recursive bisections
       do ns=1, nsplits
 
@@ -119,18 +123,31 @@
      &                                  splits(ns)%maxbox,
      &                                  splits(ns)%comm)
 
-      ! sort local atoms along the splitting direction
-      ! NB can only do this the first time otherwise all
-      ! all the atom relationships will break once these
-      ! have been established.
-      call sortAtoms(splits(ns)%splitdir, 1, dn)
+        ! Trick to get an a descening sort in the sort 
+        ! routine below.
+        if(splits(ns)%above.eq.1) then
+           atom(:)%pos(splits(ns)%splitdir) = 
+     &                    -atom(:)%pos(splits(ns)%splitdir)
+        end if
 
+        ! Sort local atoms along the splitting direction
+        ! want local atoms to be in the lower portion of
+        ! of the array.
+        ! NB can only do this the first time otherwise all
+        ! all the atom relationships will break once these
+        ! have been established.
+        call sortAtoms(splits(ns)%splitdir, 1, end)
 
-        !if(lrank.eq.0) then
-          print "(A,I3,A,I2,A,F7.3)","Split: ",ns,
-     &          " splitdir ",splits(ns)%splitdir," splitcoord: ", 
-     &          splits(ns)%splitcoord
-        !end if
+        ! Return sign back to the original.
+        if(splits(ns)%above.eq.1) then
+           atom(:)%pos(splits(ns)%splitdir) = 
+     &                    -atom(:)%pos(splits(ns)%splitdir)
+        end if
+
+        ! Diagnostic message
+        print "(A,I3,A,I2,A,F7.3)","Split: ",ns,
+     &        " splitdir ",splits(ns)%splitdir," splitcoord: ", 
+     &        splits(ns)%splitcoord
 
         ! NB not sure what the halo region should be - could be a 
         ! deal breaker.
