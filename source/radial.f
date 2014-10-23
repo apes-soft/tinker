@@ -89,6 +89,7 @@ c
       iarc = freeunit ()
       open (unit=iarc,file=arcfile,status='old')
       call readxyz (iarc)
+
 c
 c     get the unitcell parameters and number of molecules
 c
@@ -247,6 +248,7 @@ c
       nbin = int(rmax/width)
       write (*,200)  nbin
   200 format (' Number of Distance Bins :',i18)
+
 c
 c     perform dynamic allocation of some local arrays
 c
