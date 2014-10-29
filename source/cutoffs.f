@@ -164,25 +164,25 @@ c     perform dynamic allocation of some global arrays
 c
       if (use_vlist) then
          if (.not.allocated(nvlst))  allocate (nvlst(n))
-         if (.not.allocated(vlst))  allocate (vlst(maxvlst,n))
+         if (.not.allocated(vlst))   allocate (vlst(maxvlst,n))
          if (.not.allocated(xvold))  allocate (xvold(n))
          if (.not.allocated(yvold))  allocate (yvold(n))
          if (.not.allocated(zvold))  allocate (zvold(n))
       end if
       if (use_clist .or. use_mlist) then
          if (.not.allocated(nelst))  allocate (nelst(n))
-         if (.not.allocated(elst))  allocate (elst(maxelst,n))
+         if (.not.allocated(elst))   allocate (elst(maxelst,n))
       end if
       if (use_mlist) then
-         if (.not.allocated(xmold))  allocate (xmold(n))
-         if (.not.allocated(ymold))  allocate (ymold(n))
-         if (.not.allocated(zmold))  allocate (zmold(n))
+         if (.not.allocated(xmold))   allocate (xmold(n))
+         if (.not.allocated(ymold))   allocate (ymold(n))
+         if (.not.allocated(zmold))   allocate (zmold(n))
          if (.not.allocated(tindex))  allocate (tindex(2,n*maxelst))
          if (.not.allocated(tdipdip)) allocate (tdipdip(6,n*maxelst))
       end if
       if (use_ulist) then
          if (.not.allocated(nulst))  allocate (nulst(n))
-         if (.not.allocated(ulst))  allocate (ulst(maxulst,n))
+         if (.not.allocated(ulst))   allocate (ulst(maxulst,n))
          if (.not.allocated(xuold))  allocate (xuold(n))
          if (.not.allocated(yuold))  allocate (yuold(n))
          if (.not.allocated(zuold))  allocate (zuold(n))

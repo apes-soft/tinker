@@ -33,6 +33,9 @@
 
       type(splitinfo), dimension(:),allocatable:: splits
 
+      ! cutoff distance.
+      real (kind=8):: maxcutoff
+
       save
 
       contains
@@ -98,6 +101,7 @@
       real (kind=8):: findSplit    ! return of the function
       integer, intent(in):: dir    ! splitting direction
       real (kind=8), dimension(3), intent(in):: minb, maxb ! origin and max pt
+      real (kind=8):: minp, maxp
       integer, intent(in):: comm   ! Communicator for domain
       real (kind=8):: pivot        ! pivot to use to identify midpoint
       integer:: lnatoms            ! local number of atoms
@@ -106,55 +110,64 @@
       real (kind=8), allocatable, dimension(:):: coords ! coordinates
 
 
-      ! Allocate a temporary to hold the coordinate information
+      ! Allocate a temporary to hold the coordinate information.
       allocate(coords(dn))
   
       ! Populate a temporary array witht the coords in the 
-      ! splitting direction
+      ! splitting direction.
       coords = atom(1:dn)%pos(dir)
+
+      ! Calculate the number of atoms in this domain.
+      call MPI_Allreduce(dn,gnatoms, 1, MPI_INTEGER, MPI_SUM, 
+     &                   comm, ierror)
 
       ! Global target number of atoms to hit - round up by
       ! one if even.
-      target = ceiling(n/2.0)
+      target = ceiling(gnatoms/2.0)
 
-      ! Find a local pivot
-      pivot = 0.5*(maxb(dir)-minb(dir))
+      ! Min and max box points.
+      minp = minb(dir)
+      maxp = maxb(dir)
 
-      ! Count the local number of atoms below the pivot
+      ! Assign a pivot.
+      pivot = 0.5*(maxp-minp)
+
+      ! Count the local number of atoms below this pivot.
       lnatoms = count(coords < pivot)
 
-      ! Now get the global number of atoms below the pivot
+      ! Now get the number of atoms below the pivot in this domain.
       call MPI_Allreduce(lnatoms,gnatoms, 1, MPI_INTEGER, MPI_SUM, 
      &                   comm, ierror)
 
-      ! Find a valid splitting point
+      ! Repeat until we find a splitting point.
       do while(gnatoms /= target)
 
         ! Reset the pivot
-        if(gnatoms.lt.n/2) then 
+        if(gnatoms.lt.target) then 
 
-          pivot = 0.5*(pivot+maxb(dir))
+          minp  = pivot
+          pivot = 0.5*(pivot+maxp)
 
         else 
        
-          pivot = 0.5*(pivot+minb(dir))
+          maxp  = pivot
+          pivot = 0.5*(minp+pivot)
 
         end if
 
-        ! Count the number of atoms below the new pivot
+        ! Count the number of atoms below the new pivot.
         lnatoms = count(coords < pivot)
 
+        ! Now calculate the global number of atoms in this domain.
         call MPI_Allreduce(lnatoms,gnatoms, 1, MPI_INTEGER, MPI_SUM, 
      &                     comm, ierror)
 
-        if(rank.eq.0) then 
-          print "(A,I4,A,F7.4)","gnatoms =",gnatoms," pivot =",pivot
-        end if 
-
-      end do 
+      end do ! end while
 
       ! Free the temporary arrays
       deallocate(coords)
+
+      print "(A,f7.4,A,I3)","Split = ",pivot," from rank ", rank
 
       ! Assign the value for the splitting coordinate
       findSplit = pivot

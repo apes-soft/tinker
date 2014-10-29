@@ -20,6 +20,7 @@ c
 
       use inform
       use iounit
+      use limits
       use output
       use parallelparams
 
@@ -34,6 +35,8 @@ c
 
       if (exist) then
 
+         ! get the basefile name for the xyz file 
+         ! (potentially also the keyfile)
          call basefile (xyzfile)
 
          ! read and store the keywords from the keyfile
@@ -50,12 +53,20 @@ c
          call fatal
       end if
 
-      ! check if file does not exist
+      ! terminate if file does not exist
       if (.not. exist) then
          write (iout,*) ' GETXYZ -- the file ',xyzfile,
      &                  ' does not exist.'
          call fatal
       end if
+
+      ! read information about the cutoffs from the keyfile
+      call cutoffs
+
+      ! establish the maximum cutoff size
+      maxcutoff = max(vdwcut, chgcut, dplcut, mpolecut, 
+     &                ewaldcut, usolvcut)
+
 
       ! read the coordinate file
       call readxyz

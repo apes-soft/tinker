@@ -119,6 +119,7 @@ c
 
          ! check we have more than 0 atoms 
          ! and the total atoms less than maxatms, NB necessary still?
+         ! while there is a dependency in the static allocation there is.
          if (n .le. 0) then
             write (iout,*) ' READXYZ  --  The Coordinate File Does Not',
      &                     ' Contain Any Atoms'
@@ -186,7 +187,8 @@ c
                   next = 1
                   call getword (record,atom(i)%name,next)
                   if (atom(i)%name .ne. '   ')  goto 20
-                  print *,"Reading box parameters."; call flush
+                  print *,"Reading box parameters."
+                  call flush(iout)
                   read (record,*,err=20,end=20) (boxparams(j),j=1,6)
                   size       = 0
                   xbox       = boxparams(1)
