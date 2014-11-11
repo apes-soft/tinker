@@ -75,4 +75,5 @@ Thumbs.db
 
 source/TAGS
 source/Makefile
+make/Makefile.*
 
