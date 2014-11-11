@@ -19,34 +19,23 @@ c     be specified for the variables to be refined
 c
 c     arguments and variables :
 c
-c     n        number of variables to optimize
-c     m        number of residual functions
-c     xlo      vector of length n containing the lower bounds for
-c                the variables
-c     xhi      vector of length n containing the upper bounds for
-c                the variables
-c     xscale   vector of length n containing the diagonal scaling
-c                matrix for the variables
-c     xc       vector of length n containing the variable values
-c                at the approximate solution
-c     fc       vector of length m containing the residuals at the
-c                approximate solution
-c     fp       vector of length m containing the updated residual
-c     xp       vector of length n containing the updated point
-c     sc       vector of length n containing the last step taken
-c     gc       vector of length n containing an estimate of
-c                the gradient at the approximate solution
-c     fjac     real m by n matrix containing an estimate of
-c                the Jacobian at the approximate solution
-c     mdim     leading dimension of fjac exactly as specified in
-c                the dimension statement of the calling program
-c     iactive  integer vector of length n indicating if xc(i) had
-c                to be moved to an upper or lower bound
-c     ipvt     vector of length n containing the permutation matrix
-c                used in the QR factorization of the Jacobian at
-c                the approximate solution
-c     stpmax   real scalar containing the maximum allowed step size
-c     delta    real scalar containing the trust region radius
+c     n         number of least squares variables
+c     m         number of residual functions
+c     xlo       vector with the lower bounds for the variables
+c     xhi       vector with the upper bounds for the variables
+c     xscale    vector with the diagonal scaling matrix for variables
+c     xc        vector with variable values at the approximate solution
+c     fc        vector with the residuals at the approximate solution
+c     fp        vector containing the updated residuals
+c     xp        vector containing the updated point
+c     sc        vector containing the last step taken
+c     gc        vector with gradient estimate at approximate solution
+c     fjac      matrix with estimate of Jacobian at approximate solution
+c     iactive   vector showing if variable is at upper or lower bound
+c     ipvt      vector with permutation matrix used in QR factorization
+c                 of the Jacobian at the approximate solution
+c     stpmax    scalar containing maximum allowed step size
+c     delta     scalar containing the trust region radius
 c
 c     required external routines :
 c
@@ -54,25 +43,21 @@ c     rsdvalue   subroutine to evaluate residual function values
 c     lsqwrite   subroutine to write out info about current status
 c
 c
-      subroutine square (m,n,xlo,xhi,xc,fc,gc,fjac,mdim,
-     &                      grdmin,rsdvalue,lsqwrite)
+      subroutine square (n,m,xlo,xhi,xc,fc,gc,fjac,grdmin,
+     &                          rsdvalue,lsqwrite)
       use sizes
       use inform
       use iounit
       use keys
       use minima
       implicit none
-      integer maxlsq,maxrsd
-      parameter (maxlsq=100)
-      parameter (maxrsd=200)
-      integer i,j,k
+      integer i,j,k,m,n
       integer icode,next
       integer niter,ncalls
       integer nactive
-      integer m,n,mdim
       integer nbigstp,ndigit
-      integer iactive(maxlsq)
-      integer ipvt(maxlsq)
+      integer, allocatable :: iactive(:)
+      integer, allocatable :: ipvt(:)
       real*8 amu,delta,epsfcn
       real*8 fcnorm,fpnorm
       real*8 gcnorm,ganorm
@@ -87,21 +72,21 @@ c
       real*8 xhi(*)
       real*8 fc(*)
       real*8 gc(*)
-      real*8 xp(maxlsq)
-      real*8 fp(maxrsd)
-      real*8 ga(maxlsq)
-      real*8 gs(maxlsq)
-      real*8 sc(maxlsq)
-      real*8 sa(maxlsq)
-      real*8 ftemp(maxrsd)
-      real*8 xscale(maxlsq)
-      real*8 xsa(maxlsq)
-      real*8 rdiag(maxlsq)
-      real*8 qtf(maxlsq)
-      real*8 work(maxlsq)
-      real*8 fjac(mdim,*)
+      real*8, allocatable :: xp(:)
+      real*8, allocatable :: ga(:)
+      real*8, allocatable :: gs(:)
+      real*8, allocatable :: sc(:)
+      real*8, allocatable :: sa(:)
+      real*8, allocatable :: xsa(:)
+      real*8, allocatable :: xscale(:)
+      real*8, allocatable :: rdiag(:)
+      real*8, allocatable :: fp(:)
+      real*8, allocatable :: ftemp(:)
+      real*8, allocatable :: qtf(:)
+      real*8 fjac(m,*)
       logical done,first
       logical gauss,bigstp
+      logical pivot
       character*20 keyword
       character*120 record
       character*120 string
@@ -109,20 +94,6 @@ c
       external lsqwrite
       external precise
 c
-c
-c     check for too many variables or residuals
-c
-      if (n .gt. maxlsq) then
-         write (iout,10)
-   10    format (/,' SQUARE  --  Too many Parameters,',
-     &              ' Increase the Value of MAXLSQ')
-         return
-      else if (m .gt. maxrsd) then
-         write (iout,20)
-   20    format (/,' SQUARE  --  Too many Residuals,',
-     &              ' Increase the Value of MAXRSD')
-         return
-      end if
 c
 c     initialize various counters and status code
 c
@@ -157,16 +128,32 @@ c
          call upcase (keyword)
          string = record(next:120)
          if (keyword(1:7) .eq. 'FCTMIN ') then
-            read (string,*,err=30,end=30)  fctmin
+            read (string,*,err=10,end=10)  fctmin
          else if (keyword(1:8) .eq. 'MAXITER ') then
-            read (string,*,err=30,end=30)  maxiter
+            read (string,*,err=10,end=10)  maxiter
          else if (keyword(1:9) .eq. 'PRINTOUT ') then
-            read (string,*,err=30,end=30)  iprint
+            read (string,*,err=10,end=10)  iprint
          else if (keyword(1:9) .eq. 'WRITEOUT ') then
-            read (string,*,err=30,end=30)  iwrite
+            read (string,*,err=10,end=10)  iwrite
          end if
-   30    continue
+   10    continue
       end do
+c
+c     perform dynamic allocation of some local arrays
+c
+      allocate (iactive(n))
+      allocate (ipvt(n))
+      allocate (xp(n))
+      allocate (ga(n))
+      allocate (gs(n))
+      allocate (sc(n))
+      allocate (sa(n))
+      allocate (xsa(n))
+      allocate (xscale(n))
+      allocate (rdiag(n))
+      allocate (fp(m))
+      allocate (ftemp(m))
+      allocate (qtf(m))
 c
 c     check feasibility of variables and use bounds if needed
 c
@@ -187,7 +174,7 @@ c
 c     evaluate the function at the initial point
 c
       ncalls = ncalls + 1
-      call rsdvalue (m,n,xc,fc)
+      call rsdvalue (n,m,xc,fc)
       fcnorm = 0.0d0
       do i = 1, m
          fcnorm = fcnorm + fc(i)**2
@@ -204,7 +191,7 @@ c
          xtemp = xc(j)
          xc(j) = xtemp + stepsz
          ncalls = ncalls + 1
-         call rsdvalue (m,n,xc,ftemp)
+         call rsdvalue (n,m,xc,ftemp)
          xc(j) = xtemp
          do i = 1, m
             fjac(i,j) = (ftemp(i)-fc(i)) / stepsz
@@ -243,29 +230,29 @@ c
             ganorm = ganorm + gs(j)**2
          end if
       end do
-      gcnorm = sqrt(gcnorm/n)
-      if (nactive .ne. 0)  ganorm = sqrt(ganorm/nactive)
+      gcnorm = sqrt(gcnorm/dble(n))
+      if (nactive .ne. 0)  ganorm = sqrt(ganorm/dble(nactive))
 c
 c     print out information about initial conditions
 c
       if (iprint .gt. 0) then
-         write (iout,40)
-   40    format (/,' Levenberg-Marquardt Nonlinear Least Squares :')
-         write (iout,50)
-   50    format (/,' LS Iter     F Value      Total G     Active G',
+         write (iout,20)
+   20    format (/,' Levenberg-Marquardt Nonlinear Least Squares :')
+         write (iout,30)
+   30    format (/,' LS Iter     F Value      Total G     Active G',
      &              '    N Active   F Calls',/)
          if (max(fcnorm,gcnorm) .lt. 10000000.0d0) then
-            write (iout,60)  niter,fcnorm,gcnorm,ganorm,nactive,ncalls
-   60       format (i6,f14.4,2f13.4,2i10)
+            write (iout,40)  niter,fcnorm,gcnorm,ganorm,nactive,ncalls
+   40       format (i6,f14.4,2f13.4,2i10)
          else
-            write (iout,70)  niter,fcnorm,gcnorm,ganorm,nactive,ncalls
-   70       format (i6,f14.4,2d13.4,2i10)
+            write (iout,50)  niter,fcnorm,gcnorm,ganorm,nactive,ncalls
+   50       format (i6,f14.4,2d13.4,2i10)
          end if
       end if
 c
 c     write out the parameters, derivatives and residuals
 c
-      if (iwrite .ne. 0)  call lsqwrite (niter,xc,gs,m,fc)
+      if (iwrite .ne. 0)  call lsqwrite (niter,m,xc,gs,fc)
 c
 c     check stopping criteria at the initial point; test the
 c     absolute function value and gradient norm for termination
@@ -275,7 +262,7 @@ c
 c
 c     start of the main body of least squares iteration
 c
-   80 continue
+   60 continue
       niter = niter + 1
 c
 c     repack the Jacobian to include only active variables
@@ -309,7 +296,8 @@ c
 c
 c     compute the QR factorization of the Jacobian
 c
-      call qrfact (m,nactive,fjac,mdim,.true.,ipvt,rdiag,work)
+      pivot = .true.
+      call qrfact (nactive,m,fjac,pivot,ipvt,rdiag)
 c
 c     compute the vector Q(transpose) * residuals
 c
@@ -335,8 +323,8 @@ c
       icode = 6
       first = .true.
       do while (icode .ge. 4)
-         call lmstep (nactive,ga,fjac,mdim,ipvt,xsa,qtf,stpmax,
-     &                       delta,amu,first,sa,gauss)
+         call lmstep (nactive,m,ga,fjac,ipvt,xsa,qtf,stpmax,
+     &                      delta,amu,first,sa,gauss)
 c
 c     unpack the step vector to include all variables
 c
@@ -352,9 +340,9 @@ c
 c
 c     check new point and update the trust region
 c
-         call trust (rsdvalue,m,n,xc,fcnorm,gc,fjac,mdim,ipvt,sc,sa,
-     &               xscale,gauss,stpmax,delta,icode,xp,fc,fp,fpnorm,
-     &               bigstp,ncalls,xlo,xhi,nactive,stpmin,rftol,faketol)
+         call trust (n,m,xc,fcnorm,gc,fjac,ipvt,sc,sa,xscale,gauss,
+     &               stpmax,delta,icode,xp,fc,fp,fpnorm,bigstp,ncalls,
+     &               xlo,xhi,nactive,stpmin,rftol,faketol,rsdvalue)
       end do
       if (icode .eq. 1)  done = .true.
 c
@@ -377,15 +365,15 @@ c
             if (abs(xc(j)-xlo(j)) .le. eps) then
                nactive = nactive - 1
                iactive(j) = -1
-c              goto 90
+c              goto 99
             else if (abs(xc(j)-xhi(j)) .le. eps) then
                nactive = nactive - 1
                iactive(j) = 1
-c              goto 90
+c              goto 99
             end if
          end if
       end do
-c  90 continue
+c  99 continue
 c
 c     evaluate the Jacobian at the new point using finite
 c     differences; replace loop with user routine if desired
@@ -396,7 +384,7 @@ c
          xtemp = xc(j)
          xc(j) = xtemp + stepsz
          ncalls = ncalls + 1
-         call rsdvalue (m,n,xc,ftemp)
+         call rsdvalue (n,m,xc,ftemp)
          xc(j) = xtemp
          do i = 1, m
             fjac(i,j) = (ftemp(i)-fc(i)) / stepsz
@@ -434,18 +422,18 @@ c
             ganorm = ganorm + gs(j)**2
          end if
       end do
-      gcnorm = sqrt(gcnorm/n)
-      if (nactive .ne. 0)  ganorm = sqrt(ganorm/nactive)
+      gcnorm = sqrt(gcnorm/dble(n))
+      if (nactive .ne. 0)  ganorm = sqrt(ganorm/dble(nactive))
 c
 c     print out information about current iteration
 c
       if (iprint.ne.0 .and. mod(niter,iprint).eq.0) then
          if (max(fcnorm,gcnorm) .lt. 10000000.0d0) then
-            write (iout,100)  niter,fcnorm,gcnorm,ganorm,nactive,ncalls
-  100       format (i6,f14.4,2f13.4,2i10)
+            write (iout,70)  niter,fcnorm,gcnorm,ganorm,nactive,ncalls
+   70       format (i6,f14.4,2f13.4,2i10)
          else
-            write (iout,110)  niter,fcnorm,gcnorm,ganorm,nactive,ncalls
-  110       format (i6,f14.4,2d13.4,2i10)
+            write (iout,80)  niter,fcnorm,gcnorm,ganorm,nactive,ncalls
+   80       format (i6,f14.4,2d13.4,2i10)
          end if
       end if
 c
@@ -473,37 +461,37 @@ c     if (done) then
                nactive = nactive + 1
                iactive(j) = 0
                done = .false.
-c              goto 120
+c              goto 99
             else if (iactive(j).eq.1 .and. gc(j).gt.0.0d0) then
                nactive = nactive + 1
                iactive(j) = 0
                done = .false.
-c              goto 120
+c              goto 99
             end if
          end do
-c 120    continue
+c  99    continue
       end if
 c     end if
 c
 c     if still done, then normal termination has been achieved
 c
       if (done) then
-         write (iout,130)
-  130    format (/,' SQUARE  --  Normal Termination of Least Squares')
+         write (iout,90)
+   90    format (/,' SQUARE  --  Normal Termination of Least Squares')
 c
 c     check the limit on the number of iterations
 c
       else if (niter .ge. maxiter) then
          done = .true.
-         write (iout,140)
-  140    format (/,' SQUARE  --  Maximum Number of Allowed Iterations')
+         write (iout,100)
+  100    format (/,' SQUARE  --  Maximum Number of Allowed Iterations')
 c
 c     check for termination due to relative function convergence
 c
       else if (icode .eq. 2) then
          done = .true.
-         write (iout,150)
-  150    format (/,' SQUARE  --  Relative Function Convergence',
+         write (iout,110)
+  110    format (/,' SQUARE  --  Relative Function Convergence',
      &           //,' Both the scaled actual and predicted',
      &              ' reductions in the function',
      &           /,' are less than or equal to the relative',
@@ -513,8 +501,8 @@ c     check for termination due to false convergence
 c
       else if (icode .eq. 3) then
          done = .true.
-         write (iout,160)
-  160    format (/,' SQUARE  --  Possible False Convergence',
+         write (iout,120)
+  120    format (/,' SQUARE  --  Possible False Convergence',
      &           //,' The iterates appear to be converging to',
      &              ' a noncritical point due',
      &           /,' to bad gradient information, discontinuous',
@@ -527,8 +515,8 @@ c
          nbigstp = nbigstp + 1
          if (nbigstp .eq. 5) then
             done = .true.
-            write (iout,170)
-  170       format (/,' SQUARE  --  Five Consecutive Maximum',
+            write (iout,130)
+  130       format (/,' SQUARE  --  Five Consecutive Maximum',
      &                 ' Length Steps',
      &              //,' Either the function is unbounded below,',
      &                 ' or has a finite',
@@ -545,21 +533,37 @@ c
 c     write out the parameters, derivatives and residuals
 c
       if (iwrite.ne.0 .and. mod(niter,iwrite).eq.0) then
-         if (.not. done)  call lsqwrite (niter,xc,gs,m,fc)
+         if (.not. done)  call lsqwrite (niter,m,xc,gs,fc)
       end if
 c
 c     continue with the next iteration if not finished
 c
-      if (.not. done)  goto 80
+      if (.not. done)  goto 60
+c
+c     perform deallocation of some local arrays
+c
+      deallocate (iactive)
+      deallocate (ipvt)
+      deallocate (xp)
+      deallocate (ga)
+      deallocate (gs)
+      deallocate (sc)
+      deallocate (sa)
+      deallocate (xsa)
+      deallocate (xscale)
+      deallocate (rdiag)
+      deallocate (fp)
+      deallocate (ftemp)
+      deallocate (qtf)
       return
       end
 c
 c
-c     #############################################################
-c     ##                                                         ##
-c     ##  subroutine lmstep  --  finds Levenberg-Marquardt step  ##
-c     ##                                                         ##
-c     #############################################################
+c     ################################################################
+c     ##                                                            ##
+c     ##  subroutine lmstep  --  computes Levenberg-Marquardt step  ##
+c     ##                                                            ##
+c     ################################################################
 c
 c
 c     "lmstep" computes the Levenberg-Marquardt step during a
@@ -569,48 +573,37 @@ c     strategy of Dennis and Schnabel
 c
 c     arguments and variables :
 c
-c     n        dimension of the problem
-c     ga       real vector of length n containing the gradient
-c                of the residual vector
-c     a        real n by n array which on input contains in the full
-c                upper triangle the upper triangle of the matrix r
-c                resulting from the QR factorization of the Jacobian;
-c                on output the full upper triangle is unaltered, and
-c                the strict lower triangle contains the strict lower
-c                triangle of the lower triangular matrix l which is
-c                equal to the Cholesky factor of (j**t)*j + amu*xscale
-c     lda      leading dimension of a exactly as specified in the
-c                dimension statement of the calling program
-c     ipvt     integer array of length n containing the pivoting
-c                infomation from the QR factorization routine
-c     xscale   real vector of length n containing the diagonal
-c                scaling matrix for the variables
-c     qtf      real vector containing the first n elements of
-c                Q(transpose) * (the scaled residual vector)
-c     amu      scalar containing an initial estimate of the
-c                Levenberg-Marquardt parameter on input; on
-c                output, amu contains the final estimate of
-c                the Levenberg-Marquardt parameter
-c     first    logical variable set true only if this is the first
+c     n        number of least squares variables
+c     m        number of residual functions
+c     ga       vector with the gradient of the residual vector
+c     a        array of size n by n which on input contains in the full
+c                upper triangle of the matrix r resulting from the QR
+c                factorization of the Jacobian; on output the full upper
+c                triangle is unaltered, and the strict lower triangle
+c                contains the strict lower triangle of the matrix l
+c                which is the Cholesky factor of (j**t)*j + amu*xscale
+c     ipvt     vector with pivoting information from QR factorization
+c     xscale   vector with the diagonal scaling matrix for variables
+c     qtf      vector with first n elements of Q(transpose)
+c                * (scaled residual)
+c     amu      scalar with initial estimate of the Levenberg-Marquardt
+c                parameter on input, and the final estimate of the
+c                parameter on output
+c     first    logical flag set true only if this is the first
 c                call to this routine in this iteration
-c     sa       real vector of length n containing the
-c                Levenberg-Marquardt step
-c     gnstep   real vector of length n containing the
-c                Gauss-Newton step
-c     gauss    logical variable which is true if the Gauss-Newton
-c                step is acceptable, and is false otherwise
-c     diag     vector of length n containing the diagonal elements
-c                of the Cholesky factor of (j**t)*j + amu*xscale
+c     sa       vector with the Levenberg-Marquardt step
+c     gnstep   vector with the Gauss-Newton step
+c     gauss    logical flag set true if the Gauss-Newton step
+c                is acceptable, and false otherwise
+c     diag     vector with the diagonal elements of the Cholesky
+c                factor of (j**t)*j + amu*xscale
 c
 c
-      subroutine lmstep (n,ga,a,lda,ipvt,xscale,qtf,stpmax,
-     &                       delta,amu,first,sa,gauss)
+      subroutine lmstep (n,m,ga,a,ipvt,xscale,qtf,stpmax,
+     &                      delta,amu,first,sa,gauss)
       implicit none
-      integer maxlsq,maxrsd
-      parameter (maxlsq=50)
-      parameter (maxrsd=100)
-      integer i,j,k,n
-      integer lda,nsing
+      integer i,j,k
+      integer m,n,nsing
       integer ipvt(*)
       real*8 stpmax,delta,amu
       real*8 alow,alpha
@@ -625,11 +618,11 @@ c
       real*8 xscale(*)
       real*8 qtf(*)
       real*8 sa(*)
-      real*8 gnstep(maxlsq)
-      real*8 diag(maxlsq)
-      real*8 work1(maxlsq)
-      real*8 work2(maxlsq)
-      real*8 a(lda,*)
+      real*8, allocatable :: gnstep(:)
+      real*8, allocatable :: diag(:)
+      real*8, allocatable :: work1(:)
+      real*8, allocatable :: work2(:)
+      real*8 a(m,*)
       logical first,gauss
       logical done
       save deltap,nsing
@@ -641,6 +634,13 @@ c     set smallest floating point magnitude and spacing
 c
       tiny = precise (1)
       small = precise (2)
+c
+c     perform dynamic allocation of some local arrays
+c
+      allocate (gnstep(n))
+      allocate (diag(n))
+      allocate (work1(n))
+      allocate (work2(n))
 c
 c     if initial trust region is not provided by the user,
 c     compute and use the length of the Cauchy step given
@@ -795,7 +795,7 @@ c
 c     solve the damped least squares system for the value of the
 c     Levenberg-Marquardt step using More's Minpack technique
 c
-            call qrsolve (n,a,lda,ipvt,work1,qtf,sa,diag,work2)
+            call qrsolve (n,m,a,ipvt,work1,qtf,sa,diag,work2)
             do j = 1, n
                sa(j) = -sa(j)
             end do
@@ -842,308 +842,13 @@ c
          end do
       end if
       deltap = delta
-      return
-      end
 c
+c     perform deallocation of some local arrays
 c
-c     ###########################################################
-c     ##                                                       ##
-c     ##  subroutine qrfact  --  QR factorization of a matrix  ##
-c     ##                                                       ##
-c     ###########################################################
-c
-c
-c     "qrfact" performs Householder transformations with column
-c     pivoting (optional) to compute a QR factorization of the
-c     m by n matrix a; the routine determines an orthogonal
-c     matrix q, a permutation matrix p, and an upper trapezoidal
-c     matrix r with diagonal elements of nonincreasing magnitude,
-c     such that a*p = q*r; the Householder transformation for
-c     column k, k = 1,2,...,min(m,n), is of the form
-c
-c               i - (1/u(k))*u*u(transpose)
-c
-c     where u has zeros in the first k-1 positions
-c
-c     arguments and variables :
-c
-c     m        positive integer input variable set to
-c                the number of rows of a
-c     n        positive integer input variable set to
-c                the number of columns of a
-c     a        m by n array; on input a contains the matrix for
-c                which the QR factorization is to be computed; on
-c                output the strict upper trapezoidal part contains
-c                the strict upper trapezoidal part of r, the lower
-c                trapezoidal part contains a factored form of q
-c                (non-trivial elements of u vectors described above)
-c     lda      positive integer input variable not less than m
-c                which specifies the leading dimension of array a
-c     pivot    logical input variable; if pivot is set true,
-c                then column pivoting is enforced; if pivot is
-c                set false, then no column pivoting is done
-c     ipvt     integer output array which defines the permutation
-c                matrix p such that a*p = q*r; column j of p is
-c                column ipvt(j) of the identity matrix
-c     rdiag    an output array of length n which contains
-c                the diagonal elements of r
-c
-c
-      subroutine qrfact (m,n,a,lda,pivot,ipvt,rdiag,work)
-      implicit none
-      integer i,j,k,jmax
-      integer m,n,lda
-      integer minmn,itemp
-      integer ipvt(*)
-      real*8 aknorm,temp
-      real*8 rdiag(*)
-      real*8 work(*)
-      real*8 a(lda,*)
-      logical pivot
-c
-c
-c     find the initial column norms and initialize some arrays
-c
-      do j = 1, n
-         temp = 0.0d0
-         do i = 1, m
-            temp = temp + a(i,j)**2
-         end do
-         rdiag(j) = sqrt(temp)
-         work(j) = rdiag(j)
-         if (pivot)  ipvt(j) = j
-      end do
-c
-c     reduce the matrix with Householder transformations
-c
-      minmn = min(m,n)
-      do k = 1, minmn
-c
-c     bring the column of largest norm into the pivot position
-c
-         if (pivot) then
-            jmax = k
-            do j = k, n
-               if (rdiag(j) .gt. rdiag(jmax))  jmax = j
-            end do
-            if (jmax .ne. k) then
-               do i = 1, m
-                  temp = a(i,k)
-                  a(i,k) = a(i,jmax)
-                  a(i,jmax) = temp
-               end do
-               rdiag(jmax) = rdiag(k)
-               work(jmax) = work(k)
-               itemp = ipvt(k)
-               ipvt(k) = ipvt(jmax)
-               ipvt(jmax) = itemp
-            end if
-         end if
-c
-c     compute the Householder transformation to reduce the
-c     k-th column of a to a multiple of the k-th unit vector
-c
-         aknorm = 0.0d0
-         do i = k, m
-            aknorm = aknorm + a(i,k)**2
-         end do
-         aknorm = sqrt(aknorm)
-         if (aknorm .ne. 0.0d0) then
-            if (a(k,k) .lt. 0.0d0)  aknorm = -aknorm
-            do i = k, m
-               a(i,k) = a(i,k) / aknorm
-            end do
-            a(k,k) = a(k,k) + 1.0d0
-c
-c     apply the transformation to the remaining columns
-c     and update the column norms
-c
-            if (n .ge. k+1) then
-               do j = k+1, n
-                  temp = 0.0d0
-                  do i = k, m
-                     temp = temp + a(i,k)*a(i,j)
-                  end do
-                  temp = temp / a(k,k)
-                  do i = k, m
-                     a(i,j) = a(i,j) - temp*a(i,k)
-                  end do
-                  if (pivot .and. rdiag(j).ne.0.0d0) then
-                     temp = a(k,j) / rdiag(j)
-                     if (abs(temp) .lt. 1.0d0) then
-                        rdiag(j) = rdiag(j) * sqrt(1.0d0-temp**2)
-                     else
-                        temp = 0.0d0
-                        do i = k+1, m
-                           temp = temp + a(i,j)**2
-                        end do
-                        rdiag(j) = sqrt(temp)
-                        work(j) = rdiag(j)
-                     end if
-                  end if
-               end do
-            end if
-         end if
-         rdiag(k) = -aknorm
-      end do
-      return
-      end
-c
-c
-c     ################################################################
-c     ##                                                            ##
-c     ##  subroutine qrsolve  --  get least squares via QR factors  ##
-c     ##                                                            ##
-c     ################################################################
-c
-c
-c     "qrsolve" solves a*x=b and d*x=0 in the least squares sense;
-c     normally used in combination with routine "qrfact" to solve
-c     least squares problems
-c
-c     arguments and variables :
-c
-c     n        number of rows and columns in the matrix r
-c     r        an n by n array containing the upper triangular
-c                matrix r; on output the full triangle is unaltered,
-c                and the strict lower triangle contains the transpose
-c                of the strict upper triangular matrix s
-c     ldr      leading dimension of r exactly as specified in
-c                the dimension statement of the calling program
-c     ipvt     vector of length n which defines the permutation
-c                matrix p such that a*p = q*r; column j of p is
-c                column ipvt(j) of the identity matrix
-c     diag     vector of length n containing the diagonal elements
-c                of the matrix d
-c     qtb      vector of length n containing the first n elements
-c                of the vector q(transpose)*b
-c     x        vector of length n containing the least squares
-c                solution of the systems a*x = b, d*x = 0
-c     sdiag    vector of length n containing the diagonal elements
-c                of the upper triangular matrix s
-c
-c
-      subroutine qrsolve (n,r,ldr,ipvt,diag,qtb,x,sdiag,work)
-      implicit none
-      integer i,j,k,jj,n
-      integer nsing,ldr
-      integer ipvt(*)
-      real*8 sine,cosine
-      real*8 tangent
-      real*8 cotangent
-      real*8 qtbpj,temp
-      real*8 diag(*)
-      real*8 qtb(*)
-      real*8 x(*)
-      real*8 sdiag(*)
-      real*8 work(*)
-      real*8 r(ldr,*)
-c
-c
-c     copy r and (q transpose)*b to preserve input and
-c     initialize s; in particular, save the diagonal
-c     elements of r in x
-c
-      do j = 1, n-1
-         do k = j+1, n
-            r(k,j) = r(j,k)
-         end do
-      end do
-      do j = 1, n
-         x(j) = r(j,j)
-         work(j) = qtb(j)
-      end do
-c
-c     eliminate the diagonal matrix d using a Givens rotation
-c
-      do j = 1, n
-c
-c     prepare the row of d to be eliminated, locating
-c     the diagonal element using p from the QR factorization
-c
-         jj = ipvt(j)
-         if (diag(jj) .ne. 0.0d0) then
-            do k = j, n
-               sdiag(k) = 0.0d0
-            end do
-            sdiag(j) = diag(jj)
-c
-c     the transformations to eliminate the row of d modify
-c     only a single element of (q transpose)*b beyond the
-c     first n, which is initially zero
-c
-            qtbpj = 0.0d0
-            do k = j, n
-c
-c     determine a Givens rotation which eliminates the
-c     appropriate element in the current row of d
-c
-               if (sdiag(k) .ne. 0.0d0) then
-                  if (abs(r(k,k)) .lt. abs(sdiag(k))) then
-                     cotangent = r(k,k) / sdiag(k)
-                     sine = 0.5d0 / sqrt(0.25d0+0.25d0*cotangent**2)
-                     cosine = sine * cotangent
-                  else
-                     tangent = sdiag(k) / r(k,k)
-                     cosine = 0.5d0 / sqrt(0.25d0+0.25d0*tangent**2)
-                     sine = cosine * tangent
-                  end if
-c
-c     compute the modified diagonal element of r
-c     and the modified element of ((q transpose)*b,0)
-c
-                  r(k,k) = cosine*r(k,k) + sine*sdiag(k)
-                  temp = cosine*work(k) + sine*qtbpj
-                  qtbpj = -sine*work(k) + cosine*qtbpj
-                  work(k) = temp
-c
-c     accumulate the tranformation in the row of s
-c
-                  if (n .ge. k+1) then
-                     do i = k+1, n
-                        temp = cosine*r(i,k) + sine*sdiag(i)
-                        sdiag(i) = -sine*r(i,k) + cosine*sdiag(i)
-                        r(i,k) = temp
-                     end do
-                  end if
-               end if
-            end do
-         end if
-c
-c     store the diagonal element of s and restore
-c     the corresponding diagonal element of r
-c
-         sdiag(j) = r(j,j)
-         r(j,j) = x(j)
-      end do
-c
-c     solve the triangular system for z; if the system
-c     is singular, then obtain a least squares solution
-c
-      nsing = n
-      do j = 1, n
-         if (sdiag(j).eq.0.0d0 .and. nsing.eq.n)  nsing = j - 1
-         if (nsing .lt. n)  work(j) = 0.0d0
-      end do
-      if (nsing .ge. 1) then
-         do k = 1, nsing
-            j = nsing - k + 1
-            temp = 0.0d0
-            if (nsing .ge. j+1) then
-               do i = j+1, nsing
-                  temp = temp + r(i,j)*work(i)
-               end do
-            end if
-            work(j) = (work(j)-temp) / sdiag(j)
-         end do
-      end if
-c
-c     permute the components of z back to components of x
-c
-      do j = 1, n
-         k = ipvt(j)
-         x(k) = work(j)
-      end do
+      deallocate (gnstep)
+      deallocate (diag)
+      deallocate (work1)
+      deallocate (work2)
       return
       end
 c
@@ -1161,68 +866,63 @@ c     and in Dennis and Schnabel's book
 c
 c     arguments and variables :
 c
-c     m        number of functions
-c     n        number of variables
-c     xc       vector of length n containing the current iterate
-c     fcnorm   real scalar containing the norm of f(xc)
-c     gc       vector of length n containing the gradient at xc
-c     a        real m by n matrix containing the upper triangular
-c                matrix r from the QR factorization of the current
-c                Jacobian in the upper triangle
-c     lda      leading dimension of A exactly as specified in
-c                the dimension statement of the calling program
-c     ipvt     integer vector of length n containing the permutation
-c                matrix from QR factorization of the Jacobian
-c     sc       vector of length n containing the Newton step
-c     sa       vector of length n containing current step
-c     xscale   vector of length n containing the diagonal
-c                scaling matrix for x
-c     gauss    logical variable equal is true when the Gauss-Newton
-c                step is taken
-c     stpmax   maximum allowable step size
-c     delta    trust region radius with value retained between calls
-c     icode    return code set upon exit
-c                0  means xp accepted as next iterate, delta
-c                     is trust region for next iteration
-c                1  means the algorithm was unable to find a
-c                     satisfactory xp sufficiently distinct from xc
-c                2  means both the scaled actual and predicted
-c                     function reductions are smaller than rftol
-c                3  means that false convergence is detected
-c                4  means fpnorm is too large, current iteration is
-c                     continued with a new, reduced trust region
-c                5  means fpnorm is sufficiently small, but the
-c                     chance of taking a longer successful step
-c                     seems good that the current iteration is to
-c                     be continued with a new, doubled trust region
-c     xpprev   vector of length n containing the value of xp
-c                at the previous call within this iteration
-c     fpprev   vector of length m containing f(xpprev)
-c     xp       vector of length n containing the new iterate
-c     fp       vector of length m containing the functions at xp
-c     fpnorm   scalar containing the norm of f(xp)
-c     bigstp   logical variable; true, if maximum step length was taken,
-c                false  otherwise
-c     ncalls   number of function evaluations used
-c     xlo      vector of length n containing the lower bounds
-c     xhi      vector of length n containing the upper bounds
-c     nactive  number of columns in the active Jacobian
+c     n         number of least squares variables
+c     m         number of residual functions
+c     xc        vector with the current iterate
+c     fcnorm    scalar containing the norm of f(xc)
+c     gc        vector with the gradient at xc
+c     a         real m by n matrix containing the upper triangular
+c                 matrix r from the QR factorization of the current
+c                 Jacobian in the upper triangle
+c     ipvt      vector of length n containing the permutation matrix
+c                 from QR factorization of the Jacobian
+c     sc        vector containing the Newton step
+c     sa        vector containing current step
+c     xscale    vector containing the diagonal scaling matrix for x
+c     gauss     flag set to true when the Gauss-Newton step is taken
+c     stpmax    maximum allowable step size
+c     delta     trust region radius with value retained between calls
+c     icode     return code values, set upon exit
+c                 0  means xp accepted as next iterate, delta
+c                      is trust region for next iteration
+c                 1  means the algorithm was unable to find a
+c                      satisfactory xp sufficiently distinct from xc
+c                 2  means both the scaled actual and predicted
+c                      function reductions are smaller than rftol
+c                 3  means that false convergence is detected
+c                 4  means fpnorm is too large, current iteration is
+c                      continued with a new, reduced trust region
+c                 5  means fpnorm is sufficiently small, but the
+c                      chance of taking a longer successful step
+c                      seems good that the current iteration is to
+c                      be continued with a new, doubled trust region
+c     xpprev    vector with the value of xp at the  previous call
+c                 within this iteration
+c     fpprev    vector of length m containing f(xpprev)
+c     xp        vector of length n containing the new iterate
+c     fp        vector of length m containing the functions at xp
+c     fpnorm    scalar containing the norm of f(xp)
+c     bigstp    flag set to true if maximum step length was taken
+c     ncalls    number of function evaluations used
+c     xlo       vector of length n containing the lower bounds
+c     xhi       vector of length n containing the upper bounds
+c     nactive   number of columns in the active Jacobian
 c
 c     required external routines :
 c
 c     rsdvalue   subroutine to evaluate residual function values
 c
 c
-      subroutine trust (rsdvalue,m,n,xc,fcnorm,gc,a,lda,ipvt,sc,sa,
-     &                  xscale,gauss,stpmax,delta,icode,xp,fc,fp,
-     &                  fpnorm,bigstp,ncalls,xlo,xhi,nactive,stpmin,
-     &                  rftol,faketol)
+      subroutine trust (n,m,xc,fcnorm,gc,a,ipvt,sc,sa,xscale,gauss,
+     &                  stpmax,delta,icode,xp,fc,fp,fpnorm,bigstp,
+     &                  ncalls,xlo,xhi,nactive,stpmin,rftol,faketol,
+     &                  rsdvalue)
       implicit none
       integer maxlsq,maxrsd
-      parameter (maxlsq=50)
-      parameter (maxrsd=100)
-      integer i,j,k,m,n
-      integer lda,icode
+      parameter (maxlsq=1000)
+      parameter (maxrsd=1000)
+      integer i,j,k
+      integer m,n,icode
       integer ncalls,nactive
       integer ipvt(*)
       real*8 fcnorm,stpmax
@@ -1232,6 +932,8 @@ c
       real*8 stplen,stpmin
       real*8 rftol,faketol
       real*8 alpha,temp,precise
+      real*8 xpprev(maxlsq)
+      real*8 fpprev(maxrsd)
       real*8 xc(*)
       real*8 gc(*)
       real*8 sc(*)
@@ -1242,9 +944,7 @@ c
       real*8 xlo(*)
       real*8 xhi(*)
       real*8 xscale(*)
-      real*8 xpprev(maxlsq)
-      real*8 fpprev(maxrsd)
-      real*8 a(lda,*)
+      real*8 a(m,*)
       logical gauss,bigstp
       logical feas,ltemp
       save xpprev,fpprev
@@ -1279,7 +979,7 @@ c
          end if
       end do
       ncalls = ncalls + 1
-      call rsdvalue (m,n,xp,fp)
+      call rsdvalue (n,m,xp,fp)
       fpnorm = 0.0d0
       do i = 1, m
          fpnorm = fpnorm + fp(i)**2
