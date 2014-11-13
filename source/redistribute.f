@@ -17,6 +17,14 @@
       integer:: ns        ! split loop counter
       integer:: chan      ! communications channel
       integer:: end       ! end index for local atoms
+      integer:: ninreg    ! number of atoms in the region
+      integer:: ninhal    ! number of atoms including halo region
+      integer:: nsend     ! number of atoms to send
+      integer:: nrecv     ! number of atoms to receive
+      integer:: above
+      integer:: neighbor
+      integer:: splitdir
+      real (kind=8):: splitcoord
       real (kind=8), dimension(3):: lminbox ! local min coord
       real (kind=8), dimension(3):: lmaxbox ! local max coord
       real (kind=8), dimension(3):: minbox  ! global min coord
@@ -95,11 +103,13 @@
         ! is based on a Gray code. Note that applying the inverse
         ! returns the original rank, i.e. ieor(neighbor,split)->rank.
         splits(ns)%neighbor = ieor(rank,chan)
+        neighbor = splits(ns)%neighbor
 
         ! Determine whether we are "above" or "below" the 
         ! split. This will return a 0 or a 1. Assign the 
         ! upper coordinates to the "above" processes. 
         splits(ns)%above = ishft(iand(rank,chan),-(ns-1))
+        above = splits(ns)%above
 
         ! Create a subcommunicator for each of the subdomains
         ! to enable collective communications for the subdomain.
@@ -108,7 +118,7 @@
         ! operate with MPI_COMM_WORLD.
         if(ns.gt.1) then 
            call MPI_Comm_split(splits(ns-1)%comm,
-     &                         splits(ns)%above,
+     &                         above,
      &                         rank,
      &                         splits(ns)%comm, ierror)
          end if
@@ -116,18 +126,19 @@
         ! Determine the splitting direction, i.e. split 
         ! along the longest systems direction
         splits(ns)%splitdir = maxloc(lsysbox, dim=1)
+        splitdir = splits(ns)%splitdir
 
         ! Determine the splitting coordinate
-        splits(ns)%splitcoord=findSplit(splits(ns)%splitdir,
+        splits(ns)%splitcoord=findSplit(splitdir,
      &                                  splits(ns)%minbox,
      &                                  splits(ns)%maxbox,
      &                                  splits(ns)%comm)
+        splitcoord = splits(ns)%splitcoord
 
         ! Trick to get an a descening sort in the sort 
         ! routine below.
-        if(splits(ns)%above.eq.1) then
-           atom(:)%pos(splits(ns)%splitdir) = 
-     &                    -atom(:)%pos(splits(ns)%splitdir)
+        if(above.eq.1) then
+           atom(:)%pos(splitdir) = -atom(:)%pos(splitdir)
         end if
 
         ! Sort local atoms along the splitting direction
@@ -136,38 +147,70 @@
         ! NB can only do this the first time otherwise all
         ! all the atom relationships will break once these
         ! have been established.
-        call sortAtoms(splits(ns)%splitdir, 1, end)
+        call sortAtoms(splitdir, 1, end)
 
         ! Return sign back to the original.
         if(splits(ns)%above.eq.1) then
-           atom(:)%pos(splits(ns)%splitdir) = 
-     &                    -atom(:)%pos(splits(ns)%splitdir)
+           atom(:)%pos(splitdir) = -atom(:)%pos(splitdir)
         end if
 
         ! Diagnostic message
         print "(A,I3,A,I2,A,F7.3)","Split: ",ns,
-     &        " splitdir ",splits(ns)%splitdir," splitcoord: ", 
-     &        splits(ns)%splitcoord
+     &        " splitdir ",splitdir," splitcoord: ",splitcoord
 
         ! NB not sure what the halo region should be - could be a 
         ! deal breaker.
         ! swap atoms across the splitting direction
-        if (splits(ns)%above.eq.1) then
+        if (above.eq.1) then
 
+           ! Update the systems box.
            ! Above the split so the minbox moves up.
-           splits(ns)%minbox(splits(ns)%splitdir) = 
-     &           splits(ns)%splitcoord
+           splits(ns)%minbox(splitdir) = splitcoord
 
+           ! Count the number of atoms above the split.
+           ninreg = count(atom(:)%pos(splitdir).ge.splitcoord)
 
+           ! Include a halo region.
+           ninhal = count(atom(:)%pos(splitdir).ge.
+     &                    splitcoord - maxcutoff)
+
+           ! Number of atoms to send across
+           nsend = end - ninhal + 1
+
+           ! Let the neighbouring process know how many atoms
+           ! it will get and find out how many it has to get.
+           call MPI_Send(nsend,1,MPI_INTEGER,neighbor,100,
+     &                   MPI_COMM_WORLD,ierror)
+           call MPI_Recv(nrecv,1,MPI_INTEGER,neighbor,101,
+     &                   MPI_COMM_WORLD,status,ierror)
+
+           ! Now actually send the data
            ! call MPI_Send(buff,count,datatype,neighbor,100,
     !&                     MPI_COMM_WORLD,ierror)
            ! call MPI_Recv(buff,count,datatype,neighbor,101,
     !&                     MPI_COMM_WORLD,ierror)
         else
 
+           ! Update the systems box.
            ! Below the split so the maxbox moves down.
-           splits(ns)%maxbox(splits(ns)%splitdir) = 
-     &           splits(ns)%splitcoord
+           splits(ns)%maxbox(splitdir) = splitcoord
+
+           ! Count the number of atoms above the split.
+           ninreg = count(atom(:)%pos(splitdir).le.splitcoord)
+
+           ! Include a halo region.
+           ninhal = count(atom(:)%pos(splitdir).ge.
+     &                    splitcoord + maxcutoff)
+
+           ! Number of atoms to send across
+           nsend = end - ninhal + 1
+
+           ! Let the neighbouring process know how many atoms
+           ! it will get and find out how many it has to get.
+           call MPI_Recv(nrecv,1,MPI_INTEGER,neighbor,100,
+     &                     MPI_COMM_WORLD,status,ierror)
+           call MPI_Send(nsend,1,MPI_INTEGER,neighbor,101,
+     &                     MPI_COMM_WORLD,ierror)
 
            ! call MPI_Recv(buff,count,datatype,neighbor,100,
     !&                     MPI_COMM_WORLD,ierror)
