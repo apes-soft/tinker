@@ -71,7 +71,7 @@ c
          ic = iang(3,i)
          if (ib.lt.ia .and. ib.lt.ic) then
             do j = 1, n12(ia)
-               if (i12(j,ia) .eq. ic) then
+               if (atom(ia)%i12(j) .eq. ic) then
                   nring3 = nring3 + 1
                   if (nring3 .gt. maxring) then
                      write (iout,10)
@@ -104,7 +104,7 @@ c
          id = itors(4,i)
          if (ia.lt.ic .and. id.lt.ib) then
             do j = 1, n12(ia)
-               if (i12(j,ia) .eq. id) then
+               if (atom(ia)%i12(j) .eq. id) then
                   nring4 = nring4 + 1
                   if (nring4 .gt. maxring) then
                      write (iout,30)
@@ -158,7 +158,7 @@ c
          ie = ibitor(5,i)
          if (ia.lt.id .and. ie.lt.ib .and. min(ia,ie).lt.ic) then
             do j = 1, n12(ia)
-               if (i12(j,ia) .eq. ie) then
+               if (atom(ia)%i12(j) .eq. ie) then
                   nring5 = nring5 + 1
                   if (nring5 .gt. maxring) then
                      write (iout,50)
@@ -215,10 +215,10 @@ c
          ie = ibitor(5,i)
          imax = max(ia,ib,ic,id,ie)
          do j = 1, n12(ia)
-            ig = i12(j,ia)
+            ig = atom(ia)%i12(j)
             if (ig .gt. imax) then
                do k = 1, n12(ie)
-                  if (i12(k,ie) .eq. ig) then
+                  if (atom(ie)%i12(k) .eq. ig) then
                      nring6 = nring6 + 1
                      if (nring6 .gt. maxring) then
                         write (iout,70)

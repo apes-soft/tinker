@@ -261,7 +261,7 @@ c
          ip11(1,i) = i
          it = atom(i)%type
          do j = 1, n12(i)
-            jj = i12(j,i)
+            jj = atom(i)%i12(j)
             jt = atom(jj)%type
             do k = 1, maxval
                kk = pgrp(k,it)
@@ -354,7 +354,7 @@ c
          do j = 1, np11(i)
             jj = ip11(j,i)
             do k = 1, n12(jj)
-               kk = i12(k,jj)
+               kk = atom(jj)%i12(k)
                if (mask(kk) .ne. i) then
                   nkeep = nkeep + 1
                   keep(nkeep) = kk

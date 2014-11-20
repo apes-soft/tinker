@@ -37,7 +37,7 @@ c
       nbond = 0
       do i = 1, n
          do j = 1, n12(i)
-            k = i12(j,i)
+            k = atom(i)%i12(j)
             if (i .lt. k) then
                nbond = nbond + 1
                if (nbond .gt. maxbnd) then
@@ -50,7 +50,7 @@ c
                ibnd(2,nbond) = k
                bndlist(j,i) = nbond
                do m = 1, n12(k)
-                  if (i .eq. i12(m,k)) then
+                  if (i .eq. atom(k)%i12(m)) then
                      bndlist(m,k) = nbond
                      goto 20
                   end if

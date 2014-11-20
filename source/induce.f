@@ -684,7 +684,7 @@ c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(private) shared(n,npole,ipole,atom,pdamp,thole,
 !$OMP& rpole,p2scale,p3scale,p4scale,p41scale,p5scale,d1scale,d2scale,
-!$OMP& d3scale,d4scale,u1scale,u2scale,u3scale,u4scale,n12,i12,n13,i13,
+!$OMP& d3scale,d4scale,u1scale,u2scale,u3scale,u4scale,n12,n13,i13,
 !$OMP& n14,i14,n15,i15,np11,ip11,np12,ip12,np13,ip13,np14,ip14,nelst,
 !$OMP& elst,cut2,aewald,aesq2,aesq2n,poltyp,ntpair,tindex,tdipdip,
 !$OMP& toffset,toffset0,field,fieldp,fieldt,fieldtp,maxlocal)
@@ -724,7 +724,7 @@ c
          qiyz = rpole(10,i)
          qizz = rpole(13,i)
          do j = 1, n12(ii)
-            pscale(i12(j,ii)) = p2scale
+            pscale(atom(ii)%i12(j)) = p2scale
          end do
          do j = 1, n13(ii)
             pscale(i13(j,ii)) = p3scale
@@ -882,7 +882,7 @@ c
 c     reset interaction scaling coefficients for connected atoms
 c
          do j = 1, n12(ii)
-            pscale(i12(j,ii)) = 1.0d0
+            pscale(atom(ii)%i12(j)) = 1.0d0
          end do
          do j = 1, n13(ii)
             pscale(i13(j,ii)) = 1.0d0

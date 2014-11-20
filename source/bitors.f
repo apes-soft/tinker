@@ -41,10 +41,10 @@ c
          ic = iang(2,i)
          id = iang(3,i)
          do j = 1, n12(ib)
-            ia = i12(j,ib)
+            ia = atom(ib)%i12(j)
             if (ia.ne.ic .and. ia.ne.id) then
                do k = 1, n12(id)
-                  ie = i12(k,id)
+                  ie = atom(id)%i12(k)
                   if (ie.ne.ic .and. ie.ne.ib .and. ie.ne.ia) then
                      nbitor = nbitor + 1
                      if (nbitor .gt. maxbitor) then

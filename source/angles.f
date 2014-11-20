@@ -51,9 +51,9 @@ c
                end if
                m = m + 1
                anglist(m,i) = nangle
-               iang(1,nangle) = i12(j,i)
+               iang(1,nangle) = atom(i)%i12(j)
                iang(2,nangle) = i
-               iang(3,nangle) = i12(k,i)
+               iang(3,nangle) = atom(i)%i12(k)
                iang(4,nangle) = 0
             end do
          end do
@@ -61,9 +61,9 @@ c
 c     set the out-of-plane atom for angles at trivalent centers
 c
          if (n12(i) .eq. 3) then
-            iang(4,nangle) = i12(1,i)
-            iang(4,nangle-1) = i12(2,i)
-            iang(4,nangle-2) = i12(3,i)
+            iang(4,nangle) = atom(i)%i12(1)
+            iang(4,nangle-1) = atom(i)%i12(2)
+            iang(4,nangle-2) = atom(i)%i12(3)
          end if
       end do
       return

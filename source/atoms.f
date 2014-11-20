@@ -39,6 +39,8 @@ c      integer:: type(maxatm)
       integer :: valence 
       character(len=24) :: story
       character(len=3) :: name
+      integer, dimension(maxval) :: i12
+
       end type atomtype
 
       save

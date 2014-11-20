@@ -46,8 +46,8 @@ c
          end do
          n12(i) = n12(i) + 1
          n12(k) = n12(k) + 1
-         i12(n12(i),i) = k
-         i12(n12(k),k) = i
+         atom(i)%i12(n12(i)) = k
+         atom(k)%i12(n12(k)) = i
    10    continue
       end do
 c
@@ -57,14 +57,14 @@ c
          do j = 1, 2
             k = iadd(j,i)
             n12(k) = n12(k) + 1
-            i12(n12(k),k) = iadd(3-j,i)
+            atom(k)%i12(n12(k)) = iadd(3-j,i)
          end do
       end do
 c
 c     sort the attached atom lists into ascending order
 c
       do i = 1, n
-         call sort (n12(i),i12(1,i))
+         call sort (n12(i),atom(i)%i12(1))
       end do
       return
       end

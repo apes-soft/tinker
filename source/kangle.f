@@ -339,7 +339,7 @@ c     count number of non-angle hydrogens on the central atom
 c
          nh = 1
          do j = 1, n12(ib)
-            ih = i12(j,ib)
+            ih = atom(ib)%i12(j)
             if (ih.ne.ia .and. ih.ne.ic .and. atom(ih)%atomic.eq.1)
      &         nh = nh + 1
          end do

@@ -19,6 +19,7 @@ c
       subroutine chkring (iring,ia,ib,ic,id)
       use sizes
       use couple
+      use atoms
       implicit none
       integer i,j,k,m,p,q,r
       integer ia,ib,ic,id
@@ -50,15 +51,15 @@ c     check the input atoms for sequential connectivity
 c
       if (nset .gt. 1) then
          do j = 1, n12(ia)
-            i = i12(j,ia)
+            i = atom(ia)%i12(j)
             if (ib .eq. i) then
                if (nset .eq. 2)  goto 10
                do k = 1, n12(ib)
-                  m = i12(k,ib)
+                  m = atom(ib)%i12(k)
                   if (ic .eq. m) then
                      if (nset .eq. 3)  goto 10
                      do p = 1, n12(ic)
-                        q = i12(p,ic)
+                        q = atom(ic)%i12(p)
                         if (id .eq. q)  goto 10
                      end do
                   end if
@@ -73,11 +74,11 @@ c     check for an atom contained inside a small ring
 c
       if (nset .eq. 1) then
          do j = 1, n12(ia)-1
-            i = i12(j,ia)
+            i = atom(ia)%i12(j)
             do k = j+1, n12(ia)
-               m = i12(k,ia)
+               m = atom(ia)%i12(k)
                do p = 1, n12(i)
-                  if (m .eq. i12(p,i)) then
+                  if (m .eq. atom(i)%i12(p)) then
                      iring = 3
                      goto 20
                   end if
@@ -85,14 +86,14 @@ c
             end do
          end do
          do j = 1, n12(ia)-1
-            i = i12(j,ia)
+            i = atom(ia)%i12(j)
             do k = j+1, n12(ia)
-               m = i12(k,ia)
+               m = atom(ia)%i12(k)
                do p = 1, n12(i)
-                  r = i12(p,i)
+                  r = atom(i)%i12(p)
                   if (r .ne. ia) then
                      do q = 1, n12(m)
-                        if (r .eq. i12(q,m)) then
+                        if (r .eq. atom(m)%i12(q)) then
                            iring = 4
                            goto 20
                         end if
@@ -106,7 +107,7 @@ c
             do k = j+1, n13(ia)
                m = i13(k,ia)
                do p = 1, n12(i)
-                  if (m .eq. i12(p,i)) then
+                  if (m .eq. atom(i)%i12(p)) then
                      iring = 5
                      goto 20
                   end if
@@ -125,22 +126,22 @@ c     check for a bond contained inside a small ring
 c
       else if (nset .eq. 2) then
          do j = 1, n12(ia)
-            i = i12(j,ia)
+            i = atom(ia)%i12(j)
             do k = 1, n12(ib)
-               if (i .eq. i12(k,ib)) then
+               if (i .eq. atom(ib)%i12(k)) then
                   iring = 3
                   goto 30
                end if
             end do
          end do
          do j = 1, n12(ia)
-            i = i12(j,ia)
+            i = atom(ia)%i12(j)
             if (ib .ne. i) then
                do k = 1, n12(ib)
-                  m = i12(k,ib)
+                  m = atom(ib)%i12(k)
                   if (ia .ne. m) then
                      do p = 1, n12(i)
-                        if (m .eq. i12(p,i)) then
+                        if (m .eq. atom(i)%i12(p)) then
                            iring = 4
                            goto 30
                         end if
@@ -159,7 +160,7 @@ c
             end do
          end do
          do j = 1, n12(ia)
-            i = i12(j,ia)
+            i = atom(ia)%i12(j)
             if (ib .ne. i) then
                do k = 1, n13(ib)
                   m = i13(k,ib)
@@ -167,7 +168,7 @@ c
                      if (m .eq. i13(p,i)) then
                         iring = 6
                         do q = 1, n12(ia)
-                           if (m .eq. i12(q,ia))  iring = 0
+                           if (m .eq. atom(ia)%i12(q))  iring = 0
                         end do
                         if (iring .eq. 6)  goto 30
                      end if
@@ -181,16 +182,16 @@ c     check for an angle contained inside a small ring
 c
       else if (nset .eq. 3) then
          do j = 1, n12(ia)
-            if (ic .eq. i12(j,ia)) then
+            if (ic .eq. atom(ia)%i12(j)) then
                iring = 3
                goto 40
             end if
          end do
          do j = 1, n12(ia)
-            i = i12(j,ia)
+            i = atom(ia)%i12(j)
             if (ib .ne. i) then
                do k = 1, n12(ic)
-                  if (i .eq. i12(k,ic)) then
+                  if (i .eq. atom(ic)%i12(k)) then
                      iring = 4
                      goto 40
                   end if
@@ -198,7 +199,7 @@ c
             end if
          end do
          do j = 1, n12(ia)
-            i = i12(j,ia)
+            i = atom(ia)%i12(j)
             if (ib .ne. i) then
                do k = 1, n13(ic)
                   if (i .eq. i13(k,ic)) then
@@ -225,16 +226,16 @@ c     check for a torsion contained inside a small ring
 c
       else if (nset .eq. 4) then
          do j = 1, n12(ia)
-            if (id .eq. i12(j,ia)) then
+            if (id .eq. atom(ia)%i12(j)) then
                iring = 4
                goto 50
             end if
          end do
          do j = 1, n12(ia)
-            i = i12(j,ia)
+            i = atom(ia)%i12(j)
             if (ib .ne. i) then
                do k = 1, n12(id)
-                  if (i .eq. i12(k,id)) then
+                  if (i .eq. atom(id)%i12(k)) then
                      iring = 5
                      goto 50
                   end if
@@ -242,7 +243,7 @@ c
             end if
          end do
          do j = 1, n12(ia)
-            i = i12(j,ia)
+            i = atom(ia)%i12(j)
             if (ib .ne. i) then
                do k = 1, n13(id)
                   if (i .eq. i13(k,id)) then
