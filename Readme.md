@@ -12,7 +12,7 @@ is building a spatial decomposition of `tinkerLite`.
 
 # Parallelisation strategy
 
-Use an **Orthogonal Recursive Bisection** (ORB) to distribute atoms across the processes involved.
+Use an **Orthogonal Recursive Bisection** (ORB) [[Salomn](#ORB)] to distribute atoms across the processes involved.
 
 # Restrictions and changes
 
@@ -27,9 +27,9 @@ Use an **Orthogonal Recursive Bisection** (ORB) to distribute atoms across the p
 * Need to deal with periodic boundary conditions
 * Need a mechanism to deal with molecules that span the whole system
   * Could enumerate molecules in the `.xyz` file by preprocessing
-<!-- ![image](imgs/test.svg) -->
+  
 
 # References
 
-* [<a id="ORB"">Salmon</a>] Salmon, John K. (1991) Parallel hierarchical N-body methods. Dissertation (Ph.D.), California Institute of Technology. [http://resolver.caltech.edu/CaltechTHESIS:04112011-113813016](ttp://resolver.caltech.edu/CaltechTHESIS:04112011-113813016)
+* [<a id="ORB"">Salmon</a>] Salmon, John K. (1991) Parallel hierarchical N-body methods. Dissertation (Ph.D.), California Institute of Technology. See [http://resolver.caltech.edu/CaltechTHESIS:04112011-113813016](ttp://resolver.caltech.edu/CaltechTHESIS:04112011-113813016).
 
