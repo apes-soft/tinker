@@ -122,10 +122,10 @@ c     processes involved in the computation.
 
       endif ! End if rank 0
 
-      ! Broadcast the number of lines in the key file to other procs
+      ! broadcast the number of lines in the key file to other procs
       call MPI_Bcast(nkey, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierror)
 
-      ! Broadcast the entire contents of the keyline array to other procs
+      ! broadcast the entire contents of the keyline array to other procs
       call MPI_Bcast(keyline, maxkey*120, MPI_CHARACTER, 0, 
      &            MPI_COMM_WORLD, ierror)
 

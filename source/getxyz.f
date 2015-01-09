@@ -36,7 +36,6 @@ c
       if (exist) then
 
          ! get the basefile name for the xyz file 
-         ! (potentially also the keyfile)
          call basefile (xyzfile)
 
          ! read and store the keywords from the keyfile
