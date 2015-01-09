@@ -23,6 +23,11 @@ Use an **Orthogonal Recursive Bisection** (ORB) [[Salmon](#ORB)] to distribute a
 * There is no interactive input of parameters - generally these codes will run in a batch system and there will be no access to standard input. A program waiting for user input could result in the whole application stalling and large amounts of CPU time being wasted. If a required parameter is missing this will result in the application terminating.
 * Only process 0 reads the `.key` file and broadcasts the information to the other processes (the number of key lines and the key contents).
 * Process 0 reads the `.xyz` file and distributes the atom information to the other processes in blocks.
+* A number of the tinker atom characteristics have been moved into a Fortran 90 derived type to facilitate data movement between processes:
+
+<p align="center">
+<img src="imgs/atomtype.png"/>
+</p>
 
 # Possible issues
 
