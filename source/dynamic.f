@@ -59,7 +59,6 @@ c
       end if
 
 c
-c
 c     set up the structure and molecular mechanics calculation
 c
       call initial

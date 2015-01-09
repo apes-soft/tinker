@@ -61,7 +61,7 @@ c
       end if
 
 c
-c     command line arguments to the program
+c     read command line arguments to the program
 c
       call command
 
@@ -74,7 +74,7 @@ c     number of lines in the parameter file
 c
       nprm = 0
 c
-c     number of atoms in the system
+c     global number of atoms in the system
 c
       n = 0
 c
