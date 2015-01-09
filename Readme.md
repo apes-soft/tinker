@@ -12,14 +12,16 @@ is building a spatial decomposition of `tinkerLite`.
 
 # Parallelisation strategy
 
-Use an **Orthogonal Recursive Bisection** (ORB) [[Salomn](#ORB)] to distribute atoms across the processes involved.
+Use an **Orthogonal Recursive Bisection** (ORB) [[Salmon](#ORB)] to distribute atoms across the processes involved.
 
 # Restrictions and changes
 
 * Requires that the number of processes involved is a power of 2. Currently there is a code check for this in `dynamic.f`. Execution will terminate if this condition is not met.
 * Only process 0 displays the tinker promotional banner.
-* There is no interactive input of parameters - generally these codes will run in a batch system and there will be no access to standard input. A program waiting for input could result in the whole application stalling and large amounts of CPU time being wasted. If a required parameter is missing this will result in the application terminating.
-* Only process 0 reads the `.key` file and broadcasts the information to the other processes.
+* Moved the `getkey` subroutine from `basefile.f` to `getxyz.f`. It seemed more logical to not have it hidden away in `basefile.f`.
+* Moved the reading of `cutoffs` from `mechanic.f` to `getxyz.f` - need the cutoff information to determine how much data needs to be transported between domains.
+* There is no interactive input of parameters - generally these codes will run in a batch system and there will be no access to standard input. A program waiting for user input could result in the whole application stalling and large amounts of CPU time being wasted. If a required parameter is missing this will result in the application terminating.
+* Only process 0 reads the `.key` file and broadcasts the information to the other processes (the number of key lines and the key contents).
 * Process 0 reads the `.xyz` file and distributes the atom information to the other processes in blocks.
 
 # Possible issues
