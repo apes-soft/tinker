@@ -33,6 +33,7 @@ c
       use usage
       use mpiparams
       implicit none
+      integer:: provided ! Actual threading model provided by MPI
       integer i,istep,nstep
       integer mode,next
       real*8 dt,dtdump
@@ -40,6 +41,23 @@ c
       character*20 keyword
       character*120 record
       character*120 string
+
+
+
+      ! Allow for the usage of multithreaded applications but MPI
+      ! regions will be on a single thread
+      call MPI_Init_thread(MPI_THREAD_FUNNELED, provided, ierror)
+
+      ! Find out how many processes we have.
+      call MPI_Comm_size(MPI_COMM_WORLD, nprocs, ierror)
+
+      ! Find out my own rank.
+      call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierror)
+
+      print "(A,I3,A,I3,A)", "Process ",rank," out of ", nprocs,
+     &                       " started."
+      call flush(iout)
+
 c
 c
 c     set up the structure and molecular mechanics calculation
@@ -293,4 +311,8 @@ c
 c     perform any final tasks before program exit
 c
       call final
+
+      ! Finish the MPI execution
+      call MPI_Finalize(ierror)
+
       end
