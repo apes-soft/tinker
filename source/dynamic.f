@@ -31,6 +31,7 @@ c
       use solute
       use stodyn
       use usage
+      use mpiparams
       implicit none
       integer i,istep,nstep
       integer mode,next

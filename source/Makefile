@@ -515,6 +515,7 @@ OBJS = action.o \
        moment.o \
        moments.o \
        monte.o \
+       mpiparams.o \
        mplpot.o \
        mpole.o \
        mutant.o \
@@ -1054,7 +1055,7 @@ distgeom.o: angbnd.o atomid.o atoms.o bndstr.o couple.o disgeo.o files.o inform.
 dma.o:
 document.o: iounit.o
 domega.o:
-dynamic.o: atoms.o bath.o bndstr.o bound.o inform.o iounit.o keys.o mdstuf.o potent.o sizes.o solute.o stodyn.o usage.o
+dynamic.o: atoms.o bath.o bndstr.o bound.o inform.o iounit.o keys.o mdstuf.o mpiparams.o potent.o sizes.o solute.o stodyn.o usage.o
 eangang.o: angang.o angbnd.o angpot.o atoms.o bound.o energi.o group.o math.o sizes.o usage.o
 eangang1.o: angang.o angbnd.o angpot.o atoms.o bound.o deriv.o energi.o group.o math.o sizes.o usage.o virial.o
 eangang2.o: angang.o angbnd.o angpot.o atoms.o bound.o group.o hessn.o math.o sizes.o
@@ -1317,6 +1318,7 @@ molxyz.o: files.o iounit.o titles.o
 moment.o:
 moments.o: atomid.o atoms.o bound.o charge.o dipole.o limits.o moment.o mpole.o polar.o potent.o rigid.o sizes.o solute.o units.o usage.o
 monte.o: atoms.o files.o inform.o iounit.o omega.o output.o sizes.o units.o usage.o zcoord.o
+mpiparams.o: 
 mplpot.o:
 mpole.o:
 mutant.o:
