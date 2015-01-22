@@ -786,6 +786,7 @@ listing:
 	cat *.i *.f *.c > tinker.txt
 
 rename:
+	mkdir -p $(BINDIR)
 	mv  alchemy.x    $(BINDIR)/alchemy
 	mv  analyze.x    $(BINDIR)/analyze
 	mv  anneal.x     $(BINDIR)/anneal
