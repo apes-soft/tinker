@@ -77,9 +77,9 @@ else ifeq ($(COMPARCH),GenericGfortranOpenMP)
   ##  CPU Type: Intel x86 Compatible
   ##  Compiler: GNU gfortran
   ##  Parallel: OpenMP
-  FC        = gfortran
+  FC        = mpif90
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
-  FCFLAGS   = -Wall -c
+  FCFLAGS   = -c #-Wall
   OPTFLAGS  = -ffast-math -fopenmp -O3
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
