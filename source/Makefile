@@ -772,7 +772,8 @@ EXEFILES = alchemy.x \
 	${CC} ${CFLAGS} ${INCLUDEDIR} ${OPTFLAGS} $<
 
 %.x: %.o libtinker.a
-	${FC} ${LINKFLAGS} -o $@ $^ ${LIBS}; strip $@
+	${FC} ${LINKFLAGS} -o $@ $<  -L . -ltinker ${LIBS}
+	strip $@
 
 all: ${EXEFILES}
 
