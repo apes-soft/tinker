@@ -10,6 +10,12 @@ of:
 
 * `dynamic`
 
+Questions
+=========
+
+* Should we use fortran 90 derived types? This would reduce the number
+  of communication calls that would be required. 
+
 Changes
 =======
 
