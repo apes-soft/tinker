@@ -16,15 +16,21 @@ c     "fatal" terminates execution due to a user request, a severe
 c     error or some other nonstandard condition
 c
 c
-      subroutine fatal
+      subroutine fatal(errcode)
       use iounit
+      use mpiparams
       implicit none
-c
-c
-c     print a final warning message, then quit
-c
-      write (iout,10)
-   10 format (/,' TINKER is Unable to Continue; Terminating',
-     &           ' the Current Calculation',/)
+
+      integer, optional, intent(in):: errcode  ! Specify an error code
+
+      ! print a final warning message, then quit
+      if(rank.eq.0) then
+        write (iout,*) ' TINKER is Unable to Continue; Terminating',
+     &                 ' the Current Calculation'
+      end if
+
+      ! Abort the MPI program
+      call MPI_Abort(MPI_COMM_WORLD,errcode,ierror)
+
       stop
       end
