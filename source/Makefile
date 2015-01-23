@@ -182,27 +182,83 @@ endif
 ##  Should not be Necessary to Change Things Below this Point  ##
 #################################################################
 
+XOBJS = alchemy.o \
+        analyze.o \
+        anneal.o \
+        archive.o \
+        bar.o \
+        correlate.o \
+        crystal.o \
+        diffuse.o \
+        distgeom.o \
+        document.o \
+        dynamic.o \
+        gda.o \
+        intedit.o \
+        intxyz.o \
+        minimize.o \
+        minirot.o \
+        minrigid.o \
+        molxyz.o \
+        monte.o \
+        newton.o \
+        newtrot.o \
+        nucleic.o \
+        optimize.o \
+        optirot.o \
+        optrigid.o \
+        pdbxyz.o \
+        polarize.o \
+        poledit.o \
+        potential.o \
+        prmedit.o \
+        protein.o \
+        pss.o \
+        pssrigid.o \
+        pssrot.o \
+        radial.o \
+        saddle.o \
+        scan.o \
+        sniffer.o \
+        spacefill.o \
+        spectrum.o \
+        superpose.o \
+        sybylxyz.o \
+        testgrad.o \
+        testhess.o \
+        testpair.o \
+        testpol.o \
+        testrot.o \
+        timer.o \
+        timerot.o \
+        torsfit.o \
+        valence.o \
+        vibbig.o \
+        vibrate.o \
+        vibrot.o \
+        xtalfit.o \
+        xtalmin.o \
+        xyzedit.o \
+        xyzint.o \
+        xyzpdb.o \
+        xyzsybyl.o 
+
 OBJS = action.o \
        active.o \
-       alchemy.o \
        align.o \
        analysis.o \
        analyz.o \
-       analyze.o \
        angang.o \
        angbnd.o \
        angles.o \
        angpot.o \
        angtor.o \
-       anneal.o \
-       archive.o \
        argue.o \
        ascii.o \
        atmlst.o \
        atomid.o \
        atoms.o \
        attach.o \
-       bar.o \
        basefile.o \
        bath.o \
        beeman.o \
@@ -235,9 +291,7 @@ OBJS = action.o \
        connect.o \
        connolly.o \
        control.o \
-       correlate.o \
        couple.o \
-       crystal.o \
        cspline.o \
        cutoffs.o \
        deflate.o \
@@ -245,14 +299,10 @@ OBJS = action.o \
        deriv.o \
        diagq.o \
        diffeq.o \
-       diffuse.o \
        dipole.o \
        disgeo.o \
-       distgeom.o \
        dma.o \
-       document.o \
        domega.o \
-       dynamic.o \
        eangang.o \
        eangang1.o \
        eangang2.o \
@@ -384,7 +434,6 @@ OBJS = action.o \
        fracs.o \
        freeunit.o \
        freeze.o \
-       gda.o \
        geometry.o \
        getint.o \
        getkey.o \
@@ -427,9 +476,7 @@ OBJS = action.o \
        initres.o \
        initrot.o \
        insert.o \
-       intedit.o \
        inter.o \
-       intxyz.o \
        invbeta.o \
        invert.o \
        iounit.o \
@@ -505,16 +552,11 @@ OBJS = action.o \
        merck.o \
        merge.o \
        minima.o \
-       minimize.o \
-       minirot.o \
-       minrigid.o \
        molcul.o \
        moldyn.o \
        molecule.o \
-       molxyz.o \
        moment.o \
        moments.o \
-       monte.o \
        mpiparams.o \
        mplpot.o \
        mpole.o \
@@ -522,14 +564,11 @@ OBJS = action.o \
        mutate.o \
        nblist.o \
        neigh.o \
-       newton.o \
-       newtrot.o \
        nextarg.o \
        nexttext.o \
        nonpol.o \
        nose.o \
        nspline.o \
-       nucleic.o \
        nucleo.o \
        number.o \
        numeral.o \
@@ -540,9 +579,6 @@ OBJS = action.o \
        opdist.o \
        openend.o \
        openmp.o \
-       optimize.o \
-       optirot.o \
-       optrigid.o \
        optsave.o \
        orbital.o \
        orbits.o \
@@ -555,7 +591,6 @@ OBJS = action.o \
        paths.o \
        pbstuf.o \
        pdb.o \
-       pdbxyz.o \
        phipsi.o \
        picalc.o \
        piorbs.o \
@@ -565,21 +600,16 @@ OBJS = action.o \
        pmestuff.o \
        pmpb.o \
        polar.o \
-       polarize.o \
-       poledit.o \
        polgrp.o \
        polpot.o \
        polymer.o \
        potent.o \
-       potential.o \
        potfit.o \
        precis.o \
        precise.o \
        pressure.o \
-       prmedit.o \
        prmkey.o \
        promo.o \
-       protein.o \
        prtdyn.o \
        prterr.o \
        prtint.o \
@@ -588,14 +618,10 @@ OBJS = action.o \
        prtprm.o \
        prtseq.o \
        prtxyz.o \
-       pss.o \
-       pssrigid.o \
-       pssrot.o \
        ptable.o \
        qmstuf.o \
        qrfact.o \
        quatfit.o \
-       radial.o \
        random.o \
        rattle.o \
        readdyn.o \
@@ -623,9 +649,7 @@ OBJS = action.o \
        rotpole.o \
        rxnfld.o \
        rxnpot.o \
-       saddle.o \
        scales.o \
-       scan.o \
        sdstep.o \
        search.o \
        sequen.o \
@@ -635,39 +659,26 @@ OBJS = action.o \
        sigmoid.o \
        sizes.o \
        sktstuff.o \
-       sniffer.o \
        socket.o \
        solute.o \
        sort.o \
-       spacefill.o \
-       spectrum.o \
        square.o \
        stodyn.o \
        strbnd.o \
        strtor.o \
        suffix.o \
-       superpose.o \
        surface.o \
        surfatom.o \
        switch.o \
-       sybylxyz.o \
        syntrn.o \
        tarray.o \
        temper.o \
-       testgrad.o \
-       testhess.o \
-       testpair.o \
-       testpol.o \
-       testrot.o \
-       timer.o \
-       timerot.o \
        titles.o \
        tncg.o \
        torphase.o \
        torpot.o \
        torque.o \
        tors.o \
-       torsfit.o \
        torsions.o \
        tortor.o \
        tree.o \
@@ -679,27 +690,17 @@ OBJS = action.o \
        urypot.o \
        usage.o \
        usolve.o \
-       valence.o \
        valfit.o \
        vdw.o \
        vdwpot.o \
        verlet.o \
        version.o \
-       vibbig.o \
-       vibrate.o \
-       vibrot.o \
        vibs.o \
        virial.o \
        volume.o \
        warp.o \
-       xtalfit.o \
-       xtalmin.o \
        xtals.o \
        xyzatm.o \
-       xyzedit.o \
-       xyzint.o \
-       xyzpdb.o \
-       xyzsybyl.o \
        zatom.o \
        zclose.o \
        zcoord.o
@@ -771,6 +772,10 @@ EXEFILES = alchemy.x \
 
 %.o: %.c
 	${CC} ${CFLAGS} ${INCLUDEDIR} ${OPTFLAGS} $<
+
+# $@ name of the target for the rule.
+# $< name of the prerequisites.
+# $? name of the prerequisites newer than the target.
 
 %.x: %.o libtinker.a
 	${FC} ${LINKFLAGS} -o $@ $<  -L . -ltinker ${LIBS}
@@ -1175,7 +1180,7 @@ extra1.o: atoms.o deriv.o energi.o sizes.o
 extra2.o: atoms.o hessn.o sizes.o
 extra3.o: action.o analyz.o atoms.o energi.o sizes.o
 faces.o:
-fatal.o: iounit.o
+fatal.o: iounit.o mpiparams.o
 fft.o:
 fft3d.o: fft.o openmp.o pme.o
 fftpack.o: math.o
