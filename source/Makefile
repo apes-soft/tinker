@@ -456,6 +456,7 @@ OBJS = action.o \
        groups.o \
        grpline.o \
        gyrate.o \
+       help.o \
        hescut.o \
        hessian.o \
        hessn.o \
@@ -1060,7 +1061,7 @@ distgeom.o: angbnd.o atomid.o atoms.o bndstr.o couple.o disgeo.o files.o inform.
 dma.o:
 document.o: iounit.o
 domega.o:
-dynamic.o: atoms.o bath.o bndstr.o bound.o inform.o iounit.o keys.o mdstuf.o mpiparams.o potent.o sizes.o solute.o stodyn.o usage.o
+dynamic.o: atoms.o bath.o bndstr.o bound.o help.o inform.o iounit.o keys.o mdstuf.o mpiparams.o potent.o sizes.o solute.o stodyn.o usage.o
 eangang.o: angang.o angbnd.o angpot.o atoms.o bound.o energi.o group.o math.o sizes.o usage.o
 eangang1.o: angang.o angbnd.o angpot.o atoms.o bound.o deriv.o energi.o group.o math.o sizes.o usage.o virial.o
 eangang2.o: angang.o angbnd.o angpot.o atoms.o bound.o group.o hessn.o math.o sizes.o
@@ -1215,6 +1216,7 @@ group.o:
 groups.o: group.o
 grpline.o: atomid.o atoms.o group.o rgddyn.o sizes.o
 gyrate.o: atoms.o sizes.o usage.o
+help.o: mpiparams.o
 hescut.o:
 hessian.o: atoms.o bound.o couple.o hescut.o hessn.o inform.o iounit.o limits.o mpole.o potent.o rigid.o sizes.o usage.o vdw.o vdwpot.o
 hessn.o:

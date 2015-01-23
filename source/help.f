@@ -1,10 +1,10 @@
 c     Print a usage message.
 c
 
-      subroutine usage
+      subroutine help
 
       use iounit 
-      use parallelparams
+      use mpiparams
 
       implicit none
 
@@ -41,6 +41,6 @@ c
 
       end if 
 
-      end subroutine usage
+      end subroutine help
 
  
