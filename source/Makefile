@@ -1206,7 +1206,7 @@ getref.o: atomid.o atoms.o boxes.o couple.o files.o refer.o sizes.o titles.o
 getstring.o: ascii.o
 gettext.o: ascii.o
 getword.o: ascii.o
-getxyz.o: inform.o iounit.o output.o
+getxyz.o: inform.o iounit.o mpiparams.o output.o
 ghmcstep.o: atomid.o atoms.o bath.o freeze.o iounit.o mdstuf.o moldyn.o sizes.o stodyn.o units.o usage.o virial.o
 gkstuf.o: sizes.o
 gradient.o: atoms.o bound.o couple.o deriv.o energi.o inter.o iounit.o limits.o potent.o rigid.o sizes.o vdwpot.o virial.o
