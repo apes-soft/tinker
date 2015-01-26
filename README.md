@@ -10,7 +10,17 @@ of:
 
 * `dynamic`
 
-Any other application may no longer work.
+Any other application may no longer work. We may also have a look at:
+
+* `bar` which reads in two trajectories and two keyfiles (i.e. different
+lambda windows for free energy calculations), and calculates the energies
+of trajectory 1 with keyfile 2, and vice versa. The read-in is very slow
+on this, up to a few hours for ~2000 structures. Richard has been thinking
+for a while that ideally the energy evaluation should be done as an option
+to dynamic - i.e. whenever the energy of a structure is printed out, why
+not evaluate the energy of the same structure at different lambda windows
+too - this would save all the costly trajectory post-processing later.
+
 
 Questions
 =========
@@ -28,6 +38,11 @@ Changes
 
 The major changes from the TINKER `master` branch are:
 
+* Removed (or in the process of removing) stdin input to the 
+  application. These will normally run in a batch environment
+  where there is no direct connection between the user running
+  the program and the application that is running. Attempts to
+  get input would stall execution and waste CPU cycles.
 * Including a `Makefile` in the `source` directory. Have included 
   a fairly large number of changes from the `Makefile` included 
   in the tinker distribution.
