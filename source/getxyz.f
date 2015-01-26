@@ -20,6 +20,7 @@ c
       use inform
       use iounit
       use output
+      use mpiparams
       implicit none
       integer ixyz
       integer freeunit
@@ -31,22 +32,23 @@ c     try to get a filename from the command line arguments
 c
       call nextarg (xyzfile,exist)
       if (exist) then
+
+         ! get the basefile name for the xyz file
          call basefile (xyzfile)
+
+         ! check file for the 'xyz' extension
          call suffix (xyzfile,'xyz','old')
+
+         ! check if the file exists.
          inquire (file=xyzfile,exist=exist)
       end if
 c
-c     ask for the user specified input structure filename
-c
-      do while (.not. exist)
-         write (iout,10)
-   10    format (/,' Enter Cartesian Coordinate File Name :  ',$)
-         read (input,20)  xyzfile
-   20    format (a120)
-         call basefile (xyzfile)
-         call suffix (xyzfile,'xyz','old')
-         inquire (file=xyzfile,exist=exist)
-      end do
+      ! fail if no xyz file has been supplied
+      if (.not. exist) then
+         write (iout,*) ' GETXYZ -- the file ',xyzfile,
+     &                  ' does not exist.'
+         call fatal
+      end if
 c
 c     first open and then read the Cartesian coordinates file
 c
