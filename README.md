@@ -36,8 +36,10 @@ Questions
 Changes
 =======
 
-The major changes from the TINKER `master` branch are:
+Notable changes from the TINKER `master` branch are:
 
+* Added file `mpiparams.f` - a module to store the MPI parameters.
+* Added file `help.f` that prints out usage information.
 * Removed (or in the process of removing) stdin input to the 
   application. These will normally run in a batch environment
   where there is no direct connection between the user running
