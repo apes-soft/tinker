@@ -42,8 +42,6 @@ c
       character*120 record
       character*120 string
 
-
-
       ! Allow for the usage of multithreaded applications but MPI
       ! regions will be on a single thread
       call MPI_Init_thread(MPI_THREAD_FUNNELED, provided, ierror)
@@ -57,7 +55,6 @@ c
       print "(A,I3,A,I3,A)", "Process ",rank," out of ", nprocs,
      &                       " started."
       call flush(iout) ! only want this to remove internal buffering
-
 c
 c
 c     set up the structure and molecular mechanics calculation
@@ -225,6 +222,7 @@ c
 c     print out a header line for the dynamics computation
 c
 
+      ! Only process 0 prints out.
       if(rank.eq.0) then
         if (integrate .eq. 'VERLET') then
            write (iout,330)
