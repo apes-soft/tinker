@@ -38,6 +38,9 @@ Changes
 
 Notable changes from the TINKER `master` branch are:
 
+* Only process 0 reads the key file in `getkey.f` and then 
+  broadcasts the value of `nkey` (actual number of key lines)
+  and the `keyline` array which contains the key contents.
 * Added file `mpiparams.f` - a module to store the MPI parameters.
 * Added file `help.f` that prints out usage information.
 * Removed (or in the process of removing) stdin input to the 

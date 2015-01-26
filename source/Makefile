@@ -1196,7 +1196,7 @@ freeze.o:
 gda.o: atoms.o files.o iounit.o minima.o potent.o sizes.o vdwpot.o warp.o
 geometry.o: atoms.o math.o sizes.o
 getint.o: atoms.o inform.o iounit.o output.o sizes.o
-getkey.o: argue.o files.o iounit.o keys.o openmp.o
+getkey.o: argue.o files.o iounit.o keys.o mpiparams.o openmp.o
 getmol.o: files.o iounit.o
 getmol2.o: files.o iounit.o
 getnumb.o: ascii.o
