@@ -78,7 +78,7 @@ c      nproc = 1
        nthread = 1
 !$OMP PARALLEL shared(nthread) 
 !$OMP MASTER 
-!$OMP    nthread = omp_get_num_threads()
+!$       nthread = omp_get_num_threads()
 !$OMP END MASTER
 !$OMP END PARALLEL 
 
