@@ -36,6 +36,12 @@ c
          ! get the basefile name for the xyz file
          call basefile (xyzfile)
 
+         ! read and store the keywords from the keyfile
+         call getkey
+
+         ! get the information level and output style
+         call control
+
          ! check file for the 'xyz' extension
          call suffix (xyzfile,'xyz','old')
 

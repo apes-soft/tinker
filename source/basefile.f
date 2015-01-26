@@ -61,13 +61,6 @@ c        if (letter .eq. '.')  k = i
       end do
    10 continue
       ldir = k
-c
-c     read and store the keywords from the keyfile
-c
-      call getkey
-c
-c     get the information level and output style
-c
-      call control
+
       return
       end

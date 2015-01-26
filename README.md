@@ -38,6 +38,10 @@ Changes
 
 Notable changes from the TINKER `master` branch are:
 
+* Moved the `control` and `getkey` subroutines from 
+  `basefile.f` to `getxyz.f`` - it just seems to be 
+  so much more logical to call them from there rather 
+  than `basefile.f`.
 * Only process 0 reads the key file in `getkey.f` and then 
   broadcasts the value of `nkey` (actual number of key lines)
   and the `keyline` array which contains the key contents.
