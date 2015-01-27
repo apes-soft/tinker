@@ -46,12 +46,15 @@ c
 
          ! check if the file exists.
          inquire (file=xyzfile,exist=exist)
-      end if
+
+      end if ! end if exist
 
       ! fail if no xyz file has been supplied
       if (.not. exist) then
-         write (iout,*) ' GETXYZ -- the file ',xyzfile,
-     &                  ' does not exist.'
+         if(rank.eq.0) then
+            write (iout,*) ' GETXYZ -- the file ',xyzfile,
+     &                     ' does not exist.'
+         end if
          call fatal
       end if
 
