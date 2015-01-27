@@ -12,9 +12,9 @@ of:
 
 Any other application may no longer work. We may also have a look at:
 
-* `bar` which reads in two trajectories and two keyfiles (i.e. different
+* `bar` which reads in two trajectories and two key files (i.e. different
 lambda windows for free energy calculations), and calculates the energies
-of trajectory 1 with keyfile 2, and vice versa. The read-in is very slow
+of trajectory 1 with key file 2, and vice versa. The read-in is very slow
 on this, up to a few hours for ~2000 structures. Richard has been thinking
 for a while that ideally the energy evaluation should be done as an option
 to dynamic - i.e. whenever the energy of a structure is printed out, why
@@ -30,7 +30,7 @@ Questions
   opted for the former but if several utilities use a single
   file and only one of the apps gets converted to MPI then 
   this will not work. 
-* Should we use fortran 90 derived types? This would reduce the number
+* Should we use Fortran 90 derived types? This would reduce the number
   of communication calls that would be required. 
 
 Changes
@@ -39,7 +39,7 @@ Changes
 Notable changes from the TINKER `master` branch are:
 
 * Moved the `control` and `getkey` subroutines from 
-  `basefile.f` to `getxyz.f`` - it just seems to be 
+  `basefile.f` to `getxyz.f` - it just seems to be 
   so much more logical to call them from there rather 
   than `basefile.f`.
 * Only process 0 reads the key file in `getkey.f` and then 
