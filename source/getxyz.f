@@ -26,10 +26,9 @@ c
       integer freeunit
       logical exist
       character*120 xyzfile
-c
-c
-c     try to get a filename from the command line arguments
-c
+
+
+      ! try to get a filename from the command line arguments
       call nextarg (xyzfile,exist)
       if (exist) then
 
@@ -48,30 +47,33 @@ c
          ! check if the file exists.
          inquire (file=xyzfile,exist=exist)
       end if
-c
+
       ! fail if no xyz file has been supplied
       if (.not. exist) then
          write (iout,*) ' GETXYZ -- the file ',xyzfile,
      &                  ' does not exist.'
          call fatal
       end if
-c
-c     first open and then read the Cartesian coordinates file
-c
+
+      ! first open and then read the Cartesian coordinates file
       coordtype = 'CARTESIAN'
+
       ! Only want process 0 to open/close files.
       if(rank.eq.0) then
         ixyz = freeunit ()
         open (unit=ixyz,file=xyzfile,status='old')
         rewind (unit=ixyz)
       end if
+
+      ! Now read the coordinates
       call readxyz (ixyz)
+
+      ! Only proc 0 opened the file
       if(rank.eq.0) then
         close (unit=ixyz)
       end if
-c
-c     quit if the Cartesian coordinates file contains no atoms
-c
+
+      ! quit if the Cartesian coordinates file contains no atoms
       if (abort) then
          write (iout,30)
    30    format (/,' GETXYZ  --  Cartesian Coordinates File',
@@ -80,3 +82,4 @@ c
       end if
       return
       end
+
