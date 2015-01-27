@@ -52,26 +52,24 @@ c
       ! Find out my own rank.
       call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierror)
 
+
+      ! Diagnostic print statement
       print "(A,I3,A,I3,A)", "Process ",rank," out of ", nprocs,
      &                       " started."
       call flush(iout) ! only want this to remove internal buffering
-c
-c
-c     set up the structure and molecular mechanics calculation
-c
+
+      ! set up the structure and molecular mechanics calculation
       call initial
       call getxyz
       call mechanic
-c
-c     initialize the temperature, pressure and coupling baths
-c
-      kelvin = 0.0d0
-      atmsph = 0.0d0
+
+      ! initialize the temperature, pressure and coupling baths
+      kelvin     = 0.0d0
+      atmsph     = 0.0d0
       isothermal = .false.
-      isobaric = .false.
-c
-c     check for keywords containing any altered parameters
-c
+      isobaric   = .false.
+
+      ! check for keywords containing any altered parameters
       integrate = 'BEEMAN'
       do i = 1, nkey
          next = 1
@@ -84,9 +82,8 @@ c
             call upcase (integrate)
          end if
       end do
-c
-c     initialize the simulation length as number of time steps
-c
+
+      ! initialize the simulation length as number of time steps
       query = .true.
       call nextarg (string,exist)
       if (exist) then
@@ -102,9 +99,8 @@ c
          call help
          call fatal(2)
       end if
-c
-c     get the length of the dynamics time step in picoseconds
-c
+
+      ! get the length of the dynamics time step in picoseconds
       dt = -1.0d0
       call nextarg (string,exist)
       if (exist)  read (string,*,err=40,end=40)  dt
@@ -119,14 +115,12 @@ c
       end if
 
       dt = 0.001d0 * dt
-c
-c     enforce bounds on thermostat and barostat coupling times
-c
+
+      ! enforce bounds on thermostat and barostat coupling times
       tautemp = max(tautemp,dt)
       taupres = max(taupres,dt)
-c
-c     set the time between trajectory snapshot coordinate dumps
-c
+
+      ! set the time between trajectory snapshot coordinate dumps
       dtdump = -1.0d0
       call nextarg (string,exist)
       if (exist)  read (string,*,err=80,end=80)  dtdump
@@ -140,9 +134,8 @@ c
          call fatal(4)
       end if
       iwrite = nint(dtdump/dt)
-c
-c     get choice of statistical ensemble for periodic system
-c
+
+      ! get choice of statistical ensemble for periodic system
       if (use_bounds) then
          mode = -1
          call nextarg (string,exist)
@@ -189,14 +182,14 @@ c
             if (atmsph .le. 0.0d0)  atmsph = 1.0d0
          end if
       end if
-c
-c     use constant energy or temperature for nonperiodic system
-c
-c     choices:
-c
-c     (1) Constant Total Energy Value (E)
-c     (2) Constant Temperature via Thermostat (T)
-c
+
+      ! use constant energy or temperature for nonperiodic system
+      ! 
+      ! choices:
+      ! 
+      ! (1) Constant Total Energy Value (E)
+      ! (2) Constant Temperature via Thermostat (T)
+ 
       if (.not. use_bounds) then
          mode = -1
          call nextarg (string,exist)
@@ -213,15 +206,12 @@ c
             if (kelvin .le. 0.0d0)  kelvin = 298.0d0
            end if
       end if
-c
-c     initialize any holonomic constraints and setup dynamics
-c
+
+      ! initialize any holonomic constraints and setup dynamics
       call shakeup
       call mdinit
-c
-c     print out a header line for the dynamics computation
-c
-
+ 
+      ! print out a header line for the dynamics computation
       ! Only process 0 prints out.
       if(rank.eq.0) then
         if (integrate .eq. 'VERLET') then
@@ -258,9 +248,8 @@ c
      &               ' Modified Beeman Algorithm')
         end if
       end if ! conditional over rank 0
-c
-c     integrate equations of motion to take a time step
-c
+
+      ! integrate equations of motion to take a time step
       do istep = 1, nstep
          if (integrate .eq. 'VERLET') then
             call verlet (istep,dt)
@@ -280,12 +269,12 @@ c
             call beeman (istep,dt)
          end if
       end do
-c
-c     perform any final tasks before program exit
-c
+
+      ! perform any final tasks before program exit
       call final
 
       ! Finish the MPI execution
       call MPI_Finalize(ierror)
 
       end
+
