@@ -784,8 +784,7 @@ EXEFILES = alchemy.x \
 
 all: ${EXEFILES}
 
-install:
-	rename
+install: rename
 
 clean:
 	rm -f *.o *.mod *.a *.x
