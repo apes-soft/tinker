@@ -75,9 +75,11 @@ c
 
       ! quit if the Cartesian coordinates file contains no atoms
       if (abort) then
-         write (iout,30)
-   30    format (/,' GETXYZ  --  Cartesian Coordinates File',
-     &              ' does not Contain Any Atoms')
+         if(rank.eq.0) then 
+           write (iout,30)
+   30      format (/,' GETXYZ  --  Cartesian Coordinates File',
+     &               ' does not Contain Any Atoms')
+         end if
          call fatal
       end if
       return
