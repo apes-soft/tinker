@@ -35,6 +35,7 @@ c
       use linmin
       use minima
       use molcul
+      use mpiparams
       use mutant
       use neigh
       use openmp
@@ -55,19 +56,17 @@ c
       logical first
       save first
       data first  / .true. /
-c
-c
-c     default unit numbers for input and output
-c
+
+
+      ! default unit numbers for input and output
       input = 5
-      iout = 6
-c
-c     display program banner and copyright notice
-c
-      if (first)  call promo
-c
-c     command line arguments to the program
-c
+      iout  = 6
+
+      ! display program banner and copyright notice
+      ! only process 0 should do this.
+      if (first.and.rank.eq.0)  call promo
+
+      ! command line arguments to the program
       if (first)  call command
       if (first)  first = .false.
 c
@@ -87,142 +86,118 @@ c      nproc = omp_get_num_procs ()
 c!$    nthread = nproc
 c!$    call omp_set_num_threads (nthread)
 !$    call omp_set_nested (.true.)
-c
-c     Intel compiler extensions to OpenMP standard
-c
+ 
+      ! Intel compiler extensions to OpenMP standard
+      ! Commented out - better to set the OpenMP environment
+      ! variable OMP_STACKSIZE and to ensure that 
+      ! is set in the shell ulimit -s unlimited
 c!$    call kmp_set_stacksize_s (2**28)
 c!$    call kmp_set_blocktime (0)
-c
-c     values of machine precision constants
-c
-      tiny = precise (1)
+
+      ! values of machine precision constants
+      tiny  = precise (1)
       small = precise (2)
-      huge = precise (3)
-c
-c     number of lines in the keyfile
-c
+      huge  = precise (3)
+
+      ! number of lines in the keyfile
       nkey = 0
-c
-c     number of lines in the parameter file
-c
+
+      ! number of lines in the parameter file
       nprm = 0
-c
-c     number of atoms in the system
-c
+
+      ! number of atoms in the system
       n = 0
-c
-c     number of molecules in the system
-c
+
+      ! number of molecules in the system
       nmol = 0
-c
-c     number of unit cell replicates
-c
+
+      ! number of unit cell replicates
       ncell = 0
-c
-c     number of atoms used in superposition
-c
+
+      ! number of atoms used in superposition
       nfit = 0
-c
-c     number of mutated atoms in the system
-c
+
+      ! number of mutated atoms in the system
       nmut = 0
-c
-c     number of bonds added or deleted from Z-matrix
-c
+
+      ! number of bonds added or deleted from Z-matrix
       nadd = 0
       ndel = 0
-c
-c     number of atoms in Protein Data Bank format
-c
+
+      ! number of atoms in Protein Data Bank format
       npdb = 0
-c
-c     number of residues and chains in biopolymer sequence
-c
-      nseq = 0
+
+      ! number of residues and chains in biopolymer sequence
+      nseq   = 0
       nchain = 0
-c
-c     highest numbered previous cycle file
-c
+
+      ! highest numbered previous cycle file
       nprior = 0
-c
-c     flags for information levels within the program
-c
-      silent = .false.
+
+      ! flags for information levels within the program
+      silent  = .false.
       verbose = .false.
-      debug = .false.
-      abort = .false.
-c
-c     flag for use of atom groups
-c
+      debug   = .false.
+      abort   = .false.
+
+      ! flag for use of atom groups
       use_group = .false.
-c
-c     flags for periodic boundaries
-c
-      use_bounds = .false.
+
+      ! flags for periodic boundaries
+      use_bounds  = .false.
       use_replica = .false.
       use_polymer = .false.
-c
-c     default values for unitcell dimensions
-c
-      xbox = 0.0d0
-      ybox = 0.0d0
-      zbox = 0.0d0
+
+      ! default values for unitcell dimensions
+      xbox  = 0.0d0
+      ybox  = 0.0d0
+      zbox  = 0.0d0
       alpha = 0.0d0
-      beta = 0.0d0
+      beta  = 0.0d0
       gamma = 0.0d0
-c
-c     flags for temperature and pressure baths
-c
+
+      ! flags for temperature and pressure baths
       isothermal = .false.
-      isobaric = .false.
-c
-c     flags for rebuilding of neighbor lists
-c
+      isobaric   = .false.
+
+      ! flags for rebuilding of neighbor lists
       dovlst = .true.
       doclst = .true.
       domlst = .true.
       doulst = .true.
-c
-c     flag for use of rigid bodies
-c
+
+      ! flag for use of rigid bodies
       use_rigid = .false.
-c
-c     flag to show setting of optimization scale factors
-c
+
+      ! flag to show setting of optimization scale factors
       set_scale = .false.
-c
-c     flags for external Java socket communication
-c
-      skt_init = .false.
+
+      ! flags for external Java socket communication
+      skt_init   = .false.
       use_socket = .false.
-c
-c     flags for potential energy smoothing
-c
-      use_smooth = .false.
-      use_dem = .false.
-      use_gda = .false.
-      use_tophat = .false.
+
+      ! flags for potential energy smoothing
+      use_smooth  = .false.
+      use_dem     = .false.
+      use_gda     = .false.
+      use_tophat  = .false.
       use_stophat = .false.
-c
-c     type of coordinates file
-c
+
+      ! type of coordinates file
       coordtype = 'NONE'
-c
-c     atomic symbols for elements
-c
+
+      ! atomic symbols for elements
       call initatom
-c
-c     names of biopolymer residue types
-c
+
+      ! names of biopolymer residue types
       call initres
-c
-c     default values used by optimizations
-c
-      fctmin = 0.0d0
-      maxiter = 0
+
+      ! default values used by optimizations
+      fctmin   = 0.0d0
+      maxiter  = 0
       nextiter = 0
-      iprint = -1
-      iwrite = -1
-      stpmax = 0.0d0
+      iprint   = -1
+      iwrite   = -1
+      stpmax   = 0.0d0
       return
       end
