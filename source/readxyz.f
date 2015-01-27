@@ -225,9 +225,8 @@ c
   100    continue
          call sort (n12(i),i12(1,i))
       end do
-c
-c     perform dynamic allocation of some local arrays
-c
+
+      ! perform dynamic allocation of some local arrays
       nmax = 0
       do i = 1, n
          nmax = max(tag(i),nmax)
@@ -236,18 +235,19 @@ c
          end do
       end do
       allocate (list(nmax))
-c
-c     check for scrambled atom order and attempt to renumber
-c
+
+      ! check for scrambled atom order and attempt to renumber
       reorder = .false.
       do i = 1, n
          list(tag(i)) = i
          if (tag(i) .ne. i)  reorder = .true.
       end do
       if (reorder) then
-         write (iout,110)
-  110    format (/,' READXYZ  --  Atom Labels not Sequential,',
-     &              ' Attempting to Renumber')
+         if(rank.eq.0) then 
+            write (iout,110)
+  110       format (/,' READXYZ  --  Atom Labels not Sequential,',
+     &                ' Attempting to Renumber')
+         end if 
          do i = 1, n
             tag(i) = i
             do j = 1, n12(i)
@@ -256,27 +256,26 @@ c
             call sort (n12(i),i12(1,i))
          end do
       end if
-c
-c     perform deallocation of some local arrays
-c
+
+      ! perform deallocation of some local arrays
       deallocate (list)
-c
-c     check for atom pairs with identical coordinates
-c
+
+      ! check for atom pairs with identical coordinates
       clash = .false.
       if (n .le. 10000)  call chkxyz (clash)
-c
-c     make sure that all connectivities are bidirectional
-c
+
+      ! make sure that all connectivities are bidirectional
       do i = 1, n
          do j = 1, n12(i)
             k = i12(j,i)
             do m = 1, n12(k)
                if (i12(m,k) .eq. i)  goto 130
             end do
-            write (iout,120)  k,i
-  120       format (/,' READXYZ  --  Check Connection of Atom',
+            if(rank.eq.0) then 
+               write (iout,120)  k,i
+  120          format (/,' READXYZ  --  Check Connection of Atom',
      &                 i6,' to Atom',i6)
+ 3          end if
             call fatal
   130       continue
          end do
