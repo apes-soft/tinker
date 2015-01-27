@@ -201,6 +201,19 @@ c
       call MPI_Bcast(z,n,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierror)
       call MPI_Bcast(type,n,MPI_INTEGER,0,MPI_COMM_WORLD,ierror)
 
+
+      ! Temporary stop here for now.
+      print *," rank ", rank," has ",n," atoms."
+
+      if(rank.eq.0) then
+        print *, "Got here successfully."
+        call flush(6)
+        call MPI_Abort(MPI_COMM_WORLD,42,ierror)
+      end if 
+
+
+      call MPI_Barrier(MPI_COMM_WORLD, ierror)
+
       ! for each atom, count and sort its attached atoms
       do i = 1, n
          do j = maxval, 1, -1
