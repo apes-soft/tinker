@@ -1416,7 +1416,7 @@ readmol2.o: atomid.o atoms.o couple.o files.o iounit.o sizes.o titles.o
 readpdb.o: files.o inform.o iounit.o pdb.o resdue.o sequen.o titles.o
 readprm.o: fields.o iounit.o kanang.o kangs.o kantor.o katoms.o kbonds.o kchrge.o kdipol.o khbond.o kiprop.o kitors.o kmulti.o kopbnd.o kopdst.o korbs.o kpitor.o kpolr.o kstbnd.o ksttor.o ktorsn.o ktrtor.o kurybr.o kvdwpr.o kvdws.o merck.o params.o sizes.o
 readseq.o: files.o iounit.o resdue.o sequen.o
-readxyz.o: atomid.o atoms.o bound.o boxes.o couple.o files.o inform.o iounit.o sizes.o titles.o
+readxyz.o: atomid.o atoms.o bound.o boxes.o couple.o files.o inform.o iounit.o mpiparams.o sizes.o titles.o
 refer.o: sizes.o
 replica.o: bound.o boxes.o cell.o inform.o iounit.o
 resdue.o:
