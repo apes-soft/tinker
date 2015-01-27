@@ -81,10 +81,18 @@ c      nproc = 1
 !$OMP END MASTER
 !$OMP END PARALLEL 
 
-
+       ! In general we do not want the number of threads to
+       ! be set to the total number of cores available on 
+       ! the system. Better to set this using the OpenMP 
+       ! environment variable OMP_NUMTHREADS or to use the
+       ! TINKER OPENMP-THREADS key word.
+ 
 c      nproc = omp_get_num_procs ()
 c!$    nthread = nproc
 c!$    call omp_set_num_threads (nthread)
+
+
+      ! Allow nested parallelism
 !$    call omp_set_nested (.true.)
  
       ! Intel compiler extensions to OpenMP standard
