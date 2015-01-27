@@ -59,11 +59,16 @@ c
 c     first open and then read the Cartesian coordinates file
 c
       coordtype = 'CARTESIAN'
-      ixyz = freeunit ()
-      open (unit=ixyz,file=xyzfile,status='old')
-      rewind (unit=ixyz)
+      ! Only want process 0 to open/close files.
+      if(rank.eq.0) then
+        ixyz = freeunit ()
+        open (unit=ixyz,file=xyzfile,status='old')
+        rewind (unit=ixyz)
+      end if
       call readxyz (ixyz)
-      close (unit=ixyz)
+      if(rank.eq.0) then
+        close (unit=ixyz)
+      end if
 c
 c     quit if the Cartesian coordinates file contains no atoms
 c
