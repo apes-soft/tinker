@@ -27,6 +27,7 @@ c
       use inform
       use iounit
       use titles
+      use mpiparams
       implicit none
       integer i,j,k,m
       integer ixyz,nmax
@@ -35,153 +36,177 @@ c
       integer nexttext
       integer trimtext
       integer, allocatable :: list(:)
-      real*8 xlen,ylen,zlen
-      real*8 aang,bang,gang
+      real*8,dimension(7):: bbox ! Boundbox buffer
       logical exist,opened
       logical quit,reorder
       logical clash
       character*120 xyzfile
       character*120 record
       character*120 string
-c
-c
-c     initialize the total number of atoms in the system
-c
-      n = 0
-c
-c     open the input file if it has not already been done
-c
-      inquire (unit=ixyz,opened=opened)
-      if (.not. opened) then
-         xyzfile = filename(1:leng)//'.xyz'
-         call version (xyzfile,'old')
-         inquire (file=xyzfile,exist=exist)
-         if (exist) then
-            open (unit=ixyz,file=xyzfile,status='old')
-            rewind (unit=ixyz)
-         else
-            write (iout,10)
-   10       format (/,' READXYZ  --  Unable to Find the Cartesian',
-     &                 ' Coordinates File')
-            call fatal
-         end if
+
+      ! initialize the total number of atoms in the system
+      n = 0 
+
+      ! initialize coordinates and connectivities for all atom
+      ! using fortran 90 syntax
+      tag  = 0
+      name = '   '
+      x    = 0.0d0
+      y    = 0.0d0
+      z    = 0.0d0
+      type = 0
+      n12  = 0
+      i12  = 0
+
+      ! open the input file if it has not already been done
+      ! only process 0 reads the input in and then broadcasts
+      ! it to the other participating processes.
+      if(rank.eq.0) then
+        inquire (unit=ixyz,opened=opened)
+        if (.not. opened) then
+
+           xyzfile = filename(1:leng)//'.xyz'
+
+           ! check the name of the file about to be opened
+           call version (xyzfile,'old')
+
+           inquire (file=xyzfile,exist=exist)
+
+           if (exist) then
+              open (unit=ixyz,file=xyzfile,status='old')
+              rewind (unit=ixyz)
+           else
+              write (iout,10)
+   10         format (/,' READXYZ  --  Unable to Find the Cartesian',
+     &                  ' Coordinates File')
+              call fatal
+           end if ! end of if exist
+        end if ! end of if not opened
+
+        ! read first line and return if already at end of file
+        quit  = .false.
+        abort = .true.
+        size  = 0
+        do while (size .eq. 0)
+           read (ixyz,20,err=80,end=80)  record
+   20      format (a120)
+           size = trimtext (record)
+        end do
+        abort = .false.
+        quit  = .true.
+
+        ! parse the title line to get the number of atoms
+        i    = 0
+        next = 1
+        call gettext (record,string,next)
+        read (string,*,err=80,end=80)  n
+
+        ! extract the title and determine its length
+        string = record(next:120)
+        first  = nexttext (string)
+        last   = trimtext (string)
+        if (last .eq. 0) then
+           title  = ' '
+           ltitle = 0
+        else
+           title  = string(first:last) 
+           ltitle = trimtext (title)   
+        end if
+
+        ! check for too few or too many total atoms in the file
+        if (n .le. 0) then
+           write (iout,30)
+   30      format (/,' READXYZ  --  The Coordinate File Does Not',
+     &               ' Contain Any Atoms')
+           call fatal
+        else if (n .gt. maxatm) then
+           write (iout,40)  maxatm
+   40      format (/,' READXYZ  --  The Maximum of',i8,' Atoms',
+     &               ' has been Exceeded')
+           call fatal
+        end if
+
+        ! read the coordinates and connectivities for each atom
+        do i = 1, n
+           size = 0
+           do while (size .eq. 0)
+              read (ixyz,50,err=80,end=80)  record
+   50         format (a120)
+              size = trimtext (record)
+              if (i .eq. 1) then
+                 next = 1
+                 call getword (record,name(i),next)
+                 if (name(i) .ne. '   ')  goto 60
+                 read (record,*,err=60,end=60)  (bbox(j),j=2,7)
+                 bbox(1)     = 0
+                 use_bounds  = .true.
+              end if
+   60         continue
+           end do
+           read (record,*,err=80,end=80)  tag(i)
+           next = 1
+           call getword (record,name(i),next)
+           string = record(next:120)
+           read (string,*,err=70,end=70)  x(i),y(i),z(i),type(i),
+     &                                    (i12(j,i),j=1,maxval)
+   70      continue
+        end do
+        quit = .false.
+   80   continue
+        if (.not. opened)  close (unit=ixyz) ! CLOSED HERE AND FROM getxyz.f
+
+        ! an error occurred in reading the coordinate file
+        if (quit) then
+           write (iout,90)  i
+   90      format (/,' READXYZ  --  Error in Coordinate File at Atom',
+     &            i6)
+           call fatal
+        end if
+      end if ! end of if rank 0
+
+      ! Send out the data to the processes involved
+      ! Broadcast the total number of atoms to other procs
+      call MPI_Bcast(n, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,ierror)
+
+      ! Bradcast the length of the title
+      call MPI_Bcast(ltitle, 1, MPI_INTEGER, 0, MPI_COMM_WORLD,ierror)
+
+      ! Broadcast the title to the other procs
+      call MPI_Bcast(title,ltitle,MPI_CHAR,0,MPI_COMM_WORLD,ierror)
+
+      ! Broadcast whether we have periodic bounds
+      call MPI_Bcast(use_bounds,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierror)
+
+      ! If we are using periodic bounds we need the bounding box
+      if(use_bounds.eqv..true.) then
+         call MPI_Bcast(bbox,7,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,
+     &                 ierror)
+         size  = bbox(1)
+         xbox  = bbox(2)
+         ybox  = bbox(3)
+         zbox  = bbox(4)
+         alpha = bbox(5)
+         beta  = bbox(6)
+         gamma = bbox(7)
+
+         ! store periodic box dimension and set angles for 
+         ! calculating fractional coordinates
+         call lattice 
+     
       end if
-c
-c     read first line and return if already at end of file
-c
-      quit = .false.
-      abort = .true.
-      size = 0
-      do while (size .eq. 0)
-         read (ixyz,20,err=80,end=80)  record
-   20    format (a120)
-         size = trimtext (record)
-      end do
-      abort = .false.
-      quit = .true.
-c
-c     parse the title line to get the number of atoms
-c
-      i = 0
-      next = 1
-      call gettext (record,string,next)
-      read (string,*,err=80,end=80)  n
-c
-c     extract the title and determine its length
-c
-      string = record(next:120)
-      first = nexttext (string)
-      last = trimtext (string)
-      if (last .eq. 0) then
-         title = ' '
-         ltitle = 0
-      else
-         title = string(first:last)
-         ltitle = trimtext (title)
-      end if
-c
-c     check for too few or too many total atoms in the file
-c
-      if (n .le. 0) then
-         write (iout,30)
-   30    format (/,' READXYZ  --  The Coordinate File Does Not',
-     &              ' Contain Any Atoms')
-         call fatal
-      else if (n .gt. maxatm) then
-         write (iout,40)  maxatm
-   40    format (/,' READXYZ  --  The Maximum of',i8,' Atoms',
-     &              ' has been Exceeded')
-         call fatal
-      end if
-c
-c     initialize coordinates and connectivities for each atom
-c
-      do i = 1, n
-         tag(i) = 0
-         name(i) = '   '
-         x(i) = 0.0d0
-         y(i) = 0.0d0
-         z(i) = 0.0d0
-         type(i) = 0
-         n12(i) = 0
-         do j = 1, maxval
-            i12(j,i) = 0
-         end do
-      end do
-c
-c     read the coordinates and connectivities for each atom
-c
-      do i = 1, n
-         size = 0
-         do while (size .eq. 0)
-            read (ixyz,50,err=80,end=80)  record
-   50       format (a120)
-            size = trimtext (record)
-            if (i .eq. 1) then
-               next = 1
-               call getword (record,name(i),next)
-               if (name(i) .ne. '   ')  goto 60
-               read (record,*,err=60,end=60)  xlen,ylen,zlen,
-     &                                        aang,bang,gang
-               size = 0
-               xbox = xlen
-               ybox = ylen
-               zbox = zlen
-               alpha = aang
-               beta = bang
-               gamma = gang
-               use_bounds = .true.
-               call lattice
-            end if
-   60       continue
-         end do
-         read (record,*,err=80,end=80)  tag(i)
-         next = 1
-         call getword (record,name(i),next)
-         string = record(next:120)
-         read (string,*,err=70,end=70)  x(i),y(i),z(i),type(i),
-     &                                  (i12(j,i),j=1,maxval)
-   70    continue
-      end do
-      quit = .false.
-   80 continue
-      if (.not. opened)  close (unit=ixyz)
-c
-c     an error occurred in reading the coordinate file
-c
-      if (quit) then
-         write (iout,90)  i
-   90    format (/,' READXYZ  --  Error in Coordinate File at Atom',i6)
-         call fatal
-      end if
-c
-c     for each atom, count and sort its attached atoms
-c
+
+      ! transfer the atom data
+      call MPI_Bcast(x,n,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierror)
+      call MPI_Bcast(y,n,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierror)
+      call MPI_Bcast(z,n,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierror)
+      call MPI_Bcast(type,n,MPI_INTEGER,0,MPI_COMM_WORLD,ierror)
+
+      ! for each atom, count and sort its attached atoms
       do i = 1, n
          do j = maxval, 1, -1
             if (i12(j,i) .ne. 0) then
-               n12(i) = j
-               goto 100
+                n12(i) = j
+                goto 100
             end if
          end do
   100    continue
