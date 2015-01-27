@@ -17,11 +17,14 @@ c     calculation and reads in many of the user selectable options
 c
 c
       subroutine mechanic
+
       use inform
       use iounit
       use limits
       use potent
       use vdwpot
+      use mpiparams
+
       implicit none
 c
 c
@@ -118,9 +121,11 @@ c
 c     quit if essential parameter information is missing
 c
       if (abort) then
-         write (iout,10)
-   10    format (/,' MECHANIC  --  Some Required Potential Energy',
-     &              ' Parameters are Undefined')
+         if(rank.eq.0) then 
+            write (iout,10)
+   10       format (/,' MECHANIC  --  Some Required Potential Energy',
+     &                ' Parameters are Undefined')
+         end if
          call fatal
       end if
       return
