@@ -18,7 +18,9 @@ c
 c
       module iounit
       implicit none
-      integer input
-      integer iout
+
+      integer, parameter:: input =  5 ! Input (default=5).
+      integer, parameter:: iout  =  6 ! Output (default=6).
+
       save
       end

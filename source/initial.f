@@ -58,10 +58,6 @@ c
       data first  / .true. /
 
 
-      ! default unit numbers for input and output
-      input = 5
-      iout  = 6
-
       ! display program banner and copyright notice
       ! only process 0 should do this.
       if (first.and.rank.eq.0)  call promo

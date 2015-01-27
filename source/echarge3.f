@@ -805,7 +805,7 @@ c
 !$OMP& x,y,z,f,pchg,nelst,elst,n12,n13,n14,n15,i12,i13,i14,i15,
 !$OMP& c2scale,c3scale,c4scale,c5scale,use_group,use_bounds,off,
 !$OMP& off2,cut,cut2,c0,c1,c2,c3,c4,c5,f0,f1,f2,f3,f4,f5,f6,f7,
-!$OMP% molcule,ebuffer,name,verbose,debug,header,iout)
+!$OMP% molcule,ebuffer,name,verbose,debug,header)
 !$OMP& firstprivate(cscale) shared(eco,eintero,neco,aeco)
 !$OMP DO reduction(+:eco,eintero,neco,aeco)
 !$OMP& schedule(guided)
@@ -1760,7 +1760,7 @@ c
 !$OMP PARALLEL default(private) shared(nion,iion,jion,use,
 !$OMP& x,y,z,f,pchg,nelst,elst,n12,n13,n14,n15,i12,i13,i14,
 !$OMP& i15,c2scale,c3scale,c4scale,c5scale,use_group,off2,
-!$OMP& aewald,molcule,ebuffer,name,verbose,debug,header,iout)
+!$OMP& aewald,molcule,ebuffer,name,verbose,debug,header)
 !$OMP& firstprivate(cscale) shared(eco,eintrao,neco,aeco)
 !$OMP DO reduction(+:eco,eintrao,neco,aeco)
 !$OMP& schedule(guided)
