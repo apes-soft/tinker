@@ -18,7 +18,7 @@ c
 c
       subroutine nblist
       implicit none
-      include 'cutoff.i'
+      use cutoff
       include 'potent.i'
 c
 c
