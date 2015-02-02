@@ -55,7 +55,7 @@ This stage will allow us to evaluate whether this strategy will work. Focus on t
 1. Profile the latest version of `dynamic` for JAC without OpenMP. Need to understand quantitively the performance.
 2. Revisit the execution path of `dynamic` for the JAC benchmark.
 3. Split the loops currently parallelised using OpenMP with MPI. 
-4. Check that the correct output is still being produced from multiple process runs still compared to that from a single process.
+4. Check that the correct output is still being produced from multiple-process runs compared to that from a single process.
 5. Obtain a speed-up scalability curve. Consider cases with/without OpenMP (compiled with/without). Need to establish whether the efficacy of a hybrid approach.
 6. Evaluate whether this is a good strategy.
 
