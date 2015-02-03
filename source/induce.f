@@ -2350,7 +2350,7 @@ c
 !$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
       do i = 1, npole
 
-         call system_clock(npole_t1,clock_rate)
+c         call system_clock(npole_t1,clock_rate)
 
          ii = ipole(i)
          pdi = pdamp(i)
@@ -2554,9 +2554,9 @@ c
             dscale(ip14(j,ii)) = 1.0d0
          end do
          
-         call system_clock(npole_t2,clock_rate)
-         npole_time = (npole_t2-npole_t1)/real(clock_rate)
-         print*, "induce - timing for particle ", npole_time, i
+c         call system_clock(npole_t2,clock_rate)
+c         npole_time = (npole_t2-npole_t1)/real(clock_rate)
+c         print*, "induce - timing for particle ", npole_time, i
 
       end do
 

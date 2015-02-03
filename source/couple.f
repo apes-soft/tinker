@@ -33,5 +33,6 @@ c
       integer, allocatable :: i13(:,:)
       integer, allocatable :: i14(:,:)
       integer, allocatable :: i15(:,:)
+      integer list_weight(maxatm)
       save
       end

@@ -55,6 +55,8 @@ c
          n13(i) = 0
          do j = 1, n12(i)
             jj = i12(j,i)
+c     calculate weight from 1-2 connections
+            if (i .lt. jj) list_weight(i) = list_weight(i) + 4
             do k = 1, n12(jj)
                kk = i12(k,jj)
                if (kk .eq. i)  goto 10
@@ -81,6 +83,8 @@ c
          n14(i) = 0
          do j = 1, n13(i)
             jj = i13(j,i)
+c     calculate weight from 1-3 connections
+             if (i .gt. jj) list_weight(i) = list_weight(i) + 3
             do k = 1, n12(jj)
                kk = i12(k,jj)
                if (kk .eq. i)  goto 30
@@ -110,6 +114,8 @@ c
          n15(i) = 0
          do j = 1, n14(i)
             jj = i14(j,i)
+c     calculate weight from 1-4 connections
+             if (i .gt. jj) list_weight(i) = list_weight(i) + 2
             do k = 1, n12(jj)
                kk = i12(k,jj)
                if (kk .eq. i)  goto 50
@@ -135,5 +141,17 @@ c
          end if
          call sort8 (n15(i),i15(1,i))
       end do
+
+      do i=1,n
+         do j = 1, n15(i)
+            jj = i15(j,i)
+            if (i .gt. jj) list_weight(i) = list_weight(i) + 1
+         end do
+      end do
+      
+      do i=1,n
+         print*, "the list_weight for each atom  " , i ,  list_weight(i)
+      end do
+      
       return
       end

@@ -126,6 +126,7 @@ c
          n12(i) = 0
          do j = 1, maxval
             i12(j,i) = 0
+            list_weight(j) = 0
          end do
       end do
 c
@@ -187,6 +188,19 @@ c
   100    continue
          call sort (n12(i),i12(1,i))
       end do
+
+      
+C$$$c
+C$$$c     calculate the weight from attached atoms
+C$$$c
+
+C$$$      do i =1,n
+C$$$         do j=1, n12(i)
+C$$$            if (i .gt. i12(j,i)) weight(i) = weight(i) + 4
+C$$$         end do 
+C$$$      end do
+
+
 c
 c     perform dynamic allocation of some local arrays
 c
