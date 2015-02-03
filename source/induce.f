@@ -2282,6 +2282,10 @@ c
       real*8, allocatable :: dlocal(:,:)
       character*6 mode
       external erfc
+      integer npole_t1,npole_t2, clock_rate
+      real npole_time
+
+
 c
 c
 c     check for multipoles and set cutoff coefficients
@@ -2345,6 +2349,9 @@ c     compute the real space portion of the Ewald summation
 c
 !$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
       do i = 1, npole
+
+         call system_clock(npole_t1,clock_rate)
+
          ii = ipole(i)
          pdi = pdamp(i)
          pti = thole(i)
@@ -2546,7 +2553,13 @@ c
             uscale(ip14(j,ii)) = 1.0d0
             dscale(ip14(j,ii)) = 1.0d0
          end do
+         
+         call system_clock(npole_t2,clock_rate)
+         npole_time = (npole_t2-npole_t1)/real(clock_rate)
+         print*, "induce - timing for particle ", npole_time, i
+
       end do
+
 !$OMP END DO
 c
 c     transfer the results from local to global arrays

@@ -4868,6 +4868,9 @@ c
       logical dorl,dorli
       character*6 mode
       external erfc
+      integer npole_t1,npole_t2, clock_rate
+      real npole_time
+
 c
 c
 c     zero out the intramolecular portion of the Ewald energy
@@ -4945,6 +4948,9 @@ c
 c     compute the real space portion of the Ewald summation
 c
       do i = 1, npole
+
+c         call system_clock(npole_t1,clock_rate)
+
          ii = ipole(i)
          pdi = pdamp(i)
          pti = thole(i)
@@ -5798,6 +5804,11 @@ c
             dscale(ip14(j,ii)) = 1.0d0
             uscale(ip14(j,ii)) = 1.0d0
          end do
+
+c         call system_clock(npole_t2,clock_rate)
+c         npole_time = (npole_t2-npole_t1)/real(clock_rate)
+c         print*, "timing for particle", npole_time, i
+
       end do
 c
 c     end OpenMP directives for the major loop structure

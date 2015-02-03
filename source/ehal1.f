@@ -1003,6 +1003,8 @@ c
       logical proceed,usei
       logical muti,mutk
       character*6 mode
+      integer nvdw_t1,nvdw_t2, clock_rate
+      real nvdw_time
 c
 c
 c     zero out the van der Waals energy and first derivatives
@@ -1074,6 +1076,9 @@ c
 c     find van der Waals energy and derivatives via neighbor list
 c
       do ii = 1, nvdw
+         
+c         call system_clock(nvdw_t1,clock_rate)
+
          i = ivdw(ii)
          iv = ired(i)
          redi = kred(i)
@@ -1262,6 +1267,10 @@ c
          do j = 1, n15(i)
             vscale(i15(j,i)) = 1.0d0
          end do
+         
+c         call system_clock(nvdw_t2,clock_rate)
+c         nvdw_time = (nvdw_t2-nvdw_t1)/real(clock_rate)
+c         print*, "timing for particle", nvdw_time, ii
       end do
 c
 c     end OpenMP directives for the major loop structure

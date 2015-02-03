@@ -50,7 +50,7 @@ c
       use zclose
       implicit none
 !$    integer omp_get_num_procs
-      integer omp_get_num_threads
+!$      integer omp_get_num_threads
       real*8 precise
       logical first
       save first
@@ -78,7 +78,7 @@ c      nproc = 1
        nthread = 1
 !$OMP PARALLEL shared(nthread) 
 !$OMP MASTER 
-       nthread = omp_get_num_threads()
+!$       nthread = omp_get_num_threads()
 !$OMP END MASTER
 !$OMP END PARALLEL 
 
