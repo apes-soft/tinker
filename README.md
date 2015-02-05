@@ -61,8 +61,9 @@ This stage will allow us to evaluate whether this strategy will work. Focus on t
 
 If this works well we could move to a stage 2 that might take the execution path produced by Richard's code.
 
+### Profiling
 
-## Execution path for JAC
+### Execution path for JAC
 
 Current content comes from an early write up by Weronika. Need to narrow this down a bit.
 
@@ -93,6 +94,21 @@ in `gradient.f`:
 
 It seems that all of the subroutines that are called in `gradient.f` need to be (?) specified in the key input file. However, not all the possible
 options specified in key files are used in gradient (e.g. `ewald`).
+
+### Splitting loops
+
+Splitting up loops evenly is not going to suffice because iterating over atoms does not lead to equal amounts of work. As the interactions are symmetrical an atom at the beginning of the loop will interact with it's counterparts and its interactions will be taken into account so that as one progresses over the neighbour list most of the interactions will have already been taken into account entailing less and less work. Omar has, more or less, run into this problem.
+
+Current thinking is to associate a *cost* for each atom. This will then help us perform a load balanced split of the loops across the different processes. We know the cost will be:
+
+* Proportional to the valence of the atom.
+* The valence of the nearest neighbours up to a separation of the 5 direct bonds.
+* Atoms with a lower id will have a higher cost because their interaction will count for both atoms.
+
+By traversing the neighbour list it may be possible to associate this cost once.
+
+However, Weronika has dome some preliminary work and determined that something else is at play - we need to check whether interactions that are further off from an atom have equal costs.
+
 
 # Questions
 
