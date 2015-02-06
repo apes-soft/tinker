@@ -6,7 +6,8 @@
 * [Parallelisation strategy](#parallelisation-strategy)
   * [Strategy overview](#strategy-overview)
   * [Stage 1](#stage-1)
-    * [Execution path and profiling](#xxecution-path-and-profiling) 
+    * [Execution path and profiling](#execution-path-and-profiling)
+    * [Splitting the loops](#splitting-the-loops)
 * [Questions](#questions)
 * [Changes](#changes)
 
@@ -123,7 +124,7 @@ Once the profile for `callgrind` had been generated used:
 To produce a png file. The [graphviz](http://www.graphviz.org/) package
 needs to be installed locally.
 
-### Split the loops
+### Splitting the loops
 
 Splitting up loops evenly is not going to suffice because iterating over
 atoms does not lead to equal amounts of work. As the interactions are
