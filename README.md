@@ -52,7 +52,7 @@ cost is.
 
 This stage will allow us to evaluate whether this strategy will work. Focus on the JAC execution path for now. General steps are:
 
-1. **Profile** the latest version of `dynamic` for JAC without OpenMP. Need to understand quantitively the performance.
+1. **Profile** the latest version of `dynamic` for JAC without OpenMP. Need to understand quantitavely the performance.
 2. Revisit the **execution path** of `dynamic` for the JAC benchmark.
 3. **Split the loops** currently parallelised using OpenMP with MPI. 
 4. Check that the correct output is still being produced from multiple-process runs compared to that from a single process.
@@ -77,7 +77,7 @@ The execution path for `dynamic.f` running JAC:
    snapshot coordinate dumps, the type of statistical ensemble, and constant 
    energy or temperature.
 4. Initialize constraints and dynamics
-5. Call integrator nstep times
+5. Call integrator `nstep` times
 
 Each integrator (`verlet`, `stochastic`, `bussi`, `nose` (Nose-Hoover),
 `ghmcstep`, `rigidbody`, `respa` and `beeman`) calls the `gradient`
@@ -88,7 +88,7 @@ in `gradient.f`:
 
 1. Energy component are zeroed out.
 2. Check for periodic conditions -> call `bounds`.
-3. Update neighbor list -> call nblist (inside depending on parameters a 
+3. Update neighbor list -> call `nblist` (inside depending on parameters a 
    specific list is used, e.g. `vlist`, `clist`, `mlist`, `ulist`)
 4. Replicates method -> call `replica`.
 5. Check if Born radii is required (used in implicit solvation models) -> call `born`.
@@ -119,7 +119,7 @@ Once the profile for `callgrind` had been generated used:
     ./gprof2dot.py -f callgrind -o dhfr.dot callgrind.out.5428
     dot -Tpng dhfr.dot -o dhfr.png
 
-To produce a png file. The [graphviz](http://www.graphviz.org/) pacakge
+To produce a png file. The [graphviz](http://www.graphviz.org/) package
 needs to be installed locally.
 
 ### Split the loops
