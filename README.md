@@ -52,9 +52,9 @@ cost is.
 
 This stage will allow us to evaluate whether this strategy will work. Focus on the JAC execution path for now. General steps are:
 
-1. Profile the latest version of `dynamic` for JAC without OpenMP. Need to understand quantitively the performance.
-2. Revisit the execution path of `dynamic` for the JAC benchmark.
-3. Split the loops currently parallelised using OpenMP with MPI. 
+1. **Profile** the latest version of `dynamic` for JAC without OpenMP. Need to understand quantitively the performance.
+2. Revisit the **execution path** of `dynamic` for the JAC benchmark.
+3. **Split the loops** currently parallelised using OpenMP with MPI. 
 4. Check that the correct output is still being produced from multiple-process runs compared to that from a single process.
 5. Obtain a speed-up scalability curve. Consider cases with/without OpenMP (compiled with/without). Need to establish the efficacy of a hybrid approach.
 6. Evaluate whether this is a good strategy.
@@ -63,7 +63,7 @@ If this works well we could move to a stage 2 that might take the execution path
 
 ### Profiling
 
-### Execution path for JAC
+### Execution path
 
 Current content comes from an early write up by Weronika. Need to narrow this down a bit.
 
@@ -95,7 +95,7 @@ in `gradient.f`:
 It seems that all of the subroutines that are called in `gradient.f` need to be (?) specified in the key input file. However, not all the possible
 options specified in key files are used in gradient (e.g. `ewald`).
 
-### Splitting loops
+### Split the loops
 
 Splitting up loops evenly is not going to suffice because iterating over atoms does not lead to equal amounts of work. As the interactions are symmetrical an atom at the beginning of the loop will interact with it's counterparts and its interactions will be taken into account so that as one progresses over the neighbour list most of the interactions will have already been taken into account entailing less and less work. Omar has, more or less, run into this problem.
 
