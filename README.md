@@ -4,6 +4,9 @@
 
 * [Overview](#overview)
 * [Parallelisation strategy](#parallelisation-strategy)
+  * [Strategy overview](#strategy-overview)
+  * [Stage 1](#stage-1)
+    * [Execution path and profiling](#xxecution-path-and-profiling) 
 * [Questions](#questions)
 * [Changes](#changes)
 
@@ -32,7 +35,7 @@ too - this would save all the costly trajectory post-processing later.
 
 # Parallelisation strategy
 
-## Overview
+## Strategy overview
 
 Focus on routines that are used by Richard and Omar where possible.
 Look at the OpenMP regions to determine where the current CPU cost is incurred as well as profiling a couple of use cases with vanilla-tinker to find out where the 
@@ -62,9 +65,7 @@ This stage will allow us to evaluate whether this strategy will work. Focus on t
 If this works well we could move to a stage 2 that might take the
 execution path produced with use cases provided by Richard.
 
-### Profiling
-
-### Execution path
+### Execution path and profiling
 
 Current content comes from an early write up by Weronika. Need to narrow
 this down a bit.
