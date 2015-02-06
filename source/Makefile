@@ -78,9 +78,9 @@ else ifeq ($(COMPARCH),GenericGfortranOpenMP)
   ##  Compiler: GNU gfortran
   ##  Parallel: OpenMP
   FC        = mpif90
-  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3 #-lfftw3_omp -lfftw3
   FCFLAGS   = -c #-Wall
-  OPTFLAGS  = -ffast-math -fopenmp -O3
+  OPTFLAGS  = -g #-ffast-math -O3 #-fopenmp
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc
