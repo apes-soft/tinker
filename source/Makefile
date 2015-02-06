@@ -80,7 +80,7 @@ else ifeq ($(COMPARCH),GenericGfortranOpenMP)
   FC        = mpif90
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3 #-lfftw3_omp -lfftw3
   FCFLAGS   = -c #-Wall
-  OPTFLAGS  = -ffast-math -O3 #-fopenmp
+  OPTFLAGS  = -g #-ffast-math -O3 #-fopenmp
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc
