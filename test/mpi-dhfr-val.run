@@ -1,0 +1,1 @@
+time mpirun -np 1 valgrind --tool=callgrind --simulate-cache=yes --log-file=valgrind2.out ../bin/dynamic dhfr 10 1.0 1.0 2 300.0
