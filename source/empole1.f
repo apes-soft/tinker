@@ -4884,40 +4884,29 @@ c
       allocate (demo2(3,n))
       allocate (depo1(3,n))
       allocate (depo2(3,n))
-c
-c     set arrays needed to scale connected atom interactions
-c
-      do i = 1, n
-         mscale(i) = 1.0d0
-         pscale(i) = 1.0d0
-         dscale(i) = 1.0d0
-         uscale(i) = 1.0d0
-      end do
+
+      ! set arrays needed to scale connected atom interactions
+      mscale = 1.0d0
+      pscale = 1.0d0
+      dscale = 1.0d0
+      uscale = 1.0d0
 c
 c     set conversion factor, cutoff and switching coefficients
 c
       f = electric / dielec
       mode = 'EWALD'
       call switch (mode)
-c
-c     initialize local variables for OpenMP calculation
-c
-      emo = 0.0d0
-      epo = 0.0d0
+
+      ! initialize local variables for OpenMP calculation
+     
+      emo     = 0.0d0
+      epo     = 0.0d0
       eintrao = eintra
-      do i = 1, n
-         do j = 1, 3
-            demo1(j,i) = 0.0d0
-            demo2(j,i) = 0.0d0
-            depo1(j,i) = 0.0d0
-            depo2(j,i) = 0.0d0
-         end do
-      end do
-      do i = 1, 3
-         do j = 1, 3
-            viro(j,i) = 0.0d0
-         end do
-      end do
+      demo1   = 0.0d0  ! nx3 matrix
+      demo2   = 0.0d0  ! nx3 matrix
+      depo1   = 0.0d0  ! nx3 matrix
+      depo2   = 0.0d0  ! nx3 matrix
+      viro    = 0.0d0  ! 3x3 matrix
 c
 c     set OpenMP directives for the major loop structure
 c
