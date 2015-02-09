@@ -1,1 +1,7 @@
-time mpirun -np 1 valgrind --tool=callgrind --simulate-cache=yes --log-file=valgrind2.out ../bin/dynamic dhfr 10 1.0 1.0 2 300.0
+# Command line arguments to dynamic:
+#
+# keyFileBaseName NumberOfTimesteps TimeStep(fm) TimeBetweenOuputs(ps) Temp(K) Press(Atms)
+#
+
+time mpirun -np 1 valgrind --tool=callgrind --simulate-cache=yes --log-file=valgrind2.out \
+            ../bin/dynamic dhfr 2 1.0 1.0 2 300.0
