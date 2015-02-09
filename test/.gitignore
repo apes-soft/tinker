@@ -1,0 +1,6 @@
+gprof2dot.py
+*.out
+*.dot
+*.png
+*.svg
+callgrind.out.*
