@@ -26,6 +26,8 @@ thirdparty/
 # Backup Files #
 ################
 *~
+\#*
+\.\#*
 
 ###################
 # Compiled source #
