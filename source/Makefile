@@ -49,8 +49,8 @@ LINKDIR = /usr/local/bin
 # If none specified the default is: GenericGfortranOpenMP
 
 #COMPARCH=GenericGfortran
-COMPARCH=GenericGfortranOpenMP
-#COMPARCH=LinuxIntel
+#COMPARCH=GenericGfortranOpenMP
+COMPARCH=LinuxIntel
 #COMPARCH=LinuxIntelOpenMP
 #COMPARCH=MacIntel
 #COMPARCH=MacIntelOpenMP
@@ -92,10 +92,17 @@ else ifeq ($(COMPARCH),LinuxIntel)
   ##  Oper Sys: Fedora Core
   ##  Compiler: Intel Fortran for Linux 14.0
 
-  FC        = ifort
+  # May have to set one of the following environment
+  # variables to get it to use the Intel compiler.
+  #
+  # export I_MPI_F77=ifort
+  # export I_MPI_F90=ifort
+  #
+
+  FC        = mpif90
   LIBS      =
   FCFLAGS   = -c -xHost
-  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive
+  OPTFLAGS  = -g #-O3 -no-ipo -no-prec-div -recursive
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = -static-libgcc -static-intel
