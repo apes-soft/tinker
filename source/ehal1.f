@@ -1119,6 +1119,7 @@ c
 c     compute the energy contribution for this interaction
 c
             if (proceed) then
+c               print*, "proceed from ehal1c", nvdw
                kt = jvdw(k)
                xr = xi - xred(k)
                yr = yi - yred(k)

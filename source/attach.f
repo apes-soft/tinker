@@ -56,7 +56,7 @@ c
          do j = 1, n12(i)
             jj = i12(j,i)
 c     calculate weight from 1-2 connections
-            if (i .lt. jj) list_weight(i) = list_weight(i) + 4
+c            if (i .lt. jj) list_weight(i) = list_weight(i) + 1
             do k = 1, n12(jj)
                kk = i12(k,jj)
                if (kk .eq. i)  goto 10
@@ -65,6 +65,7 @@ c     calculate weight from 1-2 connections
                end do
                n13(i) = n13(i) + 1
                i13(n13(i),i) = kk
+               if(i .lt. kk) list_weight(i) = list_weight(i) + 1
    10          continue
             end do
          end do
@@ -84,7 +85,7 @@ c
          do j = 1, n13(i)
             jj = i13(j,i)
 c     calculate weight from 1-3 connections
-             if (i .gt. jj) list_weight(i) = list_weight(i) + 3
+c             if (i .gt. jj) list_weight(i) = list_weight(i) + 1
             do k = 1, n12(jj)
                kk = i12(k,jj)
                if (kk .eq. i)  goto 30
@@ -96,6 +97,7 @@ c     calculate weight from 1-3 connections
                end do
                n14(i) = n14(i) + 1
                i14(n14(i),i) = kk
+               if(i .lt. kk) list_weight(i) = list_weight(i) + 1
    30          continue
             end do
          end do
@@ -115,7 +117,7 @@ c
          do j = 1, n14(i)
             jj = i14(j,i)
 c     calculate weight from 1-4 connections
-             if (i .gt. jj) list_weight(i) = list_weight(i) + 2
+c             if (i .gt. jj) list_weight(i) = list_weight(i) + 1
             do k = 1, n12(jj)
                kk = i12(k,jj)
                if (kk .eq. i)  goto 50
@@ -130,6 +132,7 @@ c     calculate weight from 1-4 connections
                end do
                n15(i) = n15(i) + 1
                i15(n15(i),i) = kk
+               if(i .lt. kk) list_weight(i) = list_weight(i) + 1 
    50          continue
             end do
          end do
@@ -143,8 +146,8 @@ c     calculate weight from 1-4 connections
       end do
 
       do i=1,n
-         do j = 1, n15(i)
-            jj = i15(j,i)
+         do j = 1, n12(i)
+            jj = i12(j,i)
             if (i .gt. jj) list_weight(i) = list_weight(i) + 1
          end do
       end do

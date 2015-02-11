@@ -37,6 +37,9 @@ c
       logical first
       save first
       data first  / .true. /
+      integer t1,t2,clock_rate
+      real time_n
+      
 c
 c
 c     perform dynamic allocation of some global arrays
@@ -53,6 +56,9 @@ c
 c     get the B-spline coefficients for each atomic site
 c
       do i = 1, n
+
+         call system_clock(t1, clock_rate)
+
          xi = x(i)
          yi = y(i)
          zi = z(i)
@@ -74,6 +80,12 @@ c
          w = fr - dble(ifr)
          igrid(3,i) = ifr - bsorder
          call bsplgen (w,thetai3(1,1,i))
+
+         call system_clock(t2, clock_rate)
+         time_n = (t2-t2)/real(clock_rate)
+c         print*, "timing for bspline step", time_n, i 
+         
+         
       end do
       return
       end
@@ -500,6 +512,8 @@ c
       real*8 v2,u2,t2
       real*8 term0,term1,term2
       real*8 fmp(10,*)
+      integer nchunk_t1, nchunk_t2, clock_rate
+      real nchunk_time
 c
 c
 c     zero out the particle mesh Ewald charge grid
@@ -512,6 +526,9 @@ c
             end do
          end do
       end do
+
+      print*, "nchunk, nchk1, nchk2, nchk3 ", nchunk, nchk1, nchk2,nchk3
+
 c
 c     set OpenMP directives for the major loop structure
 c
@@ -523,6 +540,9 @@ c
 c     put the permanent multipole moments onto the grid
 c
       do ichk = 1, nchunk
+         
+         call  system_clock(nchunk_t1,clock_rate)
+         
          cid(1) = mod(ichk-1,nchk1)
          cid(2) = mod(((ichk-1-cid(1))/nchk1),nchk2)
          cid(3) = mod((ichk-1)/(nchk1*nchk2),nchk3)
@@ -584,6 +604,11 @@ c
                end do
             end if
          end do
+
+         call system_clock(nchunk_t2,clock_rate)
+         nchunk_time = (nchunk_t2-nchunk_t1)/real(clock_rate)
+         print*, "timing for each chunk", nchunk_time, ichk
+
       end do
 c
 c     end OpenMP directive for the major loop structure
