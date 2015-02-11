@@ -1,0 +1,19 @@
+# Use case contributed by Richard Bradshaw.
+#
+# This is an equilibrated staph nuclease structure ready for NPT
+# simulation, with the sidechain of residue D21 mutated with ele-lambda
+# 0.5 (half switched on) and vdw-lambda 1.0 (fully switched on). You can
+# change the lambda values if needs be, this is just an example.
+#
+# Sample output has also been provided:
+#
+# 3bdc.log - includes a correction to temper.f provided by Alex Albaugh
+#            not included by Jay in his code contribution.
+#
+# 3bdc_master.log - includes sample output that does not have Alex's 
+#                   correction.
+#
+
+mpirun -np 1 \
+../bin/dynamic 3bdc.xyz -k 3bdc.key 100 2.0 1.0 4 300 1.0
+
