@@ -3,4 +3,3 @@ gprof2dot.py
 *.dot
 *.png
 *.svg
-callgrind.out.*
