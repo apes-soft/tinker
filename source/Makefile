@@ -48,14 +48,36 @@ LINKDIR = /usr/local/bin
 #
 # If none specified the default is: GenericGfortranOpenMP
 
-COMPARCH=GenericGfortran
+#COMPARCH=GenericGfortran
 #COMPARCH=GenericGfortranOpenMP
-#COMPARCH=LinuxIntel
+COMPARCH=LinuxIntel
 #COMPARCH=LinuxIntelOpenMP
 #COMPARCH=MacIntel
 #COMPARCH=MacIntelOpenMP
 #COMPARCH=MacXeonIntelOpenMP
 #COMPARCH=LinuxIntelOpenMP
+
+# Find out what machine we are on and
+# use this as a basis for picking which configuration we are
+# going to use. Start by finding out the hostname:
+HOSTNAME:=$(shell hostname)
+
+# On the basis of this set-up some defaults:
+
+ifeq ($(HOSTNAME),ultra)
+
+   COMPARCH=LinuxIntel
+
+else ifeq ($(HOSTNAME),phi.hydra)
+
+   COMPARCH=LinuxIntel
+
+else ifeq ($(HOSTNAME),indy0)
+
+   COMPARCH=GenericGfortran
+
+endif
+
 
 ifeq ($(COMPARCH),GenericGfortran)
 
