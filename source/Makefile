@@ -48,9 +48,9 @@ LINKDIR = /usr/local/bin
 #
 # If none specified the default is: GenericGfortranOpenMP
 
-#COMPARCH=GenericGfortran
+COMPARCH=GenericGfortran
 #COMPARCH=GenericGfortranOpenMP
-COMPARCH=LinuxIntel
+#COMPARCH=LinuxIntel
 #COMPARCH=LinuxIntelOpenMP
 #COMPARCH=MacIntel
 #COMPARCH=MacIntelOpenMP
@@ -63,10 +63,10 @@ ifeq ($(COMPARCH),GenericGfortran)
   ##  CPU Type: Intel x86 Compatibles
   ##  Compiler: GNU gfortran
 
-  FC        = gfortran
-  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
+  FC        = mpif90
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3
   FCFLAGS   = -Wall -c
-  OPTFLAGS  = -O3 -ffast-math
+  OPTFLAGS  = -g #-O3 -ffast-math
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc
