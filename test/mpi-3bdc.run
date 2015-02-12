@@ -15,5 +15,6 @@
 #
 
 mpirun -np 1 \
-../bin/dynamic 3bdc.xyz -k 3bdc.key 100 2.0 1.0 4 300 1.0
+       xterm -e gdb -d ../source \
+       ../bin/dynamic 3bdc.xyz -k 3bdc.key 100 2.0 1.0 4 300 1.0
 
