@@ -36,7 +36,7 @@ c
       integer nexttext
       integer trimtext
       integer, allocatable :: list(:)
-      real*8,dimension(7):: bbox ! Boundbox buffer
+      real*8,dimension(6):: bbox ! Boundbox buffer
       logical exist,opened
       logical quit,reorder
       logical clash
@@ -136,9 +136,9 @@ c
               if (i .eq. 1) then
                  next = 1
                  call getword (record,name(i),next)
-                 if (name(i) .ne. '   ')  goto 60
-                 read (record,*,err=60,end=60)  (bbox(j),j=2,7)
-                 bbox(1)     = 0
+                 if (name(1) .ne. '   ')  goto 60
+                 read (record,*,err=60,end=60)  (bbox(j),j=1,6)
+                 size        = 0
                  use_bounds  = .true.
               end if
    60         continue
@@ -179,15 +179,15 @@ c
 
       ! If we are using periodic bounds we need the bounding box
       if(use_bounds.eqv..true.) then
-         call MPI_Bcast(bbox,7,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,
+         call MPI_Bcast(bbox,6,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,
      &                 ierror)
-         size  = bbox(1)
-         xbox  = bbox(2)
-         ybox  = bbox(3)
-         zbox  = bbox(4)
-         alpha = bbox(5)
-         beta  = bbox(6)
-         gamma = bbox(7)
+
+         xbox  = bbox(1)
+         ybox  = bbox(2)
+         zbox  = bbox(3)
+         alpha = bbox(4)
+         beta  = bbox(5)
+         gamma = bbox(6)
 
          ! store periodic box dimension and set angles for 
          ! calculating fractional coordinates
@@ -262,7 +262,7 @@ c
                write (iout,120)  k,i
   120          format (/,' READXYZ  --  Check Connection of Atom',
      &                 i6,' to Atom',i6)
- 3          end if
+            end if
             call fatal
   130       continue
          end do
