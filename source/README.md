@@ -3,24 +3,24 @@
 1) How nchunk is calculated :
 
 
-Variables used in nchunk-related calculations (declared inside chunks.f):
+Variables used in nchunk-related calculations (declared inside `chunks.f`):
 
- -  nchunk     total number of spatial regions for PME grid
- -  nchk1      number of spatial regions along the a-axis
- -  nchk2      number of spatial regions along the b-axis
- -  nchk3      number of spatial regions along the c-axis
- -  ngrd1      number of grid points per region along a-axis
- -  ngrd2      number of grid points per region along b-axis
- -  ngrd3      number of grid points per region along c-axis
- -  nlpts      PME grid points to the left of center point
- -  nrpts      PME grid points to the right of center point
- -  grdoff     offset for index into B-spline coefficients
- -  pmetable   PME grid spatial regions involved for each site
+ -  `nchunk`     total number of spatial regions for PME grid
+ -  `nchk1`      number of spatial regions along the a-axis
+ -  `nchk2`      number of spatial regions along the b-axis
+ -  `nchk3`      number of spatial regions along the c-axis
+ -  `ngrd1`      number of grid points per region along a-axis
+ -  `ngrd2`      number of grid points per region along b-axis
+ -  `ngrd3`      number of grid points per region along c-axis
+ -  `nlpts`      PME grid points to the left of center point
+ -  `nrpts`      PME grid points to the right of center point
+ -  `grdoff`     offset for index into B-spline coefficients
+ -  `pmetable`   PME grid spatial regions involved for each site
  
 
-nchunk calculation is done inside the getchunk subroutine inside the kewald.f :
+`nchunk` calculation is done inside the `getchunk` subroutine inside the `kewald.f`:
 
-**********
+```fortran
 
 c
 c     initialize total chunks and number along each axis
@@ -59,18 +59,19 @@ c
       nrpts = bsorder - nlpts - 1
       grdoff = (bsorder+1)/2 + 1
 
+
+```
+
+The maximum value of `nchunk` is 216 (6*6*6).
+
 ************
 
-The maximum value of nchunk is 216 (6*6*6).
-
-************
-
-nfft1, nfft2 and nfft3 are determined inside the kewald subroutine:
+`nfft1`, `nfft2` and `nfft3` are determined inside the `kewald` subroutine:
 
  - maxfft is set to 576
  - maxpower is set to 54
 
-
+```fortran
 c
 c     grid size must be even, with prime factors of 2, 3 and 5
 c
@@ -107,4 +108,4 @@ c
       where delta= 1.0d-8 and dens is either 1.2d0 or 0.75d0(if .not. use_bounds)
       xbox is a lenght of the a-axis of periodic box in Angstroms
 
-************
+```
