@@ -1207,7 +1207,7 @@ getmol.o: files.o iounit.o
 getmol2.o: files.o iounit.o
 getnumb.o: ascii.o
 getpdb.o: iounit.o
-getprm.o: files.o iounit.o keys.o params.o
+getprm.o: files.o iounit.o keys.o mpiparams.o params.o
 getref.o: atomid.o atoms.o boxes.o couple.o files.o refer.o sizes.o titles.o
 getstring.o: ascii.o
 gettext.o: ascii.o
