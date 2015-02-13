@@ -57,6 +57,32 @@ COMPARCH=LinuxIntel
 #COMPARCH=MacXeonIntelOpenMP
 #COMPARCH=LinuxIntelOpenMP
 
+# Override for specific hostnames.
+# Find out what machine we are on and
+# use this as a basis for picking which configuration we are
+# going to use. Start by finding out the hostname:
+HOSTNAME:=$(shell hostname)
+
+# On the basis of this set-up some defaults:
+
+ifeq ($(HOSTNAME),ultra)             # EPCC ultra system
+
+   COMPARCH=LinuxIntel
+
+else ifeq ($(HOSTNAME),phi.hydra)    # EPCC phi system on hydra
+
+   COMPARCH=LinuxIntel
+
+else ifeq ($(HOSTNAME),mbp-ma.local) # MA's Macbook pro
+
+   COMPARCH=GenericGfortran
+
+else ifeq ($(HOSTNAME),indy0)        # EPCC indy system
+
+   COMPARCH=GenericGfortran
+
+endif
+
 ifeq ($(COMPARCH),GenericGfortran)
 
   ##  Machine:  Generic Linux or Macintosh
