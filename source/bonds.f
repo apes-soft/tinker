@@ -34,7 +34,7 @@ c
       if (allocated(ibnd))  deallocate (ibnd)
       if (allocated(bndlist))  deallocate (bndlist)
       allocate (ibnd(2,maxbnd))
-      allocate (bndlist(maxval,n))
+      allocate (bndlist(maxbonds,n))
 c
 c     loop over all atoms, storing the atoms in each bond
 c

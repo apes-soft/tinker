@@ -148,7 +148,7 @@ c
            call getword (record,name(i),next)
            string = record(next:120)
            read (string,*,err=70,end=70)  x(i),y(i),z(i),type(i),
-     &                                    (i12(j,i),j=1,maxval)
+     &                                    (i12(j,i),j=1,maxbonds)
    70      continue
         end do
         quit = .false.
@@ -203,7 +203,7 @@ c
 
       ! for each atom, count and sort its attached atoms
       do i = 1, n
-         do j = maxval, 1, -1
+         do j = maxbonds, 1, -1
             if (i12(j,i) .ne. 0) then
                 n12(i) = j
                 goto 100

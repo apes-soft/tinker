@@ -1000,7 +1000,7 @@ c
             if (polr(i) .ne. 0.0d0) then
                k = k + 1
                npg = 0
-               do j = 1, maxval
+               do j = 1, maxbonds
                   if (pgrp(j,i) .ne. 0)  npg = npg + 1
                end do
                if (npg .eq. 0) then

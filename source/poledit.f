@@ -1566,7 +1566,7 @@ c
      &           ' Definition',/)
       do i = 1, n
          k = 0
-         do j = 1, maxval
+         do j = 1, maxbonds
             if (pgrp(j,i) .ne. 0)  k = j
          end do
          write (iout,180)  i,name(i),(pgrp(j,i),j=1,k)
@@ -2161,7 +2161,7 @@ c
       integer izaxe
       integer next,nx
       integer nlist
-      integer list(maxval)
+      integer list(maxbonds)
       real*8 eps,ci,cj
       real*8 big,sum
       real*8 pave(13)
@@ -2494,7 +2494,7 @@ c
          end if
          do i = 1, npole
             k = 0
-            do j = 1, maxval
+            do j = 1, maxbonds
                if (pgrp(j,i) .ne. 0)  k = j
             end do
             write (ikey,180)  ipole(i),polarity(i),thole(i),

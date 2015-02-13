@@ -29,7 +29,7 @@ c
       integer, allocatable :: n13(:)
       integer, allocatable :: n14(:)
       integer, allocatable :: n15(:)
-      integer i12(maxval,maxatm)
+      integer i12(maxbonds,maxatm)
       integer, allocatable :: i13(:,:)
       integer, allocatable :: i14(:,:)
       integer, allocatable :: i15(:,:)
