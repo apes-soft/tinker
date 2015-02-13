@@ -527,7 +527,7 @@ c
          end do
       end do
 
-      print*, "nchunk, nchk1, nchk2, nchk3 ", nchunk, nchk1, nchk2,nchk3
+c      print*, "nchunk, nchk1, nchk2, nchk3 ", nchunk, nchk1, nchk2,nchk3
 
 c
 c     set OpenMP directives for the major loop structure
@@ -541,7 +541,7 @@ c     put the permanent multipole moments onto the grid
 c
       do ichk = 1, nchunk
          
-         call  system_clock(nchunk_t1,clock_rate)
+c         call  system_clock(nchunk_t1,clock_rate)
          
          cid(1) = mod(ichk-1,nchk1)
          cid(2) = mod(((ichk-1-cid(1))/nchk1),nchk2)
@@ -605,9 +605,9 @@ c
             end if
          end do
 
-         call system_clock(nchunk_t2,clock_rate)
-         nchunk_time = (nchunk_t2-nchunk_t1)/real(clock_rate)
-         print*, "timing for each chunk", nchunk_time, ichk
+c         call system_clock(nchunk_t2,clock_rate)
+c         nchunk_time = (nchunk_t2-nchunk_t1)/real(clock_rate)
+c         print*, "timing for each chunk", nchunk_time, ichk
 
       end do
 c

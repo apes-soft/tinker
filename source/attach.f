@@ -65,7 +65,7 @@ c            if (i .lt. jj) list_weight(i) = list_weight(i) + 1
                end do
                n13(i) = n13(i) + 1
                i13(n13(i),i) = kk
-               if(i .lt. kk) list_weight(i) = list_weight(i) + 1
+c               if(i .lt. kk) list_weight(i) = list_weight(i) + 1
    10          continue
             end do
          end do
@@ -97,7 +97,7 @@ c             if (i .gt. jj) list_weight(i) = list_weight(i) + 1
                end do
                n14(i) = n14(i) + 1
                i14(n14(i),i) = kk
-               if(i .lt. kk) list_weight(i) = list_weight(i) + 1
+c               if(i .lt. kk) list_weight(i) = list_weight(i) + 1
    30          continue
             end do
          end do
@@ -132,7 +132,7 @@ c             if (i .gt. jj) list_weight(i) = list_weight(i) + 1
                end do
                n15(i) = n15(i) + 1
                i15(n15(i),i) = kk
-               if(i .lt. kk) list_weight(i) = list_weight(i) + 1 
+c               if(i .lt. kk) list_weight(i) = list_weight(i) + 1 
    50          continue
             end do
          end do
@@ -148,12 +148,12 @@ c             if (i .gt. jj) list_weight(i) = list_weight(i) + 1
       do i=1,n
          do j = 1, n12(i)
             jj = i12(j,i)
-            if (i .gt. jj) list_weight(i) = list_weight(i) + 1
+c            if (i .lt. jj) list_weight(i) = list_weight(i) + 1
          end do
       end do
       
       do i=1,n
-         print*, "the list_weight for each atom  " , i ,  list_weight(i)
+c        print*, "the list_weight for each atom  " , i ,  list_weight(i)
       end do
       
       return
