@@ -26,140 +26,202 @@ c
       use mdstuf
       use moldyn
       use rgddyn
+      use mpiparams
+
       implicit none
+
       integer i,idyn,ndyn
       logical exist,opened,quit
+      real*8 bbox(6)
       character*120 dynfile
       character*120 record
-c
-c
-c     open the input file if it has not already been done
-c
-      inquire (unit=idyn,opened=opened)
-      if (.not. opened) then
-         dynfile = filename(1:leng)//'.dyn'
-         call version (dynfile,'old')
-         inquire (file=dynfile,exist=exist)
-         if (exist) then
-            open (unit=idyn,file=dynfile,status='old')
-            rewind (unit=idyn)
+
+      ! open the input file if it has not already been done
+      if(rank.eq.0) then 
+
+         inquire (unit=idyn,opened=opened)
+         if (.not. opened) then
+            dynfile = filename(1:leng)//'.dyn'
+            call version (dynfile,'old')
+            inquire (file=dynfile,exist=exist)
+            if (exist) then
+               open (unit=idyn,file=dynfile,status='old')
+               rewind (unit=idyn)
+            else
+               write (iout,10)
+   10          format (/,' READDYN  --  Unable to Find the Dynamics',
+     &                   ' Restart File')
+               call fatal
+            end if
+         end if
+
+         ! initialize error handling during reading of the file
+         i = 0
+         quit = .true.
+
+         ! get the number of atoms and check for consistency
+         read (idyn,20)
+   20    format ()
+         read (idyn,30)  record
+   30    format (a120)
+         read (record,*,err=230,end=230)  ndyn
+         if (ndyn .ne. n) then
+             write (iout,40)
+   40        format (/,' READDYN  --  Restart File has Incorrect',
+     &                 ' Number of Atoms')
+             call fatal
+          end if
+
+         ! get the periodic box edge lengths and angles
+         read (idyn,50)
+   50    format ()
+         read (idyn,60)  record
+   60    format (a120)
+         read (record,*,err=230,end=230)  xbox,ybox,zbox
+         read (idyn,70)  record
+   70    format (a120)
+         read (record,*,err=230,end=230)  alpha,beta,gamma
+         read (idyn,80)
+   80    format ()
+
+         ! store periodic conditions in array to send out.
+         bbox(1) = xbox
+         bbox(2) = ybox
+         bbox(3) = zbox
+         bbox(4) = alpha
+         bbox(5) = beta
+         bbox(6) = gamma
+
+         ! set the box volume and additional periodic box values
+         call lattice
+
+         ! get rigid body positions, translational and angular velocities
+         quit = .true.
+         if (integrate .eq. 'RIGIDBODY') then
+            do i = 1, n
+               read (idyn,90)  record
+   90          format (a120)
+               read (record,*,err=230,end=230)  x(i),y(i),z(i)
+            end do
+            read (idyn,100)
+  100       format ()
+            do i = 1, ngrp
+               read (idyn,110)  record
+  110          format (a120)
+               read (record,*,err=230,end=230)  vcm(1,i),vcm(2,i),
+     &                                          vcm(3,i)
+            end do
+            read (idyn,120)
+  120       format ()
+            do i = 1, ngrp
+               read (idyn,130)  record
+  130          format (a120)
+               read (record,*,err=230,end=230)  wcm(1,i),wcm(2,i),
+     &                                          wcm(3,i)
+            end do
+            read (idyn,140)
+  140       format ()
+            do i = 1, ngrp
+               read (idyn,150)  record
+  150          format (a120)
+               read (record,*,err=230,end=230)  lm(1,i),lm(2,i),lm(3,i)
+            end do
+
+         ! get the atomic positions, velocities and accelerations
          else
-            write (iout,10)
-   10       format (/,' READDYN  --  Unable to Find the Dynamics',
-     &                 ' Restart File')
+            do i = 1, n
+               read (idyn,160)  record
+  160          format (a120)
+               read (record,*,err=230,end=230)  x(i),y(i),z(i)
+             end do
+             read (idyn,170)
+  170        format ()
+             do i = 1, n
+                read (idyn,180)  record
+  180           format (a120)
+                read (record,*,err=230,end=230)  v(1,i),v(2,i),v(3,i)
+            end do
+            read (idyn,190)
+  190       format ()
+            do i = 1, n
+               read (idyn,200)  record
+  200          format (a120)
+               read (record,*,err=230,end=230)  a(1,i),a(2,i),a(3,i)
+            end do
+            read (idyn,210)
+  210       format ()
+            do i = 1, n
+               read (idyn,220)  record
+  220          format (a120)
+               read (record,*,err=230,end=230)  aalt(1,i),aalt(2,i),
+     &                                          aalt(3,i)
+            end do
+         end if
+         quit = .false.
+  230    continue
+         if (.not. opened)  close (unit=idyn)
+
+         ! report any error in reading the dynamics restart file
+         if (quit) then
+            write (iout,240)  i
+  240       format (/,' READDYN  --  Error in Dynamics Restart',
+     &                ' File at Atom',i6)
             call fatal
          end if
-      end if
-c
-c     initialize error handling during reading of the file
-c
-      i = 0
-      quit = .true.
-c
-c     get the number of atoms and check for consistency
-c
-      read (idyn,20)
-   20 format ()
-      read (idyn,30)  record
-   30 format (a120)
-      read (record,*,err=230,end=230)  ndyn
-      if (ndyn .ne. n) then
-         write (iout,40)
-   40    format (/,' READDYN  --  Restart File has Incorrect',
-     &              ' Number of Atoms')
-         call fatal
-      end if
-c
-c     get the periodic box edge lengths and angles
-c
-      read (idyn,50)
-   50 format ()
-      read (idyn,60)  record
-   60 format (a120)
-      read (record,*,err=230,end=230)  xbox,ybox,zbox
-      read (idyn,70)  record
-   70 format (a120)
-      read (record,*,err=230,end=230)  alpha,beta,gamma
-      read (idyn,80)
-   80 format ()
-c
-c     set the box volume and additional periodic box values
-c
-      call lattice
-c
-c     get rigid body positions, translational and angular velocities
-c
-      quit = .true.
-      if (integrate .eq. 'RIGIDBODY') then
-         do i = 1, n
-            read (idyn,90)  record
-   90       format (a120)
-            read (record,*,err=230,end=230)  x(i),y(i),z(i)
-         end do
-         read (idyn,100)
-  100    format ()
-         do i = 1, ngrp
-            read (idyn,110)  record
-  110       format (a120)
-            read (record,*,err=230,end=230)  vcm(1,i),vcm(2,i),vcm(3,i)
-         end do
-         read (idyn,120)
-  120    format ()
-         do i = 1, ngrp
-            read (idyn,130)  record
-  130       format (a120)
-            read (record,*,err=230,end=230)  wcm(1,i),wcm(2,i),wcm(3,i)
-         end do
-         read (idyn,140)
-  140    format ()
-         do i = 1, ngrp
-            read (idyn,150)  record
-  150       format (a120)
-            read (record,*,err=230,end=230)  lm(1,i),lm(2,i),lm(3,i)
-         end do
-c
-c     get the atomic positions, velocities and accelerations
-c
+
+         ! send out the period conditions
+         call MPI_Bcast(bbox,6,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,
+     &                 ierror)
+
+  
       else
-         do i = 1, n
-            read (idyn,160)  record
-  160       format (a120)
-            read (record,*,err=230,end=230)  x(i),y(i),z(i)
-         end do
-         read (idyn,170)
-  170    format ()
-         do i = 1, n
-            read (idyn,180)  record
-  180       format (a120)
-            read (record,*,err=230,end=230)  v(1,i),v(2,i),v(3,i)
-         end do
-         read (idyn,190)
-  190    format ()
-         do i = 1, n
-            read (idyn,200)  record
-  200       format (a120)
-            read (record,*,err=230,end=230)  a(1,i),a(2,i),a(3,i)
-         end do
-         read (idyn,210)
-  210    format ()
-         do i = 1, n
-            read (idyn,220)  record
-  220       format (a120)
-            read (record,*,err=230,end=230)  aalt(1,i),aalt(2,i),
-     &                                       aalt(3,i)
-         end do
+
+         ! receive the periodic conditions
+         call MPI_Bcast(bbox,6,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,
+     &                 ierror)
+
+         xbox  = bbox(1)
+         ybox  = bbox(2)
+         zbox  = bbox(3)
+         alpha = bbox(4)
+         beta  = bbox(5)
+         gamma = bbox(6)
+
+         ! set the box volume and additional periodic box values
+         call lattice
+
       end if
-      quit = .false.
-  230 continue
-      if (.not. opened)  close (unit=idyn)
-c
-c     report any error in reading the dynamics restart file
-c
-      if (quit) then
-         write (iout,240)  i
-  240    format (/,' READDYN  --  Error in Dynamics Restart',
-     &              ' File at Atom',i6)
-         call fatal
+
+      ! send/receive particle data
+      call MPI_Bcast(x,n,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierror)
+      call MPI_Bcast(y,n,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierror)
+      call MPI_Bcast(z,n,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierror)
+
+      if (integrate .eq. 'RIGIDBODY') then
+
+         call MPI_Bcast(vcm(1,1),3*ngrp,MPI_DOUBLE_PRECISION,0,
+     &                 MPI_COMM_WORLD,ierror)
+
+         call MPI_Bcast(wcm(1,1),3*ngrp,MPI_DOUBLE_PRECISION,0,
+     &                 MPI_COMM_WORLD,ierror)
+
+        call MPI_Bcast(lm(1,1),3*ngrp,MPI_DOUBLE_PRECISION,0,
+     &                 MPI_COMM_WORLD,ierror)
+
+
+      else
+
+         call MPI_Bcast(v(1,1),3*n,MPI_DOUBLE_PRECISION,0,
+     &                 MPI_COMM_WORLD,ierror)
+
+         call MPI_Bcast(a(1,1),3*n,MPI_DOUBLE_PRECISION,0,
+     &                 MPI_COMM_WORLD,ierror)
+
+        call MPI_Bcast(aalt(1,1),3*n,MPI_DOUBLE_PRECISION,0,
+     &                 MPI_COMM_WORLD,ierror)
+
+
       end if
+
       return
       end

@@ -46,7 +46,10 @@ c
       use units
       use uprior
       use usage
+      use mpiparams
+
       implicit none
+
       integer i,j,k
       integer idyn,nh
       integer size,next
@@ -382,18 +385,28 @@ c
          if (.not. allocated(a))  allocate (a(3,n))
          if (.not. allocated(aalt))  allocate (aalt(3,n))
       end if
-c
-c     try to restart using prior velocities and accelerations
-c
+
+      ! try to restart using prior velocities and accelerations
+      ! At the moment everybody calls inquire but could get just proc 0
+      ! to do this and then broadcast that information out.
       dynfile = filename(1:leng)//'.dyn'
       call version (dynfile,'old')
       inquire (file=dynfile,exist=exist)
       if (exist) then
-         idyn = freeunit ()
-         open (unit=idyn,file=dynfile,status='old')
-         rewind (unit=idyn)
+
+         ! only want proc 0 to open the file
+         if(rank.eq.0) then 
+           idyn = freeunit ()
+           open (unit=idyn,file=dynfile,status='old')
+           rewind (unit=idyn)
+         end if
+
          call readdyn (idyn)
-         close (unit=idyn)
+
+         ! only proc 0 opened so it closes.
+         if(rank.eq.0) then
+            close (unit=idyn)
+         end if
 c
 c     set translational velocities for rigid body dynamics
 c
