@@ -24,10 +24,8 @@ c
       integer, optional, intent(in):: errcode  ! Specify an error code
 
       ! print a final warning message, then quit
-      if(rank.eq.0) then
-        write (iout,*) ' TINKER is Unable to Continue; Terminating',
-     &                 ' the Current Calculation'
-      end if
+      write (iout,*) ' TINKER is Unable to Continue; Terminating',
+     &               ' the Current Calculation called by proc ',rank
 
       ! Abort the MPI program
       call MPI_Abort(MPI_COMM_WORLD,errcode,ierror)
