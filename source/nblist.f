@@ -302,6 +302,7 @@ c
       use light
       use neigh
       use vdw
+      use couple
       implicit none
       integer i,j,k
       integer kgy,kgz
@@ -392,6 +393,7 @@ c
             if (r2 .le. vbuf2) then
                nvlst(i) = nvlst(i) + 1
                vlst(nvlst(i),i) = k
+c               if (i .lt. k) list_weight(i) = list_weight(i) + 1
             end if
    20       continue
          end do

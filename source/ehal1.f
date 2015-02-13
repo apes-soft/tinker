@@ -1271,7 +1271,8 @@ c
          
          call system_clock(nvdw_t2,clock_rate)
          nvdw_time = real(nvdw_t2-nvdw_t1)/real(clock_rate)
-         print*, "timing for particle", ii, nvdw_time, nvlst(ii),n12(ii)
+c         if(ii .eq. 1) print*, "atom, vdw time, nvlst,n12, cost"
+c         print*, ii, nvdw_time,nvlst(ii),n12(ii),list_weight(ii)
       end do
 c
 c     end OpenMP directives for the major loop structure
