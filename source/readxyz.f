@@ -205,7 +205,7 @@ c
       do i = 1, n
          do j = maxbonds, 1, -1
             if (i12(j,i) .ne. 0) then
-                n12(i) = j
+                n12(i) = j            ! count of direct neighbours
                 goto 100
             end if
          end do
@@ -213,14 +213,15 @@ c
          call sort (n12(i),i12(1,i))
       end do
 
-      ! perform dynamic allocation of some local arrays
+      ! find the size of the maxtag
       nmax = 0
       do i = 1, n
          nmax = max(tag(i),nmax)
-         do j = 1, n12(i)
+         do j = 1, n12(i)   ! MARIO - why is going through the neighbours necessary?
             nmax = max(i12(j,i),nmax)
          end do
       end do
+      ! allocate a list that has the max tag.
       allocate (list(nmax))
 
       ! check for scrambled atom order and attempt to renumber
@@ -229,12 +230,18 @@ c
          list(tag(i)) = i
          if (tag(i) .ne. i)  reorder = .true.
       end do
+
+      ! reorder the atoms if required
       if (reorder) then
+
+         ! all processes do this but only 0 prints out
          if(rank.eq.0) then 
             write (iout,110)
   110       format (/,' READXYZ  --  Atom Labels not Sequential,',
      &                ' Attempting to Renumber')
          end if 
+
+         ! relable the atoms
          do i = 1, n
             tag(i) = i
             do j = 1, n12(i)
@@ -244,20 +251,25 @@ c
          end do
       end if
 
-      ! perform deallocation of some local arrays
+      ! deallocation the list array
       deallocate (list)
 
       ! check for atom pairs with identical coordinates
-      clash = .false.
+      clash = .false. ! MARIO this is initialised in chkxyz
       if (n .le. 10000)  call chkxyz (clash)
 
       ! make sure that all connectivities are bidirectional
       do i = 1, n
+
          do j = 1, n12(i)
+ 1          ! my neighbour
             k = i12(j,i)
+            ! check my neighbour points back to me
             do m = 1, n12(k)
                if (i12(m,k) .eq. i)  goto 130
             end do
+
+            ! only process 0 prints error out, all procs doing this
             if(rank.eq.0) then 
                write (iout,120)  k,i
   120          format (/,' READXYZ  --  Check Connection of Atom',
@@ -267,5 +279,6 @@ c
   130       continue
          end do
       end do
+
       return
       end
