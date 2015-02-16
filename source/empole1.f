@@ -4868,7 +4868,7 @@ c
       logical dorl,dorli
       character*6 mode
       external erfc
-      integer npole_t1,npole_t2, clock_rate
+      integer (kind=8):: npole_t1,npole_t2, clock_rate
       real*8 npole_time
 
 c
@@ -5806,11 +5806,11 @@ c
          end do
 
          call system_clock(npole_t2,clock_rate)
-         npole_time = real(npole_t2-npole_t1)/real(clock_rate)
+         npole_time = real(npole_t2-npole_t1)/real(clock_rate,kind=8)
 
         
 c         if(i .eq. 1) print*, "atom, ereal time, nelst,n12, cost"
-c         print*, ii, npole_time,nelst(i),n12(i),list_weight(i)
+          print*, "rea1d ",ii, npole_time,nelst(i),n12(i),list_weight(i)
 
 c         print*, "timing for particle", npole_time, i
 
