@@ -815,7 +815,7 @@ c
      &                                         (ig(j),j=1,20)
  1140       continue
             kg = 0
-            do j = 1, maxbonds
+            do j = 1, maxcons
                if (ig(j) .ne. 0) then
                   kg = j
                end if
@@ -1462,7 +1462,7 @@ c
      &                                       (ig(j),j=1,20)
   420       continue
             ia = itype(ia)
-            do j = 1, maxbonds
+            do j = 1, maxcons
                if (ig(j) .ne. 0) then
                   kg = j
                   ig(j) = itype(ig(j))

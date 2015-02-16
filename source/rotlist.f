@@ -58,7 +58,7 @@ c
          ia = idel(1,i)
          ib = idel(2,i)
          if (molcule(ia) .ne. molcule(ib)) then
-            if (n12(ia).eq.maxbonds .or. n12(ib).eq.maxbonds) then
+            if (n12(ia).eq.maxcons .or. n12(ib).eq.maxcons) then
                write (iout,10)
    10          format (/,' ROTLIST  --  Maximum Valence Exceeded;',
      &                    ' Increase MAXVAL')

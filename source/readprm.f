@@ -61,7 +61,7 @@ c
       integer cls,atn,lig
       integer nx,ny,nxy
       integer bt,at,sbt,tt
-      integer ft(6),pg(maxbonds)
+      integer ft(6),pg(maxcons)
       real*8 wght,rd,ep,rdn
       real*8 an1,an2,an3
       real*8 ba1,ba2
@@ -1143,17 +1143,17 @@ c
             ia = 0
             pol = 0.0d0
             thl = 0.0d0
-            do i = 1, maxbonds
+            do i = 1, maxcons
                pg(i) = 0
             end do
             string = record(next:120)
             read (string,*,err=450,end=450)  ia,pol,thl,
-     &                                       (pg(i),i=1,maxbonds)
+     &                                       (pg(i),i=1,maxcons)
   450       continue
             if (ia .ne. 0) then
                polr(ia) = pol
                athl(ia) = thl
-               do i = 1, maxbonds
+               do i = 1, maxcons
                   pgrp(i,ia) = pg(i)
                end do
             end if

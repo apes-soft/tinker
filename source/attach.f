@@ -32,9 +32,9 @@ c
 c
 c     perform dynamic allocation of some global arrays
 c
-      maxn13 = 3 * maxbonds
-      maxn14 = 9 * maxbonds
-      maxn15 = 27 * maxbonds
+      maxn13 = 3 * maxcons
+      maxn14 = 9 * maxcons
+      maxn15 = 27 * maxcons
       if (allocated(n13))  deallocate (n13)
       if (allocated(n14))  deallocate (n14)
       if (allocated(n15))  deallocate (n15)

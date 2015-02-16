@@ -20,7 +20,7 @@ c
       module kpolr
       use sizes
       implicit none
-      integer pgrp(maxbonds,maxtyp)
+      integer pgrp(maxcons,maxtyp)
       real*8 polr(maxtyp)
       real*8 athl(maxtyp)
       save

@@ -39,7 +39,7 @@ c
          if (.not. allocated(reftyp))  allocate (reftyp(maxatm,maxref))
          if (.not. allocated(n12ref))  allocate (n12ref(maxatm,maxref))
          if (.not. allocated(i12ref))
-     &      allocate (i12ref(maxbonds,maxatm,maxref))
+     &      allocate (i12ref(maxcons,maxatm,maxref))
          if (.not. allocated(xref))  allocate (xref(maxatm,maxref))
          if (.not. allocated(yref))  allocate (yref(maxatm,maxref))
          if (.not. allocated(zref))  allocate (zref(maxatm,maxref))

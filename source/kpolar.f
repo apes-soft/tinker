@@ -32,7 +32,7 @@ c
       implicit none
       integer i,j,k
       integer npg,next
-      integer pg(maxbonds)
+      integer pg(maxcons)
       real*8 pol,thl
       real*8 sixth
       logical header
@@ -53,12 +53,12 @@ c
             k = 0
             pol = 0.0d0
             thl = -1.0d0
-            do j = 1, maxbonds
+            do j = 1, maxcons
                pg(j) = 0
             end do
             call getnumb (record,k,next)
             string = record(next:120)
-            read (string,*,err=10,end=10)  pol,thl,(pg(j),j=1,maxbonds)
+            read (string,*,err=10,end=10)  pol,thl,(pg(j),j=1,maxcons)
    10       continue
             if (k .gt. 0) then
                if (header .and. .not.silent) then
@@ -72,7 +72,7 @@ c
                if (k .le. maxtyp) then
                   polr(k) = pol
                   athl(k) = thl
-                  do j = 1, maxbonds
+                  do j = 1, maxcons
                      pgrp(j,k) = pg(j)
                      if (pg(j) .eq. 0) then
                         npg = j - 1
@@ -281,7 +281,7 @@ c
          do j = 1, n12(i)
             jj = i12(j,i)
             jt = type(jj)
-            do k = 1, maxbonds
+            do k = 1, maxcons
                kk = pgrp(k,it)
                if (kk .eq. 0)  goto 20
                if (pgrp(k,it) .eq. jt) then

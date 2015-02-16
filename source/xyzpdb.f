@@ -137,7 +137,7 @@ c
          if (.not. allocated(resnum))  allocate (resnum(maxatm))
          if (.not. allocated(resatm))  allocate (resatm(2,maxatm))
          if (.not. allocated(npdb12))  allocate (npdb12(maxatm))
-         if (.not. allocated(ipdb12)) allocate (ipdb12(maxbonds,maxatm))
+         if (.not. allocated(ipdb12)) allocate (ipdb12(maxcons,maxatm))
          if (.not. allocated(pdblist))  allocate (pdblist(maxatm))
          if (.not. allocated(xpdb))  allocate (xpdb(maxatm))
          if (.not. allocated(ypdb))  allocate (ypdb(maxatm))

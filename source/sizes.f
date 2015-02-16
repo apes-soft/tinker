@@ -21,7 +21,7 @@ c
 c     maxatm          atoms in the molecular system
 c     maxtyp          force field atom type definitions
 c     maxclass        force field atom class definitions
-c     maxbonds        atoms directly bonded to an atom
+c     maxcons        atoms directly bonded to an atom
 c     maxref          stored reference molecular systems
 c     maxgrp          user-defined groups of atoms
 c     maxres          residues in the macromolecule
@@ -31,13 +31,13 @@ c
       module sizes
       implicit none
       integer maxatm,maxtyp
-      integer maxclass,maxbonds
+      integer maxclass,maxcons
       integer maxref,maxgrp
       integer maxres,maxfix
       parameter (maxatm=1000000)
       parameter (maxtyp=5000)
       parameter (maxclass=1000)
-      parameter (maxbonds=8)
+      parameter (maxcons=8)
       parameter (maxref=30)
       parameter (maxgrp=1000)
       parameter (maxres=10000)

@@ -269,7 +269,7 @@ c
       implicit none
       integer i,j,k,i1,i2
       integer nc,adjacent,mode
-      integer ic(maxbonds)
+      integer ic(maxcons)
       integer iz0(0:*)
       integer iz1(*)
       real*8 dist2,short
