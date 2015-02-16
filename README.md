@@ -24,7 +24,9 @@ of:
 
 * `dynamic`
 
-Any other application may no longer work. We may also have a look at:
+Because of the modifications that we are making to files any of the other tinker applications may no longer work when compiled in this branch. 
+
+If we have time we may also try to improve the performance of:
 
 * `bar` which reads in two trajectories and two key files (i.e. different
 lambda windows for free energy calculations), and calculates the energies
@@ -46,7 +48,7 @@ cost is.
 * WF to profile:
   * JAC 
   * Water model with Verlet (as done by Omar)
-  * Use case from Richard
+  * Use case from Richard Bradshaw of an equilibrated staph nuclease structure ready for NPT simulation, with the sidechain of residue D21 mutated with ele-lambda 0.5 (half switched on) and vdw-lambda 1.0 (fully switched on). 
 * From the regions that are parallelised using OpenMP:
   * VdW in `ehal1.f`
   * Electrostatics and polarization in:
@@ -57,7 +59,7 @@ cost is.
 
 This stage will allow us to evaluate whether this strategy will work. Focus on the JAC execution path for now. General steps are:
 
-1. **Profile** the latest version of `dynamic` for JAC without OpenMP. Need to understand quantitavely the performance.
+1. **Profile** the latest version of `dynamic` for: JAC without OpenMP. Need to understand quantitavely the performance, the use case provided by Richard.
 2. Revisit the **execution path** of `dynamic` for the JAC benchmark.
 3. **Split the loops** currently parallelised using OpenMP with MPI. 
 4. Check that the correct output is still being produced from multiple-process runs compared to that from a single process.
