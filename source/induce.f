@@ -2282,8 +2282,9 @@ c
       real*8, allocatable :: dlocal(:,:)
       character*6 mode
       external erfc
-      integer (kind =8) :: npole_t1,npole_t2, clock_rate
-      real*8 npole_time
+      integer (kind=8)::npole_t1,npole_t2, clock_rate
+      real (kind=8):: npole_time
+
 
 
 c
@@ -2556,8 +2557,10 @@ c
          
          call system_clock(npole_t2,clock_rate)
          npole_time = (npole_t2-npole_t1)/real(clock_rate, kind=8)
-c         if(i .eq. 1) print*, "atom, ereal time, nelst,n12, cost"
-c         print*, ii, npole_time,nelst(i),n12(i),list_weight(i)
+         !if(i .eq. 1) print*, "atom, ereal time, nelst,n12, cost"
+c         print*, "udirect2b ",ii, npole_time,nelst(i),n12(i),
+     &           list_weight(i)
+
 
 c         print*, "induce - timing for particle ", npole_time, i
 

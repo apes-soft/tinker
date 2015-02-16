@@ -4,3 +4,4 @@ gprof2dot.py
 *.png
 *.svg
 callgrind.out.*
+profdata/
