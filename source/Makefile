@@ -813,7 +813,6 @@ EXEFILES = alchemy.x \
 
 %.x: %.o libtinker.a
 	${FC} ${LINKFLAGS} -o $@ $<  -L . -ltinker ${LIBS}
-	#strip $@
 
 all: ${EXEFILES}
 
