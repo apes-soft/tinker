@@ -115,7 +115,7 @@ c
         call MPI_Bcast(prmline, maxprm*120, MPI_CHARACTER, 0,
      &                 MPI_COMM_WORLD, ierror)
 
-      else ! prcs > 0
+      else ! rank > 0
 
         ! initialize force field control and parameter values
         call initprm
