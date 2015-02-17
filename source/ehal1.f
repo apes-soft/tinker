@@ -1003,9 +1003,9 @@ c
       logical proceed,usei
       logical muti,mutk
       character*6 mode
-      integer (kind=8):: nvdw_t1,nvdw_t2, clock_rate
+      integer (kind=8) ::  nvdw_t1,nvdw_t2,clock_rate
       real*8 nvdw_time
-c
+    
 c
 c     zero out the van der Waals energy and first derivatives
 c
@@ -1272,8 +1272,9 @@ c
          call system_clock(nvdw_t2,clock_rate)
          nvdw_time = real(nvdw_t2-nvdw_t1)/real(clock_rate)
 c         if(ii .eq. 1) print*, "atom, vdw time, nvlst,n12, cost"
-          print*, "nvdw ",ii, nvdw_time,nvlst(ii),n12(ii),
-     &           list_weight(ii)
+c          print*, "nvdw ",ii, nvdw_time,nvlst(ii),n12(ii),
+c     &           list_weight(ii)
+
       end do
 c
 c     end OpenMP directives for the major loop structure

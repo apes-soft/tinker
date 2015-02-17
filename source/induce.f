@@ -2286,6 +2286,7 @@ c
       real (kind=8):: npole_time
 
 
+
 c
 c
 c     check for multipoles and set cutoff coefficients
@@ -2557,8 +2558,9 @@ c
          call system_clock(npole_t2,clock_rate)
          npole_time = (npole_t2-npole_t1)/real(clock_rate, kind=8)
          !if(i .eq. 1) print*, "atom, ereal time, nelst,n12, cost"
-         print*, "udirect2b ",ii, npole_time,nelst(i),n12(i),
+c         print*, "udirect2b ",ii, npole_time,nelst(i),n12(i),
      &           list_weight(i)
+
 
 c         print*, "induce - timing for particle ", npole_time, i
 
