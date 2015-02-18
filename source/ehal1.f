@@ -108,64 +108,51 @@ c
       logical proceed,usei
       logical muti,mutk
       character*6 mode
-c
-c
-c     zero out the van der Waals energy and first derivatives
-c
-      ev = 0.0d0
-      do i = 1, n
-         dev(1,i) = 0.0d0
-         dev(2,i) = 0.0d0
-         dev(3,i) = 0.0d0
-      end do
-c
-c     perform dynamic allocation of some local arrays
-c
+
+
+      ! zero out the van der Waals energy and first derivatives
+      ev  = 0.0d0
+      dev = 0.0d0
+
+      ! perform dynamic allocation of some local arrays
       allocate (iv14(n))
       allocate (xred(n))
       allocate (yred(n))
       allocate (zred(n))
       allocate (vscale(n))
-c
-c     set arrays needed to scale connected atom interactions
-c
-      do i = 1, n
-         vscale(i) = 1.0d0
-         iv14(i) = 0
-      end do
-c
-c     set the coefficients for the switching function
-c
+
+      ! set arrays needed to scale connected atom interactions
+      vscale = 1.0d0
+      iv14   = 0
+
+      ! set the coefficients for the switching function
       mode = 'VDW'
       call switch (mode)
-c
-c     apply any reduction factor to the atomic coordinates
-c
+
+      ! apply any reduction factor to the atomic coordinates
       do k = 1, nvdw
-         i = ivdw(k)
-         iv = ired(i)
-         rdn = kred(i)
+         i   = ivdw(k)    ! atom active at the vdw site 
+         iv  = ired(i)    ! attached atom from which red factor is applied
+         rdn = kred(i)    ! reduction factor
          xred(i) = rdn*(x(i)-x(iv)) + x(iv)
          yred(i) = rdn*(y(i)-y(iv)) + y(iv)
          zred(i) = rdn*(z(i)-z(iv)) + z(iv)
       end do
-c
-c     find van der Waals energy and derivatives via double loop
-c
+
+      ! find van der Waals energy and derivatives via double loop
       do ii = 1, nvdw-1
-         i = ivdw(ii)
-         iv = ired(i)
-         redi = kred(i)
+         i     = ivdw(ii)
+         iv    = ired(i)
+         redi  = kred(i)
          rediv = 1.0d0 - redi
-         it = jvdw(i)
-         xi = xred(i)
-         yi = yred(i)
-         zi = zred(i)
+         it    = jvdw(i)
+         xi    = xred(i)
+         yi    = yred(i)
+         zi    = zred(i)
          usei = (use(i) .or. use(iv))
          muti = mut(i)
-c
-c     set interaction scaling coefficients for connected atoms
-c
+
+         ! set interaction scaling coefficients for connected atoms
          do j = 1, n12(i)
             vscale(i12(j,i)) = v2scale
          end do
@@ -179,19 +166,17 @@ c
          do j = 1, n15(i)
             vscale(i15(j,i)) = v5scale
          end do
-c
-c     decide whether to compute the current interaction
-c
+
+         ! decide whether to compute the current interaction
          do kk = ii+1, nvdw
-            k = ivdw(kk)
-            kv = ired(k)
-            mutk = mut(k)
+            k       = ivdw(kk)
+            kv      = ired(k)
+            mutk    = mut(k)
             proceed = .true.
             if (use_group)  call groups (proceed,fgrp,i,k,0,0,0,0)
             if (proceed)  proceed = (usei .or. use(k) .or. use(kv))
-c
-c     compute the energy contribution for this interaction
-c
+
+            ! compute the energy contribution for this interaction
             if (proceed) then
                kt = jvdw(k)
                xr = xi - xred(k)
@@ -199,79 +184,73 @@ c
                zr = zi - zred(k)
                call image (xr,yr,zr)
                rik2 = xr*xr + yr*yr + zr*zr
-c
-c     check for an interaction distance less than the cutoff
-c
+
+               ! check for an interaction distance less than the cutoff
                if (rik2 .le. off2) then
                   rik = sqrt(rik2)
-                  rv = radmin(kt,it)
+                  rv  = radmin(kt,it)
                   eps = epsilon(kt,it)
                   if (iv14(k) .eq. i) then
-                     rv = radmin4(kt,it)
+                     rv  = radmin4(kt,it)
                      eps = epsilon4(kt,it)
                   end if
                   eps = eps * vscale(k)
-c
-c     get the energy and gradient, via soft core if necessary
-c
+
+                  ! get the energy and gradient, via soft core if necessary
                   if ((muti .and. .not.mutk) .or.
      &                (mutk .and. .not.muti)) then
-                     rho = rik / rv
-                     rho6 = rho**6
-                     rho7 = rho6 * rho
-                     eps = eps * vlambda**scexp
-                     scal = scalpha * (1.0d0-vlambda)**2
-                     s1 = 1.0d0 / (scal+(rho+dhal)**7)
-                     s2 = 1.0d0 / (scal+rho7+ghal)
-                     t1 = (1.0d0+dhal)**7 * s1
-                     t2 = (1.0d0+ghal) * s2
+                     rho     = rik / rv
+                     rho6    = rho**6
+                     rho7    = rho6 * rho
+                     eps     = eps * vlambda**scexp
+                     scal    = scalpha * (1.0d0-vlambda)**2
+                     s1      = 1.0d0 / (scal+(rho+dhal)**7)
+                     s2      = 1.0d0 / (scal+rho7+ghal)
+                     t1      = (1.0d0+dhal)**7 * s1
+                     t2      = (1.0d0+ghal) * s2
                      dt1drho = -7.0d0*(rho+dhal)**6 * t1 * s1
                      dt2drho = -7.0d0*rho6 * t2 * s2
-                     e = eps * t1 * (t2-2.0d0)
-                     de = eps * (dt1drho*(t2-2.0d0)+t1*dt2drho) / rv
+                     e       = eps * t1 * (t2-2.0d0)
+                     de      = eps * (dt1drho*(t2-2.0d0)+t1*dt2drho)/rv
                   else
-                     rv7 = rv**7
-                     rik6 = rik2**3
-                     rik7 = rik6 * rik
-                     rho = rik7 + ghal*rv7
-                     tau = (dhal+1.0d0) / (rik + dhal*rv)
-                     tau7 = tau**7
-                     dtau = tau / (dhal+1.0d0)
-                     gtau = eps*tau7*rik6*(ghal+1.0d0)*(rv7/rho)**2
-                     e = eps*tau7*rv7*((ghal+1.0d0)*rv7/rho-2.0d0)
-                     de = -7.0d0 * (dtau*e+gtau)
+                     rv7     = rv**7
+                     rik6    = rik2**3
+                     rik7    = rik6 * rik
+                     rho     = rik7 + ghal*rv7
+                     tau     = (dhal+1.0d0) / (rik + dhal*rv)
+                     tau7    = tau**7
+                     dtau    = tau / (dhal+1.0d0)
+                     gtau    = eps*tau7*rik6*(ghal+1.0d0)*(rv7/rho)**2
+                     e       = eps*tau7*rv7*((ghal+1.0d0)*rv7/rho-2.0d0)
+                     de      = -7.0d0 * (dtau*e+gtau)
                   end if
-c
-c     use energy switching if near the cutoff distance
-c
+
+                  ! use energy switching if near the cutoff distance
                   if (rik2 .gt. cut2) then
-                     rik3 = rik2 * rik
-                     rik4 = rik2 * rik2
-                     rik5 = rik2 * rik3
-                     taper = c5*rik5 + c4*rik4 + c3*rik3
+                     rik3   = rik2 * rik
+                     rik4   = rik2 * rik2
+                     rik5   = rik2 * rik3
+                     taper  = c5*rik5 + c4*rik4 + c3*rik3
      &                          + c2*rik2 + c1*rik + c0
                      dtaper = 5.0d0*c5*rik4 + 4.0d0*c4*rik3
      &                           + 3.0d0*c3*rik2 + 2.0d0*c2*rik + c1
-                     de = e*dtaper + de*taper
-                     e = e * taper
+                     de     = e*dtaper + de*taper
+                     e      = e * taper
                   end if
-c
-c     scale the interaction based on its group membership
-c
+
+                 ! scale the interaction based on its group membership
                   if (use_group) then
-                     e = e * fgrp
+                     e  = e * fgrp
                      de = de * fgrp
                   end if
-c
-c     find the chain rule terms for derivative components
-c
-                  de = de / rik
+
+                  ! find the chain rule terms for derivative components
+                  de   = de / rik
                   dedx = de * xr
                   dedy = de * yr
                   dedz = de * zr
-c
-c     increment the total van der Waals energy and derivatives
-c
+
+                  ! increment the total van der Waals energy and derivatives
                   ev = ev + e
                   if (i .eq. iv) then
                      dev(1,i) = dev(1,i) + dedx
@@ -299,9 +278,8 @@ c
                      dev(2,kv) = dev(2,kv) - dedy*redkv
                      dev(3,kv) = dev(3,kv) - dedz*redkv
                   end if
-c
-c     increment the internal virial tensor components
-c
+
+                  ! increment the internal virial tensor components
                   vxx = xr * dedx
                   vyx = yr * dedx
                   vzx = zr * dedx
@@ -317,18 +295,17 @@ c
                   vir(1,3) = vir(1,3) + vzx
                   vir(2,3) = vir(2,3) + vzy
                   vir(3,3) = vir(3,3) + vzz
-c
-c     increment the total intermolecular energy
-c
+
+                  ! increment the total intermolecular energy
                   if (molcule(i) .ne. molcule(k)) then
                      einter = einter + e
                   end if
+
                end if
             end if
          end do
-c
-c     reset interaction scaling coefficients for connected atoms
-c
+
+         ! reset interaction scaling coefficients for connected atoms
          do j = 1, n12(i)
             vscale(i12(j,i)) = 1.0d0
          end do
@@ -342,28 +319,25 @@ c
             vscale(i15(j,i)) = 1.0d0
          end do
       end do
-c
-c     for periodic boundary conditions with large cutoffs
-c     neighbors must be found by the replicates method
-c
+
+      ! for periodic boundary conditions with large cutoffs
+      ! neighbors must be found by the replicates method
       if (.not. use_replica)  return
-c
-c     calculate interaction energy with other unit cells
-c
+
+      ! calculate interaction energy with other unit cells
       do ii = 1, nvdw
-         i = ivdw(ii)
-         iv = ired(i)
-         redi = kred(i)
+         i     = ivdw(ii)
+         iv    = ired(i)
+         redi  = kred(i)
          rediv = 1.0d0 - redi
-         it = jvdw(i)
-         xi = xred(i)
-         yi = yred(i)
-         zi = zred(i)
-         usei = (use(i) .or. use(iv))
-         muti = mut(i)
-c
-c     set interaction scaling coefficients for connected atoms
-c
+         it    = jvdw(i)
+         xi    = xred(i)
+         yi    = yred(i)
+         zi    = zred(i)
+         usei  = (use(i) .or. use(iv))
+         muti  = mut(i)
+
+        ! set interaction scaling coefficients for connected atoms
          do j = 1, n12(i)
             vscale(i12(j,i)) = v2scale
          end do
@@ -377,19 +351,17 @@ c
          do j = 1, n15(i)
             vscale(i15(j,i)) = v5scale
          end do
-c
-c     decide whether to compute the current interaction
-c
+
+         ! decide whether to compute the current interaction
          do kk = ii, nvdw
-            k = ivdw(kk)
-            kv = ired(k)
-            mutk = mut(k)
+            k       = ivdw(kk)
+            kv      = ired(k)
+            mutk    = mut(k)
             proceed = .true.
             if (use_group)  call groups (proceed,fgrp,i,k,0,0,0,0)
             if (proceed)  proceed = (usei .or. use(k) .or. use(kv))
-c
-c     compute the energy contribution for this interaction
-c
+
+            ! compute the energy contribution for this interaction
             if (proceed) then
                kt = jvdw(k)
                do j = 1, ncell
@@ -398,25 +370,23 @@ c
                   zr = zi - zred(k)
                   call imager (xr,yr,zr,j)
                   rik2 = xr*xr + yr*yr + zr*zr
-c
-c     check for an interaction distance less than the cutoff
-c
+
+                  ! check for an interaction distance less than the cutoff
                   if (rik2 .le. off2) then
                      rik = sqrt(rik2)
-                     rv = radmin(kt,it)
+                     rv  = radmin(kt,it)
                      eps = epsilon(kt,it)
                      if (use_polymer) then
                         if (rik2 .le. polycut2) then
                            if (iv14(k) .eq. i) then
-                              rv = radmin4(kt,it)
+                              rv  = radmin4(kt,it)
                               eps = epsilon4(kt,it)
                            end if
                            eps = eps * vscale(k)
                         end if
                      end if
-c
-c     get the energy and gradient, via soft core if necessary
-c
+
+                     ! get the energy and gradient, via soft core if necessary
                      if ((muti .and. .not.mutk) .or.
      &                   (mutk .and. .not.muti)) then
                         rho = rik / rv
@@ -444,9 +414,8 @@ c
                         e = eps*tau7*rv7*((ghal+1.0d0)*rv7/rho-2.0d0)
                         de = -7.0d0 * (dtau*e+gtau)
                      end if
-c
-c     use energy switching if near the cutoff distance
-c
+
+                     ! use energy switching if near the cutoff distance
                      if (rik2 .gt. cut2) then
                         rik3 = rik2 * rik
                         rik4 = rik2 * rik2
@@ -458,23 +427,20 @@ c
                         de = e*dtaper + de*taper
                         e = e * taper
                      end if
-c
-c     scale the interaction based on its group membership
-c
+
+                     ! scale the interaction based on its group membership
                      if (use_group) then
-                        e = e * fgrp
+                        e  = e * fgrp
                         de = de * fgrp
                      end if
-c
-c     find the chain rule terms for derivative components
-c
-                     de = de / rik
+
+                     ! find the chain rule terms for derivative components
+                     de   = de / rik
                      dedx = de * xr
                      dedy = de * yr
                      dedz = de * zr
-c
-c     increment the total van der Waals energy and derivatives
-c
+
+                     ! increment the total van der Waals energy and derivatives
                      if (i .eq. k)  e = 0.5d0 * e
                      ev = ev + e
                      if (i .eq. iv) then
@@ -505,9 +471,8 @@ c
                            dev(3,kv) = dev(3,kv) - dedz*redkv
                         end if
                      end if
-c
-c     increment the internal virial tensor components
-c
+
+                     ! increment the internal virial tensor components
                      vxx = xr * dedx
                      vyx = yr * dedx
                      vzx = zr * dedx
@@ -523,17 +488,16 @@ c
                      vir(1,3) = vir(1,3) + vzx
                      vir(2,3) = vir(2,3) + vzy
                      vir(3,3) = vir(3,3) + vzz
-c
-c     increment the total intermolecular energy
-c
+
+                     ! increment the total intermolecular energy
                      einter = einter + e
+
                   end if
                end do
             end if
          end do
-c
-c     reset interaction scaling coefficients for connected atoms
-c
+ 
+         ! reset interaction scaling coefficients for connected atoms
          do j = 1, n12(i)
             vscale(i12(j,i)) = 1.0d0
          end do
@@ -547,9 +511,8 @@ c
             vscale(i15(j,i)) = 1.0d0
          end do
       end do
-c
-c     perform deallocation of some local arrays
-c
+
+      ! perform deallocation of some local arrays
       deallocate (iv14)
       deallocate (xred)
       deallocate (yred)
@@ -1003,66 +966,46 @@ c
       logical proceed,usei
       logical muti,mutk
       character*6 mode
-c
-c
-c     zero out the van der Waals energy and first derivatives
-c
-      ev = 0.0d0
-      do i = 1, n
-         dev(1,i) = 0.0d0
-         dev(2,i) = 0.0d0
-         dev(3,i) = 0.0d0
-      end do
-c
-c     perform dynamic allocation of some local arrays
-c
+
+
+      ! zero out the van der Waals energy and first derivatives
+      ev  = 0.0d0
+      dev = 0.0d0
+
+      ! perform dynamic allocation of some local arrays
       allocate (iv14(n))
       allocate (xred(n))
       allocate (yred(n))
       allocate (zred(n))
       allocate (vscale(n))
       allocate (devo(3,n))
-c
-c     set arrays needed to scale connected atom interactions
-c
-      do i = 1, n
-         vscale(i) = 1.0d0
-         iv14(i) = 0
-      end do
-c
-c     set the coefficients for the switching function
-c
+
+      ! set arrays needed to scale connected atom interactions
+      vscale = 1.0d0
+      iv14   = 0
+      
+      ! set the coefficients for the switching function
       mode = 'VDW'
       call switch (mode)
-c
-c     apply any reduction factor to the atomic coordinates
-c
+
+      ! apply any reduction factor to the atomic coordinates
       do k = 1, nvdw
-         i = ivdw(k)
-         iv = ired(i)
-         rdn = kred(i)
+         i       = ivdw(k)
+         iv      = ired(i)
+         rdn     = kred(i)
          xred(i) = rdn*(x(i)-x(iv)) + x(iv)
          yred(i) = rdn*(y(i)-y(iv)) + y(iv)
          zred(i) = rdn*(z(i)-z(iv)) + z(iv)
       end do
-c
-c     transfer global to local copies for OpenMP calculation
-c
-      evo = ev
+
+      ! transfer global to local copies for OpenMP calculation
+      evo     = ev
       eintero = einter
-      do i = 1, n
-         devo(1,i) = dev(1,i)
-         devo(2,i) = dev(2,i)
-         devo(3,i) = dev(3,i)
-      end do
-      do i = 1, 3
-         viro(1,i) = vir(1,i)
-         viro(2,i) = vir(2,i)
-         viro(3,i) = vir(3,i)
-      end do
-c
-c     set OpenMP directives for the major loop structure
-c
+      devo    = dev
+      viro    = vir
+
+      ! set OpenMP directives for the major loop structure
+
 !$OMP PARALLEL default(private) shared(nvdw,ivdw,ired,kred,
 !$OMP& jvdw,xred,yred,zred,use,nvlst,vlst,n12,n13,n14,n15,
 !$OMP& i12,i13,i14,i15,v2scale,v3scale,v4scale,v5scale,
@@ -1070,20 +1013,20 @@ c
 !$OMP& cut2,vlambda,scalpha,scexp,mut,c0,c1,c2,c3,c4,c5,molcule)
 !$OMP& firstprivate(vscale,iv14) shared(evo,devo,viro,eintero)
 !$OMP DO reduction(+:evo,devo,viro,eintero) schedule(guided)
-c
-c     find van der Waals energy and derivatives via neighbor list
-c
+
+      ! find van der Waals energy and derivatives via neighbor list
       do ii = 1, nvdw
-         i = ivdw(ii)
-         iv = ired(i)
-         redi = kred(i)
+
+         i     = ivdw(ii)
+         iv    = ired(i)
+         redi  = kred(i)
          rediv = 1.0d0 - redi
-         it = jvdw(i)
-         xi = xred(i)
-         yi = yred(i)
-         zi = zred(i)
-         usei = (use(i) .or. use(iv))
-         muti = mut(i)
+         it    = jvdw(i)
+         xi    = xred(i)
+         yi    = yred(i)
+         zi    = zred(i)
+         usei  = (use(i) .or. use(iv))
+         muti  = mut(i)
 c
 c     set interaction scaling coefficients for connected atoms
 c
