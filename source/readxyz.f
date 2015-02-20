@@ -262,7 +262,7 @@ c
       do i = 1, n
 
          do j = 1, n12(i)
- 1          ! my neighbour
+            ! my neighbour
             k = i12(j,i)
             ! check my neighbour points back to me
             do m = 1, n12(k)
