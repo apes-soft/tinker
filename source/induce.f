@@ -35,10 +35,9 @@ c
       integer i,j,k
       real*8 norm
       logical header
-c
-c
-c     choose the method for computation of induced dipoles
-c
+
+
+      ! choose the method for computation of induced dipoles
       if (solvtyp(1:2) .eq. 'PB') then
          call induce0e
       else if (solvtyp(1:2) .eq. 'GK') then
@@ -46,9 +45,8 @@ c
       else
          call induce0a
       end if
-c
-c     update the lists of previous induced dipole values
-c
+
+      ! update the lists of previous induced dipole values
       if (use_pred) then
          nualt = min(nualt+1,maxualt)
          do i = 1, npole
@@ -70,9 +68,8 @@ c
             end do
          end do
       end if
-c
-c     print out a list of the final induced dipole moments
-c
+
+      ! print out a list of the final induced dipole moments
       if (debug) then
          header = .true.
          do i = 1, npole
@@ -3075,24 +3072,21 @@ c
       real*8 fieldp(3,*)
       real*8, allocatable :: fieldt(:,:)
       real*8, allocatable :: fieldtp(:,:)
-c
-c
-c     check for multipoles and set cutoff coefficients
-c
+
+
+      ! check for multipoles and set cutoff coefficients
       if (npole .eq. 0)  return
-c
-c     perform dynamic allocation of some local arrays
-c
+
+      ! perform dynamic allocation of some local arrays
       allocate (fieldt(3,npole))
       allocate (fieldtp(3,npole))
-c
-c     set OpenMP directives for the major loop structure
-c
+
+      ! set OpenMP directives for the major loop structure
+
 !$OMP PARALLEL default(private) shared(npole,uind,uinp,ntpair,tindex,
 !$OMP& tdipdip,field,fieldp,fieldt,fieldtp)
-c
-c     initialize local variables for OpenMP calculation
-c
+
+      ! initialize local variables for OpenMP calculation
 !$OMP DO collapse(2)
       do i = 1, npole
          do j = 1, 3
