@@ -28,6 +28,7 @@ thirdparty/
 *~
 \#*
 \.\#*
+\~*.docx
 
 ###################
 # Compiled source #
