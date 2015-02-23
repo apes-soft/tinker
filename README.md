@@ -24,7 +24,9 @@ of:
 
 * `dynamic`
 
-Because of the modifications that we are making to files any of the other tinker applications may no longer work when compiled in this branch. 
+Because of the modifications that we are making to files any of the
+other tinker applications may no longer work when compiled in this
+branch.
 
 If we have time we may also try to improve the performance of:
 
@@ -42,13 +44,17 @@ too - this would save all the costly trajectory post-processing later.
 ## Strategy overview
 
 Focus on routines that are used by Richard and Omar where possible.
-Look at the OpenMP regions to determine where the current CPU cost is incurred as well as profiling a couple of use cases with vanilla-tinker to find out where the 
-cost is.
+Look at the OpenMP regions to determine where the current CPU cost is
+incurred as well as profiling a couple of use cases with
+vanilla-tinker to find out where the cost is.
 
 * WF to profile:
   * JAC 
   * Water model with Verlet (as done by Omar)
-  * Use case from Richard Bradshaw of an equilibrated staph nuclease structure ready for NPT simulation, with the sidechain of residue D21 mutated with ele-lambda 0.5 (half switched on) and vdw-lambda 1.0 (fully switched on). 
+  * Use case from Richard Bradshaw of an equilibrated staph nuclease
+    structure ready for NPT simulation, with the sidechain of residue
+    D21 mutated with ele-lambda 0.5 (half switched on) and vdw-lambda
+    1.0 (fully switched on).
 * From the regions that are parallelised using OpenMP:
   * VdW in `ehal1.f`
   * Electrostatics and polarization in:
@@ -57,7 +63,8 @@ cost is.
   
 ## Stage 1
 
-This stage will allow us to evaluate whether this strategy will work. Focus on the JAC execution path for now. General steps are:
+This stage will allow us to evaluate whether this strategy will
+work. Focus on the JAC execution path for now. General steps are:
 
 1. **Profile** the latest version of `dynamic` for: JAC without OpenMP. Need to understand quantitavely the performance, the use case provided by Richard.
 2. Revisit the **execution path** of `dynamic` for the JAC benchmark.
@@ -105,8 +112,10 @@ in `gradient.f`:
 10. Miscellaneous energy (4 possible subroutines).
 11. summing all of the components of energy and first derivatives.
 
-It seems that all of the subroutines that are called in `gradient.f` need to be (?) specified in the key input file. However, not all the possible
-options specified in key files are used in gradient (e.g. `ewald`).
+It seems that all of the subroutines that are called in `gradient.f`
+need to be (?) specified in the key input file. However, not all the
+possible options specified in key files are used in gradient
+(e.g. `ewald`).
 
 ### Splitting the loops
 
@@ -129,7 +138,9 @@ calculations.
 
 # To do
 
-* Look at taking out direct string comparisons in conditionals in loops that are called a lot of times - replace with boolean flags which should be cheaper.
+* Look at taking out direct string comparisons in conditionals in
+  loops that are called a lot of times - replace with boolean flags
+  which should be cheaper.
 
 
 # Questions
