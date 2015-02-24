@@ -25,10 +25,8 @@ c
       use potent
       implicit none
       integer i,j,ii
-c
-c
-c     choose the method for summing over multipole interactions
-c
+
+      ! choose the method for summing over multipole interactions
       if (use_ewald) then
          if (use_mlist) then
             call empole1d
@@ -42,9 +40,8 @@ c
             call empole1a
          end if
       end if
-c
-c     zero out energy and derivative terms which are not in use
-c
+
+      ! zero out energy and derivative terms which are not in use
       if (.not. use_mpole) then
          em = 0.0d0
          do i = 1, npole
@@ -4778,6 +4775,7 @@ c
       use limits
       use math
       use molcul
+      use mpiparams
       use mplpot
       use mpole
       use neigh
@@ -4786,7 +4784,9 @@ c
       use polpot
       use shunt
       use virial
+
       implicit none
+
       integer i,j,k
       integer ii,kk,kkk
       integer iax,iay,iaz
@@ -4865,17 +4865,16 @@ c
       real*8, allocatable :: demo2(:,:)
       real*8, allocatable :: depo1(:,:)
       real*8, allocatable :: depo2(:,:)
+      integer:: lstart, lend
       logical dorl,dorli
       character*6 mode
       external erfc
-c
-c
-c     zero out the intramolecular portion of the Ewald energy
-c
+
+
+      ! zero out the intramolecular portion of the Ewald energy
       eintra = 0.0d0
-c
-c     perform dynamic allocation of some local arrays
-c
+
+      ! perform dynamic allocation of some local arrays
       allocate (mscale(n))
       allocate (pscale(n))
       allocate (dscale(n))
@@ -4890,15 +4889,13 @@ c
       pscale = 1.0d0
       dscale = 1.0d0
       uscale = 1.0d0
-c
-c     set conversion factor, cutoff and switching coefficients
-c
-      f = electric / dielec
+
+      ! set conversion factor, cutoff and switching coefficients
+      f    = electric / dielec
       mode = 'EWALD'
       call switch (mode)
 
       ! initialize local variables for OpenMP calculation
-     
       emo     = 0.0d0
       epo     = 0.0d0
       eintrao = eintra
@@ -4907,9 +4904,9 @@ c
       depo1   = 0.0d0  ! nx3 matrix
       depo2   = 0.0d0  ! nx3 matrix
       viro    = 0.0d0  ! 3x3 matrix
-c
-c     set OpenMP directives for the major loop structure
-c
+
+      ! set OpenMP directives for the major loop structure
+
 !$OMP PARALLEL default(shared) firstprivate(f)
 !$OMP& private(i,j,k,ii,kk,kkk,e,ei,bfac,damp,expdamp,
 !$OMP& pdi,pti,pgamma,scale3,scale5,scale7,temp3,temp5,temp7,
@@ -4930,14 +4927,16 @@ c
 !$OMP& firstprivate(mscale,pscale,dscale,uscale)
 !$OMP DO reduction(+:emo,epo,eintrao,demo1,demo2,depo1,depo2,viro)
 !$OMP& schedule(guided)
-c
-c     compute the real space portion of the Ewald summation
-c
-      do i = 1, npole
-         ii = ipole(i)
-         pdi = pdamp(i)
-         pti = thole(i)
-         ci = rpole(1,i)
+
+      ! work out the local array limits for this process
+      call splitlimits(lstart, lend, nelst)
+
+      ! compute the real space portion of the Ewald summation
+      do i = lstart, lend !1, npole
+         ii    = ipole(i)   ! number of the atom for multipole site 
+         pdi   = pdamp(i)   ! value of polarizability scale factor
+         pti   = thole(i)   ! polarizability damping value
+         ci    = rpole(1,i) ! multipoles rotated to global coordinate system
          di(1) = rpole(2,i)
          di(2) = rpole(3,i)
          di(3) = rpole(4,i)
@@ -4950,9 +4949,8 @@ c
          qi(7) = rpole(11,i)
          qi(8) = rpole(12,i)
          qi(9) = rpole(13,i)
-c
-c     set interaction scaling coefficients for connected atoms
-c
+
+         ! set interaction scaling coefficients for connected atoms
          do j = 1, n12(ii)
             mscale(i12(j,ii)) = m2scale
             pscale(i12(j,ii)) = p2scale
@@ -4989,17 +4987,18 @@ c
             dscale(ip14(j,ii)) = d4scale
             uscale(ip14(j,ii)) = u4scale
          end do
-         do kkk = 1, nelst(i)
-            k = elst(kkk,i)
+         ! loop over interacting electrostatic sites
+         do kkk = 1, nelst(i) 
+            k  = elst(kkk,i)
             kk = ipole(k)
             xr = x(kk) - x(ii)
             yr = y(kk) - y(ii)
             zr = z(kk) - z(ii)
             call image (xr,yr,zr)
             r2 = xr*xr + yr*yr + zr*zr
-            if (r2 .le. off2) then
-               r = sqrt(r2)
-               ck = rpole(1,k)
+            if (r2 .le. off2) then ! less than ewald cutoff
+               r     = sqrt(r2)
+               ck    = rpole(1,k)
                dk(1) = rpole(2,k)
                dk(2) = rpole(3,k)
                dk(3) = rpole(4,k)
@@ -5012,50 +5011,46 @@ c
                qk(7) = rpole(11,k)
                qk(8) = rpole(12,k)
                qk(9) = rpole(13,k)
-c
-c     calculate the real space error function terms
-c
+
+               ! calculate the real space error function terms
                ralpha = aewald * r
-               bn(0) = erfc(ralpha) / r
-               alsq2 = 2.0d0 * aewald**2
+               bn(0)  = erfc(ralpha) / r
+               alsq2  = 2.0d0 * aewald**2
                alsq2n = 0.0d0
                if (aewald .gt. 0.0d0)  alsq2n = 1.0d0 / (sqrtpi*aewald)
-               exp2a = exp(-ralpha**2)
+               exp2a  = exp(-ralpha**2)
                do j = 1, 5
-                  bfac = dble(2*j-1)
+                  bfac   = dble(2*j-1)
                   alsq2n = alsq2 * alsq2n
-                  bn(j) = (bfac*bn(j-1)+alsq2n*exp2a) / r2
+                  bn(j)  = (bfac*bn(j-1)+alsq2n*exp2a) / r2
                end do
-c
-c     apply Thole polarization damping to scale factors
-c
-               rr1 = 1.0d0 / r
-               rr3 = rr1 / r2
-               rr5 = 3.0d0 * rr3 / r2
-               rr7 = 5.0d0 * rr5 / r2
-               rr9 = 7.0d0 * rr7 / r2
-               rr11 = 9.0d0 * rr9 / r2
+
+               ! apply Thole polarization damping to scale factors
+               rr1    = 1.0d0 / r
+               rr3    = rr1 / r2
+               rr5    = 3.0d0 * rr3 / r2
+               rr7    = 5.0d0 * rr5 / r2
+               rr9    = 7.0d0 * rr7 / r2
+               rr11   = 9.0d0 * rr9 / r2
                scale3 = 1.0d0
                scale5 = 1.0d0
                scale7 = 1.0d0
-               do j = 1, 3
-                  ddsc3(j) = 0.0d0
-                  ddsc5(j) = 0.0d0
-                  ddsc7(j) = 0.0d0
-               end do
-               damp = pdi * pdamp(k)
+               ddsc3  = 0.0d0
+               ddsc5  = 0.0d0
+               ddsc7  = 0.0d0
+               damp   = pdi * pdamp(k)
                if (damp .ne. 0.0d0) then
                   pgamma = min(pti,thole(k))
-                  damp = -pgamma * (r/damp)**3
+                  damp   = -pgamma * (r/damp)**3
                   if (damp .gt. -50.0d0) then
-                     expdamp = exp(damp)
-                     scale3 = 1.0d0 - expdamp
-                     scale5 = 1.0d0 - (1.0d0-damp)*expdamp
-                     scale7 = 1.0d0 - (1.0d0-damp+0.6d0*damp**2)
-     &                                       *expdamp
-                     temp3 = -3.0d0 * damp * expdamp / r2
-                     temp5 = -damp
-                     temp7 = -0.2d0 - 0.6d0*damp
+                     expdamp  = exp(damp)
+                     scale3   = 1.0d0 - expdamp
+                     scale5   = 1.0d0 - (1.0d0-damp)*expdamp
+                     scale7   = 1.0d0 - (1.0d0-damp+0.6d0*damp**2)
+     &                                        *expdamp
+                     temp3    = -3.0d0 * damp * expdamp / r2
+                     temp5    = -damp
+                     temp7    = -0.2d0 - 0.6d0*damp
                      ddsc3(1) = temp3 * xr
                      ddsc3(2) = temp3 * yr
                      ddsc3(3) = temp3 * zr
@@ -5075,54 +5070,53 @@ c
                psc7 = 1.0d0 - scale7*pscale(kk)
                usc3 = 1.0d0 - scale3*uscale(kk)
                usc5 = 1.0d0 - scale5*uscale(kk)
-c
-c     construct necessary auxiliary vectors
-c
-               dixdk(1) = di(2)*dk(3) - di(3)*dk(2)
-               dixdk(2) = di(3)*dk(1) - di(1)*dk(3)
-               dixdk(3) = di(1)*dk(2) - di(2)*dk(1)
-               dixuk(1) = di(2)*uind(3,k) - di(3)*uind(2,k)
-               dixuk(2) = di(3)*uind(1,k) - di(1)*uind(3,k)
-               dixuk(3) = di(1)*uind(2,k) - di(2)*uind(1,k)
-               dkxui(1) = dk(2)*uind(3,i) - dk(3)*uind(2,i)
-               dkxui(2) = dk(3)*uind(1,i) - dk(1)*uind(3,i)
-               dkxui(3) = dk(1)*uind(2,i) - dk(2)*uind(1,i)
+
+               ! construct necessary auxiliary vectors
+               dixdk(1)  = di(2)*dk(3) - di(3)*dk(2)
+               dixdk(2)  = di(3)*dk(1) - di(1)*dk(3)
+               dixdk(3)  = di(1)*dk(2) - di(2)*dk(1)
+               dixuk(1)  = di(2)*uind(3,k) - di(3)*uind(2,k)
+               dixuk(2)  = di(3)*uind(1,k) - di(1)*uind(3,k)
+               dixuk(3)  = di(1)*uind(2,k) - di(2)*uind(1,k)
+               dkxui(1)  = dk(2)*uind(3,i) - dk(3)*uind(2,i)
+               dkxui(2)  = dk(3)*uind(1,i) - dk(1)*uind(3,i)
+               dkxui(3)  = dk(1)*uind(2,i) - dk(2)*uind(1,i)
                dixukp(1) = di(2)*uinp(3,k) - di(3)*uinp(2,k)
                dixukp(2) = di(3)*uinp(1,k) - di(1)*uinp(3,k)
                dixukp(3) = di(1)*uinp(2,k) - di(2)*uinp(1,k)
                dkxuip(1) = dk(2)*uinp(3,i) - dk(3)*uinp(2,i)
                dkxuip(2) = dk(3)*uinp(1,i) - dk(1)*uinp(3,i)
                dkxuip(3) = dk(1)*uinp(2,i) - dk(2)*uinp(1,i)
-               dixr(1) = di(2)*zr - di(3)*yr
-               dixr(2) = di(3)*xr - di(1)*zr
-               dixr(3) = di(1)*yr - di(2)*xr
-               dkxr(1) = dk(2)*zr - dk(3)*yr
-               dkxr(2) = dk(3)*xr - dk(1)*zr
-               dkxr(3) = dk(1)*yr - dk(2)*xr
-               qir(1) = qi(1)*xr + qi(4)*yr + qi(7)*zr
-               qir(2) = qi(2)*xr + qi(5)*yr + qi(8)*zr
-               qir(3) = qi(3)*xr + qi(6)*yr + qi(9)*zr
-               qkr(1) = qk(1)*xr + qk(4)*yr + qk(7)*zr
-               qkr(2) = qk(2)*xr + qk(5)*yr + qk(8)*zr
-               qkr(3) = qk(3)*xr + qk(6)*yr + qk(9)*zr
-               qiqkr(1) = qi(1)*qkr(1) + qi(4)*qkr(2) + qi(7)*qkr(3)
-               qiqkr(2) = qi(2)*qkr(1) + qi(5)*qkr(2) + qi(8)*qkr(3)
-               qiqkr(3) = qi(3)*qkr(1) + qi(6)*qkr(2) + qi(9)*qkr(3)
-               qkqir(1) = qk(1)*qir(1) + qk(4)*qir(2) + qk(7)*qir(3)
-               qkqir(2) = qk(2)*qir(1) + qk(5)*qir(2) + qk(8)*qir(3)
-               qkqir(3) = qk(3)*qir(1) + qk(6)*qir(2) + qk(9)*qir(3)
-               qixqk(1) = qi(2)*qk(3) + qi(5)*qk(6) + qi(8)*qk(9)
-     &                       - qi(3)*qk(2) - qi(6)*qk(5) - qi(9)*qk(8)
-               qixqk(2) = qi(3)*qk(1) + qi(6)*qk(4) + qi(9)*qk(7)
+               dixr(1)   = di(2)*zr - di(3)*yr
+               dixr(2)   = di(3)*xr - di(1)*zr
+               dixr(3)   = di(1)*yr - di(2)*xr
+               dkxr(1)   = dk(2)*zr - dk(3)*yr
+               dkxr(2)   = dk(3)*xr - dk(1)*zr
+               dkxr(3)   = dk(1)*yr - dk(2)*xr
+               qir(1)    = qi(1)*xr + qi(4)*yr + qi(7)*zr
+               qir(2)    = qi(2)*xr + qi(5)*yr + qi(8)*zr
+               qir(3)    = qi(3)*xr + qi(6)*yr + qi(9)*zr
+               qkr(1)    = qk(1)*xr + qk(4)*yr + qk(7)*zr
+               qkr(2)    = qk(2)*xr + qk(5)*yr + qk(8)*zr
+               qkr(3)    = qk(3)*xr + qk(6)*yr + qk(9)*zr
+               qiqkr(1)  = qi(1)*qkr(1) + qi(4)*qkr(2) + qi(7)*qkr(3)
+               qiqkr(2)  = qi(2)*qkr(1) + qi(5)*qkr(2) + qi(8)*qkr(3)
+               qiqkr(3)  = qi(3)*qkr(1) + qi(6)*qkr(2) + qi(9)*qkr(3)
+               qkqir(1)  = qk(1)*qir(1) + qk(4)*qir(2) + qk(7)*qir(3)
+               qkqir(2)  = qk(2)*qir(1) + qk(5)*qir(2) + qk(8)*qir(3)
+               qkqir(3)  = qk(3)*qir(1) + qk(6)*qir(2) + qk(9)*qir(3)
+               qixqk(1)  = qi(2)*qk(3) + qi(5)*qk(6) + qi(8)*qk(9)
+     &                        - qi(3)*qk(2) - qi(6)*qk(5) - qi(9)*qk(8)
+               qixqk(2)  = qi(3)*qk(1) + qi(6)*qk(4) + qi(9)*qk(7)
      &                       - qi(1)*qk(3) - qi(4)*qk(6) - qi(7)*qk(9)
-               qixqk(3) = qi(1)*qk(2) + qi(4)*qk(5) + qi(7)*qk(8)
+               qixqk(3)  = qi(1)*qk(2) + qi(4)*qk(5) + qi(7)*qk(8)
      &                       - qi(2)*qk(1) - qi(5)*qk(4) - qi(8)*qk(7)
-               rxqir(1) = yr*qir(3) - zr*qir(2)
-               rxqir(2) = zr*qir(1) - xr*qir(3)
-               rxqir(3) = xr*qir(2) - yr*qir(1)
-               rxqkr(1) = yr*qkr(3) - zr*qkr(2)
-               rxqkr(2) = zr*qkr(1) - xr*qkr(3)
-               rxqkr(3) = xr*qkr(2) - yr*qkr(1)
+               rxqir(1)  = yr*qir(3) - zr*qir(2)
+               rxqir(2)  = zr*qir(1) - xr*qir(3)
+               rxqir(3)  = xr*qir(2) - yr*qir(1)
+               rxqkr(1)  = yr*qkr(3) - zr*qkr(2)
+               rxqkr(2)  = zr*qkr(1) - xr*qkr(3)
+               rxqkr(3)  = xr*qkr(2) - yr*qkr(1)
                rxqikr(1) = yr*qiqkr(3) - zr*qiqkr(2)
                rxqikr(2) = zr*qiqkr(1) - xr*qiqkr(3)
                rxqikr(3) = xr*qiqkr(2) - yr*qiqkr(1)
@@ -5198,9 +5192,8 @@ c
                rxqkuip(1) = yr*qkuip(3) - zr*qkuip(2)
                rxqkuip(2) = zr*qkuip(1) - xr*qkuip(3)
                rxqkuip(3) = xr*qkuip(2) - yr*qkuip(1)
-c
-c     calculate the scalar products for permanent components
-c
+
+               ! calculate the scalar products for permanent components
                sc(2) = di(1)*dk(1) + di(2)*dk(2) + di(3)*dk(3)
                sc(3) = di(1)*xr + di(2)*yr + di(3)*zr
                sc(4) = dk(1)*xr + dk(2)*yr + dk(3)*zr
@@ -5212,9 +5205,8 @@ c
                sc(10) = qi(1)*qk(1) + qi(2)*qk(2) + qi(3)*qk(3)
      &                     + qi(4)*qk(4) + qi(5)*qk(5) + qi(6)*qk(6)
      &                     + qi(7)*qk(7) + qi(8)*qk(8) + qi(9)*qk(9)
-c
-c     calculate the scalar products for induced components
-c
+
+               ! calculate the scalar products for induced components
                sci(1) = uind(1,i)*dk(1) + uind(2,i)*dk(2)
      &                     + uind(3,i)*dk(3) + di(1)*uind(1,k)
      &                     + di(2)*uind(2,k) + di(3)*uind(3,k)
@@ -5238,9 +5230,8 @@ c
      &                      + qir(3)*uinp(3,k)
                scip(8) = qkr(1)*uinp(1,i) + qkr(2)*uinp(2,i)
      &                      + qkr(3)*uinp(3,i)
-c
-c     calculate the gl functions for permanent components
-c
+
+               ! calculate the gl functions for permanent components
                gl(0) = ci*ck
                gl(1) = ck*sc(3) - ci*sc(4)
                gl(2) = ci*sc(6) + ck*sc(5) - sc(3)*sc(4)
@@ -5250,9 +5241,8 @@ c
                gl(6) = sc(2)
                gl(7) = 2.0d0 * (sc(7)-sc(8))
                gl(8) = 2.0d0 * sc(10)
-c
-c     calculate the gl functions for induced components
-c
+
+               ! calculate the gl functions for induced components
                gli(1) = ck*sci(3) - ci*sci(4)
                gli(2) = -sc(3)*sci(4) - sci(3)*sc(4)
                gli(3) = sci(3)*sc(6) - sci(4)*sc(5)
@@ -5263,17 +5253,15 @@ c
                glip(3) = scip(3)*sc(6) - scip(4)*sc(5)
                glip(6) = scip(1)
                glip(7) = 2.0d0 * (scip(7)-scip(8))
-c
-c     compute the energy contributions for this interaction
-c
+
+               ! compute the energy contributions for this interaction
                e = bn(0)*gl(0) + bn(1)*(gl(1)+gl(6))
      &                + bn(2)*(gl(2)+gl(7)+gl(8))
      &                + bn(3)*(gl(3)+gl(5)) + bn(4)*gl(4)
                ei = 0.5d0 * (bn(1)*(gli(1)+gli(6))
      &                      + bn(2)*(gli(2)+gli(7)) + bn(3)*gli(3))
-c
-c     get the real energy without any screening function
-c
+
+               ! get the real energy without any screening function
                erl = rr1*gl(0) + rr3*(gl(1)+gl(6))
      &                  + rr5*(gl(2)+gl(7)+gl(8))
      &                  + rr7*(gl(3)+gl(5)) + rr9*gl(4)
@@ -5286,11 +5274,10 @@ c
                ei = f * ei
                emo = emo + e
                epo = epo + ei
-c
-c     increment the total intramolecular energy; assumes
-c     intramolecular distances are less than half of cell
-c     length and less than the ewald cutoff
-c
+
+               ! increment the total intramolecular energy; assumes
+               ! intramolecular distances are less than half of cell
+               ! length and less than the ewald cutoff
                if (molcule(ii) .eq. molcule(kk)) then
                   eintrao = eintrao + mscale(kk)*erl*f
                   eintrao = eintrao + 0.5d0*pscale(kk)
@@ -5298,29 +5285,25 @@ c
      &                              + rr5*(gli(2)+gli(7))*scale5
      &                              + rr7*gli(3)*scale7)
                end if
-c
-c     set flags to compute components without screening
-c
+
+               ! set flags to compute components without screening
                dorl = .false.
                dorli = .false.
                if (mscale(kk) .ne. 1.0d0)  dorl = .true.
                if (psc3 .ne. 0.0d0)  dorli = .true.
                if (dsc3 .ne. 0.0d0)  dorli = .true.
                if (usc3 .ne. 0.0d0)  dorli = .true.
-c
-c     zero out force and torque components without screening
-c
-               do j = 1, 3
-                  ftm2r(j) = 0.0d0
-                  ftm2ri(j) = 0.0d0
-                  ttm2r(j) = 0.0d0
-                  ttm2ri(j) = 0.0d0
-                  ttm3r(j) = 0.0d0
-                  ttm3ri(j) = 0.0d0
-               end do
-c
-c     get the permanent force with screening
-c
+
+               ! zero out force and torque components without screening
+               ftm2r  = 0.0d0
+               ftm2ri = 0.0d0
+               ttm2r  = 0.0d0
+               ttm2ri = 0.0d0
+               ttm3r  = 0.0d0
+               ttm3ri = 0.0d0
+
+
+               ! get the permanent force with screening
                gf(1) = bn(1)*gl(0) + bn(2)*(gl(1)+gl(6))
      &                    + bn(3)*(gl(2)+gl(7)+gl(8))
      &                    + bn(4)*(gl(3)+gl(5)) + bn(5)*gl(4)
@@ -5339,9 +5322,8 @@ c
                ftm2(3) = gf(1)*zr + gf(2)*di(3) + gf(3)*dk(3)
      &                      + gf(4)*(qkdi(3)-qidk(3)) + gf(5)*qir(3)
      &                      + gf(6)*qkr(3) + gf(7)*(qiqkr(3)+qkqir(3))
-c
-c     get the permanent force without screening
-c
+
+               ! get the permanent force without screening
                if (dorl) then
                   gfr(1) = rr3*gl(0) + rr5*(gl(1)+gl(6))
      &                        + rr7*(gl(2)+gl(7)+gl(8))
@@ -5365,9 +5347,8 @@ c
      &                          + gfr(5)*qir(3) + gfr(6)*qkr(3)
      &                          + gfr(7)*(qiqkr(3)+qkqir(3))
                end if
-c
-c     get the induced force with screening
-c
+
+               ! get the induced force with screening
                gfi(1) = 0.5d0*bn(2)*(gli(1)+glip(1)+gli(6)+glip(6))
      &                     + 0.5d0*bn(2)*scip(2)
      &                     + 0.5d0*bn(3)*(gli(2)+glip(2)+gli(7)+glip(7))
@@ -5405,9 +5386,8 @@ c
      &            + (sci(3)+scip(3))*bn(2)*dk(3)
      &            + gfi(4)*(qkui(3)+qkuip(3)-qiuk(3)-qiukp(3)))
      &            + gfi(5)*qir(3) + gfi(6)*qkr(3)
-c
-c     get the induced force without screening
-c
+
+               ! get the induced force without screening
                if (dorli) then
                   gfri(1) = 0.5d0*rr5*((gli(1)+gli(6))*psc3
      &                               + (glip(1)+glip(6))*dsc3
@@ -5464,9 +5444,8 @@ c
      &               + (qkuip(3)-qiukp(3))*dsc5)
      &               + gfri(5)*qir(3) + gfri(6)*qkr(3)
                end if
-c
-c     account for partially excluded induced interactions
-c
+
+               ! account for partially excluded induced interactions
                temp3 = 0.5d0 * rr3 * ((gli(1)+gli(6))*pscale(kk)
      &                                  +(glip(1)+glip(6))*dscale(kk))
                temp5 = 0.5d0 * rr5 * ((gli(2)+gli(7))*pscale(kk)
@@ -5479,24 +5458,21 @@ c
      &                        + temp7*ddsc7(2)
                fridmp(3) = temp3*ddsc3(3) + temp5*ddsc5(3)
      &                        + temp7*ddsc7(3)
-c
-c     find some scaling terms for induced-induced force
-c
+
+               ! find some scaling terms for induced-induced force
                temp3 = 0.5d0 * rr3 * uscale(kk) * scip(2)
                temp5 = -0.5d0 * rr5 * uscale(kk)
      &                    * (sci(3)*scip(4)+scip(3)*sci(4))
                findmp(1) = temp3*ddsc3(1) + temp5*ddsc5(1)
                findmp(2) = temp3*ddsc3(2) + temp5*ddsc5(2)
                findmp(3) = temp3*ddsc3(3) + temp5*ddsc5(3)
-c
-c     modify the forces for partially excluded interactions
-c
+
+               ! modify the forces for partially excluded interactions
                ftm2i(1) = ftm2i(1) - fridmp(1) - findmp(1)
                ftm2i(2) = ftm2i(2) - fridmp(2) - findmp(2)
                ftm2i(3) = ftm2i(3) - fridmp(3) - findmp(3)
-c
-c     correction to convert mutual to direct polarization force
-c
+
+               ! correction to convert mutual to direct polarization force
                if (poltyp .eq. 'DIRECT') then
                   gfd = 0.5d0 * (bn(2)*scip(2)
      &                     - bn(3)*(scip(3)*sci(4)+sci(3)*scip(4)))
@@ -5525,9 +5501,8 @@ c
                   ftm2i(2) = ftm2i(2) + fdir(2) + findmp(2)
                   ftm2i(3) = ftm2i(3) + fdir(3) + findmp(3)
                end if
-c
-c     get the permanent torque with screening
-c
+
+               ! get the permanent torque with screening
                ttm2(1) = -bn(1)*dixdk(1) + gf(2)*dixr(1)
      &                      + gf(4)*(dixqkr(1)+dkxqir(1)
      &                              +rxqidk(1)-2.0d0*qixqk(1))
@@ -5558,9 +5533,8 @@ c
      &                              +rxqkdi(3)-2.0d0*qixqk(3))
      &                      - gf(6)*rxqkr(3)
      &                      - gf(7)*(rxqkir(3)-qkrxqir(3))
-c
-c     get the permanent torque without screening
-c
+
+               ! get the permanent torque without screening
                if (dorl) then
                   ttm2r(1) = -rr3*dixdk(1) + gfr(2)*dixr(1)
      &                          + gfr(4)*(dixqkr(1)+dkxqir(1)
@@ -5593,9 +5567,8 @@ c
      &                          - gfr(6)*rxqkr(3)
      &                          - gfr(7)*(rxqkir(3)-qkrxqir(3))
                end if
-c
-c     get the induced torque with screening
-c
+
+               ! get the induced torque with screening
                gti(2) = 0.5d0 * bn(2) * (sci(4)+scip(4))
                gti(3) = 0.5d0 * bn(2) * (sci(3)+scip(3))
                gti(4) = gfi(4)
@@ -5625,9 +5598,8 @@ c
      &                       + gti(3)*dkxr(3) - gti(6)*rxqkr(3)
      &                       - 0.5d0*gti(4)*(uixqkr(3)+rxqkui(3)
      &                                      +uixqkrp(3)+rxqkuip(3))
-c
-c     get the induced torque without screening
-c
+
+               ! get the induced torque without screening
                if (dorli) then
                   gtri(2) = 0.5d0 * rr5 * (sci(4)*psc5+scip(4)*dsc5)
                   gtri(3) = 0.5d0 * rr5 * (sci(3)*psc5+scip(3)*dsc5)
@@ -5659,9 +5631,8 @@ c
      &                           - gtri(4)*((uixqkr(3)+rxqkui(3))*psc5
      &                             +(uixqkrp(3)+rxqkuip(3))*dsc5)*0.5d0
                end if
-c
-c     handle the case where scaling is used
-c
+
+               ! handle the case where scaling is used
                do j = 1, 3
                   ftm2(j) = f * (ftm2(j)-(1.0d0-mscale(kk))*ftm2r(j))
                   ftm2i(j) = f * (ftm2i(j)-ftm2ri(j))
@@ -5670,9 +5641,8 @@ c
                   ttm3(j) = f * (ttm3(j)-(1.0d0-mscale(kk))*ttm3r(j))
                   ttm3i(j) = f * (ttm3i(j)-ttm3ri(j))
                end do
-c
-c     increment gradient due to force and torque on first site
-c
+
+               ! increment gradient due to force and torque on first site
                demo1(1,ii) = demo1(1,ii) + ftm2(1)
                demo1(2,ii) = demo1(2,ii) + ftm2(2)
                demo1(3,ii) = demo1(3,ii) + ftm2(3)
@@ -5680,9 +5650,8 @@ c
                depo1(2,ii) = depo1(2,ii) + ftm2i(2)
                depo1(3,ii) = depo1(3,ii) + ftm2i(3)
                call torque3 (i,ttm2,ttm2i,frcxi,frcyi,frczi,demo1,depo1)
-c
-c     increment gradient due to force and torque on second site
-c
+
+               ! increment gradient due to force and torque on second site
                demo2(1,kk) = demo2(1,kk) - ftm2(1)
                demo2(2,kk) = demo2(2,kk) - ftm2(2)
                demo2(3,kk) = demo2(3,kk) - ftm2(3)
@@ -5690,9 +5659,8 @@ c
                depo2(2,kk) = depo2(2,kk) - ftm2i(2)
                depo2(3,kk) = depo2(3,kk) - ftm2i(3)
                call torque3 (k,ttm3,ttm3i,frcxk,frcyk,frczk,demo2,depo2)
-c
-c     increment the internal virial tensor components
-c
+
+               ! increment the internal virial tensor components
                iaz = zaxis(i)
                iax = xaxis(i)
                iay = yaxis(i)
@@ -5752,9 +5720,8 @@ c
                viro(3,3) = viro(3,3) + vzz
             end if
          end do
-c
-c     reset interaction scaling coefficients for connected atoms
-c
+
+         ! reset interaction scaling coefficients for connected atoms
          do j = 1, n12(ii)
             mscale(i12(j,ii)) = 1.0d0
             pscale(i12(j,ii)) = 1.0d0
@@ -5788,14 +5755,13 @@ c
             uscale(ip14(j,ii)) = 1.0d0
          end do
       end do
-c
-c     end OpenMP directives for the major loop structure
-c
+
+      ! end OpenMP directives for the major loop structure
+
 !$OMP END DO
 !$OMP END PARALLEL
-c
-c     add local copies to global variables for OpenMP calculation
-c
+
+      ! add local copies to global variables for OpenMP calculation
       em = em + emo
       ep = ep + epo
       eintra = eintrao
@@ -5810,9 +5776,8 @@ c
             vir(j,i) = vir(j,i) + viro(j,i)
          end do
       end do
-c
-c     perform deallocation of some local arrays
-c
+
+      !  perform deallocation of some local arrays
       deallocate (mscale)
       deallocate (pscale)
       deallocate (dscale)
