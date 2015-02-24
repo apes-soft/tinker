@@ -31,11 +31,12 @@ echo Using $nprocs processes.
 # -np - number of processes
 # -mca btl tcp,sm,self - specify the message transport mechanism (for Indy)
 # --mca orte_base_help_aggregate 0  - disable error message aggregation (for Indy)
+# --quiet - don't print out so much stuff out
 
 # Mario's mac.
 if [ `hostname` = "mbp-ma.local" ]; then
 
-  mpirun -np $nprocs \
+  mpirun -np $nprocs --quiet \
          ../bin/dynamic dhfr 100 1.0 10.0 2 298.0
 fi
 
