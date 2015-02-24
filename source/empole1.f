@@ -4866,6 +4866,7 @@ c
       real*8, allocatable :: depo1(:,:)
       real*8, allocatable :: depo2(:,:)
       integer:: lstart, lend
+      integer:: errcode   ! temporary
       logical dorl,dorli
       character*6 mode
       external erfc
@@ -4930,6 +4931,10 @@ c
 
       ! work out the local array limits for this process
       call splitlimits(lstart, lend, nelst)
+
+      errcode = 0
+
+      call MPI_Abort(MPI_COMM_WORLD, errcode, ierror)
 
       ! compute the real space portion of the Ewald summation
       do i = lstart, lend !1, npole
