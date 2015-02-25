@@ -33,19 +33,24 @@ echo Using $nprocs processes.
 # --mca orte_base_help_aggregate 0  - disable error message aggregation (for Indy)
 # --quiet - don't print out so much stuff out
 
-# Mario's mac.
-if [ `hostname` = "mbp-ma.local" ]; then
+
+if [ `hostname` = "mbp-ma.local" ]; then  # Mario's mac.
 
   mpirun -np $nprocs --quiet \
          ../bin/dynamic dhfr 100 1.0 10.0 2 298.0
-fi
 
-# Indy (system at EPCC).
-if [ `hostname` = "indy0" ]; then
+elif [ `hostname` = "indy0" ]; then       # Indy (system at EPCC).
 
 
   mpirun -np $nprocs \
          -mca btl tcp,sm,self \
          ../bin/dynamic dhfr 100 1.0 10.0 2 298.0
+
+else
+
+echo
+echo "Unknown system :" `hostname`.
+echo
+
 fi
 
