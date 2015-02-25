@@ -33,8 +33,14 @@ echo Using $nprocs processes.
 # --mca orte_base_help_aggregate 0  - disable error message aggregation (for Indy)
 # --quiet - don't print out so much stuff out
 
+# Really want to use `hostname -s` but not universally available.
 
 if [ `hostname` = "mbp-ma.local" ]; then  # Mario's mac.
+
+  mpirun -np $nprocs --quiet \
+         ../bin/dynamic dhfr 100 1.0 10.0 2 298.0
+
+if [ `hostname` = "mbp-ma.lan" ]; then  # Mario's mac.
 
   mpirun -np $nprocs --quiet \
          ../bin/dynamic dhfr 100 1.0 10.0 2 298.0
