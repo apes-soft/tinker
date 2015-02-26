@@ -40,7 +40,7 @@ if [ `hostname` = "mbp-ma.local" ]; then  # Mario's mac.
   mpirun -np $nprocs --quiet \
          ../bin/dynamic dhfr 100 1.0 10.0 2 298.0
 
-if [ `hostname` = "mbp-ma.lan" ]; then  # Mario's mac.
+elif [ `hostname` = "mbp-ma.lan" ]; then  # Mario's mac.
 
   mpirun -np $nprocs --quiet \
          ../bin/dynamic dhfr 100 1.0 10.0 2 298.0
