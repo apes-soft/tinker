@@ -200,6 +200,7 @@ c
       call MPI_Bcast(y,n,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierror)
       call MPI_Bcast(z,n,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierror)
       call MPI_Bcast(type,n,MPI_INTEGER,0,MPI_COMM_WORLD,ierror)
+      call MPI_Bcast(tag,n,MPI_INTEGER,0,MPI_COMM_WORLD,ierror)
 
       ! for each atom, count and sort its attached atoms
       do i = 1, n
@@ -212,6 +213,10 @@ c
   100    continue
          call sort (n12(i),i12(1,i))
       end do
+
+      print *, rank,tag(1:5)
+      print *, rank,n12(1:5)
+      STOP
 
       ! find the size of the maxtag
       nmax = 0
