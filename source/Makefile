@@ -64,15 +64,19 @@ HOSTNAME:=$(shell hostname)
 
 # On the basis of this set-up some defaults:
 
-ifeq ($(HOSTNAME),ultra)             # EPCC ultra system
+ifeq ($(HOSTNAME),ultra)              # EPCC ultra system
 
    COMPARCH=LinuxIntel
 
-else ifeq ($(HOSTNAME),phi.hydra)    # EPCC phi system on hydra
+else ifeq ($(HOSTNAME),phi.hydra)     # EPCC phi system on hydra
 
    COMPARCH=LinuxIntel
 
-else ifeq ($(HOSTNAME),mbp-ma.local) # MA's Macbook pro
+else ifeq ($(HOSTNAME),mbp-ma.local)  # MA's Macbook pro
+
+   COMPARCH=GenericGfortran
+
+else ifeq ($(HOSTNAME),mbp-ma.lan)    # MA's Macbook pro
 
    COMPARCH=GenericGfortran
 
