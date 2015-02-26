@@ -201,6 +201,8 @@ c
       call MPI_Bcast(z,n,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierror)
       call MPI_Bcast(type,n,MPI_INTEGER,0,MPI_COMM_WORLD,ierror)
       call MPI_Bcast(tag,n,MPI_INTEGER,0,MPI_COMM_WORLD,ierror)
+      call MPI_Bcast(i12,maxcons*n,MPI_INTEGER,0,MPI_COMM_WORLD,ierror)
+      call MPI_Bcast(name,3*n,MPI_CHARACTER,0,MPI_COMM_WORLD,ierror)
 
       ! for each atom, count and sort its attached atoms
       do i = 1, n
