@@ -214,10 +214,6 @@ c
          call sort (n12(i),i12(1,i))
       end do
 
-      print *, rank,tag(1:5)
-      print *, rank,n12(1:5)
-      STOP
-
       ! find the size of the maxtag
       nmax = 0
       do i = 1, n
