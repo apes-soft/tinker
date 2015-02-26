@@ -34,6 +34,8 @@ echo Using $nprocs processes.
 # --quiet - don't print out so much stuff out
 
 # Really want to use `hostname -s` but not universally available.
+# For debugging can add the line: xterm -e gdb before the executable
+# to start the program within gdb.
 
 if [ `hostname` = "mbp-ma.local" ]; then  # Mario's mac.
 
