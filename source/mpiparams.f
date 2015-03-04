@@ -32,38 +32,28 @@
       partcost = 0               ! partial cost
 
       ! calculate the lower bound of the loop
-      do while(partcost.lt.(rank*avgcost+1)) 
+      do while(partcost.lt.(rank*avgcost)) 
          partcost = partcost + cost(lstart)
          lstart   = lstart + 1
       end do
-
-      ! overcounted by one
-      lstart = lstart - 1
 
       ! store the cost to calc the cost for a given rank
       tempcost = partcost 
  
       ! calculate the upper bound of the loop
-      if(rank.lt.nprocs-1) then 
-         lend = lstart
-         do while(partcost.lt.((rank+1)*avgcost+1))
-            partcost = partcost + cost(lend)
-            lend     = lend + 1
-         end do
-         ! over counted by one
-         lend = lend - 1
-      else
-         lend     = size(cost)
-         ! need to add cost at start else it will not be
-         ! taken into account in the diagnostic.
-         partcost = totcost + cost(lstart)
-      end if
+      lend = lstart
+      do while(partcost.lt.((rank+1)*avgcost).and.lend.le.size(cost))
+         partcost = partcost + cost(lend)
+         lend     = lend + 1
+      end do
+      ! over counted by one
+      lend = lend - 1
 
       ! print a diagnostic message
-      print "(I3,A,I6,A,I6,A,I7,A,I7,A,I7,A,I7,A,I8)",rank," start ",
-     &      lstart," -> ",lend," out of ",size(cost)," cost = ",
-     &      partcost-tempcost,"/",avgcost," Actual: ",
-     &      sum(cost(lstart:lend))," out of tot cost ",totcost
+      print "(I3,A,I6,A,I6,A,I7,A,I7,A,I7,A,I8)",rank,",",
+     &      lstart,", ",lend,",",
+     &      partcost-tempcost,",",avgcost,",",
+     &      sum(cost(lstart:lend)),",",totcost
 
       end subroutine 
 
