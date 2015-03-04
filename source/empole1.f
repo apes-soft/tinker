@@ -4870,6 +4870,7 @@ c
       logical dorl,dorli
       character*6 mode
       external erfc
+      integer (kind=8):: t1, t2, tick
 
 
       ! zero out the intramolecular portion of the Ewald energy
@@ -4934,7 +4935,7 @@ c
 
       errcode = 0
 
-      call MPI_Abort(MPI_COMM_WORLD, errcode, ierror)
+      call system_clock(t1, tick)
 
       ! compute the real space portion of the Ewald summation
       do i = lstart, lend !1, npole
@@ -5765,6 +5766,14 @@ c
 
 !$OMP END DO
 !$OMP END PARALLEL
+
+      call system_clock(t2)
+      call flush(6)
+      call MPI_Barrier(MPI_COMM_WORLD, ierror)
+      print *,rank,",", (t2-t1)/real(tick,kind=8)
+      call flush(6)
+      call MPI_Barrier(MPI_COMM_WORLD, ierror)
+      STOP
 
       ! add local copies to global variables for OpenMP calculation
       em = em + emo
