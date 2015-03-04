@@ -1,7 +1,7 @@
       ! Data to be shared.
       module params
 
-      integer, parameter:: nprocs=2
+      integer, parameter:: nprocs=32
       integer :: rank
 
       end module params
@@ -104,10 +104,10 @@
       end if
 
       ! print a diagnostic message
-      print "(I3,A,I6,A,I6,A,I7,A,I7,A,I7,A,I7,A,I8)",rank," start ",
-     &      lstart," -> ",lend," out of ",size(cost)," cost = ",
-     &      partcost-tempcost,"/",avgcost," Actual: ",
-     &      sum(cost(lstart:lend))," out of tot cost ",totcost
+      print "(I3,A,I6,A,I6,A,I7,A,I7,A,I7,A,I7,A,I8)",rank,": ",
+     &      lstart," -> ",lend," of ",size(cost),", cost = ",
+     &      partcost-tempcost,"; avg ",avgcost," Actual: ",
+     &      sum(cost(lstart:lend)),"/",totcost
 
       end subroutine dolimits
 
