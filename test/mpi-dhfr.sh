@@ -58,7 +58,13 @@ else
 
 echo
 echo "Unknown system :" `hostname`.
+echo " Check MPI call routine."
 echo
+
+  mpirun -np $nprocs \
+         -mca btl tcp,sm,self \
+         ../bin/dynamic dhfr 100 1.0 10.0 2 298.0
+
 
 fi
 
