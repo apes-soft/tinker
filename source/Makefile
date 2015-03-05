@@ -51,6 +51,7 @@ LINKDIR = /usr/local/bin
 #COMPARCH=GenericGfortran
 #COMPARCH=GenericGfortranOpenMP
 COMPARCH=LinuxIntel
+#COMPARCH=ARCHER
 #COMPARCH=LinuxIntelOpenMP
 #COMPARCH=MacIntel
 #COMPARCH=MacIntelOpenMP
@@ -114,6 +115,16 @@ else ifeq ($(COMPARCH),GenericGfortranOpenMP)
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc
+
+else ifeq ($(COMPARCH),ARCHER)
+
+  FC        = ftn # ifort
+  LIBS      = -lfftw3_threads -lfftw3
+  FCFLAGS   = -c -xHost # -pg
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = -static-libgcc -static-intel  # -pg
 
 else ifeq ($(COMPARCH),LinuxIntel)
 
