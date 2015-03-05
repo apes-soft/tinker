@@ -9,7 +9,8 @@
       ! cost you iterate until your block contains the average cost or
       ! less.
 
-      ! Data to be shared.
+      ! Data to be shared. Simulate data that would be passed to the
+      ! routine in a bigger code.
       module params
 
       integer, parameter:: nprocs=32
@@ -17,7 +18,6 @@
 
       end module params
 
-      ! Begin the main program
       ! This is a basic test harness to see whether 
       ! simulated processes calculate the start and
       ! ends of a do loop in a self consistent manner.
