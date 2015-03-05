@@ -69,6 +69,10 @@ ifeq ($(HOSTNAME),ultra)              # EPCC ultra system
 
    COMPARCH=LinuxIntel
 
+else ifeq (eslogin,$(findstring eslogin,$(HOSTNAME)))  # ARCHER front end
+
+   COMPARCH=ARCHER
+
 else ifeq ($(HOSTNAME),phi.hydra)     # EPCC phi system on hydra
 
    COMPARCH=LinuxIntel
@@ -119,7 +123,7 @@ else ifeq ($(COMPARCH),GenericGfortranOpenMP)
 else ifeq ($(COMPARCH),ARCHER)
 
   FC        = ftn # ifort
-  LIBS      = -lfftw3_threads -lfftw3
+  LIBS      = -L ../thirdparty/fftw/lib -lfftw3_threads -lfftw3
   FCFLAGS   = -c -xHost # -pg
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive
   LIBFLAGS  = -crusv
