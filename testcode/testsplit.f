@@ -1,3 +1,14 @@
+      ! code to test the splitting of a do loop based on a costs array
+      ! for each iteration. For this code it fixes the number of procs
+      ! based on the parameter nprocs. It loops over the ranks and 
+      ! with a random integer based costs routine of length "length"
+      ! and with a max value set by "mult". Looking to make sure 
+      ! that the loop is split in a contiguous non-overlapping manner
+      ! with the cost for each block being more or less the same. The
+      ! algorithm used is simple - single pass, calculating an average
+      ! cost you iterate until your block contains the average cost or
+      ! less.
+
       ! Data to be shared.
       module params
 
