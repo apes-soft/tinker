@@ -50,10 +50,10 @@
       lend = lend - 1
 
       ! print a diagnostic message
-      print "(I3,A,I6,A,I6,A,I7,A,I7,A,I7,A,I8)",rank,",",
-     &      lstart,", ",lend,",",
-     &      partcost-tempcost,",",avgcost,",",
-     &      sum(cost(lstart:lend)),",",totcost
+!      print "(I3,A,I6,A,I6,A,I7,A,I7,A,I7,A,I8)",rank,",",
+!     &      lstart,", ",lend,",",
+!     &      partcost-tempcost,",",avgcost,",",
+!     &      sum(cost(lstart:lend)),",",totcost
 
       end subroutine 
 

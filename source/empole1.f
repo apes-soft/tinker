@@ -4863,11 +4863,9 @@ c
       real*8, allocatable, dimension(:,:) :: sumtemp1, sumtemp2
       real*8, dimension(3,3):: virtmp
       integer:: lstart, lend
-      integer:: errcode   ! temporary
       logical dorl,dorli
       character*6 mode
       external erfc
-      integer (kind=8):: t1, t2, tick
 
 
       ! zero out the intramolecular portion of the Ewald energy
@@ -4929,10 +4927,6 @@ c
 
       ! work out the local array limits for this process
       call splitlimits(lstart, lend, nelst)
-
-      errcode = 0
-
-      call system_clock(t1, tick)
 
       ! compute the real space portion of the Ewald summation
       do i = lstart, lend !1, npole
@@ -5764,14 +5758,6 @@ c
 
 !$OMP END DO
 !$OMP END PARALLEL
-
-      call system_clock(t2)
-      call flush(6)
-      call MPI_Barrier(MPI_COMM_WORLD, ierror)
-      print *,rank,",", (t2-t1)/real(tick,kind=8)
-      call flush(6)
-      call MPI_Barrier(MPI_COMM_WORLD, ierror)
-      STOP
 
       ! add local copies to global variables for OpenMP & 
       ! MPI calculations
