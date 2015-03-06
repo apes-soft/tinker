@@ -54,9 +54,9 @@ c
 
 
       ! Diagnostic print statement
-      print "(A,I3,A,I3,A)", "Process ",rank," out of ", nprocs,
-     &                       " started."
-      call flush(iout) ! only want this to remove internal buffering
+!     print "(A,I3,A,I3,A)", "Process ",rank," out of ", nprocs,
+!    &                       " started."
+!     call flush(iout) ! only want this to remove internal buffering
 
       ! set up the structure and molecular mechanics calculation
       call initial
