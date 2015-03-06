@@ -23,7 +23,11 @@ echo Using $nprocs processes.
 
 # Command line arguments to dynamic:
 #
-# keyFileBaseName NumberOfTimesteps TimeStep(fm) TimeBetweenOuputs(ps) Temp(K) Press(Atms)
+# keyFileBaseName NumberOfTimesteps \
+#                 TimeStep(fm) \
+#                 TimeBetweenOuputs(ps) \
+#                 Temp(K) \
+#                 Press(Atms)
 #
 
 # Possible arguments for mpirun:
@@ -52,7 +56,7 @@ elif [ `hostname` = "indy0" ]; then       # Indy (system at EPCC).
 
   mpirun -np $nprocs \
          -mca btl tcp,sm,self \
-         ../bin/dynamic dhfr 100 1.0 10.0 2 298.0
+         ../bin/dynamic dhfr 1 1.0 10.0 2 298.0
 
 else
 
