@@ -4857,14 +4857,11 @@ c
       real*8 gfr(7),gfri(6)
       real*8 gti(6),gtri(6)
       real*8 viro(3,3)
-      real*8, allocatable :: mscale(:)
-      real*8, allocatable :: pscale(:)
-      real*8, allocatable :: dscale(:)
-      real*8, allocatable :: uscale(:)
-      real*8, allocatable :: demo1(:,:)
-      real*8, allocatable :: demo2(:,:)
-      real*8, allocatable :: depo1(:,:)
-      real*8, allocatable :: depo2(:,:)
+      real*8, allocatable, dimension(:) :: mscale, pscale, dscale
+      real*8, allocatable, dimension(:) :: uscale
+      real*8, allocatable, dimension(:,:) :: demo1, demo2, depo1, depo2
+      real*8, allocatable, dimension(:,:) :: sumtemp1, sumtemp2
+      real*8, dimension(3,3):: virtmp
       integer:: lstart, lend
       integer:: errcode   ! temporary
       logical dorl,dorli
@@ -4993,10 +4990,11 @@ c
             dscale(ip14(j,ii)) = d4scale
             uscale(ip14(j,ii)) = u4scale
          end do
+
          ! loop over interacting electrostatic sites
          do kkk = 1, nelst(i) 
-            k  = elst(kkk,i)
-            kk = ipole(k)
+            k  = elst(kkk,i)     ! site number
+            kk = ipole(k)        ! atom number
             xr = x(kk) - x(ii)
             yr = y(kk) - y(ii)
             zr = z(kk) - z(ii)
@@ -5274,10 +5272,10 @@ c
                erli = 0.5d0*(rr3*(gli(1)+gli(6))*psc3
      &                   + rr5*(gli(2)+gli(7))*psc5
      &                   + rr7*gli(3)*psc7)
-               e = e - erl * (1.0d0-mscale(kk))
-               ei = ei - erli
-               e = f * e
-               ei = f * ei
+               e   = e - erl * (1.0d0-mscale(kk))
+               ei  = ei - erli
+               e   = f * e
+               ei  = f * ei
                emo = emo + e
                epo = epo + ei
 
@@ -5293,7 +5291,7 @@ c
                end if
 
                ! set flags to compute components without screening
-               dorl = .false.
+               dorl  = .false.
                dorli = .false.
                if (mscale(kk) .ne. 1.0d0)  dorl = .true.
                if (psc3 .ne. 0.0d0)  dorli = .true.
@@ -5575,11 +5573,11 @@ c
                end if
 
                ! get the induced torque with screening
-               gti(2) = 0.5d0 * bn(2) * (sci(4)+scip(4))
-               gti(3) = 0.5d0 * bn(2) * (sci(3)+scip(3))
-               gti(4) = gfi(4)
-               gti(5) = gfi(5)
-               gti(6) = gfi(6)
+               gti(2)  = 0.5d0 * bn(2) * (sci(4)+scip(4))
+               gti(3)  = 0.5d0 * bn(2) * (sci(3)+scip(3))
+               gti(4)  = gfi(4)
+               gti(5)  = gfi(5)
+               gti(6)  = gfi(6)
                ttm2i(1) = -0.5d0*bn(1)*(dixuk(1)+dixukp(1))
      &                       + gti(2)*dixr(1) - gti(5)*rxqir(1)
      &                       + 0.5d0*gti(4)*(ukxqir(1)+rxqiuk(1)
@@ -5607,11 +5605,11 @@ c
 
                ! get the induced torque without screening
                if (dorli) then
-                  gtri(2) = 0.5d0 * rr5 * (sci(4)*psc5+scip(4)*dsc5)
-                  gtri(3) = 0.5d0 * rr5 * (sci(3)*psc5+scip(3)*dsc5)
-                  gtri(4) = gfri(4)
-                  gtri(5) = gfri(5)
-                  gtri(6) = gfri(6)
+                  gtri(2)   = 0.5d0 * rr5 * (sci(4)*psc5+scip(4)*dsc5)
+                  gtri(3)   = 0.5d0 * rr5 * (sci(3)*psc5+scip(3)*dsc5)
+                  gtri(4)   = gfri(4)
+                  gtri(5)   = gfri(5)
+                  gtri(6)   = gfri(6)
                   ttm2ri(1) = -rr3*(dixuk(1)*psc3+dixukp(1)*dsc3)*0.5d0
      &                           + gtri(2)*dixr(1) - gtri(5)*rxqir(1)
      &                           + gtri(4)*((ukxqir(1)+rxqiuk(1))*psc5
@@ -5640,11 +5638,11 @@ c
 
                ! handle the case where scaling is used
                do j = 1, 3
-                  ftm2(j) = f * (ftm2(j)-(1.0d0-mscale(kk))*ftm2r(j))
+                  ftm2(j)  = f * (ftm2(j)-(1.0d0-mscale(kk))*ftm2r(j))
                   ftm2i(j) = f * (ftm2i(j)-ftm2ri(j))
-                  ttm2(j) = f * (ttm2(j)-(1.0d0-mscale(kk))*ttm2r(j))
+                  ttm2(j)  = f * (ttm2(j)-(1.0d0-mscale(kk))*ttm2r(j))
                   ttm2i(j) = f * (ttm2i(j)-ttm2ri(j))
-                  ttm3(j) = f * (ttm3(j)-(1.0d0-mscale(kk))*ttm3r(j))
+                  ttm3(j)  = f * (ttm3(j)-(1.0d0-mscale(kk))*ttm3r(j))
                   ttm3i(j) = f * (ttm3i(j)-ttm3ri(j))
                end do
 
@@ -5775,21 +5773,66 @@ c
       call MPI_Barrier(MPI_COMM_WORLD, ierror)
       STOP
 
-      ! add local copies to global variables for OpenMP calculation
-      em = em + emo
-      ep = ep + epo
-      eintra = eintrao
-      do i = 1, n
-         do j = 1, 3
-            dem(j,i) = dem(j,i) + demo1(j,i) + demo2(j,i)
-            dep(j,i) = dep(j,i) + depo1(j,i) + depo2(j,i)
-         end do
-      end do
-      do i = 1, 3
-         do j = 1, 3
-            vir(j,i) = vir(j,i) + viro(j,i)
-         end do
-      end do
+      ! add local copies to global variables for OpenMP & 
+      ! MPI calculations
+      call MPI_Allreduce(emo, em, 1, MPI_DOUBLE_PRECISION,
+     &                   MPI_SUM, ierror)
+      call MPI_Allreduce(epo, ep, 1, MPI_DOUBLE_PRECISION,
+     &                   MPI_SUM, ierror)
+      call MPI_Allreduce(eintrao, eintra, 1, MPI_DOUBLE_PRECISION,
+     &                   MPI_SUM, ierror)
+
+      !em = em + emo
+      !ep = ep + epo
+      !eintra = eintrao
+
+      ! allocate a temporary to collect the sum
+      allocate(sumtemp1(3,n), sumtemp2(3,n))
+      sumtemp1 = 0.0d0
+      sumtemp2 = 0.0d0
+
+      ! gather the data for demo1 and demo2
+      call MPI_Allreduce(demo1, sumtemp1, 3*n, MPI_DOUBLE_PRECISION,
+     &                   MPI_SUM, ierror)
+      call MPI_Allreduce(demo2, sumtemp2, 3*n, MPI_DOUBLE_PRECISION,
+     &                   MPI_SUM, ierror)
+
+      ! do the sum
+      dem = dem + sumtemp1 + sumtemp2
+
+      ! reset the sum auxiliaries
+      sumtemp1 = 0.0d0
+      sumtemp2 = 0.0d0
+
+      ! gather the data for demo1 and demo2
+      call MPI_Allreduce(depo1, sumtemp1, 3*n, MPI_DOUBLE_PRECISION,
+     &                   MPI_SUM, ierror)
+      call MPI_Allreduce(depo2, sumtemp2, 3*n, MPI_DOUBLE_PRECISION,
+     &                   MPI_SUM, ierror)
+
+      dep = dep + sumtemp1 + sumtemp2
+
+      ! Can now deallocate the temporary sum variables
+      deallocate(sumtemp1, sumtemp2)
+
+      !do i = 1, n
+      !   do j = 1, 3
+      !      dem(j,i) = dem(j,i) + demo1(j,i) + demo2(j,i)
+      !      dep(j,i) = dep(j,i) + depo1(j,i) + depo2(j,i)
+      !   end do
+      !end do
+
+      virtmp = 0.0d0
+      call MPI_Allreduce(viro, virtmp, 9, MPI_DOUBLE_PRECISION,
+     &                   MPI_SUM, ierror)
+
+      vir = vir + virtmp
+
+      !do i = 1, 3
+      !   do j = 1, 3
+      !      vir(j,i) = vir(j,i) + viro(j,i)
+      !   end do
+      !end do
 
       !  perform deallocation of some local arrays
       deallocate (mscale)
