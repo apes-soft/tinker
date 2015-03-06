@@ -29,6 +29,7 @@ c
       use limits
       use mdstuf
       use molcul
+      use mpiparams
       use units
       use usage
       use warp
@@ -91,7 +92,7 @@ c
 c
 c     print energy, temperature and pressure for current step
 c
-      if (verbose) then
+      if (verbose.and.rank.eq.0) then
          if (modstep .eq. 1) then
             if (use_bounds .and. integrate.ne.'STOCHASTIC') then
                write (iout,10)

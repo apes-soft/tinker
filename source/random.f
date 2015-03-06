@@ -28,6 +28,7 @@ c
       use inform
       use iounit
       use keys
+      use mpiparams
       implicit none
       integer im1,ia1,iq1,ir1
       integer im2,ia2,iq2,ir2
@@ -92,7 +93,7 @@ c
 c
 c     print the value used for the random number seed
 c
-         if (verbose) then
+         if (verbose.and.rank.eq.0) then
             write (iout,20)  seed
    20       format (/,' Random Number Generator Initialized',
      &                 ' with SEED :',3x,i12)

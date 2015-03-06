@@ -1308,7 +1308,7 @@ kcharge.o: atomid.o atoms.o charge.o chgpot.o couple.o fields.o inform.o iounit.
 kchrge.o: sizes.o
 kdipol.o:
 kdipole.o: atmlst.o atoms.o bndstr.o couple.o dipole.o inform.o iounit.o kdipol.o keys.o potent.o sizes.o
-kewald.o: atoms.o bound.o boxes.o chunks.o ewald.o fft.o inform.o iounit.o keys.o limits.o math.o openmp.o pme.o sizes.o
+kewald.o: atoms.o bound.o boxes.o chunks.o ewald.o fft.o inform.o iounit.o keys.o limits.o math.o mpiparams.o openmp.o pme.o sizes.o
 kextra.o:
 keys.o:
 kgeom.o: atomid.o atoms.o bound.o couple.o group.o iounit.o keys.o molcul.o potent.o restrn.o sizes.o
@@ -1359,7 +1359,7 @@ maxwell.o: units.o
 mdinit.o: atomid.o atoms.o bath.o bound.o couple.o files.o freeze.o group.o inform.o iounit.o keys.o mdstuf.o molcul.o moldyn.o mpiparams.o mpole.o rgddyn.o rigid.o sizes.o stodyn.o units.o uprior.o usage.o
 mdrest.o: atomid.o atoms.o bound.o group.o inform.o iounit.o mdstuf.o moldyn.o rgddyn.o sizes.o units.o
 mdsave.o: atomid.o atoms.o bound.o boxes.o energi.o files.o group.o inform.o iounit.o mdstuf.o moldyn.o mpole.o output.o polar.o potent.o rgddyn.o sizes.o socket.o titles.o units.o
-mdstat.o: atoms.o bath.o bound.o boxes.o inform.o inter.o iounit.o limits.o mdstuf.o molcul.o sizes.o units.o usage.o warp.o
+mdstat.o: atoms.o bath.o bound.o boxes.o inform.o inter.o iounit.o limits.o mdstuf.o molcul.o mpiparams.o sizes.o units.o usage.o warp.o
 mdstuf.o:
 mechanic.o: inform.o iounit.o limits.o mpiparams.o potent.o vdwpot.o
 merck.o: sizes.o
@@ -1456,7 +1456,7 @@ qmstuf.o:
 qrfact.o:
 quatfit.o: align.o sizes.o
 radial.o: argue.o atomid.o atoms.o bound.o boxes.o files.o inform.o iounit.o limits.o math.o molcul.o potent.o sizes.o
-random.o: inform.o iounit.o keys.o math.o
+random.o: inform.o iounit.o keys.o math.o mpiparams.o
 rattle.o: atomid.o atoms.o freeze.o group.o inform.o iounit.o moldyn.o sizes.o units.o usage.o virial.o
 readdyn.o: atoms.o boxes.o files.o group.o iounit.o mdstuf.o moldyn.o mpiparams.o rgddyn.o sizes.o
 readgau.o: ascii.o iounit.o qmstuf.o sizes.o units.o

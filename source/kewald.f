@@ -28,6 +28,7 @@ c
       use iounit
       use keys
       use limits
+      use mpiparams
       use openmp
       use pme
       implicit none
@@ -182,7 +183,7 @@ c
 c
 c     print a message listing some of the Ewald parameters
 c
-      if (verbose) then
+      if (verbose.and.rank.eq.0) then
          write (iout,50)  aewald,nfft1,nfft2,nfft3,bsorder
    50    format (/,' Smooth Particle Mesh Ewald Parameters :',
      &           //,4x,'Ewald Coefficient',7x,'PME Grid',
