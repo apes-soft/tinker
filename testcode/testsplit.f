@@ -13,7 +13,7 @@
       ! routine in a bigger code.
       module params
 
-      integer, parameter:: nprocs=32
+      integer, parameter:: nprocs=8
       integer :: rank
 
       end module params
@@ -38,7 +38,7 @@
 
       end interface
 
-      integer, parameter:: length=32000     ! length of the test array
+      integer, parameter:: length=23558     ! length of the test array
       integer, parameter:: mult=1000      ! max val for simulated data
       integer, dimension(length):: idata  ! integer data for the cost
       real, dimension(length):: rdata     ! auxiliary array to calc idata
@@ -76,18 +76,14 @@
       integer:: partcost                         ! partial cost
       integer:: tempcost                         ! temporary var
 
-      ! total cost
-      totcost = sum(cost)
+      totcost = sum(cost)        ! total cost
+      avgcost = totcost/nprocs   ! average cost
 
-      ! average cost (integer based)
-      avgcost = totcost/nprocs
+      lstart   = 1               ! loop start
+      partcost = 0               ! partial cost
 
-      ! initialise the loop start and partial cost
-      lstart   = 1
-      partcost = 0
-
-      ! calculate the lower bound for the loop
-      do while(partcost.lt.rank*avgcost) 
+      ! calculate the lower bound of the loop
+      do while(partcost.lt.(rank*avgcost)) 
          partcost = partcost + cost(lstart)
          lstart   = lstart + 1
       end do
@@ -97,18 +93,25 @@
  
       ! calculate the upper bound of the loop
       lend = lstart
-      do while(partcost.lt.((rank+1)*avgcost).and.lend.le.size(cost))
-         partcost = partcost + cost(lend)
-         lend     = lend + 1
-      end do
-      ! over counted by one
-      lend = lend - 1
+      if(rank.lt.nprocs-1) then
+         do while(partcost.lt.((rank+1)*avgcost))
+            partcost = partcost + cost(lend)
+            lend     = lend + 1
+         end do
+         ! over counted by one
+         lend = lend - 1
+       else
+         ! last proc gets whatever remains
+         lend     = size(cost)
+         partcost = sum(cost)
+      end if
 
       ! print a diagnostic message
-      print "(I3,A,I6,A,I6,A,I7,A,I7,A,I7,A,I8,A,I7)",rank,": ",
-     &      lstart," -> ",lend," of ",size(cost),", cost = ",
-     &      partcost-tempcost," Actual: ",
-     &      sum(cost(lstart:lend)),"/",totcost,"; avg ",avgcost
+      print "(I3,A,I6,A,I6,A,I8,A,I8,A,I8,A,I8,A,I6)",rank,",",
+     &      lstart,", ",lend,",",
+     &      partcost-tempcost,",",avgcost,",",
+     &      sum(cost(lstart:lend)),",",totcost,",",size(cost)
+
 
       end subroutine dolimits
 
