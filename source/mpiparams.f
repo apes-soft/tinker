@@ -43,7 +43,7 @@
       ! calculate the upper bound of the loop
       lend = lstart
       if(rank.lt.nprocs-1) then
-         do while(partcost.lt.((rank+1)*avgcost).and.lend)
+         do while(partcost.lt.((rank+1)*avgcost))
             partcost = partcost + cost(lend)
             lend     = lend + 1
          end do
@@ -56,10 +56,10 @@
       end if
 
       ! print a diagnostic message
-      print "(I3,A,I6,A,I6,A,I7,A,I7,A,I7,A,I8,A,I6)",rank,",",
-     &      lstart,", ",lend,",",
-     &      partcost-tempcost,",",avgcost,",",
-     &      sum(cost(lstart:lend)),",",totcost,",",size(cost)
+!      print "(I3,A,I6,A,I6,A,I7,A,I7,A,I7,A,I8,A,I6)",rank,",",
+!     &      lstart,", ",lend,",",
+!     &      partcost-tempcost,",",avgcost,",",
+!     &      sum(cost(lstart:lend)),",",totcost,",",size(cost)
 
       end subroutine 
 
