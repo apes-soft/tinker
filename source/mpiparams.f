@@ -42,18 +42,24 @@
  
       ! calculate the upper bound of the loop
       lend = lstart
-      do while(partcost.lt.((rank+1)*avgcost).and.lend.le.size(cost))
-         partcost = partcost + cost(lend)
-         lend     = lend + 1
-      end do
-      ! over counted by one
-      lend = lend - 1
+      if(rank.lt.nprocs-1) then
+         do while(partcost.lt.((rank+1)*avgcost).and.lend)
+            partcost = partcost + cost(lend)
+            lend     = lend + 1
+         end do
+         ! over counted by one
+         lend = lend - 1
+       else
+         ! last proc gets whatever remains
+         lend     = size(cost)
+         partcost = sum(cost)
+      end if
 
       ! print a diagnostic message
-!      print "(I3,A,I6,A,I6,A,I7,A,I7,A,I7,A,I8)",rank,",",
-!     &      lstart,", ",lend,",",
-!     &      partcost-tempcost,",",avgcost,",",
-!     &      sum(cost(lstart:lend)),",",totcost
+      print "(I3,A,I6,A,I6,A,I7,A,I7,A,I7,A,I8,A,I6)",rank,",",
+     &      lstart,", ",lend,",",
+     &      partcost-tempcost,",",avgcost,",",
+     &      sum(cost(lstart:lend)),",",totcost,",",size(cost)
 
       end subroutine 
 
