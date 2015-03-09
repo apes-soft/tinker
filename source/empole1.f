@@ -4862,10 +4862,12 @@ c
       real*8, allocatable, dimension(:,:) :: demo1, demo2, depo1, depo2
       real*8, allocatable, dimension(:,:) :: sumtemp1, sumtemp2
       real*8, dimension(3,3):: virtmp
+      real*8 sumtmp
       integer:: lstart, lend
       logical dorl,dorli
       character*6 mode
       external erfc
+      integer (kind=8):: tick, tock, rate
 
 
       ! zero out the intramolecular portion of the Ewald energy
@@ -4924,6 +4926,8 @@ c
 !$OMP& firstprivate(mscale,pscale,dscale,uscale)
 !$OMP DO reduction(+:emo,epo,eintrao,demo1,demo2,depo1,depo2,viro)
 !$OMP& schedule(guided)
+
+      call system_clock(tick, rate)
 
       ! work out the local array limits for this process
       call splitlimits(lstart, lend, nelst)
@@ -5761,12 +5765,19 @@ c
 
       ! add local copies to global variables for OpenMP & 
       ! MPI calculations
-      call MPI_Allreduce(emo, em, 1, MPI_DOUBLE_PRECISION,
+      sumtmp = 0.0d0
+      call MPI_Allreduce(emo, sumtmp, 1, MPI_DOUBLE_PRECISION,
      &                   MPI_SUM, ierror)
-      call MPI_Allreduce(epo, ep, 1, MPI_DOUBLE_PRECISION,
+      em = em + sumtmp
+
+      sumtmp = 0.0d0
+      call MPI_Allreduce(epo, sumtmp, 1, MPI_DOUBLE_PRECISION,
      &                   MPI_SUM, ierror)
+      ep = ep + sumtmp
+
       call MPI_Allreduce(eintrao, eintra, 1, MPI_DOUBLE_PRECISION,
      &                   MPI_SUM, ierror)
+      !eintra = eintra + sumtmp
 
       !em = em + emo
       !ep = ep + epo
@@ -5819,6 +5830,11 @@ c
       !      vir(j,i) = vir(j,i) + viro(j,i)
       !   end do
       !end do
+
+      call system_clock(tock)
+ 
+      print *,rank,(tock-tick)/real(rate,kind=8)
+      call flush(6)
 
       !  perform deallocation of some local arrays
       deallocate (mscale)
