@@ -234,6 +234,7 @@ endif
 ##  Should not be Necessary to Change Things Below this Point  ##
 #################################################################
 
+# Executable objects
 XOBJS = alchemy.o \
         analyze.o \
         anneal.o \
@@ -831,7 +832,7 @@ EXEFILES = alchemy.x \
 # $? name of the prerequisites newer than the target.
 
 %.x: %.o libtinker.a
-	${FC} ${LINKFLAGS} -o $@ $<  -L . -ltinker ${LIBS}
+	${FC} ${LINKFLAGS} -o $@ $?  -L . -ltinker ${LIBS}
 
 all: ${EXEFILES}
 
