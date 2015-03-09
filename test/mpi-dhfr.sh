@@ -56,7 +56,7 @@ elif [ `hostname` = "indy0" ]; then       # Indy (system at EPCC).
 
   mpirun -np $nprocs \
          -mca btl tcp,sm,self \
-         ../bin/dynamic dhfr 1 1.0 10.0 2 298.0
+         ../bin/dynamic dhfr 2 1.0 10.0 2 298.0
 
 else
 
@@ -67,7 +67,7 @@ echo
 
   mpirun -np $nprocs \
          -mca btl tcp,sm,self \
-         ../bin/dynamic dhfr 100 1.0 10.0 2 298.0
+         ../bin/dynamic dhfr 2 1.0 10.0 2 298.0
 
 
 fi
