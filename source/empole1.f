@@ -5821,7 +5821,7 @@ c
 
       virtmp = 0.0d0
       call MPI_Allreduce(viro, virtmp, 9, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, ierror)
+     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
 
       vir = vir + virtmp
 
