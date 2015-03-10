@@ -5767,16 +5767,16 @@ c
       ! MPI calculations
       sumtmp = 0.0d0
       call MPI_Allreduce(emo, sumtmp, 1, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, ierror)
+     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
       em = em + sumtmp
 
       sumtmp = 0.0d0
       call MPI_Allreduce(epo, sumtmp, 1, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, ierror)
+     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
       ep = ep + sumtmp
 
       call MPI_Allreduce(eintrao, eintra, 1, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, ierror)
+     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
       !eintra = eintra + sumtmp
 
       !em = em + emo
@@ -5790,9 +5790,9 @@ c
 
       ! gather the data for demo1 and demo2
       call MPI_Allreduce(demo1, sumtemp1, 3*n, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, ierror)
+     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
       call MPI_Allreduce(demo2, sumtemp2, 3*n, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, ierror)
+     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
 
       ! do the sum
       dem = dem + sumtemp1 + sumtemp2
@@ -5803,9 +5803,9 @@ c
 
       ! gather the data for demo1 and demo2
       call MPI_Allreduce(depo1, sumtemp1, 3*n, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, ierror)
+     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
       call MPI_Allreduce(depo2, sumtemp2, 3*n, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, ierror)
+     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
 
       dep = dep + sumtemp1 + sumtemp2
 
