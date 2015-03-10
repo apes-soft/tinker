@@ -101,7 +101,7 @@ ifeq ($(COMPARCH),GenericGfortran)
   FC        = mpif90
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3
   FCFLAGS   = -Wall -c
-  OPTFLAGS  = -g #-O3 -ffast-math
+  OPTFLAGS  = -O3 -ffast-math
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc
