@@ -1,0 +1,12 @@
+# Command line arguments to dynamic:
+#
+# keyFileBaseName NumberOfTimesteps TimeStep(fm) TimeBetweenOuputs(ps) Temp(K) 
+# Press(Atms)
+#
+
+# Need to take care of slurm
+export SLURM_JOBID=
+
+time mpirun -np 1 \
+            amplxe-cl -r my_result -collect hotspots -- \
+            ../bin/dynamic dhfr 2 1.0 1.0 2 300.0
