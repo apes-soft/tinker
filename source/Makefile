@@ -75,6 +75,11 @@ else ifeq (eslogin,$(findstring eslogin,$(HOSTNAME)))  # ARCHER front end
 
 else ifeq ($(HOSTNAME),phi.hydra)     # EPCC phi system on hydra
 
+   # May need to set an explicit variable:
+   #  
+   # export I_MPI_F90=ifort
+   #
+   export I_MPI_F90=ifort
    COMPARCH=LinuxIntel
 
 else ifeq ($(HOSTNAME),mbp-ma.local)  # MA's Macbook pro
@@ -113,7 +118,7 @@ else ifeq ($(COMPARCH),GenericGfortranOpenMP)
   ##  Compiler: GNU gfortran
   ##  Parallel: OpenMP
   FC        = mpif90
-  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3 #-lfftw3_omp -lfftw3
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
   FCFLAGS   = -c #-Wall
   OPTFLAGS  = -g #-ffast-math -O3 #-fopenmp
   LIBFLAGS  = -crusv
