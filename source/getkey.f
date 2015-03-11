@@ -126,9 +126,9 @@ c
       ! broadcast the number of lines in the key file to other procs
       call MPI_Bcast(nkey, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierror)
 
-      ! broadcast the entire contents of the keyline array to other procs
+      ! broadcast the contents of the keyline array to other procs
       call MPI_Bcast(keyline, maxkey*120, MPI_CHARACTER, 0,
-     &            MPI_COMM_WORLD, ierror)
+     &               MPI_COMM_WORLD, ierror)
 
       ! set number of threads for OpenMP parallelization
       do i = 1, nkey
