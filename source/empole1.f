@@ -4867,7 +4867,7 @@ c
       logical dorl,dorli
       character*6 mode
       external erfc
-      integer (kind=8):: tick, tock, rate
+      !integer (kind=8):: tick, tock, rate
 
 
       ! zero out the intramolecular portion of the Ewald energy
@@ -4927,7 +4927,7 @@ c
 !$OMP DO reduction(+:emo,epo,eintrao,demo1,demo2,depo1,depo2,viro)
 !$OMP& schedule(guided)
 
-      call system_clock(tick, rate)
+      !call system_clock(tick, rate)
 
       ! work out the local array limits for this process
       call splitlimits(lstart, lend, nelst)
@@ -5834,10 +5834,10 @@ c
       !   end do
       !end do
 
-      call system_clock(tock)
+      !call system_clock(tock)
  
-      print *,rank,(tock-tick)/real(rate,kind=8)
-      call flush(6)
+      !print *,rank,(tock-tick)/real(rate,kind=8)
+      !call flush(6)
 
       !  perform deallocation of some local arrays
       deallocate (mscale)
