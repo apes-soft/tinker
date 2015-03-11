@@ -4934,10 +4934,10 @@ c
 
       ! compute the real space portion of the Ewald summation
       do i = lstart, lend !1, npole
-         ii    = ipole(i)   ! number of the atom for multipole site 
-         pdi   = pdamp(i)   ! value of polarizability scale factor
+         ii    = ipole(i)   ! atom number of multipole site 
+         pdi   = pdamp(i)   ! polarizability value scale factor
          pti   = thole(i)   ! polarizability damping value
-         ci    = rpole(1,i) ! multipoles rotated to global coordinate system
+         ci    = rpole(1,i) ! multipoles rotated to global coord system
          di(1) = rpole(2,i)
          di(2) = rpole(3,i)
          di(3) = rpole(4,i)
@@ -5474,7 +5474,8 @@ c
                ftm2i(2) = ftm2i(2) - fridmp(2) - findmp(2)
                ftm2i(3) = ftm2i(3) - fridmp(3) - findmp(3)
 
-               ! correction to convert mutual to direct polarization force
+               ! correction to convert mutual to direct 
+               ! polarization force
                if (poltyp .eq. 'DIRECT') then
                   gfd = 0.5d0 * (bn(2)*scip(2)
      &                     - bn(3)*(scip(3)*sci(4)+sci(3)*scip(4)))
@@ -5644,7 +5645,8 @@ c
                   ttm3i(j) = f * (ttm3i(j)-ttm3ri(j))
                end do
 
-               ! increment gradient due to force and torque on first site
+               ! increment gradient due to force and torque on 
+               ! first site
                demo1(1,ii) = demo1(1,ii) + ftm2(1)
                demo1(2,ii) = demo1(2,ii) + ftm2(2)
                demo1(3,ii) = demo1(3,ii) + ftm2(3)
@@ -5653,7 +5655,8 @@ c
                depo1(3,ii) = depo1(3,ii) + ftm2i(3)
                call torque3 (i,ttm2,ttm2i,frcxi,frcyi,frczi,demo1,depo1)
 
-               ! increment gradient due to force and torque on second site
+               ! increment gradient due to force and torque on 
+               ! second site
                demo2(1,kk) = demo2(1,kk) - ftm2(1)
                demo2(2,kk) = demo2(2,kk) - ftm2(2)
                demo2(3,kk) = demo2(3,kk) - ftm2(3)
