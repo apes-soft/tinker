@@ -131,9 +131,9 @@ c
 
       ! apply any reduction factor to the atomic coordinates
       do k = 1, nvdw
-         i   = ivdw(k)    ! atom active at the vdw site 
-         iv  = ired(i)    ! attached atom from which red factor is applied
-         rdn = kred(i)    ! reduction factor
+         i   = ivdw(k)  ! atom active at the vdw site 
+         iv  = ired(i)  ! attached atom from which red factor is applied
+         rdn = kred(i)  ! reduction factor
          xred(i) = rdn*(x(i)-x(iv)) + x(iv)
          yred(i) = rdn*(y(i)-y(iv)) + y(iv)
          zred(i) = rdn*(z(i)-z(iv)) + z(iv)
@@ -196,7 +196,7 @@ c
                   end if
                   eps = eps * vscale(k)
 
-                  ! get the energy and gradient, via soft core if necessary
+                  ! get energy and gradient, via soft core if necessary
                   if ((muti .and. .not.mutk) .or.
      &                (mutk .and. .not.muti)) then
                      rho     = rik / rv
@@ -250,7 +250,8 @@ c
                   dedy = de * yr
                   dedz = de * zr
 
-                  ! increment the total van der Waals energy and derivatives
+                  ! increment the total van der Waals energy 
+                  ! and derivatives
                   ev = ev + e
                   if (i .eq. iv) then
                      dev(1,i) = dev(1,i) + dedx
@@ -371,7 +372,8 @@ c
                   call imager (xr,yr,zr,j)
                   rik2 = xr*xr + yr*yr + zr*zr
 
-                  ! check for an interaction distance less than the cutoff
+                  ! check for an interaction distance less 
+                  ! than the cutoff
                   if (rik2 .le. off2) then
                      rik = sqrt(rik2)
                      rv  = radmin(kt,it)
@@ -386,7 +388,8 @@ c
                         end if
                      end if
 
-                     ! get the energy and gradient, via soft core if necessary
+                     ! get the energy and gradient, via soft core 
+                     ! if necessary
                      if ((muti .and. .not.mutk) .or.
      &                   (mutk .and. .not.muti)) then
                         rho = rik / rv
@@ -428,19 +431,22 @@ c
                         e = e * taper
                      end if
 
-                     ! scale the interaction based on its group membership
+                     ! scale the interaction based on its 
+                     ! group membership
                      if (use_group) then
                         e  = e * fgrp
                         de = de * fgrp
                      end if
 
-                     ! find the chain rule terms for derivative components
+                     ! find the chain rule terms for derivative 
+                     ! components
                      de   = de / rik
                      dedx = de * xr
                      dedy = de * yr
                      dedz = de * zr
 
-                     ! increment the total van der Waals energy and derivatives
+                     ! increment the total van der Waals energy 
+                     ! and derivatives
                      if (i .eq. k)  e = 0.5d0 * e
                      ev = ev + e
                      if (i .eq. iv) then
