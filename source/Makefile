@@ -46,11 +46,11 @@ LINKDIR = /usr/local/bin
 # below. If you are not clear what these mean look below under the
 # appropriate flag to see in detail what they mean.
 #
-# If none specified the default is: GenericGfortranOpenMP
+# If none specified the default is: MPIGenericGfortranOpenMP
 
-#COMPARCH=GenericGfortran
-#COMPARCH=GenericGfortranOpenMP
-COMPARCH=LinuxIntel
+#COMPARCH=MPIGenericGfortran
+#COMPARCH=MPIGenericGfortranOpenMP
+COMPARCH=MPILinuxIntel
 #COMPARCH=ARCHER
 #COMPARCH=LinuxIntelOpenMP
 #COMPARCH=MacIntel
@@ -67,7 +67,7 @@ HOSTNAME:=$(shell hostname)
 
 ifeq ($(HOSTNAME),ultra)              # EPCC ultra system
 
-   COMPARCH=LinuxIntel
+   COMPARCH=MPILinuxIntel
 
 else ifeq (eslogin,$(findstring eslogin,$(HOSTNAME)))  # ARCHER front end
 
@@ -75,29 +75,24 @@ else ifeq (eslogin,$(findstring eslogin,$(HOSTNAME)))  # ARCHER front end
 
 else ifeq ($(HOSTNAME),phi.hydra)     # EPCC phi system on hydra
 
-   # May need to set an explicit variable:
-   #  
-   # export I_MPI_F90=ifort
-   #
-   export I_MPI_F90=ifort
-   COMPARCH=LinuxIntel
+   COMPARCH=MPILinuxIntel
 
 else ifeq ($(HOSTNAME),mbp-ma.local)  # MA's Macbook pro
 
-   COMPARCH=GenericGfortran
+   COMPARCH=MPIGenericGfortran
 
 else ifeq ($(HOSTNAME),mbp-ma.lan)    # MA's Macbook pro
 
-   COMPARCH=GenericGfortran
+   COMPARCH=MPIGenericGfortran
 
 else ifeq ($(HOSTNAME),indy0)        # EPCC indy system
 
-   COMPARCH=GenericGfortran
+   COMPARCH=MPIGenericGfortran
 
 endif
 
 
-ifeq ($(COMPARCH),GenericGfortran)
+ifeq ($(COMPARCH),MPIGenericGfortran)
 
   ##  Machine:  Generic Linux or Macintosh
   ##  CPU Type: Intel x86 Compatibles
@@ -111,7 +106,7 @@ ifeq ($(COMPARCH),GenericGfortran)
   RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc
 
-else ifeq ($(COMPARCH),GenericGfortranOpenMP)
+else ifeq ($(COMPARCH),MPIGenericGfortranOpenMP)
 
   ##  Machine:  Generic Linux or Macintosh OS X
   ##  CPU Type: Intel x86 Compatible
@@ -135,7 +130,7 @@ else ifeq ($(COMPARCH),ARCHER)
   RANLIB    = ranlib
   LINKFLAGS = -static-libgcc -static-intel  # -pg
 
-else ifeq ($(COMPARCH),LinuxIntel)
+else ifeq ($(COMPARCH),MPILinuxIntel)
 
   ##  Machine:  Generic Linux
   ##  CPU Type: Intel x86 Compatible (also AMD)
@@ -143,15 +138,17 @@ else ifeq ($(COMPARCH),LinuxIntel)
   ##  Compiler: Intel Fortran for Linux 14.0
 
   # May have to set one of the following environment
-  # variables to get it to use the Intel compiler.
+  # variables to get it to use the Intel compiler if
+  # mpif90 is used as opposed to the Intel mpiifort
+  # wrapper script.
   #
   # export I_MPI_F77=ifort
   # export I_MPI_F90=ifort
   #
 
-  FC        = mpif90
+  FC        = mpiifort
   LIBS      =
-  FCFLAGS   = -c -xHost
+  FCFLAGS   = -c -xHost -warn all,nointerfaces
   OPTFLAGS  = -g #-O3 -no-ipo -no-prec-div -recursive
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
