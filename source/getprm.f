@@ -111,7 +111,7 @@ c
         ! broadcast the number of lines in the prm file
         call MPI_Bcast(nprm, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierror)
 
-        ! broadcast the entire contents of the prmline array to other procs
+        ! broadcast contents of the prmline array to other procs
         call MPI_Bcast(prmline, maxprm*120, MPI_CHARACTER, 0,
      &                 MPI_COMM_WORLD, ierror)
 
@@ -123,7 +123,7 @@ c
         ! receive the number of lines in the prm file
         call MPI_Bcast(nprm, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierror)
  
-        ! broadcast the entire contents of the prmline array to other procs
+        ! receive contents of the prmline array to other procs
         call MPI_Bcast(prmline, maxprm*120, MPI_CHARACTER, 0,
      &                 MPI_COMM_WORLD, ierror)
 
