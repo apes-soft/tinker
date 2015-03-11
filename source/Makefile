@@ -836,6 +836,9 @@ EXEFILES = alchemy.x \
 %.x: %.o libtinker.a
 	${FC} ${LINKFLAGS} -o $@ $?  -L . -ltinker ${LIBS}
 
+# Targets that do not rely on actual file dependencies
+.PHONY: all install clean listing rename create_links remove_links
+
 all: ${EXEFILES}
 
 install: rename
