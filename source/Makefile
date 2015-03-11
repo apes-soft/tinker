@@ -841,7 +841,7 @@ all: ${EXEFILES}
 install: rename
 
 clean:
-	rm -f *.o *.mod *.a *.x
+	rm -f *.o *.mod *.a *.x *__genmod.f90
 
 listing:
 	cat *.i *.f *.c > tinker.txt
