@@ -153,7 +153,7 @@ c
         end do
         quit = .false.
    80   continue
-        if (.not. opened)  close (unit=ixyz) ! CLOSED HERE AND FROM getxyz.f
+        if (.not. opened)  close (unit=ixyz) ! CLOSED HERE & IN getxyz.f
 
         ! an error occurred in reading the coordinate file
         if (quit) then
@@ -220,7 +220,8 @@ c
       nmax = 0
       do i = 1, n
          nmax = max(tag(i),nmax)
-         do j = 1, n12(i)   ! MARIO - why is going through the neighbours necessary?
+         ! MARIO - why is going through the neighbours necessary?
+         do j = 1, n12(i)   
             nmax = max(i12(j,i),nmax)
          end do
       end do
