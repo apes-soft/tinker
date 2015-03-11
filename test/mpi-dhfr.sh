@@ -58,6 +58,14 @@ elif [ `hostname` = "indy0" ]; then       # Indy (system at EPCC).
          -mca btl tcp,sm,self \
          ../bin/dynamic dhfr 2 1.0 10.0 2 298.0
 
+elif [ `hostname` = "phi.hydra" ]; then       # Indy (system at EPCC).
+
+  # Hack to bypass SLURM problems
+  export SLURM_JOBID=
+  # Run the code
+  mpirun -np $nprocs \
+         ../bin/dynamic dhfr 2 1.0 10.0 2 298.0
+
 else
 
 echo
