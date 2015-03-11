@@ -10,7 +10,7 @@
       integer:: rank   ! Process id
       integer:: nprocs ! Total number of processes involved
       integer:: ierror       ! Error flag required by MPI calls
-      integer, dimension(MPI_STATUS_SIZE):: status ! Status for MPI calls
+      integer, dimension(MPI_STATUS_SIZE):: status ! status for calls
 
       contains
 
