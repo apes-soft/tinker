@@ -39,6 +39,7 @@ thirdparty/
 *.exe
 *.o
 *.so
+*__genmod.f90
 
 ############
 # Packages #
