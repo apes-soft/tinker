@@ -25,6 +25,7 @@ c
       use iounit
       use katoms
       use keys
+      use mpiparams
       implicit none
       integer i,k,next
       integer cls,atn,lig
@@ -39,6 +40,7 @@ c
 c
 c     process keywords containing atom type parameters
 c
+
       header = .true.
       do i = 1, nkey
          next   = 1
@@ -90,6 +92,7 @@ c
 c
 c     transfer atom type values to individual atoms
 c
+
       do i = 1, n
          k = type(i)
          if (k .eq. 0) then
@@ -106,6 +109,7 @@ c
             valence(i) = ligand(k)
             story(i)   = describe(k)
          end if
+
       end do
 c
 c     process keywords containing atom types for specific atoms
@@ -140,11 +144,11 @@ c
                end if
                k = -k
                if (cls .eq. 0)  cls = k
-               class(k) = cls
-               name(k) = symb
-               story(k) = notice
-               atomic(k) = atn
-               mass(k) = wght
+               class(k)   = cls
+               name(k)    = symb
+               story(k)   = notice
+               atomic(k)  = atn
+               mass(k)    = wght
                valence(k) = lig
                if (.not. silent) then
                   write (iout,60)  k,cls,symb,notice,atn,wght,lig
