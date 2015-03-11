@@ -32,13 +32,16 @@ c
       character*120 record
       character*120 string
 
+
       ! Only get process 0 to read the parameter file and
       ! then broadcast the result to the other processes
       if(rank.eq.0) then 
 
+        ! set default to read from a prm file
+        useprm  = .true.
+
         ! set the default name for the parameter file
-         useprm  = .true.
-         prmfile = filename(1:leng)//'.prm'
+        prmfile = filename(1:leng)//'.prm'
 
         ! search the keyword list for the parameter filename
         do i = 1, nkey
@@ -108,6 +111,10 @@ c
            close (unit=iprm)
         end if
 
+        ! broadcast whether we are using a prm file
+        call MPI_Bcast(useprm, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, 
+     &                 ierror)
+
         ! broadcast the number of lines in the prm file
         call MPI_Bcast(nprm, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierror)
 
@@ -119,6 +126,10 @@ c
 
         ! initialize force field control and parameter values
         call initprm
+
+        ! fnd out whether we are using a prm file
+        call MPI_Bcast(useprm, 1, MPI_LOGICAL, 0, MPI_COMM_WORLD, 
+     &                 ierror)
 
         ! receive the number of lines in the prm file
         call MPI_Bcast(nprm, 1, MPI_INTEGER, 0, MPI_COMM_WORLD, ierror)
