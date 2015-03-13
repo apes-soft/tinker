@@ -932,6 +932,7 @@ c
       use group
       use inter
       use molcul
+      use mpiparams
       use mutant
       use neigh
       use shunt
@@ -963,16 +964,19 @@ c
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
       real*8 evo,eintero
-      real*8 viro(3,3)
+      real*8 viro(3,3),virotmp(3,3)
       real*8, allocatable :: xred(:)
       real*8, allocatable :: yred(:)
       real*8, allocatable :: zred(:)
       real*8, allocatable :: vscale(:)
       real*8, allocatable :: devo(:,:)
+      real*8, allocatable :: devotmp(:,:)
       logical proceed,usei
       logical muti,mutk
       character*6 mode
-
+      real *8 sumtmp
+      integer:: lstart, lend
+      integer (kind=8):: tick, tock, rate
 
       ! zero out the van der Waals energy and first derivatives
       ev  = 0.0d0
@@ -985,6 +989,7 @@ c
       allocate (zred(n))
       allocate (vscale(n))
       allocate (devo(3,n))
+      allocate (devotmp(3,n))
 
       ! set arrays needed to scale connected atom interactions
       vscale = 1.0d0
@@ -996,9 +1001,9 @@ c
 
       ! apply any reduction factor to the atomic coordinates
       do k = 1, nvdw
-         i       = ivdw(k)
-         iv      = ired(i)
-         rdn     = kred(i)
+         i       = ivdw(k) ! atom number at van der Waals active site
+         iv      = ired(i) ! atom from which reduction factor is applied
+         rdn     = kred(i) ! value of reduction factor parameter
          xred(i) = rdn*(x(i)-x(iv)) + x(iv)
          yred(i) = rdn*(y(i)-y(iv)) + y(iv)
          zred(i) = rdn*(z(i)-z(iv)) + z(iv)
@@ -1006,9 +1011,11 @@ c
 
       ! transfer global to local copies for OpenMP calculation
       evo     = ev
-      eintero = einter
+      !eintero = einter
+      eintero = 0.0d0
       devo    = dev
-      viro    = vir
+      !viro    = vir
+      viro    = 0.0d0
 
       ! set OpenMP directives for the major loop structure
 
@@ -1020,8 +1027,15 @@ c
 !$OMP& firstprivate(vscale,iv14) shared(evo,devo,viro,eintero)
 !$OMP DO reduction(+:evo,devo,viro,eintero) schedule(guided)
 
+      ! start the clock
+      call system_clock(tick, rate)
+
+      ! work out the local array limits for this process
+      call splitlimits(lstart, lend, nvlst)
+
+
       ! find van der Waals energy and derivatives via neighbor list
-      do ii = 1, nvdw
+      do ii = lstart, lend !1, nvdw
 
          i     = ivdw(ii)
          iv    = ired(i)
@@ -1217,21 +1231,43 @@ c     end OpenMP directives for the major loop structure
 c
 !$OMP END DO
 !$OMP END PARALLEL
-c
-c     transfer local to global copies for OpenMP calculation
-c
-      ev = evo
-      einter = eintero
-      do i = 1, n
-         dev(1,i) = devo(1,i)
-         dev(2,i) = devo(2,i)
-         dev(3,i) = devo(3,i)
-      end do
-      do i = 1, 3
-         vir(1,i) = viro(1,i)
-         vir(2,i) = viro(2,i)
-         vir(3,i) = viro(3,i)
-      end do
+
+      ! transfer local to global copies for OpenMP and MPI calculations
+      call MPI_Allreduce(evo, ev, 1, MPI_DOUBLE_PRECISION,
+     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+
+      sumtmp = 0.0d0
+      call MPI_Allreduce(eintero, sumtmp, 1, MPI_DOUBLE_PRECISION,
+     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+      einter = einter + sumtmp
+
+      devotmp = 0.0d0
+      call MPI_Allreduce(devo, devotmp, 3*n, MPI_DOUBLE_PRECISION,
+     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+      dev = devotmp
+
+      virotmp = 0.0d0
+      call MPI_Allreduce(viro, virotmp, 9, MPI_DOUBLE_PRECISION,
+     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+      vir = vir + virotmp
+
+      call system_clock(tock)
+
+      print *,"ehal1c ",rank,(tock-tick)/real(rate,kind=8)
+      call flush(6)
+
+      !ev = evo
+      !einter = eintero
+      !do i = 1, n
+      !   dev(1,i) = devo(1,i)
+      !   dev(2,i) = devo(2,i)
+      !   dev(3,i) = devo(3,i)
+      !end do
+      !do i = 1, 3
+      !   vir(1,i) = viro(1,i)
+      !   vir(2,i) = viro(2,i)
+      !   vir(3,i) = viro(3,i)
+      !end do
 c
 c     perform deallocation of some local arrays
 c
@@ -1241,5 +1277,7 @@ c
       deallocate (zred)
       deallocate (vscale)
       deallocate (devo)
+      deallocate (devotmp)
+
       return
       end
