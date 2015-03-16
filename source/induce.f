@@ -2229,6 +2229,7 @@ c
       use couple
       use ewald
       use math
+      use mpiparams
       use mpole
       use neigh
       use openmp
@@ -2271,46 +2272,46 @@ c
       real*8, allocatable :: pscale(:)
       real*8, allocatable :: dscale(:)
       real*8, allocatable :: uscale(:)
-      real*8 field(3,*)
-      real*8 fieldp(3,*)
+      real*8 field(3,npole)
+      real*8 fieldp(3,npole)
       real*8, allocatable :: fieldt(:,:)
       real*8, allocatable :: fieldtp(:,:)
       real*8, allocatable :: dlocal(:,:)
+      real*8, allocatable, dimension(:,:):: fieldtmp
       character*6 mode
       external erfc
-c
-c
-c     check for multipoles and set cutoff coefficients
-c
+      integer:: lstart, lend
+      integer, allocatable, dimension(:):: nlocals
+
+      ! check for multipoles and set cutoff coefficients
       if (npole .eq. 0)  return
       mode = 'EWALD'
       call switch (mode)
-      aesq2 = 2.0 * aewald * aewald
+      aesq2  = 2.0 * aewald * aewald
       aesq2n = 0.0d0
       if (aewald .gt. 0.0d0)  aesq2n = 1.0d0 / (sqrtpi*aewald)
-      nlocal = 0
+      nlocal   = 0
       toffset0 = 0
       maxlocal = int(dble(npole)*dble(maxelst)/dble(nthread))
-c
-c     perform dynamic allocation of some local arrays
-c
+
+      ! perform dynamic allocation of some local arrays
       allocate (toffset(0:nthread-1))
       allocate (pscale(n))
       allocate (dscale(n))
       allocate (uscale(n))
       allocate (fieldt(3,npole))
       allocate (fieldtp(3,npole))
-c
-c     set arrays needed to scale connected atom interactions
-c
-      do i = 1, n
-         pscale(i) = 1.0d0
-         dscale(i) = 1.0d0
-         uscale(i) = 1.0d0
-      end do
-c
-c     set OpenMP directives for the major loop structure
-c
+      allocate (fieldtmp(3,npole))
+      allocate (nlocals(nprocs))
+
+      ! set arrays needed to scale connected atom interactions
+      ! 1xn arrays
+      pscale = 1.0d0
+      dscale = 1.0d0
+      uscale = 1.0d0
+
+      ! set OpenMP directives for the major loop structure
+
 !$OMP PARALLEL default(private) shared(n,npole,ipole,x,y,z,pdamp,thole,
 !$OMP& rpole,p2scale,p3scale,p4scale,p41scale,p5scale,d1scale,d2scale,
 !$OMP& d3scale,d4scale,u1scale,u2scale,u3scale,u4scale,n12,i12,n13,i13,
@@ -2318,36 +2319,41 @@ c
 !$OMP& elst,cut2,aewald,aesq2,aesq2n,poltyp,ntpair,tindex,tdipdip,
 !$OMP& toffset,toffset0,field,fieldp,fieldt,fieldtp,maxlocal)
 !$OMP& firstprivate(pscale,dscale,uscale,nlocal)
-c
-c     perform dynamic allocation of some local arrays
-c
+
+      ! perform dynamic allocation of some local arrays
       if (poltyp .eq. 'MUTUAL') then
          allocate (ilocal(2,maxlocal))
          allocate (dlocal(6,maxlocal))
       end if
-c
-c     initialize local variables for OpenMP calculation
-c
+
+      ! initialize local variables for OpenMP calculation
 !$OMP DO collapse(2)
       do i = 1, npole
          do j = 1, 3
-            fieldt(j,i) = 0.0d0
+            fieldt(j,i)  = 0.0d0
             fieldtp(j,i) = 0.0d0
          end do
       end do
 !$OMP END DO
-c
-c     compute the real space portion of the Ewald summation
-c
+
+      ! Check that the size of the "cost" array is the same
+      ! as npole
+      if(size(nelst).ne.npole) then
+        print *,"ereal1d: size of nelst not equal to npole."
+        call fatal
+      end if
+      call splitlimits(lstart, lend, nelst)
+
+      ! compute the real space portion of the Ewald summation
 !$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
-      do i = 1, npole
-         ii = ipole(i)
-         pdi = pdamp(i)
-         pti = thole(i)
-         ci = rpole(1,i)
-         dix = rpole(2,i)
-         diy = rpole(3,i)
-         diz = rpole(4,i)
+      do i = lstart, lend !1, npole
+         ii   = ipole(i)
+         pdi  = pdamp(i)
+         pti  = thole(i)
+         ci   = rpole(1,i)
+         dix  = rpole(2,i)
+         diy  = rpole(3,i)
+         diz  = rpole(4,i)
          qixx = rpole(5,i)
          qixy = rpole(6,i)
          qixz = rpole(7,i)
@@ -2387,7 +2393,7 @@ c
             uscale(ip14(j,ii)) = u4scale
          end do
          do kkk = 1, nelst(i)
-            k = elst(kkk,i)
+            k  = elst(kkk,i)
             kk = ipole(k)
             xr = x(kk) - x(ii)
             yr = y(kk) - y(ii)
@@ -2395,16 +2401,16 @@ c
             call image (xr,yr,zr)
             r2 = xr*xr + yr* yr + zr*zr
             if (r2 .le. cut2) then
-               r = sqrt(r2)
-               rr1 = 1.0d0 / r
-               rr2 = rr1 * rr1
-               rr3 = rr2 * rr1
-               rr5 = rr2 * rr3
-               rr7 = rr2 * rr5
-               ck = rpole(1,k)
-               dkx = rpole(2,k)
-               dky = rpole(3,k)
-               dkz = rpole(4,k)
+               r    = sqrt(r2)
+               rr1  = 1.0d0 / r
+               rr2  = rr1 * rr1
+               rr3  = rr2 * rr1
+               rr5  = rr2 * rr3
+               rr7  = rr2 * rr5
+               ck   = rpole(1,k)
+               dkx  = rpole(2,k)
+               dky  = rpole(3,k)
+               dkz  = rpole(4,k)
                qkxx = rpole(5,k)
                qkxy = rpole(6,k)
                qkxz = rpole(7,k)
@@ -2415,11 +2421,11 @@ c
 c     calculate the error function damping factors
 c
                ralpha = aewald * r
-               bn(0) = erfc(ralpha) * rr1
-               exp2a = exp(-ralpha**2)
-               aefac = aesq2n
+               bn(0)  = erfc(ralpha) * rr1
+               exp2a  = exp(-ralpha**2)
+               aefac  = aesq2n
                do j = 1, 3
-                  bfac = dble(j+j-1)
+                  bfac  = dble(j+j-1)
                   aefac = aesq2 * aefac
                   bn(j) = (bfac*bn(j-1)+aefac*exp2a) * rr2
                end do
@@ -2429,10 +2435,10 @@ c
                scale3 = 1.0d0
                scale5 = 1.0d0
                scale7 = 1.0d0
-               damp = pdi * pdamp(k)
+               damp   = pdi * pdamp(k)
                if (damp .ne. 0.0d0) then
                   pgamma = min(pti,thole(k))
-                  damp = -pgamma * (r/damp)**3
+                  damp   = -pgamma * (r/damp)**3
                   if (damp .gt. -50.0d0) then
                      expdamp = exp(damp)
                      scale3 = 1.0d0 - expdamp
@@ -2504,8 +2510,8 @@ c
 c     increment the field at each site due to this interaction
 c
                do j = 1, 3
-                  fieldt(j,i) = fieldt(j,i) + fimd(j)
-                  fieldt(j,k) = fieldt(j,k) + fkmd(j)
+                  fieldt(j,i)  = fieldt(j,i) + fimd(j)
+                  fieldt(j,k)  = fieldt(j,k) + fkmd(j)
                   fieldtp(j,i) = fieldtp(j,i) + fimp(j)
                   fieldtp(j,k) = fieldtp(j,k) + fkmp(j)
                end do
@@ -2548,23 +2554,36 @@ c
 c     transfer the results from local to global arrays
 c
 !$OMP DO
-      do i = 1, npole
-         do j = 1, 3
-            field(j,i) = fieldt(j,i) + field(j,i)
-            fieldp(j,i) = fieldtp(j,i) + fieldp(j,i)
-         end do
-      end do
+
+
+
+      !do i = 1, npole
+      !   do j = 1, 3
+      !      field(j,i) = fieldt(j,i) + field(j,i)
+      !      fieldp(j,i) = fieldtp(j,i) + fieldp(j,i)
+      !   end do
+      !end do
+
 !$OMP END DO
-c
-c     store terms needed later to compute mutual polarization
-c
+
+      ! store terms needed later to compute mutual polarization
 !$OMP CRITICAL
+
+      !collect the number of nlocals
+      call MPI_Allgather(nlocal, 1, MPI_INTEGER,nlocals, 1,
+     &                   MPI_INTEGER,MPI_COMM_WORLD, ierror)
+
       tid = 0
 !$    tid = omp_get_thread_num ()
-      toffset(tid) = toffset0
-      toffset0 = toffset0 + nlocal
-      ntpair = toffset0
+      toffset(tid) = toffset0 
+      toffset0     = toffset0 + nlocal
+      ntpair       = toffset0
 !$OMP END CRITICAL
+
+      ! reset values
+      tindex  = 0
+      tdipdip = 0.0d0
+
       if (poltyp .eq. 'MUTUAL') then
          k = toffset(tid)
          do i = 1, nlocal
@@ -2579,6 +2598,22 @@ c
          deallocate (dlocal)
       end if
 !$OMP END PARALLEL
+
+      ! Get the field components
+      fieldtmp = 0.0d0
+      call MPI_Allreduce(fieldt, fieldtmp, 3*npole, 
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
+     &                   ierror)
+      field = field + fieldtmp
+
+      fieldtmp = 0.0d0
+      call MPI_Allreduce(fieldtp, fieldtmp, 3*npole, 
+     &                   MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &                   ierror)
+      fieldp = fieldp + fieldtmp
+
+      ! reconstitute the arrays
+      call MPI_Allreduce()
 c
 c     perform deallocation of some local arrays
 c
@@ -2588,6 +2623,8 @@ c
       deallocate (uscale)
       deallocate (fieldt)
       deallocate (fieldtp)
+      deallocate (nlocals)
+
       return
       end
 c

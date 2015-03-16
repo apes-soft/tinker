@@ -1284,7 +1284,7 @@ image.o: boxes.o cell.o sizes.o
 impose.o: align.o inform.o iounit.o sizes.o
 improp.o:
 imptor.o:
-induce.o: atoms.o bound.o boxes.o cell.o couple.o ewald.o gkstuf.o group.o inform.o iounit.o limits.o math.o mpole.o neigh.o openmp.o pbstuf.o pme.o polar.o polgrp.o polpot.o potent.o shunt.o sizes.o solute.o tarray.o units.o uprior.o usolve.o
+induce.o: atoms.o bound.o boxes.o cell.o couple.o ewald.o gkstuf.o group.o inform.o iounit.o limits.o math.o mpiparams.o mpole.o neigh.o openmp.o pbstuf.o pme.o polar.o polgrp.o polpot.o potent.o shunt.o sizes.o solute.o tarray.o units.o uprior.o usolve.o
 inertia.o: atomid.o atoms.o iounit.o math.o sizes.o
 inform.o:
 initatom.o: ptable.o
