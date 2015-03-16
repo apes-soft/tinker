@@ -60,7 +60,7 @@ elif [ `hostname` = "indy0" ]; then       # Indy (system at EPCC).
 
 elif [ `hostname` = "phi.hydra" ]; then       # Indy (system at EPCC).
 
-  # Hack to bypass SLURM problems
+  # Hack to bypass SLURM/Intel MPI problems
   export SLURM_JOBID=
   # Run the code
   mpirun -np $nprocs \
