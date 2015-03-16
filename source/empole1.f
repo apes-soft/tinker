@@ -4930,6 +4930,11 @@ c
       !call system_clock(tick, rate)
 
       ! work out the local array limits for this process
+      ! Assumes that size of nelst is the same as npole.
+      if(size(nelst).ne.npole) then
+        print *,"ereal1d: size of nelst not equal to npole."
+        call fatal
+      end if
       call splitlimits(lstart, lend, nelst)
 
       ! compute the real space portion of the Ewald summation

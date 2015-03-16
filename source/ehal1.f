@@ -1031,8 +1031,13 @@ c
       call system_clock(tick, rate)
 
       ! work out the local array limits for this process
+      ! Note that this assumes that nvlst will be of size
+      ! nvdw.
+      if(size(nvlst).ne.nvdw) then
+        print *, "ehal1c: size of nvlst does not match nvdw."
+        call fatal
+      end if 
       call splitlimits(lstart, lend, nvlst)
-
 
       ! find van der Waals energy and derivatives via neighbor list
       do ii = lstart, lend !1, nvdw

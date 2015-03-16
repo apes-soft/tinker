@@ -149,7 +149,7 @@ else ifeq ($(COMPARCH),MPILinuxIntel)
   FC        = mpiifort
   LIBS      =
   FCFLAGS   = -c -xHost -warn all,nointerfaces
-  OPTFLAGS  = -g #-O3 -no-ipo -no-prec-div -recursive
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = -static-libgcc -static-intel
@@ -1159,7 +1159,7 @@ egeom1.o: atomid.o atoms.o bound.o deriv.o energi.o group.o inter.o math.o molcu
 egeom2.o: atomid.o atoms.o bound.o deriv.o group.o hessn.o math.o molcul.o restrn.o sizes.o
 egeom3.o: action.o analyz.o atomid.o atoms.o bound.o energi.o group.o inform.o inter.o iounit.o math.o molcul.o restrn.o sizes.o usage.o
 ehal.o: atomid.o atoms.o bound.o boxes.o cell.o couple.o energi.o group.o light.o limits.o mutant.o neigh.o shunt.o sizes.o usage.o vdw.o vdwpot.o
-ehal1.o: atomid.o atoms.o bound.o boxes.o cell.o couple.o deriv.o energi.o group.o inter.o iounit.o light.o limits.o molcul.o mutant.o neigh.o shunt.o sizes.o usage.o vdw.o vdwpot.o virial.o
+ehal1.o: atomid.o atoms.o bound.o boxes.o cell.o couple.o deriv.o energi.o group.o inter.o iounit.o light.o limits.o molcul.o mpiparams.o mutant.o neigh.o shunt.o sizes.o usage.o vdw.o vdwpot.o virial.o
 ehal2.o: atomid.o atoms.o bound.o cell.o couple.o group.o hessn.o shunt.o sizes.o vdw.o vdwpot.o
 ehal3.o: action.o analyz.o atomid.o atoms.o bound.o boxes.o cell.o couple.o energi.o group.o inform.o inter.o iounit.o light.o limits.o molcul.o mutant.o neigh.o shunt.o sizes.o usage.o vdw.o vdwpot.o
 eimprop.o: atoms.o bound.o energi.o group.o improp.o math.o sizes.o torpot.o usage.o
