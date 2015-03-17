@@ -2582,12 +2582,15 @@ c
       ! store terms needed later to compute mutual polarization
 !$OMP CRITICAL
 
+      print *,"1. rank:", rank," nlocal=",nlocal
+
       ! collect the number of distributed "nlocal"s
       allocate(nlocals(nprocs))
       nlocals = 0 
       call MPI_Allgather(nlocal, 1, MPI_INTEGER,nlocals, 1,
      &                   MPI_INTEGER,MPI_COMM_WORLD, ierror)
 
+      print *,"2. rank:", rank," nlocals=",nlocals
 
       ! Now gather ilocal and dlocal
       if (poltyp .eq. 'MUTUAL') then
@@ -2599,12 +2602,24 @@ c
          ! transfer ilocal and dlocal contents to a local array
          myilocal = ilocal(:,1:nlocal)
          mydlocal = dlocal(:,1:nlocal)
+         
+         do i=1,nlocal !DEBUG
+            if(ilocal(1,i).gt.n) then
+               print *,"1. Rank ",rank," has ",i," in 1 with ",
+     &                 ilocal(1,i)
+            end if 
+            if(ilocal(2,i).gt.n) then
+               print *,"1. Rank ",rank," has ",i," in 2 with ",
+     &                 ilocal(2,i)
+            end if 
+         end do
 
          ! calculate the displacments for ilocal
          ! used to calculate: recvbuf + disp[i] * extent(recvtype)
-         disps(1) = 0
+         disps = 0
          do i=2,rank
-            ! array has 2 integers so multiply by 2
+            ! array has 2 integers per element so multiply 
+            ! by 2 for displacements
             disps(i) = disps(i-1) + nlocals(i-1)*2
          end do 
 
@@ -2615,9 +2630,9 @@ c
      &                       MPI_COMM_WORLD, ierror)
 
          ! calculate the displacments for dlocal
-         disps(1) = 0
+         disps = 0
          do i=2,rank
-            ! multiply by 6 as we have 6 doubles
+            ! multiply by 6 as we have 6 doubles per column
             disps(i) = disps(i-1) + nlocals(i-1)*6
          end do 
 
@@ -2635,9 +2650,21 @@ c
       ! reset nlocal to be the global sum of locals
       nlocal = sum(nlocals)
 
+      print *,"3. rank:", rank," mnloca) =",nlocal
+
       ! Deallocate auxiliary arrays
       deallocate (nlocals)
 
+         do i=1,nlocal !DEBUG
+            if(ilocal(1,i).gt.n) then
+               print *,"2. Rank ",rank," has ",i," in 1 with ",
+     &                 ilocal(1,i)
+            end if 
+            if(ilocal(2,i).gt.n) then
+               print *,"2. Rank ",rank," has ",i," in 2 with ",
+     &                 ilocal(2,i)
+            end if 
+         end do
 
       tid = 0
 !$    tid = omp_get_thread_num ()
@@ -2649,6 +2676,9 @@ c
 
       ! number of stored dipole-dipole matrix elements
       ntpair       = toffset0 
+
+      print *, "4. rank:", rank," ntpair = ", ntpair
+      call flush(6)
 
 !$OMP END CRITICAL
 
