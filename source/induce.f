@@ -2281,7 +2281,9 @@ c
       character*6 mode
       external erfc
       integer:: lstart, lend
-      integer, allocatable, dimension(:):: nlocals
+      integer, allocatable, dimension(:):: nlocals, disps
+      integer, allocatable, dimension(:,:):: myilocal
+      real*8, allocatable, dimension(:,:):: mydlocal
 
       ! check for multipoles and set cutoff coefficients
       if (npole .eq. 0)  return
@@ -2302,7 +2304,6 @@ c
       allocate (fieldt(3,npole))
       allocate (fieldtp(3,npole))
       allocate (fieldtmp(3,npole))
-      allocate (nlocals(nprocs))
 
       ! set arrays needed to scale connected atom interactions
       ! 1xn arrays
@@ -2555,6 +2556,18 @@ c     transfer the results from local to global arrays
 c
 !$OMP DO
 
+      ! Get the distributed field components
+      fieldtmp = 0.0d0
+      call MPI_Allreduce(fieldt, fieldtmp, 3*npole, 
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
+     &                   ierror)
+      field = field + fieldtmp
+
+      fieldtmp = 0.0d0
+      call MPI_Allreduce(fieldtp, fieldtmp, 3*npole, 
+     &                   MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &                   ierror)
+      fieldp = fieldp + fieldtmp
 
 
       !do i = 1, npole
@@ -2569,15 +2582,74 @@ c
       ! store terms needed later to compute mutual polarization
 !$OMP CRITICAL
 
-      !collect the number of nlocals
+      ! collect the number of distributed "nlocal"s
+      allocate(nlocals(nprocs))
+      nlocals = 0 
       call MPI_Allgather(nlocal, 1, MPI_INTEGER,nlocals, 1,
      &                   MPI_INTEGER,MPI_COMM_WORLD, ierror)
 
+
+      ! Now gather ilocal and dlocal
+      if (poltyp .eq. 'MUTUAL') then
+
+         ! create some temporary auxiliary arrays
+         allocate(myilocal(2,nlocal),mydlocal(6,nlocal))
+         allocate(disps(nprocs))
+
+         ! transfer ilocal and dlocal contents to a local array
+         myilocal = ilocal(:,1:nlocal)
+         mydlocal = dlocal(:,1:nlocal)
+
+         ! calculate the displacments for ilocal
+         ! used to calculate: recvbuf + disp[i] * extent(recvtype)
+         disps(1) = 0
+         do i=2,rank
+            ! array has 2 integers so multiply by 2
+            disps(i) = disps(i-1) + nlocals(i-1)*2
+         end do 
+
+         ! do an allgather of ilocal so everyone ends with 
+         ! all the information
+         call MPI_Allgatherv(myilocal,2*nlocal, MPI_INTEGER,
+     &                       ilocal,2*nlocals, disps, MPI_INTEGER,
+     &                       MPI_COMM_WORLD, ierror)
+
+         ! calculate the displacments for dlocal
+         disps(1) = 0
+         do i=2,rank
+            ! multiply by 6 as we have 6 doubles
+            disps(i) = disps(i-1) + nlocals(i-1)*6
+         end do 
+
+         ! do an allgather of dlocal
+         call MPI_Allgatherv(mydlocal,6*nlocal, MPI_DOUBLE_PRECISION,
+     &                       ilocal,6*nlocals, disps, 
+     &                       MPI_DOUBLE_PRECISION, MPI_COMM_WORLD, 
+     &                       ierror)
+
+         ! remove auxiliary arrays
+         deallocate(myilocal, mydlocal,disps)
+
+      end if
+
+      ! reset nlocal to be the global sum of locals
+      nlocal = sum(nlocals)
+
+      ! Deallocate auxiliary arrays
+      deallocate (nlocals)
+
+
       tid = 0
 !$    tid = omp_get_thread_num ()
-      toffset(tid) = toffset0 
+
+      toffset(tid) = toffset0
+
+      ! end offset
       toffset0     = toffset0 + nlocal
-      ntpair       = toffset0
+
+      ! number of stored dipole-dipole matrix elements
+      ntpair       = toffset0 
+
 !$OMP END CRITICAL
 
       ! reset values
@@ -2599,21 +2671,6 @@ c
       end if
 !$OMP END PARALLEL
 
-      ! Get the field components
-      fieldtmp = 0.0d0
-      call MPI_Allreduce(fieldt, fieldtmp, 3*npole, 
-     &                   MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
-     &                   ierror)
-      field = field + fieldtmp
-
-      fieldtmp = 0.0d0
-      call MPI_Allreduce(fieldtp, fieldtmp, 3*npole, 
-     &                   MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
-     &                   ierror)
-      fieldp = fieldp + fieldtmp
-
-      ! reconstitute the arrays
-      call MPI_Allreduce()
 c
 c     perform deallocation of some local arrays
 c
@@ -2623,7 +2680,7 @@ c
       deallocate (uscale)
       deallocate (fieldt)
       deallocate (fieldtp)
-      deallocate (nlocals)
+
 
       return
       end
