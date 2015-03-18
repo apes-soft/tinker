@@ -6,14 +6,20 @@
 FC=gfortran
 FCFLAGS=
 
+# MPI Fortran compiler
+MPIFORT=mpiifort
+
 # Targets that do not have a dependency of external files
 .PHONY: clean
 
 # Default target
-all: testsplit
+all: allgatherv testsplit
 
 testsplit: testsplit.f
 	$(FC) $(FCFLAGS) -o $@ $<
+
+allgatherv: allgatherv.f
+	$(MPIFORT) $(FCFLAGS) -o $@ $<
 
 # Remove unwanted files
 clean:
@@ -21,3 +27,4 @@ clean:
 
 # Dependencies
 testsplit.o: testsplit.f
+allgatherv.o: allgatherv.o
