@@ -841,6 +841,9 @@ EXEFILES = alchemy.x \
 
 all: ${EXEFILES}
 
+dynamic: dynamic.o libtinker.a
+	${FC} ${LINKFLAGS} -o $@ $?  -L . -ltinker ${LIBS}
+
 install: rename
 
 clean:
