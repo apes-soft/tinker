@@ -2284,6 +2284,7 @@ c
       integer, allocatable, dimension(:):: nlocals, disps
       integer, allocatable, dimension(:,:):: myilocal
       real*8, allocatable, dimension(:,:):: mydlocal
+      integer (kind=8):: tick, tock, rate
 
       ! check for multipoles and set cutoff coefficients
       if (npole .eq. 0)  return
@@ -2336,6 +2337,9 @@ c
          end do
       end do
 !$OMP END DO
+
+      ! start the clock
+      call system_clock(tick, rate)
 
       ! Check that the size of the "cost" array is the same
       ! as npole
@@ -2671,6 +2675,11 @@ c
          deallocate (dlocal)
       end if
 !$OMP END PARALLEL
+
+      call system_clock(tock)
+
+      print *,"udirect2b ",rank,(tock-tick)/real(rate,kind=8)
+      call flush(6)
 
 c
 c     perform deallocation of some local arrays
