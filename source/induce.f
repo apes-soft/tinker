@@ -2678,8 +2678,8 @@ c
 
       call system_clock(tock)
 
-      print *,"udirect2b ",rank,(tock-tick)/real(rate,kind=8)
-      call flush(6)
+      !print *,"udirect2b ",rank,(tock-tick)/real(rate,kind=8)
+      !call flush(6)
 
 c
 c     perform deallocation of some local arrays
