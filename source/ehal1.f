@@ -1258,8 +1258,8 @@ c
 
       call system_clock(tock)
 
-      print *,"ehal1c ",rank,(tock-tick)/real(rate,kind=8)
-      call flush(6)
+      !print *,"ehal1c ",rank,(tock-tick)/real(rate,kind=8)
+      !call flush(6)
 
       !ev = evo
       !einter = eintero
