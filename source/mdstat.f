@@ -115,7 +115,7 @@ c
 c
 c     print header for the averages over a group of recent steps
 c
-      if (modstep .eq. 0) then
+      if (modstep .eq. 0.and.rank.eq.0) then
          pico = dble(istep) * dt
          write (iout,50)  iprint,istep
    50    format (/,' Average Values for the Last',i6,' Out of',
