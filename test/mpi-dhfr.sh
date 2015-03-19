@@ -63,8 +63,8 @@ elif [ `hostname` = "phi.hydra" ]; then       # Indy (system at EPCC).
   # Hack to bypass SLURM/Intel MPI problems
   export SLURM_JOBID=
   # Run the code
-  mpirun -np $nprocs \
-         ../bin/dynamic dhfr 2 1.0 10.0 2 298.0
+  time mpirun -np $nprocs \
+         ../bin/dynamic dhfr 100 1.0 10.0 2 298.0
 
 else
 
