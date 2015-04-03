@@ -4931,7 +4931,7 @@ c
 
       ! work out the local array limits for this process
       ! Assumes that size of nelst is the same as npole.
-      if(size(nelst).ne.npole) then
+      if(size(nelst).ne.npole.and.rank.eq.0) then
         print *,"ereal1d: size of nelst not equal to npole."
         call fatal
       end if
