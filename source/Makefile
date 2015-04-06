@@ -149,8 +149,8 @@ else ifeq ($(COMPARCH),MPILinuxIntel)
   FC        = mpiifort
   LIBS      =
   FCFLAGS   = -c -xHost -warn all,nointerfaces
-  OPTFLAGS  = -g -check bounds -traceback 
-  #OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive
+  #OPTFLAGS  = -g -check bounds -traceback 
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = -static-libgcc -static-intel
