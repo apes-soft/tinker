@@ -64,7 +64,7 @@ elif [ `hostname` = "phi.hydra" ]; then       # Indy (system at EPCC).
   export SLURM_JOBID=
   # Run the code
   time mpirun -np $nprocs \
-         ../bin/dynamic dhfr 100 1.0 10.0 2 298.0
+         ../bin/dynamic dhfr 2 1.0 10.0 2 298.0
 
 else
 
