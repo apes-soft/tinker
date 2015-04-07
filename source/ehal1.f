@@ -976,6 +976,7 @@ c
       character*6 mode
       real *8 sumtmp
       integer:: lstart, lend
+      real*8 time1
       integer (kind=8):: tick, tock, rate
 
       ! zero out the van der Waals energy and first derivatives
@@ -1237,6 +1238,9 @@ c
 !$OMP END DO
 !$OMP END PARALLEL
 
+      call system_clock(tock)
+      time1 = (tock-tick)/real(rate,kind=8)
+
       ! transfer local to global copies for OpenMP and MPI calculations
       call MPI_Allreduce(evo, ev, 1, MPI_DOUBLE_PRECISION,
      &                   MPI_SUM, MPI_COMM_WORLD, ierror)
@@ -1258,8 +1262,9 @@ c
 
       call system_clock(tock)
 
-      !print *,"ehal1c ",rank,(tock-tick)/real(rate,kind=8)
-      !call flush(6)
+      print *,"ehal1c, ",rank,",",time1,",",
+     &        (tock-tick)/real(rate,kind=8)
+      call flush(6)
 
       !ev = evo
       !einter = eintero

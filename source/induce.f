@@ -2284,6 +2284,7 @@ c
       integer, allocatable, dimension(:):: nlocals, disps
       integer, allocatable, dimension(:,:):: myilocal
       real*8, allocatable, dimension(:,:):: mydlocal
+      real*8 time1
       integer (kind=8):: tick, tock, rate
 
       ! check for multipoles and set cutoff coefficients
@@ -2560,6 +2561,9 @@ c     transfer the results from local to global arrays
 c
 !$OMP DO
 
+      call system_clock(tock)
+      time1 = (tock-tick)/real(rate,kind=8)
+
       ! Get the distributed field components
       fieldtmp = 0.0d0
       call MPI_Allreduce(fieldt, fieldtmp, 3*npole, 
@@ -2678,8 +2682,9 @@ c
 
       call system_clock(tock)
 
-      !print *,"udirect2b ",rank,(tock-tick)/real(rate,kind=8)
-      !call flush(6)
+      print *,"udirect2b, ",rank,",",time1,",",
+     &         (tock-tick)/real(rate,kind=8)
+      call flush(6)
 
 c
 c     perform deallocation of some local arrays
