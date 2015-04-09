@@ -229,13 +229,15 @@ c
       ! need to be summed up.
 
        sumtmp = 0.0d0
-!      call MPI_Allreduce(em+ep, sumtmp, 1, MPI_DOUBLE_PRECISION,
+       ! em, ep give problems => modifications other than in ereal1d?
+       ! ev from ehal1c also gives problems.
+!       call MPI_Allreduce(ev, sumtmp, 1, MPI_DOUBLE_PRECISION,
 !     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
 
       ! sum up to get the total energy and first derivatives
-      esum = eb + ea + eba + eub + eaa + eopb + eopd + eid + eit
-     &          + et + ept + ebt + eat + ett + ev + ec + ecd + ed
-     &          + em + ep + er + es + elf + eg + ex + sumtmp
+      esum = eb + ea + eba + eub + eaa + eopb + eopd + eid + eit +
+     &       et + ept + ebt + eat + ett+ ev + ec + ecd + ed +
+     &       em + ep + er + es + elf + eg + ex + sumtmp
       energy = esum
 
 !      esum = eb + ea + eba + eub + eaa + eopb + eopd + eid + eit
