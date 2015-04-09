@@ -976,8 +976,8 @@ c
       character*6 mode
       real *8 sumtmp
       integer:: lstart, lend
-      real*8 time1
-      integer (kind=8):: tick, tock, rate
+!     real*8 time1
+!     integer (kind=8):: tick, tock, rate
 
       ! zero out the van der Waals energy and first derivatives
       ev  = 0.0d0
@@ -1029,7 +1029,7 @@ c
 !$OMP DO reduction(+:evo,devo,viro,eintero) schedule(guided)
 
       ! start the clock
-      call system_clock(tick, rate)
+!     call system_clock(tick, rate)
 
       ! work out the local array limits for this process
       ! Note that this assumes that nvlst will be of size
@@ -1238,8 +1238,8 @@ c
 !$OMP END DO
 !$OMP END PARALLEL
 
-      call system_clock(tock)
-      time1 = (tock-tick)/real(rate,kind=8)
+!     call system_clock(tock)
+!     time1 = (tock-tick)/real(rate,kind=8)
 
       ! transfer local to global copies for OpenMP and MPI calculations
       call MPI_Allreduce(evo, ev, 1, MPI_DOUBLE_PRECISION,
@@ -1260,11 +1260,10 @@ c
      &                   MPI_SUM, MPI_COMM_WORLD, ierror)
       vir = vir + virotmp
 
-      call system_clock(tock)
-
-      print *,"ehal1c, ",rank,",",time1,",",
-     &        (tock-tick)/real(rate,kind=8)
-      call flush(6)
+!     call system_clock(tock)
+!     print *,"ehal1c, ",rank,",",time1,",",
+!    &        (tock-tick)/real(rate,kind=8)
+!     call flush(6)
 
       !ev = evo
       !einter = eintero
