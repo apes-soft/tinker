@@ -26,6 +26,7 @@ c
       use inter
       use iounit
       use limits
+      use mpiparams
       use potent
       use rigid
       use vdwpot
@@ -33,7 +34,10 @@ c
       implicit none
       integer i,j
       real*8 energy,cutoff
-      real*8 derivs(3,*)
+      real*8 derivs(3,n)
+      real*8 tmpdvs(3,n)  ! Temporary derivative sums
+      real*8 sumtmp       ! Temporary energy sum
+
 c
 c
 c     zero out each of the potential energy components
@@ -124,46 +128,36 @@ c
          allocate (deg(3,n))
          allocate (dex(3,n))
       end if
-c
-c     zero out each of the first derivative components
-c
-      do i = 1, n
-         do j = 1, 3
-            deb(j,i) = 0.0d0
-            dea(j,i) = 0.0d0
-            deba(j,i) = 0.0d0
-            deub(j,i) = 0.0d0
-            deaa(j,i) = 0.0d0
-            deopb(j,i) = 0.0d0
-            deopd(j,i) = 0.0d0
-            deid(j,i) = 0.0d0
-            deit(j,i) = 0.0d0
-            det(j,i) = 0.0d0
-            dept(j,i) = 0.0d0
-            debt(j,i) = 0.0d0
-            deat(j,i) = 0.0d0
-            dett(j,i) = 0.0d0
-            dev(j,i) = 0.0d0
-            dec(j,i) = 0.0d0
-            decd(j,i) = 0.0d0
-            ded(j,i) = 0.0d0
-            dem(j,i) = 0.0d0
-            dep(j,i) = 0.0d0
-            der(j,i) = 0.0d0
-            des(j,i) = 0.0d0
-            delf(j,i) = 0.0d0
-            deg(j,i) = 0.0d0
-            dex(j,i) = 0.0d0
-         end do
-      end do
-c
-c     zero out the virial and the intermolecular energy
-c
-      do i = 1, 3
-         do j = 1, 3
-            vir(j,i) = 0.0d0
-         end do
-      end do
+
+      ! zero out each of the first derivative components
+      deb = 0.0d0
+      dea = 0.0d0
+      deba = 0.0d0
+      deub = 0.0d0
+      deaa = 0.0d0
+      deopb = 0.0d0
+      deopd = 0.0d0
+      deid = 0.0d0
+      deit = 0.0d0
+      det = 0.0d0
+      dept = 0.0d0
+      debt = 0.0d0
+      deat = 0.0d0
+      dett = 0.0d0
+      dev = 0.0d0
+      dec = 0.0d0
+      decd = 0.0d0
+      ded = 0.0d0
+      dem = 0.0d0
+      dep = 0.0d0
+      der = 0.0d0
+      des = 0.0d0
+      delf = 0.0d0
+      deg = 0.0d0
+      dex = 0.0d0
+
+      ! zero out the virial and the intermolecular energy
+      vir = 0.0d0
       einter = 0.0d0
 c
 c     maintain any periodic boundary conditions
@@ -228,27 +222,56 @@ c
       if (use_metal)  call emetal1
       if (use_geom)  call egeom1
       if (use_extra)  call extra1
-c
-c     sum up to get the total energy and first derivatives
-c
-      esum = eb + ea + eba + eub + eaa + eopb + eopd + eid + eit
-     &          + et + ept + ebt + eat + ett + ev + ec + ecd + ed
-     &          + em + ep + er + es + elf + eg + ex
+
+      ! Currently using tmp variables to perform sums - eventually
+      ! these can be removed when all the code has been migrated
+      ! to use loops that have been split and the partial results
+      ! need to be summed up.
+
+       sumtmp = 0.0d0
+       ! em, ep give problems => modifications other than in ereal1d?
+       ! ev from ehal1c also gives problems.
+!       call MPI_Allreduce(ev, sumtmp, 1, MPI_DOUBLE_PRECISION,
+!     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+
+      ! sum up to get the total energy and first derivatives
+      esum = eb + ea + eba + eub + eaa + eopb + eopd + eid + eit +
+     &       et + ept + ebt + eat + ett+ ev + ec + ecd + ed +
+     &       em + ep + er + es + elf + eg + ex + sumtmp
       energy = esum
-      do i = 1, n
-         do j = 1, 3
-            desum(j,i) = deb(j,i) + dea(j,i) + deba(j,i)
-     &                      + deub(j,i) + deaa(j,i) + deopb(j,i)
-     &                      + deopd(j,i) + deid(j,i) + deit(j,i)
-     &                      + det(j,i) + dept(j,i) + debt(j,i)
-     &                      + deat(j,i) + dett(j,i) + dev(j,i)
-     &                      + dec(j,i) + decd(j,i) + ded(j,i)
-     &                      + dem(j,i) + dep(j,i) + der(j,i)
-     &                      + des(j,i) + delf(j,i) + deg(j,i)
-     &                      + dex(j,i)
-            derivs(j,i) = desum(j,i)
-         end do
-      end do
+
+!      esum = eb + ea + eba + eub + eaa + eopb + eopd + eid + eit
+!     &          + et + ept + ebt + eat + ett + ev + ec + ecd + ed
+!     &          + em + ep + er + es + elf + eg + ex
+!      energy = esum
+
+
+      desum = deb + dea + deba +
+     &             deub + deaa + deopb +
+     &             deopd + deid + deit +
+     &             det + dept + debt +
+     &             deat + dett + dev +
+     &             dec + decd + ded +
+     &             dem + dep + der +
+     &             des + delf + deg +
+     &             dex
+      derivs = desum
+
+!      do i = 1, n
+!         do j = 1, 3
+!            desum(j,i) = deb(j,i) + dea(j,i) + deba(j,i)
+!     &                      + deub(j,i) + deaa(j,i) + deopb(j,i)
+!     &                      + deopd(j,i) + deid(j,i) + deit(j,i)
+!     &                      + det(j,i) + dept(j,i) + debt(j,i)
+!     &                      + deat(j,i) + dett(j,i) + dev(j,i)
+!     &                      + dec(j,i) + decd(j,i) + ded(j,i)
+!     &                      + dem(j,i) + dep(j,i) + der(j,i)
+!     &                      + des(j,i) + delf(j,i) + deg(j,i)
+!     &                      + dex(j,i)
+!            derivs(j,i) = desum(j,i)
+!         end do
+!      end do
+
 c
 c     check for an illegal value for the total energy
 c

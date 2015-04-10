@@ -2284,8 +2284,8 @@ c
       integer, allocatable, dimension(:):: nlocals, disps
       integer, allocatable, dimension(:,:):: myilocal
       real*8, allocatable, dimension(:,:):: mydlocal
-      real*8 time1
-      integer (kind=8):: tick, tock, rate
+!     real*8 time1
+!     integer (kind=8):: tick, tock, rate
 
       ! check for multipoles and set cutoff coefficients
       if (npole .eq. 0)  return
@@ -2340,7 +2340,7 @@ c
 !$OMP END DO
 
       ! start the clock
-      call system_clock(tick, rate)
+!     call system_clock(tick, rate)
 
       ! Check that the size of the "cost" array is the same
       ! as npole
@@ -2561,8 +2561,8 @@ c     transfer the results from local to global arrays
 c
 !$OMP DO
 
-      call system_clock(tock)
-      time1 = (tock-tick)/real(rate,kind=8)
+!     call system_clock(tock)
+!     time1 = (tock-tick)/real(rate,kind=8)
 
       ! Get the distributed field components
       fieldtmp = 0.0d0
@@ -2680,11 +2680,11 @@ c
       end if
 !$OMP END PARALLEL
 
-      call system_clock(tock)
+!     call system_clock(tock)
 
-      print *,"udirect2b, ",rank,",",time1,",",
-     &         (tock-tick)/real(rate,kind=8)
-      call flush(6)
+!     print *,"udirect2b, ",rank,",",time1,",",
+!    &         (tock-tick)/real(rate,kind=8)
+!     call flush(6)
 
 c
 c     perform deallocation of some local arrays
