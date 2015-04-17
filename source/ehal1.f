@@ -963,7 +963,7 @@ c
       real*8 rik6,rik7
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
-      real*8 evo,eintero
+      real*8 evo,eintero,e_new
       real*8 viro(3,3),virotmp(3,3)
       real*8, allocatable :: xred(:)
       real*8, allocatable :: yred(:)
@@ -1241,19 +1241,23 @@ c
 !     call system_clock(tock)
 !     time1 = (tock-tick)/real(rate,kind=8)
 
+c      print*, "evo from id", evo,rank 
+
       ! transfer local to global copies for OpenMP and MPI calculations
-      call MPI_Allreduce(evo, ev, 1, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+c      call MPI_Allreduce(evo, ev, 1, MPI_DOUBLE_PRECISION,
+c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+
+c      print*, "evo summed", e_new, rank
 
       sumtmp = 0.0d0
       call MPI_Allreduce(eintero, sumtmp, 1, MPI_DOUBLE_PRECISION,
      &                   MPI_SUM, MPI_COMM_WORLD, ierror)
       einter = einter + sumtmp
 
-      devotmp = 0.0d0
-      call MPI_Allreduce(devo, devotmp, 3*n, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-      dev = devotmp
+c      devotmp = 0.0d0
+c      call MPI_Allreduce(devo, devotmp, 3*n, MPI_DOUBLE_PRECISION,
+c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+c      dev = devotmp
 
       virotmp = 0.0d0
       call MPI_Allreduce(viro, virotmp, 9, MPI_DOUBLE_PRECISION,
@@ -1265,13 +1269,13 @@ c
 !    &        (tock-tick)/real(rate,kind=8)
 !     call flush(6)
 
-      !ev = evo
+      ev = evo
       !einter = eintero
-      !do i = 1, n
-      !   dev(1,i) = devo(1,i)
-      !   dev(2,i) = devo(2,i)
-      !   dev(3,i) = devo(3,i)
-      !end do
+      do i = 1, n
+         dev(1,i) = devo(1,i)
+         dev(2,i) = devo(2,i)
+         dev(3,i) = devo(3,i)
+      end do
       !do i = 1, 3
       !   vir(1,i) = viro(1,i)
       !   vir(2,i) = viro(2,i)
