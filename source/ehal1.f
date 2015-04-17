@@ -1259,10 +1259,10 @@ c      call MPI_Allreduce(devo, devotmp, 3*n, MPI_DOUBLE_PRECISION,
 c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
 c      dev = devotmp
 
-c      virotmp = 0.0d0
-c      call MPI_Allreduce(viro, virotmp, 9, MPI_DOUBLE_PRECISION,
-c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-c      vir = vir + virotmp
+      virotmp = 0.0d0
+      call MPI_Allreduce(viro, virotmp, 9, MPI_DOUBLE_PRECISION,
+     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+      vir = vir + virotmp
 
 !     call system_clock(tock)
 !     print *,"ehal1c, ",rank,",",time1,",",
@@ -1276,11 +1276,11 @@ c      vir = vir + virotmp
          dev(2,i) = devo(2,i)
          dev(3,i) = devo(3,i)
       end do
-      do i = 1, 3
-         vir(1,i) = viro(1,i)
-         vir(2,i) = viro(2,i)
-         vir(3,i) = viro(3,i)
-      end do
+      !do i = 1, 3
+      !   vir(1,i) = viro(1,i)
+      !   vir(2,i) = viro(2,i)
+      !   vir(3,i) = viro(3,i)
+      !end do
 c
 c     perform deallocation of some local arrays
 c
