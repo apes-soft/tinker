@@ -37,6 +37,7 @@ c
       real*8 derivs(3,n)
       real*8 tmpdvs(3,n)  ! Temporary derivative sums
       real*8 sumtmp       ! Temporary energy sum
+      real*8 viro(3,3)
 
 c
 c
@@ -284,6 +285,16 @@ c       print*, "ev summed", sumtmp, rank
 !            derivs(j,i) = desum(j,i)
 !         end do
 !      end do
+
+
+      viro = 0.0d0
+      viro = vir
+      vir = 0.0d0
+      
+       call MPI_Allreduce(viro, vir, 9, MPI_DOUBLE_PRECISION,
+     &     MPI_SUM, MPI_COMM_WORLD, ierror)
+
+
 
 c
 c     check for an illegal value for the total energy
