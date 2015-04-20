@@ -5777,11 +5777,15 @@ c
 
       ! add local copies to global variables for OpenMP & 
       ! MPI calculations
-      sumtmp = 0.0d0
-      call MPI_Allreduce(emo, sumtmp, 1, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-      em = em + sumtmp
+c      sumtmp = 0.0d0
+c      print*, "emo from id ", emo, rank
 
+c      call MPI_Allreduce(emo, sumtmp, 1, MPI_DOUBLE_PRECISION,
+c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+c      em = em + sumtmp
+c      print*, "em from id ", em, rank
+      emtmp = 0.0d0
+      emtmp = emo
       sumtmp = 0.0d0
       call MPI_Allreduce(epo, sumtmp, 1, MPI_DOUBLE_PRECISION,
      &                   MPI_SUM, MPI_COMM_WORLD, ierror)
@@ -5791,7 +5795,7 @@ c
      &                   MPI_SUM, MPI_COMM_WORLD, ierror)
       !eintra = eintra + sumtmp
 
-      !em = em + emo
+c      em = em + emo
       !ep = ep + epo
       !eintra = eintrao
 

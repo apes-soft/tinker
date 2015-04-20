@@ -38,6 +38,7 @@ c
       real*8 tmpdvs(3,n)  ! Temporary derivative sums
       real*8 sumtmp       ! Temporary energy sum
       real*8 viro(3,3)
+      real*8 partmp
 c
 c
 c     zero out each of the potential energy components
@@ -231,9 +232,16 @@ c
        sumtmp = 0.0d0
        ! em, ep give problems => modifications other than in ereal1d?
        ! ev from ehal1c also gives problems.
-       call MPI_Allreduce(ev, sumtmp, 1, MPI_DOUBLE_PRECISION,
+
+       partmp = 0.0d0
+       partmp = ev + emtmp !+ em
+       
+c       print*, "emtmp from id", emtmp
+
+       call MPI_Allreduce(partmp, sumtmp, 1, MPI_DOUBLE_PRECISION,
      &                   MPI_SUM, MPI_COMM_WORLD, ierror)
        ev = 0.0d0
+c       em = 0.0d0
 
 c       print*, "ev from id", ev, rank
 c       print*, "ev summed", sumtmp, rank
