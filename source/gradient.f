@@ -39,6 +39,7 @@ c
       real*8 sumtmp       ! Temporary energy sum
       real*8 viro(3,3)
       real*8 partmp
+      real*8 sumdvs(3,n)
 c
 c
 c     zero out each of the potential energy components
@@ -129,6 +130,8 @@ c
          allocate (deg(3,n))
          allocate (dex(3,n))
       end if
+      
+      allocate (detmp(3,n))
 
       ! zero out each of the first derivative components
       deb = 0.0d0
@@ -234,7 +237,7 @@ c
        ! ev from ehal1c also gives problems.
 
        partmp = 0.0d0
-       partmp = ev + emtmp !+ em
+       partmp = ev + emtmp 
        
 c       print*, "emtmp from id", emtmp
 
@@ -262,7 +265,9 @@ c       print*, "ev summed", sumtmp, rank
 !      energy = esum
 
       tmpdvs = 0.0d0
-      call MPI_Allreduce(dev, tmpdvs, 3*n, MPI_DOUBLE_PRECISION,
+      tmpdvs = dev + detmp
+      sumdvs = 0.0d0
+      call MPI_Allreduce(tmpdvs, sumdvs, 3*n, MPI_DOUBLE_PRECISION,
      &     MPI_SUM, MPI_COMM_WORLD, ierror)
 
       dev = 0.0d0
@@ -275,7 +280,7 @@ c       print*, "ev summed", sumtmp, rank
      &             dec + decd + ded +
      &             dem + dep + der +
      &             des + delf + deg +
-     &             dex + tmpdvs
+     &             dex + sumdvs
       derivs = desum
 
 !      do i = 1, n
@@ -305,6 +310,7 @@ c       print*, "ev summed", sumtmp, rank
 
 
       einter = einter + sumtmp
+      deallocate(detmp)
 
 c
 c     check for an illegal value for the total energy

@@ -5786,7 +5786,7 @@ c      em = em + sumtmp
 c      print*, "em from id ", em, rank
       emtmp = 0.0d0
       emtmp = emo + epo
-      sumtmp = 0.0d0
+c      sumtmp = 0.0d0
 c      call MPI_Allreduce(epo, sumtmp, 1, MPI_DOUBLE_PRECISION,
 c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
 c      ep = ep + sumtmp
@@ -5800,18 +5800,23 @@ c      em = em + emo
       !eintra = eintrao
 
       ! allocate a temporary to collect the sum
+
+      detmp = 0.0d0
+      
+      detmp = demo1 + demo2
+      
       allocate(sumtemp1(3,n), sumtemp2(3,n))
-      sumtemp1 = 0.0d0
-      sumtemp2 = 0.0d0
+c      sumtemp1 = 0.0d0
+c      sumtemp2 = 0.0d0
 
       ! gather the data for demo1 and demo2
-      call MPI_Allreduce(demo1, sumtemp1, 3*n, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-      call MPI_Allreduce(demo2, sumtemp2, 3*n, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+c      call MPI_Allreduce(demo1, sumtemp1, 3*n, MPI_DOUBLE_PRECISION,
+c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+c      call MPI_Allreduce(demo2, sumtemp2, 3*n, MPI_DOUBLE_PRECISION,
+c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
 
       ! do the sum
-      dem = dem + sumtemp1 + sumtemp2
+c      dem = dem + sumtemp1 + sumtemp2
 
       ! reset the sum auxiliaries
       sumtemp1 = 0.0d0
