@@ -5785,11 +5785,11 @@ c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
 c      em = em + sumtmp
 c      print*, "em from id ", em, rank
       emtmp = 0.0d0
-      emtmp = emo
+      emtmp = emo + epo
       sumtmp = 0.0d0
-      call MPI_Allreduce(epo, sumtmp, 1, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-      ep = ep + sumtmp
+c      call MPI_Allreduce(epo, sumtmp, 1, MPI_DOUBLE_PRECISION,
+c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+c      ep = ep + sumtmp
 
       call MPI_Allreduce(eintrao, eintra, 1, MPI_DOUBLE_PRECISION,
      &                   MPI_SUM, MPI_COMM_WORLD, ierror)
