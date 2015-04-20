@@ -5803,9 +5803,9 @@ c      em = em + emo
 
       detmp = 0.0d0
       
-      detmp = demo1 + demo2
+      detmp = demo1 + demo2 +depo1 + depo2
       
-      allocate(sumtemp1(3,n), sumtemp2(3,n))
+c      allocate(sumtemp1(3,n), sumtemp2(3,n))
 c      sumtemp1 = 0.0d0
 c      sumtemp2 = 0.0d0
 
@@ -5819,19 +5819,19 @@ c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
 c      dem = dem + sumtemp1 + sumtemp2
 
       ! reset the sum auxiliaries
-      sumtemp1 = 0.0d0
-      sumtemp2 = 0.0d0
+c      sumtemp1 = 0.0d0
+c      sumtemp2 = 0.0d0
 
       ! gather the data for demo1 and demo2
-      call MPI_Allreduce(depo1, sumtemp1, 3*n, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-      call MPI_Allreduce(depo2, sumtemp2, 3*n, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+c      call MPI_Allreduce(depo1, sumtemp1, 3*n, MPI_DOUBLE_PRECISION,
+c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+c      call MPI_Allreduce(depo2, sumtemp2, 3*n, MPI_DOUBLE_PRECISION,
+c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
 
-      dep = dep + sumtemp1 + sumtemp2
+c      dep = dep + sumtemp1 + sumtemp2
 
       ! Can now deallocate the temporary sum variables
-      deallocate(sumtemp1, sumtemp2)
+c      deallocate(sumtemp1, sumtemp2)
 
       !do i = 1, n
       !   do j = 1, 3
