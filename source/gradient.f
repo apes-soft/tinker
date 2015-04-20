@@ -69,6 +69,8 @@ c
       elf = 0.0d0
       eg = 0.0d0
       ex = 0.0d0
+      virtemp = 0.0d0
+      etmp = 0.0d0
 c
 c     perform dynamic allocation of some global arrays
 c

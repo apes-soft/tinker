@@ -1253,7 +1253,7 @@ c      sumtmp = 0.0d0
 c      call MPI_Allreduce(eintero, sumtmp, 1, MPI_DOUBLE_PRECISION,
 c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
 c      einter = einter + sumtmp
-      etmp = eintero
+      etmp = etmp + eintero
 
 c      devotmp = 0.0d0
 c      call MPI_Allreduce(devo, devotmp, 3*n, MPI_DOUBLE_PRECISION,
@@ -1264,7 +1264,7 @@ c      virotmp = 0.0d0
 c      call MPI_Allreduce(viro, virotmp, 9, MPI_DOUBLE_PRECISION,
 c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
 c      vir = vir + virotmp
-      virtemp = viro
+      virtemp = virtemp + viro
 
 !     call system_clock(tock)
 !     print *,"ehal1c, ",rank,",",time1,",",

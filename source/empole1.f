@@ -4784,6 +4784,7 @@ c
       use polpot
       use shunt
       use virial
+      use inter
 
       implicit none
 
@@ -5791,9 +5792,12 @@ c      call MPI_Allreduce(epo, sumtmp, 1, MPI_DOUBLE_PRECISION,
 c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
 c      ep = ep + sumtmp
 
-      call MPI_Allreduce(eintrao, eintra, 1, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+c      call MPI_Allreduce(eintrao, eintra, 1, MPI_DOUBLE_PRECISION,
+c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
       !eintra = eintra + sumtmp
+
+      etmp = etmp + eintrao 
+
 
 c      em = em + emo
       !ep = ep + epo
@@ -5803,7 +5807,7 @@ c      em = em + emo
 
       detmp = 0.0d0
       
-      detmp = demo1 + demo2 +depo1 + depo2
+      detmp = demo1 + demo2 + depo1 + depo2
       
 c      allocate(sumtemp1(3,n), sumtemp2(3,n))
 c      sumtemp1 = 0.0d0
