@@ -1249,10 +1249,11 @@ c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
 
 c      print*, "evo summed", e_new, rank
 
-      sumtmp = 0.0d0
-      call MPI_Allreduce(eintero, sumtmp, 1, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-      einter = einter + sumtmp
+c      sumtmp = 0.0d0
+c      call MPI_Allreduce(eintero, sumtmp, 1, MPI_DOUBLE_PRECISION,
+c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+c      einter = einter + sumtmp
+      etmp = eintero
 
 c      devotmp = 0.0d0
 c      call MPI_Allreduce(devo, devotmp, 3*n, MPI_DOUBLE_PRECISION,

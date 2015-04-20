@@ -291,6 +291,13 @@ c       print*, "ev summed", sumtmp, rank
 
       vir = vir + viro
 
+      sumtmp = 0.0d0
+      call MPI_Allreduce(etmp, sumtmp, 1, MPI_DOUBLE_PRECISION,
+     &     MPI_SUM, MPI_COMM_WORLD, ierror)
+
+
+      einter = einter + sumtmp
+
 c
 c     check for an illegal value for the total energy
 c

@@ -18,5 +18,6 @@ c
       module inter
       implicit none
       real*8 einter
+      real*8 etmp
       save
       end
