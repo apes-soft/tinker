@@ -5840,11 +5840,14 @@ c      deallocate(sumtemp1, sumtemp2)
       !   end do
       !end do
 
-      virtmp = 0.0d0
-      call MPI_Allreduce(viro, virtmp, 9, MPI_DOUBLE_PRECISION,
-     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
 
-      vir = vir + virtmp
+      virtemp = virtemp + viro
+
+c      virtmp = 0.0d0
+c      call MPI_Allreduce(viro, virtmp, 9, MPI_DOUBLE_PRECISION,
+c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+
+c      vir = vir + virtmp
 
       !do i = 1, 3
       !   do j = 1, 3
