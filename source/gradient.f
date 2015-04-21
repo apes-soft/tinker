@@ -311,8 +311,12 @@ c       print*, "ev summed", sumtmp, rank
      &     MPI_SUM, MPI_COMM_WORLD, ierror)
 
 
-      einter = einter + sumtmp
+      einter = einter + em + ep  + sumtmp
       deallocate(detmp)
+
+      print*, "einter", einter
+      print*, "vir", vir
+
 
 c
 c     check for an illegal value for the total energy

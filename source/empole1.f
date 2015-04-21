@@ -4744,7 +4744,8 @@ c
 c
 c     intermolecular energy is total minus intramolecular part
 c
-      einter = einter + em + ep - eintra
+      etmp = etmp + emtmp - eintra
+c      einter = einter + em + ep - eintra
       return
       end
 c
@@ -5796,12 +5797,12 @@ c      call MPI_Allreduce(eintrao, eintra, 1, MPI_DOUBLE_PRECISION,
 c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
       !eintra = eintra + sumtmp
 
-      etmp = etmp + eintrao 
+c      etmp = etmp + eintrao 
 
 
 c      em = em + emo
       !ep = ep + epo
-      !eintra = eintrao
+      eintra = eintrao
 
       ! allocate a temporary to collect the sum
 
