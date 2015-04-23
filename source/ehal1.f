@@ -21,6 +21,7 @@ c
       use limits
       use vdwpot
       use virial
+      use mpiparams
       implicit none
       real*8 elrc,vlrc
 c
@@ -39,10 +40,12 @@ c     apply long range van der Waals correction if desired
 c
       if (use_vcorr) then
          call evcorr1 (elrc,vlrc)
+         if (rank .eq. 0) then
          ev = ev + elrc
          vir(1,1) = vir(1,1) + vlrc
          vir(2,2) = vir(2,2) + vlrc
          vir(3,3) = vir(3,3) + vlrc
+         end if
       end if
       return
       end
