@@ -4862,7 +4862,6 @@ c
       real*8, allocatable, dimension(:) :: mscale, pscale, dscale
       real*8, allocatable, dimension(:) :: uscale
       real*8, allocatable, dimension(:,:) :: demo1, demo2, depo1, depo2
-      real*8, allocatable, dimension(:,:) :: sumtemp1, sumtemp2
       real*8, dimension(3,3):: virtmp
       real*8 sumtmp
       integer:: lstart, lend
@@ -4941,7 +4940,7 @@ c
       call splitlimits(lstart, lend, nelst)
 
       ! compute the real space portion of the Ewald summation
-      do i = lstart, lend !1, npole
+      do i = lstart, lend   ! originally run from 1, npole
          ii    = ipole(i)   ! atom number of multipole site 
          pdi   = pdamp(i)   ! polarizability value scale factor
          pti   = thole(i)   ! polarizability damping value
@@ -5779,65 +5778,17 @@ c
 
       ! add local copies to global variables for OpenMP & 
       ! MPI calculations
-c      sumtmp = 0.0d0
-c      print*, "emo from id ", emo, rank
-
-c      call MPI_Allreduce(emo, sumtmp, 1, MPI_DOUBLE_PRECISION,
-c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-c      em = em + sumtmp
-c      print*, "em from id ", em, rank
       emtmp = 0.0d0
       emtmp = emo + epo
-c      sumtmp = 0.0d0
-c      call MPI_Allreduce(epo, sumtmp, 1, MPI_DOUBLE_PRECISION,
-c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-c      ep = ep + sumtmp
-
-c      call MPI_Allreduce(eintrao, eintra, 1, MPI_DOUBLE_PRECISION,
-c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-      !eintra = eintra + sumtmp
-
-c      etmp = etmp + eintrao 
-
 
 c      em = em + emo
       !ep = ep + epo
       eintra = eintrao
 
-      ! allocate a temporary to collect the sum
-
       detmp = 0.0d0
       
       detmp = demo1 + demo2 + depo1 + depo2
       
-c      allocate(sumtemp1(3,n), sumtemp2(3,n))
-c      sumtemp1 = 0.0d0
-c      sumtemp2 = 0.0d0
-
-      ! gather the data for demo1 and demo2
-c      call MPI_Allreduce(demo1, sumtemp1, 3*n, MPI_DOUBLE_PRECISION,
-c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-c      call MPI_Allreduce(demo2, sumtemp2, 3*n, MPI_DOUBLE_PRECISION,
-c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-
-      ! do the sum
-c      dem = dem + sumtemp1 + sumtemp2
-
-      ! reset the sum auxiliaries
-c      sumtemp1 = 0.0d0
-c      sumtemp2 = 0.0d0
-
-      ! gather the data for demo1 and demo2
-c      call MPI_Allreduce(depo1, sumtemp1, 3*n, MPI_DOUBLE_PRECISION,
-c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-c      call MPI_Allreduce(depo2, sumtemp2, 3*n, MPI_DOUBLE_PRECISION,
-c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-
-c      dep = dep + sumtemp1 + sumtemp2
-
-      ! Can now deallocate the temporary sum variables
-c      deallocate(sumtemp1, sumtemp2)
-
       !do i = 1, n
       !   do j = 1, 3
       !      dem(j,i) = dem(j,i) + demo1(j,i) + demo2(j,i)
@@ -5847,10 +5798,6 @@ c      deallocate(sumtemp1, sumtemp2)
 
 
       virtemp = virtemp + viro
-
-c      virtmp = 0.0d0
-c      call MPI_Allreduce(viro, virtmp, 9, MPI_DOUBLE_PRECISION,
-c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
 
 c      vir = vir + virtmp
 

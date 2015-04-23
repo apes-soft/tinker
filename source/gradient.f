@@ -314,8 +314,8 @@ c       print*, "ev summed", sumtmp, rank
       einter = einter + em + ep  + sumtmp
       deallocate(detmp)
 
-      print*, "einter", einter
-      print*, "vir", vir
+      !print*, "einter", einter
+      !print*, "vir", vir
 
 
 c
