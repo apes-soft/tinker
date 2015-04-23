@@ -39,12 +39,16 @@ c
 c     apply long range van der Waals correction if desired
 c
       if (use_vcorr) then
+
          call evcorr1 (elrc,vlrc)
+
+         ! Only proc 0 updates the values otherwise contribution
+         ! will be replicated.
          if (rank .eq. 0) then
-         ev = ev + elrc
-         vir(1,1) = vir(1,1) + vlrc
-         vir(2,2) = vir(2,2) + vlrc
-         vir(3,3) = vir(3,3) + vlrc
+             ev = ev + elrc
+             vir(1,1) = vir(1,1) + vlrc
+             vir(2,2) = vir(2,2) + vlrc
+             vir(3,3) = vir(3,3) + vlrc
          end if
       end if
       return
