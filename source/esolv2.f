@@ -16,9 +16,6 @@ c     "esolv2" calculates second derivatives of the implicit
 c     solvation energy for surface area, generalized Born,
 c     generalized Kirkwood and Poisson-Boltzmann solvation models
 c
-c     note this version does not contain the chain rule terms
-c     for derivatives of Born radii with respect to coordinates
-c
 c
       subroutine esolv2 (i)
       use sizes
@@ -50,7 +47,7 @@ c
 c     deallocate (aes)
 c     deallocate (des)
 c
-c     get the generalized Born term for GB/SA solvation
+c     get the electrostatic Hessian for GB/SA solvation
 c
       if (use_born .and. solvtyp(1:2).ne.'GK') then
          if (use_smooth) then
@@ -58,7 +55,221 @@ c
          else
             call egb2a (i)
          end if
+c
+c     get full finite difference Hessian for other models
+c
+      else
+         call esolv2a (i)
       end if
+      return
+      end
+c
+c
+c     #################################################################
+c     ##                                                             ##
+c     ##  subroutine esolv2a  --  implicit solvation Hessian matrix  ##
+c     ##                                                             ##
+c     #################################################################
+c
+c
+c     "esolv2a" calculates second derivatives of the implicit solvation
+c     potential energy by finite differences
+c
+c
+      subroutine esolv2a (i)
+      use sizes
+      use atoms
+      use charge
+      use deriv
+      use hessn
+      use mpole
+      use potent
+      use solute
+      implicit none
+      integer i,j,k
+      integer nlist
+      integer, allocatable :: list(:)
+      real*8 eps,old
+      real*8, allocatable :: d0(:,:)
+      logical prior
+      logical biglist
+      logical reborn
+      logical reinduce
+      logical twosided
+c
+c
+c     set the default stepsize and flag for induced dipoles
+c
+      eps = 1.0d-5
+      biglist = .false.
+      reborn = .false.
+      reinduce = .false.
+      twosided = .false.
+      if (n .le. 300) then
+         biglist = .true.
+         if (use_born)  reborn = .true.
+         reinduce = .true.
+         twosided = .true.
+      end if
+c
+c     perform dynamic allocation of some local arrays
+c
+      allocate (list(n))
+      allocate (d0(3,n))
+c
+c     perform dynamic allocation of some global arrays
+c
+      prior = .false.
+      if (allocated(des)) then
+         prior = .true.
+         if (size(des) .lt. 3*n) then
+            deallocate (des)
+         end if
+      end if
+      if (.not. allocated(des))  allocate (des(3,n))
+c
+c     optionally restrict calculation to current atom and any
+c     auxiliaries; results in a faster but approximate Hessian
+c
+      nlist = 0
+      if (biglist) then
+         nlist = n
+         do k = 1, n
+            list(k) = k
+         end do
+      else
+         if (use_born .and. solvtyp(1:2).ne.'GK') then
+            do k = 1, nion
+               if (iion(k) .eq. i) then
+                  nlist = nlist + 1
+                  list(nlist) = k
+               end if
+            end do
+         else if (solvtyp(1:2) .eq. 'GK') then
+            do k = 1, npole
+               if (ipole(k).eq.i .or. zaxis(k).eq.i .or.
+     &             xaxis(k).eq.i .or. yaxis(k).eq.i) then
+                  nlist = nlist + 1
+                  list(nlist) = k
+               end if
+            end do
+         else
+            nlist = 1
+            list(1) = i
+         end if
+      end if
+c
+c     get solvation first derivatives for the base structure
+c
+      if (.not. twosided) then
+         call esolv2b (nlist,list,reborn,reinduce)
+         do k = 1, n
+            do j = 1, 3
+               d0(j,k) = des(j,k)
+            end do
+         end do
+      end if
+c
+c     find numerical x-components via perturbed structures
+c
+      old = x(i)
+      if (twosided) then
+         x(i) = x(i) - 0.5d0*eps
+         call esolv2b (nlist,list,reborn,reinduce)
+         do k = 1, n
+            do j = 1, 3
+               d0(j,k) = des(j,k)
+            end do
+         end do
+      end if
+      x(i) = x(i) + eps
+      call esolv2b (nlist,list,reborn,reinduce)
+      x(i) = old
+      do k = 1, n
+         do j = 1, 3
+            hessx(j,k) = hessx(j,k) + (des(j,k)-d0(j,k))/eps
+         end do
+      end do
+c
+c     find numerical y-components via perturbed structures
+c
+      old = y(i)
+      if (twosided) then
+         y(i) = y(i) - 0.5d0*eps
+         call esolv2b (nlist,list,reborn,reinduce)
+         do k = 1, n
+            do j = 1, 3
+               d0(j,k) = des(j,k)
+            end do
+         end do
+      end if
+      y(i) = y(i) + eps
+      call esolv2b (nlist,list,reborn,reinduce)
+      y(i) = old
+      do k = 1, n
+         do j = 1, 3
+            hessy(j,k) = hessy(j,k) + (des(j,k)-d0(j,k))/eps
+         end do
+      end do
+c
+c     find numerical z-components via perturbed structures
+c
+      old = z(i)
+      if (twosided) then
+         z(i) = z(i) - 0.5d0*eps
+         call esolv2b (nlist,list,reborn,reinduce)
+         do k = 1, n
+            do j = 1, 3
+               d0(j,k) = des(j,k)
+            end do
+         end do
+      end if
+      z(i) = z(i) + eps
+      call esolv2b (nlist,list,reborn,reinduce)
+      z(i) = old
+      do k = 1, n
+         do j = 1, 3
+            hessz(j,k) = hessz(j,k) + (des(j,k)-d0(j,k))/eps
+         end do
+      end do
+c
+c     perform deallocation of some global arrays
+c
+      if (.not. prior) then
+         deallocate (des)
+      end if
+c
+c     perform deallocation of some local arrays
+c
+      deallocate (list)
+      deallocate (d0)
+      return
+      end
+c
+c
+c     ###############################################################
+c     ##                                                           ##
+c     ##  subroutine esolv2b  --  finite diffs implicit solvation  ##
+c     ##                                                           ##
+c     ###############################################################
+c
+c
+c     "esolv2b" finds implicit solvation gradients needed for
+c     calculation of the Hessian matrix by finite differences
+c
+c
+      subroutine esolv2b (nlist,list,reborn,reinduce)
+      implicit none
+      integer nlist
+      integer list(*)
+      logical reborn
+      logical reinduce
+c
+c
+c     get implicit solvation gradient for finite differences
+c
+      if (reborn)  call born
+      call esolv1
       return
       end
 c
@@ -72,6 +283,9 @@ c
 c
 c     "egb2a" calculates second derivatives of the generalized
 c     Born energy term for the GB/SA solvation models
+c
+c     note this version does not contain the chain rule terms
+c     for derivatives of Born radii with respect to coordinates
 c
 c
       subroutine egb2a (i)
@@ -228,6 +442,9 @@ c
 c     "egb2b" calculates second derivatives of the generalized
 c     Born energy term for the GB/SA solvation models for use with
 c     potential smoothing methods
+c
+c     note this version does not contain the chain rule terms
+c     for derivatives of Born radii with respect to coordinates
 c
 c
       subroutine egb2b (i)
