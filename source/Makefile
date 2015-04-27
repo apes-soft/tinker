@@ -150,7 +150,7 @@ else ifeq ($(COMPARCH),MPILinuxIntel)
   LIBS      =
   FCFLAGS   = -c -xHost -warn all,nointerfaces
   #OPTFLAGS  = -g -check bounds -traceback 
-  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive
+  OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = -static-libgcc -static-intel
