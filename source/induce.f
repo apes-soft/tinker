@@ -1422,12 +1422,16 @@ c
       use math
       use mpole
       use polar
+      use mpiparams
       implicit none
       integer i,j,ii
       real*8 term
       real*8 ucell(3)
       real*8 field(3,*)
       real*8 fieldp(3,*)
+      real*8 fieldt(3,npole)
+      real*8 fieldtp(3,npole)
+      real*8 fieldtmp(3,npole)
 c
 c
 c     zero out the value of the field at each site
@@ -1436,6 +1440,8 @@ c
          do j = 1, 3
             field(j,i) = 0.0d0
             fieldp(j,i) = 0.0d0
+            fieldt(j,i) = 0.0d0
+            fieldtp(j,i) = 0.0d0
          end do
       end do
 c
@@ -1445,16 +1451,44 @@ c
       do i = 1, npole
          do j = 1, 3
             fieldp(j,i) = field(j,i)
+            fieldt(j,i) = field(j,i)
+            fieldtp(j,i) = fieldp(j,i)
          end do
       end do
 c
 c     get the real space portion of the electrostatic field
 c
+
+c      fieldt = field
+c      fieldtp = fieldp
+      fieldtmp = 0.0d0
+
       if (use_mlist) then
          call udirect2b (field,fieldp)
       else
          call udirect2a (field,fieldp)
       end if
+
+       call MPI_Allreduce(field, fieldtmp, 3*npole, 
+     &     MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
+     &     ierror)
+       
+       do i =1, npole
+          do j=1,3
+             field(j,i) = fieldtmp(j,i) + fieldt(j,i)
+          end do
+       end do
+       fieldtmp = 0.0d0
+
+       call MPI_Allreduce(fieldp, fieldtmp, 3*npole, 
+     &      MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &      ierror)
+       
+       do i=1,npole
+          do j=1,3
+             fieldp(j,i) = fieldtp(j,i) + fieldtmp(j,i)
+          end do
+       end do
 c
 c     get the self-energy portion of the electrostatic field
 c
@@ -2565,17 +2599,21 @@ c
 !     time1 = (tock-tick)/real(rate,kind=8)
 
       ! Get the distributed field components
-      fieldtmp = 0.0d0
-      call MPI_Allreduce(fieldt, fieldtmp, 3*npole, 
-     &                   MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
-     &                   ierror)
-      field = field + fieldtmp
+C$$$ fieldtmp = 0.0d0
+C$$$      call MPI_Allreduce(fieldt, fieldtmp, 3*npole, 
+C$$$     &                   MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
+C$$$     &                   ierror)
+C$$$      field = field + fieldtmp
 
-      fieldtmp = 0.0d0
-      call MPI_Allreduce(fieldtp, fieldtmp, 3*npole, 
-     &                   MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
-     &                   ierror)
-      fieldp = fieldp + fieldtmp
+C$$$      fieldtmp = 0.0d0
+C$$$      call MPI_Allreduce(fieldtp, fieldtmp, 3*npole, 
+C$$$     &                   MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+C$$$     &                   ierror)
+C$$$      fieldp = fieldp + fieldtmp
+
+      field = fieldt
+      fieldp = fieldtp
+
 
 
       !do i = 1, npole
