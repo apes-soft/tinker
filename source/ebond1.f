@@ -27,6 +27,7 @@ c
       use group
       use usage
       use virial
+      use mpiparams
       implicit none
       integer i,ia,ib
       real*8 e,ebo
@@ -37,7 +38,8 @@ c
       real*8 xab,yab,zab,rab
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
-      real*8 viro(3,3)
+      real*8 viro(3,3), virotmp(3,3)
+      integer lstart, lend
       real*8, allocatable :: debo(:,:)
       logical proceed
 c
@@ -45,6 +47,7 @@ c
 c     zero out the bond energy and first derivatives
 c
       eb = 0.0d0
+      virotmp = 0.0d0
       do i = 1, n
          deb(1,i) = 0.0d0
          deb(2,i) = 0.0d0
@@ -58,16 +61,23 @@ c
 c     transfer global to local copies for OpenMP calculation
 c
       ebo = eb
-      do i = 1, n
-         debo(1,i) = deb(1,i)
-         debo(2,i) = deb(2,i)
-         debo(3,i) = deb(3,i)
-      end do
-      do i = 1, 3
-         viro(1,i) = vir(1,i)
-         viro(2,i) = vir(2,i)
-         viro(3,i) = vir(3,i)
-      end do
+      debo = deb 
+      viro = 0.0d0
+C$$$      do i = 1, n
+C$$$         debo(1,i) = deb(1,i)
+C$$$         debo(2,i) = deb(2,i)
+C$$$         debo(3,i) = deb(3,i)
+C$$$      end do
+C$$$      do i = 1, 3
+C$$$         viro(1,i) = vir(1,i)
+C$$$         viro(2,i) = vir(2,i)
+C$$$         viro(3,i) = vir(3,i)
+C$$$      end do
+
+C$$$      print*, "nbond", nbond
+      call splitloop(lstart,lend,nbond)
+C$$$       print*,"the splits are", lstart, lend, rank
+
 c
 c     set OpenMP directives for the major loop structure
 c
@@ -78,7 +88,7 @@ c
 c
 c     calculate the bond stretch energy and first derivatives
 c
-      do i = 1, nbond
+      do i = lstart, lend!1, nbond
          ia = ibnd(1,i)
          ib = ibnd(2,i)
          ideal = bl(i)
@@ -175,17 +185,36 @@ c
 c
 c     transfer local to global copies for OpenMP calculation
 c
-      eb = ebo
-      do i = 1, n
-         deb(1,i) = debo(1,i)
-         deb(2,i) = debo(2,i)
-         deb(3,i) = debo(3,i)
-      end do
-      do i = 1, 3
-         vir(1,i) = viro(1,i)
-         vir(2,i) = viro(2,i)
-         vir(3,i) = viro(3,i)
-      end do
+      !eb = ebo
+      ebtmp = ebo
+c      call MPI_Allreduce(ebo, eb, 1, MPI_DOUBLE_PRECISION,
+c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+      !deb = debo
+      
+      debtmp = debo
+      
+c       call MPI_Allreduce(debo, deb, 3*n, MPI_DOUBLE_PRECISION,
+c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+
+c       call MPI_Allreduce(viro, virotmp, 9, MPI_DOUBLE_PRECISION,
+c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
+       
+       !vir = vir + virotmp
+
+      virtemp = virtemp + viro
+
+     
+
+C$$$      do i = 1, n
+C$$$         deb(1,i) = debo(1,i)
+C$$$         deb(2,i) = debo(2,i)
+C$$$         deb(3,i) = debo(3,i)
+C$$$      end do
+C$$$      do i = 1, 3
+C$$$         vir(1,i) = viro(1,i)
+C$$$         vir(2,i) = viro(2,i)
+C$$$         vir(3,i) = viro(3,i)
+C$$$      end do
 c
 c     perform deallocation of some local arrays
 c

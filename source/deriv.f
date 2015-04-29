@@ -68,6 +68,8 @@ c
       real*8, allocatable :: delf(:,:)
       real*8, allocatable :: deg(:,:)
       real*8, allocatable :: dex(:,:)
+
       real*8, allocatable :: detmp(:,:)
+      real*8, allocatable :: debtmp(:,:)
       save
       end

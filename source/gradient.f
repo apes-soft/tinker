@@ -69,8 +69,11 @@ c
       elf = 0.0d0
       eg = 0.0d0
       ex = 0.0d0
+      ebtmp = 0.0d0
+
       virtemp = 0.0d0
       etmp = 0.0d0
+    
 c
 c     perform dynamic allocation of some global arrays
 c
@@ -134,6 +137,7 @@ c
       end if
       
       allocate (detmp(3,n))
+      allocate(debtmp(3,n))
 
       ! zero out each of the first derivative components
       deb = 0.0d0
@@ -162,9 +166,14 @@ c
       deg = 0.0d0
       dex = 0.0d0
 
+      emtmp = 0.0d0
+      debtmp = 0.0d0
+      
+
       ! zero out the virial and the intermolecular energy
       vir = 0.0d0
       einter = 0.0d0
+   
 c
 c     maintain any periodic boundary conditions
 c
@@ -239,13 +248,14 @@ c
        ! ev from ehal1c also gives problems.
 
        partmp = 0.0d0
-       partmp = ev + emtmp 
+       partmp = ev + emtmp + ebtmp !+ eb
        
 c       print*, "emtmp from id", emtmp
 
        call MPI_Allreduce(partmp, sumtmp, 1, MPI_DOUBLE_PRECISION,
      &                   MPI_SUM, MPI_COMM_WORLD, ierror)
        ev = 0.0d0
+       !eb = 0.0d0
 c       em = 0.0d0
 
 c       print*, "ev from id", ev, rank
@@ -267,13 +277,14 @@ c       print*, "ev summed", sumtmp, rank
 !      energy = esum
 
       tmpdvs = 0.0d0
-      tmpdvs = dev + detmp
+      tmpdvs = dev + detmp + debtmp!+ deb
       sumdvs = 0.0d0
       call MPI_Allreduce(tmpdvs, sumdvs, 3*n, MPI_DOUBLE_PRECISION,
      &     MPI_SUM, MPI_COMM_WORLD, ierror)
 
       dev = 0.0d0
-
+      !deb = 0.0d0
+      
       desum = deb + dea + deba +
      &             deub + deaa + deopb +
      &             deopd + deid + deit +
@@ -313,6 +324,7 @@ c       print*, "ev summed", sumtmp, rank
 
       einter = einter + em + ep  + sumtmp
       deallocate(detmp)
+      deallocate(debtmp)
 
       !print*, "einter", einter
       !print*, "vir", vir

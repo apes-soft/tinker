@@ -62,6 +62,19 @@
 !     &      sum(cost(lstart:lend)),",",totcost,",",size(cost)
 
       end subroutine 
+     
+      subroutine splitloop(lstart,lend,loop)
+      integer, intent(out) :: lstart
+      integer, intent(out) :: lend
+      integer, intent(in) :: loop
+      integer :: avg
+
+      avg = loop/nprocs
+      lstart = avg*rank + 1
+      lend = avg*(rank+1) 
+      if(rank .eq. nprocs-1) lend = loop
+
+      end subroutine
 
       end module mpiparams
 
