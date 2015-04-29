@@ -51,6 +51,8 @@ c
       real*8 ed,em,ep
       real*8 er,es,elf
       real*8 eg,ex
+
       real*8 emtmp, ebtmp
+      real*8 eatmp
       save
       end

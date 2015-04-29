@@ -71,5 +71,6 @@ c
 
       real*8, allocatable :: detmp(:,:)
       real*8, allocatable :: debtmp(:,:)
+      real*8, allocatable :: deatmp(:,:)
       save
       end

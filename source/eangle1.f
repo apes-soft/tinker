@@ -30,6 +30,7 @@ c
       use math
       use usage
       use virial
+      use mpiparams
       implicit none
       integer i,ia,ib,ic,id
       real*8 e,eao
@@ -71,6 +72,7 @@ c
       real*8 viro(3,3)
       real*8, allocatable :: deao(:,:)
       logical proceed
+      integer lstart,lend
 c
 c
 c     zero out energy and first derivative components
@@ -89,16 +91,23 @@ c
 c     transfer global to local copies for OpenMP calculation
 c
       eao = ea
-      do i = 1, n
-         deao(1,i) = dea(1,i)
-         deao(2,i) = dea(2,i)
-         deao(3,i) = dea(3,i)
-      end do
-      do i = 1, 3
-         viro(1,i) = vir(1,i)
-         viro(2,i) = vir(2,i)
-         viro(3,i) = vir(3,i)
-      end do
+      deao = dea
+      viro = 0.0d0
+      
+C$$$      do i = 1, n
+C$$$         deao(1,i) = dea(1,i)
+C$$$         deao(2,i) = dea(2,i)
+C$$$         deao(3,i) = dea(3,i)
+C$$$      end do
+C$$$      do i = 1, 3
+C$$$         viro(1,i) = vir(1,i)
+C$$$         viro(2,i) = vir(2,i)
+C$$$         viro(3,i) = vir(3,i)
+C$$$      end do
+
+      call splitloop(lstart,lend, nangle)
+
+
 c
 c     set OpenMP directives for the major loop structure
 c
@@ -109,7 +118,7 @@ c
 c
 c     calculate the bond angle bending energy term
 c
-      do i = 1, nangle
+      do i = lstart, lend !1, nangle
          ia = iang(1,i)
          ib = iang(2,i)
          ic = iang(3,i)
@@ -408,17 +417,26 @@ c
 c
 c     transfer local to global copies for OpenMP calculation
 c
-      ea = eao
-      do i = 1, n
-         dea(1,i) = deao(1,i)
-         dea(2,i) = deao(2,i)
-         dea(3,i) = deao(3,i)
-      end do
-      do i = 1, 3
-         vir(1,i) = viro(1,i)
-         vir(2,i) = viro(2,i)
-         vir(3,i) = viro(3,i)
-      end do
+      eatmp = eao
+      deatmp = deao
+C$$$ do i = 1,n
+C$$$         deatmp(1,i) = deao(1,i)
+C$$$         deatmp(2,i) = deao(2,i)
+C$$$         deatmp(3,i) = deao(3,i)
+C$$$      end do
+      virtemp = virtemp + viro 
+
+      !ea = eao
+C$$$     do i = 1, n
+C$$$         dea(1,i) = deao(1,i)
+C$$$         dea(2,i) = deao(2,i)
+C$$$         dea(3,i) = deao(3,i)
+C$$$      end do
+C$$$      do i = 1, 3
+C$$$         vir(1,i) = viro(1,i)
+C$$$         vir(2,i) = viro(2,i)
+C$$$         vir(3,i) = viro(3,i)
+C$$$      end do
 c
 c     perform deallocation of some local arrays
 c
