@@ -27,6 +27,7 @@ c
       use torpot
       use usage
       use virial
+      use mpiparams
       implicit none
       integer i,ia,ib,ic
       integer id,ie,ig
@@ -70,6 +71,10 @@ c
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
       logical proceed
+      real*8 viro(3,3)
+      integer lstart, lend
+      
+
 c
 c
 c     zero out the pi-orbital torsion energy and first derivatives
@@ -80,10 +85,14 @@ c
          dept(2,i) = 0.0d0
          dept(3,i) = 0.0d0
       end do
+      viro = 0.0d0
+
+      call splitloop(lstart, lend, npitors)
+
 c
 c     calculate the pi-orbital torsion angle energy term
 c
-      do i = 1, npitors
+      do i = lstart, lend !1, npitors
          ia = ipit(1,i)
          ib = ipit(2,i)
          ic = ipit(3,i)
@@ -283,17 +292,20 @@ c
                vyy = ydc*vyterm + ycp*dedyip - yqd*dedyiq
                vzy = zdc*vyterm + zcp*dedyip - zqd*dedyiq
                vzz = zdc*vzterm + zcp*dedzip - zqd*dedziq
-               vir(1,1) = vir(1,1) + vxx
-               vir(2,1) = vir(2,1) + vyx
-               vir(3,1) = vir(3,1) + vzx
-               vir(1,2) = vir(1,2) + vyx
-               vir(2,2) = vir(2,2) + vyy
-               vir(3,2) = vir(3,2) + vzy
-               vir(1,3) = vir(1,3) + vzx
-               vir(2,3) = vir(2,3) + vzy
-               vir(3,3) = vir(3,3) + vzz
+               viro(1,1) = viro(1,1) + vxx
+               viro(2,1) = viro(2,1) + vyx
+               viro(3,1) = viro(3,1) + vzx
+               viro(1,2) = viro(1,2) + vyx
+               viro(2,2) = viro(2,2) + vyy
+               viro(3,2) = viro(3,2) + vzy
+               viro(1,3) = viro(1,3) + vzx
+               viro(2,3) = viro(2,3) + vzy
+               viro(3,3) = viro(3,3) + vzz
             end if
          end if
       end do
+
+      virtemp = virtemp + viro 
+
       return
       end
