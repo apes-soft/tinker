@@ -30,6 +30,7 @@ c
       use opbend
       use usage
       use virial
+      use mpiparams
       implicit none
       integer i,iopbend
       integer ia,ib,ic,id
@@ -62,6 +63,8 @@ c
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
       logical proceed
+      integer lstart, lend
+      real*8 viro(3,3)
 c
 c
 c     zero out out-of-plane energy and first derivatives
@@ -72,10 +75,15 @@ c
          deopb(2,i) = 0.0d0
          deopb(3,i) = 0.0d0
       end do
+
+      viro = 0.0d0
+
+      call splitloop(lstart, lend, nopbend)
+
 c
 c     calculate the out-of-plane bending energy and derivatives
 c
-      do iopbend = 1, nopbend
+      do iopbend = lstart, lend !1, nopbend
          i = iopb(iopbend)
          ia = iang(1,i)
          ib = iang(2,i)
@@ -251,17 +259,20 @@ c
                vyy = yab*dedyia + ycb*dedyic + ydb*dedyid
                vzy = zab*dedyia + zcb*dedyic + zdb*dedyid
                vzz = zab*dedzia + zcb*dedzic + zdb*dedzid
-               vir(1,1) = vir(1,1) + vxx
-               vir(2,1) = vir(2,1) + vyx
-               vir(3,1) = vir(3,1) + vzx
-               vir(1,2) = vir(1,2) + vyx
-               vir(2,2) = vir(2,2) + vyy
-               vir(3,2) = vir(3,2) + vzy
-               vir(1,3) = vir(1,3) + vzx
-               vir(2,3) = vir(2,3) + vzy
-               vir(3,3) = vir(3,3) + vzz
+               viro(1,1) = viro(1,1) + vxx
+               viro(2,1) = viro(2,1) + vyx
+               viro(3,1) = viro(3,1) + vzx
+               viro(1,2) = viro(1,2) + vyx
+               viro(2,2) = viro(2,2) + vyy
+               viro(3,2) = viro(3,2) + vzy
+               viro(1,3) = viro(1,3) + vzx
+               viro(2,3) = viro(2,3) + vzy
+               viro(3,3) = viro(3,3) + vzz
             end if
          end if
       end do
+
+      virtemp = virtemp + viro
+
       return
       end
