@@ -56,6 +56,7 @@ c
       use tors
       use usage
       use virial
+      use mpiparams
       implicit none
       integer i,ia,ib,ic,id
       real*8 e,eto
@@ -95,6 +96,7 @@ c
       real*8 viro(3,3)
       real*8, allocatable :: deto(:,:)
       logical proceed
+      integer lstart, lend
 c
 c
 c     zero out the torsional energy and first derivatives
@@ -113,16 +115,21 @@ c
 c     transfer global to local copies for OpenMP calculation
 c
       eto = et
-      do i = 1, n
-         deto(1,i) = det(1,i)
-         deto(2,i) = det(2,i)
-         deto(3,i) = det(3,i)
-      end do
-      do i = 1, 3
-         viro(1,i) = vir(1,i)
-         viro(2,i) = vir(2,i)
-         viro(3,i) = vir(3,i)
-      end do
+      deto = det
+      viro = 0.0d0
+      
+      call splitloop(lstart, lend, ntors)
+
+C$$$      do i = 1, n
+C$$$         deto(1,i) = det(1,i)
+C$$$         deto(2,i) = det(2,i)
+C$$$         deto(3,i) = det(3,i)
+C$$$      end do
+C$$$      do i = 1, 3
+C$$$         viro(1,i) = vir(1,i)
+C$$$         viro(2,i) = vir(2,i)
+C$$$         viro(3,i) = vir(3,i)
+C$$$      end do
 c
 c     set OpenMP directives for the major loop structure
 c
@@ -133,7 +140,7 @@ c
 c
 c     calculate the torsional angle energy and first derivatives
 c
-      do i = 1, ntors
+      do i = lstart, lend !1, ntors
          ia = itors(1,i)
          ib = itors(2,i)
          ic = itors(3,i)
@@ -331,16 +338,19 @@ c
 c     transfer local to global copies for OpenMP calculation
 c
       et = eto
-      do i = 1, n
-         det(1,i) = deto(1,i)
-         det(2,i) = deto(2,i)
-         det(3,i) = deto(3,i)
-      end do
-      do i = 1, 3
-         vir(1,i) = viro(1,i)
-         vir(2,i) = viro(2,i)
-         vir(3,i) = viro(3,i)
-      end do
+      det = deto 
+      virtemp = virtemp + viro 
+
+C$$$      do i = 1, n
+C$$$         det(1,i) = deto(1,i)
+C$$$         det(2,i) = deto(2,i)
+C$$$         det(3,i) = deto(3,i)
+C$$$      end do
+C$$$      do i = 1, 3
+C$$$         vir(1,i) = viro(1,i)
+C$$$         vir(2,i) = viro(2,i)
+C$$$         vir(3,i) = viro(3,i)
+C$$$      end do
 c
 c     perform deallocation of some local arrays
 c
