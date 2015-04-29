@@ -21,6 +21,9 @@ fi
 
 echo Using $nprocs processes.
 
+export OMP_NUM_THREADS=1
+echo Explicitly setting OMP_NUM_THREADS to $OMP_NUM_THREADS
+
 # Command line arguments to dynamic:
 #
 # keyFileBaseName NumberOfTimesteps \
@@ -56,7 +59,7 @@ elif [ `hostname` = "indy0" ]; then       # Indy (system at EPCC).
 
   mpirun -np $nprocs \
          -mca btl tcp,sm,self \
-         ../bin/dynamic dhfr 2 1.0 10.0 2 300.0
+         ../bin/dynamic dhfr 10 1.0 10.0 2 300.0
 
 elif [ `hostname` = "phi.hydra" ]; then       # phi.hydra (system at EPCC).
 

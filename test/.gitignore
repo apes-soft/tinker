@@ -4,3 +4,4 @@ gprof2dot.py
 *.png
 *.svg
 jobs*.sh
+my_result*

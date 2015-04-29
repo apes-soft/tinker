@@ -95,7 +95,8 @@ c
          ! set the box volume and additional periodic box values
          call lattice
 
-         ! get rigid body positions, translational and angular velocities
+         ! get rigid body positions, translational and angular 
+         ! velocities
          quit = .true.
          if (integrate .eq. 'RIGIDBODY') then
             do i = 1, n

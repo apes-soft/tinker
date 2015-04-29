@@ -39,12 +39,16 @@ c
 c     apply long range van der Waals correction if desired
 c
       if (use_vcorr) then
+
          call evcorr1 (elrc,vlrc)
+
+         ! Only proc 0 updates the values otherwise contribution
+         ! will be replicated.
          if (rank .eq. 0) then
-         ev = ev + elrc
-         vir(1,1) = vir(1,1) + vlrc
-         vir(2,2) = vir(2,2) + vlrc
-         vir(3,3) = vir(3,3) + vlrc
+             ev = ev + elrc
+             vir(1,1) = vir(1,1) + vlrc
+             vir(2,2) = vir(2,2) + vlrc
+             vir(3,3) = vir(3,3) + vlrc
          end if
       end if
       return
@@ -966,8 +970,8 @@ c
       real*8 rik6,rik7
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
-      real*8 evo,eintero,e_new
-      real*8 viro(3,3),virotmp(3,3)
+      real*8 evo,eintero
+      real*8 viro(3,3)
       real*8, allocatable :: xred(:)
       real*8, allocatable :: yred(:)
       real*8, allocatable :: zred(:)
@@ -977,10 +981,7 @@ c
       logical proceed,usei
       logical muti,mutk
       character*6 mode
-      real *8 sumtmp
       integer:: lstart, lend
-!     real*8 time1
-!     integer (kind=8):: tick, tock, rate
 
       ! zero out the van der Waals energy and first derivatives
       ev  = 0.0d0
@@ -1030,9 +1031,6 @@ c
 !$OMP& cut2,vlambda,scalpha,scexp,mut,c0,c1,c2,c3,c4,c5,molcule)
 !$OMP& firstprivate(vscale,iv14) shared(evo,devo,viro,eintero)
 !$OMP DO reduction(+:evo,devo,viro,eintero) schedule(guided)
-
-      ! start the clock
-!     call system_clock(tick, rate)
 
       ! work out the local array limits for this process
       ! Note that this assumes that nvlst will be of size
@@ -1241,46 +1239,17 @@ c
 !$OMP END DO
 !$OMP END PARALLEL
 
-!     call system_clock(tock)
-!     time1 = (tock-tick)/real(rate,kind=8)
-
-c      print*, "evo from id", evo,rank 
-
-      ! transfer local to global copies for OpenMP and MPI calculations
-c      call MPI_Allreduce(evo, ev, 1, MPI_DOUBLE_PRECISION,
-c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-
-c      print*, "evo summed", e_new, rank
-
-c      sumtmp = 0.0d0
-c      call MPI_Allreduce(eintero, sumtmp, 1, MPI_DOUBLE_PRECISION,
-c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-c      einter = einter + sumtmp
+      ! transfer local to global copies for OpenMP calculations
       etmp = etmp + eintero
-
-c      devotmp = 0.0d0
-c      call MPI_Allreduce(devo, devotmp, 3*n, MPI_DOUBLE_PRECISION,
-c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-c      dev = devotmp
-
-c      virotmp = 0.0d0
-c      call MPI_Allreduce(viro, virotmp, 9, MPI_DOUBLE_PRECISION,
-c     &                   MPI_SUM, MPI_COMM_WORLD, ierror)
-c      vir = vir + virotmp
       virtemp = virtemp + viro
-
-!     call system_clock(tock)
-!     print *,"ehal1c, ",rank,",",time1,",",
-!    &        (tock-tick)/real(rate,kind=8)
-!     call flush(6)
-
       ev = evo
-      !einter = eintero
-      do i = 1, n
-         dev(1,i) = devo(1,i)
-         dev(2,i) = devo(2,i)
-         dev(3,i) = devo(3,i)
-      end do
+      dev = devo
+
+      !do i = 1, n
+      !   dev(1,i) = devo(1,i)
+      !   dev(2,i) = devo(2,i)
+      !   dev(3,i) = devo(3,i)
+      !end do
       !do i = 1, 3
       !   vir(1,i) = viro(1,i)
       !   vir(2,i) = viro(2,i)

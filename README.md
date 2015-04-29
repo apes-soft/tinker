@@ -19,14 +19,15 @@ TINKER Software Tools for Molecular Design. This is development
 version of the public GitHub [repository](https://github.com/jayponder/tinker) 
 maintained by Jay Ponder.
 
-This is the `repmem` branch which is exploring a replicated memory version
+This is the `repmem` branch which explores a replicated memory version
 of:
 
 * `dynamic`
 
 Because of the modifications that we are making to files any of the
 other tinker applications may no longer work when compiled in this
-branch.
+branch. In particular the execution path we are considering corresponds
+to the JAC use case.
 
 If we have time we may also try to improve the performance of:
 
@@ -63,10 +64,10 @@ vanilla-tinker to find out where the cost is.
   
 ## Stage 1
 
-This stage will allow us to evaluate whether this strategy will
-work. Focus on the JAC execution path for now. General steps are:
+This stage allowed us to evaluate whether the strategy proposed
+worked. We focused on the JAC execution path for now. General steps were:
 
-1. **Profile** the latest version of `dynamic` for: JAC without OpenMP. Need to understand quantitavely the performance, the use case provided by Richard.
+1. **Profile** the latest version of `dynamic` for JAC without OpenMP. Need to understand quantitavely the performance, the use case provided by Richard as well.
 2. Revisit the **execution path** of `dynamic` for the JAC benchmark.
 3. **Split the loops** currently parallelised using OpenMP with MPI. 
 4. Check that the correct output is still being produced from multiple-process runs compared to that from a single process.
@@ -75,6 +76,7 @@ work. Focus on the JAC execution path for now. General steps are:
 
 If this works well we could move to a stage 2 that might take the
 execution path produced with use cases provided by Richard.
+
 
 ### Execution path and profiling
 

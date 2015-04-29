@@ -4862,15 +4862,10 @@ c
       real*8, allocatable, dimension(:) :: mscale, pscale, dscale
       real*8, allocatable, dimension(:) :: uscale
       real*8, allocatable, dimension(:,:) :: demo1, demo2, depo1, depo2
-      real*8, dimension(3,3):: virtmp
-      real*8 sumtmp
       integer:: lstart, lend
       logical dorl,dorli
       character*6 mode
       external erfc
-!     real*8 time1
-!     integer (kind=8):: tick, tock, rate
-
 
       ! zero out the intramolecular portion of the Ewald energy
       eintra = 0.0d0
@@ -4928,8 +4923,6 @@ c
 !$OMP& firstprivate(mscale,pscale,dscale,uscale)
 !$OMP DO reduction(+:emo,epo,eintrao,demo1,demo2,depo1,depo2,viro)
 !$OMP& schedule(guided)
-
-!     call system_clock(tick, rate)
 
       ! work out the local array limits for this process
       ! Assumes that size of nelst is the same as npole.
@@ -5773,11 +5766,8 @@ c
 !$OMP END DO
 !$OMP END PARALLEL
 
-!     call system_clock(tock)
-!     time1=(tock-tick)/real(rate,kind=8)
+      ! add local copies to global variables for OpenMP 
 
-      ! add local copies to global variables for OpenMP & 
-      ! MPI calculations
       emtmp = 0.0d0
       emtmp = emo + epo
 
@@ -5799,18 +5789,11 @@ c      em = em + emo
 
       virtemp = virtemp + viro
 
-c      vir = vir + virtmp
-
       !do i = 1, 3
       !   do j = 1, 3
       !      vir(j,i) = vir(j,i) + viro(j,i)
       !   end do
       !end do
-
-!     call system_clock(tock)
-!     print *,"ereal1d, ",rank,",",time1,",",
-!    &        (tock-tick)/real(rate,kind=8)
-!     call flush(6)
 
       !  perform deallocation of some local arrays
       deallocate (mscale)
