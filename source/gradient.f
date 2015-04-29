@@ -251,13 +251,14 @@ c
        ! ev from ehal1c also gives problems.
 
        partmp = 0.0d0
-       partmp = ev + emtmp + ebtmp + eatmp !+ eb
+       partmp = ev + emtmp + ebtmp + eatmp + eba!+ eb
        
 c       print*, "emtmp from id", emtmp
 
        call MPI_Allreduce(partmp, sumtmp, 1, MPI_DOUBLE_PRECISION,
      &                   MPI_SUM, MPI_COMM_WORLD, ierror)
        ev = 0.0d0
+       eba = 0.0d0
        !eb = 0.0d0
 c       em = 0.0d0
 
@@ -280,12 +281,13 @@ c       print*, "ev summed", sumtmp, rank
 !      energy = esum
 
       tmpdvs = 0.0d0
-      tmpdvs = dev + detmp + debtmp + dea + deatmp !+ deb
+      tmpdvs = dev + detmp + debtmp + deatmp + deba !+ deb
       sumdvs = 0.0d0
       call MPI_Allreduce(tmpdvs, sumdvs, 3*n, MPI_DOUBLE_PRECISION,
      &     MPI_SUM, MPI_COMM_WORLD, ierror)
 
       dev = 0.0d0
+      deba = 0.0d0
       !deb = 0.0d0
       
       desum = deb + dea + deba +

@@ -30,6 +30,7 @@ c
       use strbnd
       use usage
       use virial
+      use mpiparams
       implicit none
       integer i,j,k,istrbnd
       integer ia,ib,ic
@@ -60,6 +61,7 @@ c
       real*8 viro(3,3)
       real*8, allocatable :: debao(:,:)
       logical proceed
+      integer lstart, lend
 c
 c
 c     zero out the energy and first derivative components
@@ -78,16 +80,21 @@ c
 c     transfer global to local copies for OpenMP calculation
 c
       ebao = eba
-      do i = 1, n
-         debao(1,i) = deba(1,i)
-         debao(2,i) = deba(2,i)
-         debao(3,i) = deba(3,i)
-      end do
-      do i = 1, 3
-         viro(1,i) = vir(1,i)
-         viro(2,i) = vir(2,i)
-         viro(3,i) = vir(3,i)
-      end do
+      debao = deba
+      viro = 0.0d0
+
+      call splitloop(lstart, lend, nstrbnd)
+
+C$$$      do i = 1, n
+C$$$         debao(1,i) = deba(1,i)
+C$$$         debao(2,i) = deba(2,i)
+C$$$         debao(3,i) = deba(3,i)
+C$$$      end do
+C$$$      do i = 1, 3
+C$$$         viro(1,i) = vir(1,i)
+C$$$         viro(2,i) = vir(2,i)
+C$$$         viro(3,i) = vir(3,i)
+C$$$      end do
 c
 c     set OpenMP directives for the major loop structure
 c
@@ -98,7 +105,7 @@ c
 c
 c     calculate the stretch-bend energy and first derivatives
 c
-      do istrbnd = 1, nstrbnd
+      do istrbnd = lstart, lend !1, nstrbnd
          i = isb(1,istrbnd)
          ia = iang(1,i)
          ib = iang(2,i)
@@ -250,16 +257,18 @@ c
 c     transfer local to global copies for OpenMP calculation
 c
       eba = ebao
-      do i = 1, n
-         deba(1,i) = debao(1,i)
-         deba(2,i) = debao(2,i)
-         deba(3,i) = debao(3,i)
-      end do
-      do i = 1, 3
-         vir(1,i) = viro(1,i)
-         vir(2,i) = viro(2,i)
-         vir(3,i) = viro(3,i)
-      end do
+      deba = debao
+      virtemp = virtemp + viro
+C$$$      do i = 1, n
+C$$$         deba(1,i) = debao(1,i)
+C$$$         deba(2,i) = debao(2,i)
+C$$$         deba(3,i) = debao(3,i)
+C$$$      end do
+C$$$      do i = 1, 3
+C$$$         vir(1,i) = viro(1,i)
+C$$$         vir(2,i) = viro(2,i)
+C$$$         vir(3,i) = viro(3,i)
+C$$$      end do
 c
 c     perform deallocation of some local arrays
 c
