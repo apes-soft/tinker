@@ -27,6 +27,7 @@ c
       use urypot
       use usage
       use virial
+      use mpiparams
       implicit none
       integer i,ia,ic
       real*8 e,eubo
@@ -39,6 +40,7 @@ c
       real*8 viro(3,3)
       real*8, allocatable :: deubo(:,:)
       logical proceed
+      integer lstart, lend
 c
 c
 c     zero out the Urey-Bradley energy and first derivatives
@@ -57,16 +59,21 @@ c
 c     transfer global to local copies for OpenMP calculation
 c
       eubo = eub
-      do i = 1, n
-         deubo(1,i) = deub(1,i)
-         deubo(2,i) = deub(2,i)
-         deubo(3,i) = deub(3,i)
-      end do
-      do i = 1, 3
-         viro(1,i) = vir(1,i)
-         viro(2,i) = vir(2,i)
-         viro(3,i) = vir(3,i)
-      end do
+      deubo = deub
+      viro = 0.0d0
+
+      call splitloop(lstart,lend, nurey)
+
+C$$$      do i = 1, n
+C$$$         deubo(1,i) = deub(1,i)
+C$$$         deubo(2,i) = deub(2,i)
+C$$$         deubo(3,i) = deub(3,i)
+C$$$      end do
+C$$$      do i = 1, 3
+C$$$         viro(1,i) = vir(1,i)
+C$$$         viro(2,i) = vir(2,i)
+C$$$         viro(3,i) = vir(3,i)
+C$$$      end do
 c
 c     set OpenMP directives for the major loop structure
 c
@@ -77,7 +84,7 @@ c
 c
 c     calculate the Urey-Bradley 1-3 energy and first derivatives
 c
-      do i = 1, nurey
+      do i = lstart, lend !1, nurey
          ia = iury(1,i)
          ic = iury(3,i)
          ideal = ul(i)
@@ -155,16 +162,20 @@ c
 c     transfer local to global copies for OpenMP calculation
 c
       eub = eubo
-      do i = 1, n
-         deub(1,i) = deubo(1,i)
-         deub(2,i) = deubo(2,i)
-         deub(3,i) = deubo(3,i)
-      end do
-      do i = 1, 3
-         vir(1,i) = viro(1,i)
-         vir(2,i) = viro(2,i)
-         vir(3,i) = viro(3,i)
-      end do
+      deub = deubo 
+      virtemp = virtemp + viro
+      
+C$$$      do i = 1, n
+C$$$         deub(1,i) = deubo(1,i)
+C$$$         deub(2,i) = deubo(2,i)
+C$$$         deub(3,i) = deubo(3,i)
+C$$$      end do
+C$$$      do i = 1, 3
+C$$$         vir(1,i) = viro(1,i)
+C$$$         vir(2,i) = viro(2,i)
+C$$$         vir(3,i) = viro(3,i)
+C$$$      end do
+
 c
 c     perform deallocation of some local arrays
 c
