@@ -4544,6 +4544,7 @@ c
       use polar
       use polpot
       use virial
+      use mpiparams
       implicit none
       integer i,j,ii
       real*8 e,ei,eintra
@@ -4563,6 +4564,7 @@ c
       real*8 zdfield,zufield
       real*8 trq(3),trqi(3)
       real*8 frcx(3),frcy(3),frcz(3)
+      real*8 t1,t2
 c
 c
 c     zero out multipole and polarization energy and derivatives
@@ -4583,23 +4585,40 @@ c
 c
 c     check the sign of multipole components at chiral sites
 c
+      
+      !t1=mpi_wtime()
       call chkpole
+      !t2=mpi_wtime()
+      !print*, "chkpole time for rank", t2-t1, rank
+
 c
 c     rotate the multipole components into the global frame
 c
+      !t1=mpi_wtime()
       call rotpole
+      !t2=mpi_wtime()
+      !print*, "rotpole time for rank", t2-t1, rank
 c
 c     compute the induced dipole moment at each atom
 c
+      !t1=mpi_wtime()
       call induce
+      !t2=mpi_wtime()
+      !print*, "induce time for rank", t2-t1, rank
 c
 c     compute the reciprocal space part of the Ewald summation
 c
+      !t1=mpi_wtime()
       call emrecip1
+      !t2=mpi_wtime()
+      !print*, "emrecip time for rank", t2-t1, rank
 c
 c     compute the real space part of the Ewald summation
 c
+      !t1=mpi_wtime()
       call ereal1d (eintra)
+      !t2=mpi_wtime()
+      !print*, "ereal1d time for rank", t2-t1, rank
 c
 c     compute the Ewald self-energy term over all the atoms
 c
@@ -4901,6 +4920,13 @@ c
       depo2   = 0.0d0  ! nx3 matrix
       viro    = 0.0d0  ! 3x3 matrix
 
+       if(size(nelst).ne.npole.and.rank.eq.0) then
+        print *,"ereal1d: size of nelst not equal to npole."
+        call fatal
+      end if
+      call splitlimits(lstart, lend, nelst)
+
+
       ! set OpenMP directives for the major loop structure
 
 !$OMP PARALLEL default(shared) firstprivate(f)
@@ -4926,11 +4952,7 @@ c
 
       ! work out the local array limits for this process
       ! Assumes that size of nelst is the same as npole.
-      if(size(nelst).ne.npole.and.rank.eq.0) then
-        print *,"ereal1d: size of nelst not equal to npole."
-        call fatal
-      end if
-      call splitlimits(lstart, lend, nelst)
+     
 
       ! compute the real space portion of the Ewald summation
       do i = lstart, lend   ! originally run from 1, npole

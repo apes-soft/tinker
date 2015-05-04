@@ -2588,7 +2588,7 @@ c
 c
 c     transfer the results from local to global arrays
 c
-!$OMP DO
+ccc!$OMP DO
 
       ! Get the distributed field components
 C$$$ fieldtmp = 0.0d0
@@ -2615,7 +2615,7 @@ C$$$      fieldp = fieldp + fieldtmp
       !   end do
       !end do
 
-!$OMP END DO
+ccc!$OMP END DO
 
       ! store terms needed later to compute mutual polarization
 !$OMP CRITICAL

@@ -50,7 +50,7 @@ LINKDIR = /usr/local/bin
 
 #COMPARCH=MPIGenericGfortran
 #COMPARCH=MPIGenericGfortranOpenMP
-COMPARCH=MPILinuxIntel
+#COMPARCH=MPILinuxIntel
 #COMPARCH=ARCHER
 #COMPARCH=LinuxIntelOpenMP
 #COMPARCH=MacIntel
@@ -98,8 +98,8 @@ ifeq ($(COMPARCH),MPIGenericGfortran)
   ##  CPU Type: Intel x86 Compatibles
   ##  Compiler: GNU gfortran
 
-  FC        = mpif90
-  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3
+  FC        = ftn ###mpif90
+  LIBS      = -lfftw3 #-L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3
   FCFLAGS   = -Wall -c
   OPTFLAGS  = -O3 -ffast-math
   LIBFLAGS  = -crusv
@@ -123,12 +123,12 @@ else ifeq ($(COMPARCH),MPIGenericGfortranOpenMP)
 else ifeq ($(COMPARCH),ARCHER)
 
   FC        = ftn # ifort
-  LIBS      = -L ../thirdparty/fftw/lib -lfftw3_threads -lfftw3
-  FCFLAGS   = -c -xHost # -pg
-  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive
+  LIBS      = -lfftw3_threads -lfftw3
+  FCFLAGS   = -c -xHost  -pg
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
-  LINKFLAGS = -static-libgcc -static-intel  # -pg
+  LINKFLAGS = -static-libgcc -static-intel -openmp -v  -pg
 
 else ifeq ($(COMPARCH),MPILinuxIntel)
 
