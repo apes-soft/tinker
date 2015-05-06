@@ -7,3 +7,4 @@ jobs*.sh
 my_result*
 dynamic*
 S1_*
+*.pyc
