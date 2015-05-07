@@ -41,6 +41,9 @@ c
       character*20 keyword
       character*120 record
       character*120 string
+      integer (kind=8) t1, t2, t3, t4, tick
+
+      call system_clock(t1, tick)
 
       ! Allow for the usage of multithreaded applications but MPI
       ! regions will be on a single thread
@@ -249,6 +252,8 @@ c
         end if
       end if ! conditional over rank 0
 
+      call system_clock(t2)
+
       ! integrate equations of motion to take a time step
       do istep = 1, nstep
          if (integrate .eq. 'VERLET') then
@@ -270,9 +275,15 @@ c
          end if
       end do
 
+      call system_clock(t3)
+
       ! perform any final tasks before program exit
       call final
 
+      call system_clock(t4)
+
+      print "(I2,A,F7.3,A,F7.3,A,F7.3)", rank, ",",dble(t2-t1)/tick,",",
+     &       dble(t3-t2)/tick,",",dble(t4-t3)/tick
       ! Finish the MPI execution
       call MPI_Finalize(ierror)
 
