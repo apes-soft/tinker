@@ -20,7 +20,7 @@ else
 fi
 
 # Outfile name
-outfile="out"
+outfile="out.txt"
 
 # Dynamic command
 dynamic="../bin/dynamic dhfr 100 1.0 10.0 2 300.0" 
@@ -53,19 +53,19 @@ echo Explicitly setting OMP_NUM_THREADS to $OMP_NUM_THREADS
 if [ `hostname` = "mbp-ma.local" ]; then  # Mario's mac.
 
   mpirun -np $nprocs --quiet $dynamic\
-         > >(tee $outfile) 2>&1
+         > >(tee -a $outfile) 2>&1
 
 elif [ `hostname` = "mbp-ma.lan" ]; then  # Mario's mac.
 
   mpirun -np $nprocs --quiet $dynamic\
-         > >(tee $outfile) 2>&1
+         > >(tee -a $outfile) 2>&1
 
 elif [ `hostname` = "indy0" ]; then       # Indy (system at EPCC).
 
 
   mpirun -np $nprocs \
          -mca btl tcp,sm,self $dynamic\
-         > >(tee $outfile) 2>&1
+         > >(tee -a $outfile) 2>&1
 
 elif [ `hostname` = "phi.hydra" ]; then       # phi.hydra (system at EPCC).
 
@@ -73,8 +73,9 @@ elif [ `hostname` = "phi.hydra" ]; then       # phi.hydra (system at EPCC).
   export SLURM_JOBID=
 
   # Run the code
-  time mpirun -trace -np $nprocs $dynamic\
-         > >(tee $outfile) 2>&1
+  #time mpirun -trace -np $nprocs $dynamic\
+  time mpirun -np $nprocs $dynamic\
+         > >(tee -a $outfile) 2>&1
 
 else
 
@@ -85,8 +86,7 @@ echo
 
   mpirun -np $nprocs \
          -mca btl tcp,sm,self $dynamic\
-         > >(tee $outfile) 2>&1
-
+         > >(tee -a $outfile) 2>&1
 
 fi
 
