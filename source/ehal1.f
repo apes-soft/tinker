@@ -1022,13 +1022,6 @@ c
       !viro    = vir
       viro    = 0.0d0
 
-       if(size(nvlst).ne.nvdw) then
-        print *, "ehal1c: size of nvlst does not match nvdw."
-        call fatal
-      end if 
-      call splitlimits(lstart, lend, nvlst)
-
-
       ! set OpenMP directives for the major loop structure
 
 !$OMP PARALLEL default(private) shared(nvdw,ivdw,ired,kred,
@@ -1042,7 +1035,11 @@ c
       ! work out the local array limits for this process
       ! Note that this assumes that nvlst will be of size
       ! nvdw.
-     
+      if(size(nvlst).ne.nvdw) then
+        print *, "ehal1c: size of nvlst does not match nvdw."
+        call fatal
+      end if 
+      call splitlimits(lstart, lend, nvlst)
 
       ! find van der Waals energy and derivatives via neighbor list
       do ii = lstart, lend !1, nvdw
