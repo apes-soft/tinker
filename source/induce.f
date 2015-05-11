@@ -31,11 +31,17 @@ c
       use solute
       use units
       use uprior
+      use mpiparams
+      use tarray
       implicit none
       integer i,j,k
       real*8 norm
       logical header
 
+
+      allocate(nlocals(nprocs))
+
+      
 
       ! choose the method for computation of induced dipoles
       if (solvtyp(1:2) .eq. 'PB') then
@@ -153,6 +159,8 @@ c
             end do
          end if
       end if
+      
+      deallocate(nlocals)
       return
       end
 c
@@ -2315,9 +2323,9 @@ c
       character*6 mode
       external erfc
       integer:: lstart, lend
-      integer, allocatable, dimension(:):: nlocals, disps
-      integer, allocatable, dimension(:,:):: myilocal
-      real*8, allocatable, dimension(:,:):: mydlocal
+c      integer, allocatable, dimension(:):: nlocals, disps
+c      integer, allocatable, dimension(:,:):: myilocal
+c      real*8, allocatable, dimension(:,:):: mydlocal
 
       ! check for multipoles and set cutoff coefficients
       if (npole .eq. 0)  return
@@ -2624,7 +2632,7 @@ c
       tindex  = 0
       tdipdip = 0.0d0
 
-      allocate(nlocals(nprocs))
+c      allocate(nlocals(nprocs))
       nlocals = 0 
       call MPI_Allgather(nlocal, 1, MPI_INTEGER,nlocals, 1,
      &     MPI_INTEGER,MPI_COMM_WORLD, ierror)
@@ -2639,40 +2647,51 @@ c      print*, "ntpair", rank, ntpair
 
          ntpair = sum(nlocals)
 
-         lstart = 0 - nlocals(0) +1
+         lstart = 1
          do i=0, rank
             lstart = lstart + nlocals(i) 
 c            print*, "i for rank", rank, i
          end do
-c         print*, "lstart is for rank", rank, lstart
-
-         tindex = ilocal
-         tdipdip = dlocal
+c         print*, "lstart is for rank", rank, lstart,lstart+nlocal-1
          
-         ilocal = 0 
-         dlocal = 0.0d0
-
-         k=lstart
+           k=lstart
          do i=1,nlocal
-            ilocal(1,k) = tindex(1,i)
-            ilocal(2,k) = tindex(2,i)
+            tindex(1,k) = ilocal(1,i)
+            tindex(2,k) = ilocal(2,i)
             do j=1,6
-               dlocal(j,k) = tdipdip(j,i)
+               tdipdip(j,k) = dlocal(j,i)
             end do
             k = k + 1
          end do
+
+
+C$$$         tindex = ilocal
+C$$$         tdipdip = dlocal
+         
+C$$$         ilocal = 0 
+C$$$         dlocal = 0.0d0
+
+C$$$         k=lstart
+C$$$         do i=1,nlocal
+C$$$            ilocal(1,k) = tindex(1,i)
+C$$$            ilocal(2,k) = tindex(2,i)
+C$$$            do j=1,6
+C$$$               dlocal(j,k) = tdipdip(j,i)
+C$$$            end do
+C$$$            k = k + 1
+C$$$         end do
             
-         tindex = 0
-         tdipdip = 0.0d0
+C$$$         tindex = 0
+C$$$         tdipdip = 0.0d0
 
          
-         call MPI_Allreduce(ilocal,tindex,2*maxlocal, 
-     &        MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD, 
-     &        ierror)
+C$$$         call MPI_Allreduce(ilocal,tindex,2*maxlocal, 
+C$$$     &        MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD, 
+C$$$     &        ierror)
 
-         call MPI_Allreduce(dlocal,tdipdip,6*maxlocal, 
-     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
-     &        ierror)
+C$$$         call MPI_Allreduce(dlocal,tdipdip,6*maxlocal, 
+C$$$     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+C$$$     &        ierror)
 
          
 C$$$          do i=1,ntpair
@@ -3200,6 +3219,7 @@ c
       use mpole
       use polar
       use tarray
+      use mpiparams
       implicit none
       integer i,j,k,m
       real*8 fimd(3),fkmd(3)
@@ -3208,7 +3228,12 @@ c
       real*8 fieldp(3,*)
       real*8, allocatable :: fieldt(:,:)
       real*8, allocatable :: fieldtp(:,:)
+      real*8, allocatable :: fieldtmp(:,:)
+      integer lstart, lend
 
+
+      lstart = 0
+      lend = 0 
 
       ! check for multipoles and set cutoff coefficients
       if (npole .eq. 0)  return
@@ -3216,6 +3241,7 @@ c
       ! perform dynamic allocation of some local arrays
       allocate (fieldt(3,npole))
       allocate (fieldtp(3,npole))
+      allocate (fieldtmp(3,npole))
 
       ! set OpenMP directives for the major loop structure
 
@@ -3234,8 +3260,16 @@ c
 c
 c     find the field terms for each pairwise interaction
 c
+      lstart =  1
+      do i = 0, rank
+         lstart = lstart + nlocals(i)
+      end do
+      lend = lstart + nlocals(rank+1) - 1 
+c      print*,"lstart and lend are", rank, lstart, lend 
+c      print*, "nlocals from rank", rank, nlocals(rank)
+
 !$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
-      do m = 1, ntpair
+      do m = lstart, lend !1, ntpair
          i = tindex(1,m)
          k = tindex(2,m)
          fimd(1) = tdipdip(1,m)*uind(1,k) + tdipdip(2,m)*uind(2,k)
@@ -3276,20 +3310,50 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
+      fieldtmp = 0.0d0
+
+      call MPI_Allreduce(fieldt, fieldtmp, 3*npole, 
+     &     MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
+     &     ierror)
+       
+       do i =1, npole
+          do j=1,3
+             field(j,i) = fieldtmp(j,i) + field(j,i)
+          end do
+       end do
+       fieldtmp = 0.0d0
+
+       call MPI_Allreduce(fieldtp, fieldtmp, 3*npole, 
+     &      MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &      ierror)
+       
+       do i=1,npole
+          do j=1,3
+             fieldp(j,i) = fieldtmp(j,i) + fieldp(j,i)
+          end do
+       end do
+
+
 !$OMP DO
-      do i = 1, npole
-         do j = 1, 3
-            field(j,i) = fieldt(j,i) + field(j,i)
-            fieldp(j,i) = fieldtp(j,i) + fieldp(j,i)
-         end do
-      end do
+c      do i = 1, npole
+c         do j = 1, 3
+c            field(j,i) = fieldt(j,i) + field(j,i)
+c            fieldp(j,i) = fieldtp(j,i) + fieldp(j,i)
+c         end do
+c      end do
 !$OMP END DO
 !$OMP END PARALLEL
+
+      
+
+
 c
 c     perform deallocation of some local arrays
 c
       deallocate (fieldt)
       deallocate (fieldtp)
+      deallocate (fieldtmp)
+c      deallocate (nlocals)
       return
       end
 c
