@@ -19,6 +19,12 @@ else
    nprocs=1
 fi
 
+# Outfile name
+outfile="out"
+
+# Dynamic command
+dynamic="../bin/dynamic dhfr 100 1.0 10.0 2 300.0" 
+
 echo Using $nprocs processes.
 
 export OMP_NUM_THREADS=1
@@ -46,23 +52,20 @@ echo Explicitly setting OMP_NUM_THREADS to $OMP_NUM_THREADS
 
 if [ `hostname` = "mbp-ma.local" ]; then  # Mario's mac.
 
-  mpirun -np $nprocs --quiet \
-         ../bin/dynamic dhfr 100 1.0 10.0 2 300.0 \
-         > >(tee out) 2>&1
+  mpirun -np $nprocs --quiet $dynamic\
+         > >(tee $outfile) 2>&1
 
 elif [ `hostname` = "mbp-ma.lan" ]; then  # Mario's mac.
 
-  mpirun -np $nprocs --quiet \
-         ../bin/dynamic dhfr 100 1.0 10.0 2 300.0 \
-         > >(tee out) 2>&1
+  mpirun -np $nprocs --quiet $dynamic\
+         > >(tee $outfile) 2>&1
 
 elif [ `hostname` = "indy0" ]; then       # Indy (system at EPCC).
 
 
   mpirun -np $nprocs \
-         -mca btl tcp,sm,self \
-         ../bin/dynamic dhfr 10 1.0 10.0 2 300.0 \
-         > >(tee out) 2>&1
+         -mca btl tcp,sm,self $dynamic\
+         > >(tee $outfile) 2>&1
 
 elif [ `hostname` = "phi.hydra" ]; then       # phi.hydra (system at EPCC).
 
@@ -70,9 +73,8 @@ elif [ `hostname` = "phi.hydra" ]; then       # phi.hydra (system at EPCC).
   export SLURM_JOBID=
 
   # Run the code
-  time mpirun -np $nprocs \
-         ../bin/dynamic dhfr 100 1.0 10.0 2 300.0 \
-         > >(tee out) 2>&1
+  time mpirun -trace -np $nprocs $dynamic\
+         > >(tee $outfile) 2>&1
 
 else
 
@@ -82,9 +84,8 @@ echo " Check MPI call routine."
 echo
 
   mpirun -np $nprocs \
-         -mca btl tcp,sm,self \
-         ../bin/dynamic dhfr 2 1.0 10.0 2 300.0 \
-         > >(tee out) 2>&1
+         -mca btl tcp,sm,self $dynamic\
+         > >(tee $outfile) 2>&1
 
 
 fi

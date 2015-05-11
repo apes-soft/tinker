@@ -5,3 +5,5 @@ gprof2dot.py
 *.svg
 jobs*.sh
 my_result*
+dynamic*
+S1_*
