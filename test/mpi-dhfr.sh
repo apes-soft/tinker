@@ -25,7 +25,8 @@ outfile="out.txt"
 # Dynamic command
 dynamic="../bin/dynamic dhfr 100 1.0 10.0 2 300.0" 
 
-echo Using $nprocs processes. | tee -a $outfile
+echo | tee -a $outfile                           # Add an empty line
+echo Using $nprocs processes. | tee -a $outfile  # How many procs are usd
 
 export OMP_NUM_THREADS=1
 echo Explicitly setting OMP_NUM_THREADS to $OMP_NUM_THREADS. | tee -a $outfile
@@ -42,9 +43,12 @@ echo Explicitly setting OMP_NUM_THREADS to $OMP_NUM_THREADS. | tee -a $outfile
 # Possible arguments for mpirun:
 #
 # -np - number of processes
-# -mca btl tcp,sm,self - specify the message transport mechanism (for Indy)
-# --mca orte_base_help_aggregate 0  - disable error message aggregation (for Indy)
 # --quiet - don't print out so much stuff out
+#
+# For indy:
+# --mca btl tcp,sm,self - specify the message transport mechanism 
+# --mca orte_base_help_aggregate 0  - disable error message aggregation
+
 
 # Really want to use `hostname -s` but not universally available.
 # For debugging can add the line: xterm -e gdb before the executable
@@ -52,20 +56,20 @@ echo Explicitly setting OMP_NUM_THREADS to $OMP_NUM_THREADS. | tee -a $outfile
 
 if [ `hostname` = "mbp-ma.local" ]; then  # Mario's mac.
 
-  mpirun -np $nprocs --quiet $dynamic\
-         > >(tee -a $outfile) 2>&1
+  (time mpirun -np $nprocs --quiet $dynamic) 2>&1\
+         | tee -a $outfile
 
 elif [ `hostname` = "mbp-ma.lan" ]; then  # Mario's mac.
 
-  mpirun -np $nprocs --quiet $dynamic\
-         > >(tee -a $outfile) 2>&1
+  (time mpirun -np $nprocs --quiet $dynamic) 2>&1\
+         | tee -a $outfile
 
 elif [ `hostname` = "indy0" ]; then       # Indy (system at EPCC).
 
 
-  mpirun -np $nprocs \
-         -mca btl tcp,sm,self $dynamic\
-         > >(tee -a $outfile) 2>&1
+  (time mpirun -np $nprocs \
+         -mca btl tcp,sm,self $dynamic) 2>&1\
+         | tee -a $outfile 
 
 elif [ `hostname` = "phi.hydra" ]; then       # phi.hydra (system at EPCC).
 
@@ -74,8 +78,8 @@ elif [ `hostname` = "phi.hydra" ]; then       # phi.hydra (system at EPCC).
 
   # Run the code
   #time mpirun -trace -np $nprocs $dynamic\
-  time mpirun -np $nprocs $dynamic\
-         > >(tee -a $outfile) 2>&1
+  (time mpirun -np $nprocs $dynamic) 2>&1\
+         | tee -a $outfile
 
 else
 
@@ -84,9 +88,9 @@ echo "Unknown system :" `hostname`.
 echo " Check MPI call routine."
 echo
 
-  mpirun -np $nprocs \
-         -mca btl tcp,sm,self $dynamic\
-         > >(tee -a $outfile) 2>&1
+  (time mpirun -np $nprocs \
+         -mca btl tcp,sm,self $dynamic) 2>&1\
+         | tee -a $outfile
 
 fi
 
