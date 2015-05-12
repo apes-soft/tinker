@@ -37,13 +37,10 @@ c
       integer i,istep,nstep
       integer mode,next
       real*8 dt,dtdump
-      logical exist,query
+      logical exist
       character*20 keyword
       character*120 record
       character*120 string
-!      integer (kind=8) t1, t2, t3, t4, tick
-
-!      call system_clock(t1, tick)
 
       ! Allow for the usage of multithreaded applications but MPI
       ! regions will be on a single thread
@@ -54,12 +51,6 @@ c
 
       ! Find out my own rank.
       call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierror)
-
-
-      ! Diagnostic print statement
-!     print "(A,I3,A,I3,A)", "Process ",rank," out of ", nprocs,
-!    &                       " started."
-!     call flush(iout) ! only want this to remove internal buffering
 
       ! set up the structure and molecular mechanics calculation
       call initial
@@ -86,15 +77,14 @@ c
          end if
       end do
 
+
       ! initialize the simulation length as number of time steps
-      query = .true.
+      nstep = -1
       call nextarg (string,exist)
-      if (exist) then
-         read (string,*,err=10,end=10)  nstep
-         query = .false.
-      end if
+      if (exist)  read (string,*,err=10,end=10)  nstep
    10 continue
-      if (query) then
+
+      if (nstep.lt.0) then
          if(rank.eq.0) then
            write(iout,*) "Need to specify the number of dynamic steps ",
      &                   "to be taken at the command line."
@@ -126,6 +116,7 @@ c
       ! set the time between trajectory snapshot coordinate dumps
       dtdump = -1.0d0
       call nextarg (string,exist)
+
       if (exist)  read (string,*,err=80,end=80)  dtdump
    80 continue
       if (dtdump .lt. 0.0d0) then
@@ -136,12 +127,14 @@ c
          call help
          call fatal(4)
       end if
+
       iwrite = nint(dtdump/dt)
 
       ! get choice of statistical ensemble for periodic system
       if (use_bounds) then
          mode = -1
          call nextarg (string,exist)
+
          if (exist)  read (string,*,err=120,end=120)  mode
   120    continue
          if (mode.lt.1 .or. mode.gt.4) then
@@ -157,15 +150,18 @@ c
             call fatal(5)
          end if
 
+
          if (integrate.eq.'BUSSI' .or. integrate.eq.'NOSE-HOOVER'
      &                .or. integrate.eq.'GHMC') then
             if (mode .ne. 4) then
                mode = 4
+
                if(rank.eq.0) then 
                   write (iout,160)
   160             format (/,' Switching to NPT Ensemble as Required',
      &                      ' by Chosen Integrator')
                end if
+
             end if
          end if
          if (mode.eq.2 .or. mode.eq.4) then
@@ -255,6 +251,7 @@ c
 !      call system_clock(t2)
 
       ! integrate equations of motion to take a time step
+
       do istep = 1, nstep
          if (integrate .eq. 'VERLET') then
             call verlet (istep,dt)
