@@ -25,10 +25,10 @@ outfile="out.txt"
 # Dynamic command
 dynamic="../bin/dynamic dhfr 100 1.0 10.0 2 300.0" 
 
-echo Using $nprocs processes.
+echo Using $nprocs processes. | tee -a $outfile
 
 export OMP_NUM_THREADS=1
-echo Explicitly setting OMP_NUM_THREADS to $OMP_NUM_THREADS
+echo Explicitly setting OMP_NUM_THREADS to $OMP_NUM_THREADS. | tee -a $outfile
 
 # Command line arguments to dynamic:
 #
