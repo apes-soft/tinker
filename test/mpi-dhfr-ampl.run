@@ -8,5 +8,5 @@
 export SLURM_JOBID=
 
 time mpirun -np 1 \
-            amplxe-cl -r my_result -collect hotspots -- \
-            ../bin/dynamic dhfr 2 1.0 1.0 2 300.0
+            amplxe-cl -r S1_1 -collect hotspots -- \
+            ../bin/dynamic dhfr 100 1.0 1.0 2 300.0 > >(tee -a out-ampl.txt)  2>&1
