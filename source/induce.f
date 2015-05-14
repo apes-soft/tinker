@@ -188,6 +188,7 @@ c
       use potent
       use units
       use uprior
+      use mpiparams
       implicit none
       integer i,j,k,iter
       integer maxiter
@@ -210,6 +211,7 @@ c
       real*8, allocatable :: conjp(:,:)
       real*8, allocatable :: vec(:,:)
       real*8, allocatable :: vecp(:,:)
+      real*8, allocatable :: fieldtmp(:,:)
       logical done
       character*6 mode
 c
@@ -228,6 +230,9 @@ c     perform dynamic allocation of some local arrays
 c
       allocate (field(3,npole))
       allocate (fieldp(3,npole))
+
+      allocate (fieldtmp(3,npole))
+
       allocate (udir(3,npole))
       allocate (udirp(3,npole))
 c
@@ -300,6 +305,22 @@ c
          else
             call ufield0a (field,fieldp)
          end if
+
+         fieldtmp = 0.0d0
+         
+         call MPI_Allreduce(field, fieldtmp, 3*npole, 
+     &        MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
+     &        ierror)
+         
+         field = fieldtmp
+         fieldtmp = 0.0d0
+
+         call MPI_Allreduce(fieldp, fieldtmp, 3*npole, 
+     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &        ierror)
+
+         fieldp = fieldtmp
+
 c
 c     set initial conjugate gradient residual and conjugate vector
 c
@@ -342,7 +363,24 @@ c
                end do
             end do
             if (use_ewald) then
+               
                call ufield0c (field,fieldp)
+
+               fieldtmp = 0.0d0
+               
+               call MPI_Allreduce(field, fieldtmp, 3*npole, 
+     &              MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
+     &              ierror)
+               
+               field = fieldtmp
+               fieldtmp = 0.0d0
+               
+               call MPI_Allreduce(fieldp, fieldtmp, 3*npole, 
+     &              MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &              ierror)
+               
+               fieldp = fieldtmp
+               
             else if (use_mlist) then
                call ufield0b (field,fieldp)
             else
@@ -457,6 +495,9 @@ c
 c
 c     perform deallocation of some local arrays
 c
+
+      deallocate (fieldtmp)
+
       deallocate (field)
       deallocate (fieldp)
       deallocate (udir)
@@ -1560,7 +1601,6 @@ c
       real*8 ucellp(3)
       real*8 field(3,*)
       real*8 fieldp(3,*)
-      real*8, allocatable :: fieldtmp(:,:)
       real*8, allocatable :: fieldt(:,:)
       real*8, allocatable :: fieldtp(:,:)
 c
@@ -1568,7 +1608,7 @@ c
 c     zero out the electrostatic field at each site
 c
 
-      allocate (fieldtmp(3,npole))
+ 
       allocate (fieldt(3,npole))
       allocate (fieldtp(3,npole))
 
@@ -1599,70 +1639,41 @@ c
          call umutual2a (field,fieldp)
       end if
 
-      fieldtmp = 0.0d0
-      
-      call MPI_Allreduce(field, fieldtmp, 3*npole, 
-     &     MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
-     &     ierror)
-         
-
-c      field = fieldtmp
-       do i =1, npole
-          do j=1,3
-             field(j,i) = fieldtmp(j,i) + fieldt(j,i)
-          end do
-       end do
-       fieldtmp = 0.0d0
-
-       call MPI_Allreduce(fieldp, fieldtmp, 3*npole, 
-     &      MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
-     &      ierror)
- 
-c       fieldp = fieldtmp
-       
-       do i=1,npole
-          do j=1,3
-             fieldp(j,i) =  fieldtmp(j,i) + fieldtp(j,i)
-          end do
-       end do
-
-      
-
-
 c
 c     get the self-energy portion of the electrostatic field
 c
-      term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
-      do i = 1, npole
-         do j = 1, 3
-            field(j,i) = field(j,i) + term*uind(j,i)
-            fieldp(j,i) = fieldp(j,i) + term*uinp(j,i)
+      if(rank .eq. 0) then 
+         term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
+         do i = 1, npole
+            do j = 1, 3
+               field(j,i) = field(j,i) + term*uind(j,i) + fieldt(j,i)
+               fieldp(j,i) = fieldp(j,i) + term*uinp(j,i) + fieldtp(j,i)
+            end do
          end do
-      end do
-c
+c     
 c     compute the cell dipole boundary correction to the field
-c
-      if (boundary .eq. 'VACUUM') then
-         do i = 1, 3
-            ucell(i) = 0.0d0
-            ucellp(i) = 0.0d0
-         end do
-         do i = 1, npole
-            do j = 1, 3
-               ucell(j) = ucell(j) + uind(j,i)
-               ucellp(j) = ucellp(j) + uinp(j,i)
+c     
+         if (boundary .eq. 'VACUUM') then
+            do i = 1, 3
+               ucell(i) = 0.0d0
+               ucellp(i) = 0.0d0
             end do
-         end do
-         term = (4.0d0/3.0d0) * pi/volbox
-         do i = 1, npole
-            do j = 1, 3
-               field(j,i) = field(j,i) - term*ucell(j)
-               fieldp(j,i) = fieldp(j,i) - term*ucellp(j)
+            do i = 1, npole
+               do j = 1, 3
+                  ucell(j) = ucell(j) + uind(j,i)
+                  ucellp(j) = ucellp(j) + uinp(j,i)
+               end do
             end do
-         end do
+            term = (4.0d0/3.0d0) * pi/volbox
+            do i = 1, npole
+               do j = 1, 3
+                  field(j,i) = field(j,i) - term*ucell(j)
+                  fieldp(j,i) = fieldp(j,i) - term*ucellp(j)
+               end do
+            end do
+         end if
       end if
 
-      deallocate(fieldtmp)
       deallocate(fieldt)
       deallocate(fieldtp)
 
