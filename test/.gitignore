@@ -6,5 +6,5 @@ gprof2dot.py
 jobs*.sh
 my_result*
 dynamic*
-S1_*
+S?_*
 *.pyc
