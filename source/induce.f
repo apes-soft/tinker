@@ -2389,9 +2389,6 @@ c
       character*6 mode
       external erfc
       integer:: lstart, lend
-c      integer, allocatable, dimension(:):: nlocals, disps
-c      integer, allocatable, dimension(:,:):: myilocal
-c      real*8, allocatable, dimension(:,:):: mydlocal
 
       ! check for multipoles and set cutoff coefficients
       if (npole .eq. 0)  return
@@ -2456,6 +2453,8 @@ c      print*, "maxlocal is ", maxlocal
         print *,"ereal1d: size of nelst not equal to npole."
         call fatal
       end if
+
+      ! split the do loop limits
       call splitlimits(lstart, lend, nelst)
 c      nlocal = lstart - 1
 c      print*,"for rank ... lstart is", rank, lstart
@@ -2698,10 +2697,12 @@ c
       tindex  = 0
       tdipdip = 0.0d0
 
-c      allocate(nlocals(nprocs))
       nlocals = 0 
-      call MPI_Allgather(nlocal, 1, MPI_INTEGER,nlocals, 1,
-     &     MPI_INTEGER,MPI_COMM_WORLD, ierror)
+      nlocals(rank+1) = nlocal
+      call MPI_Allreduce(MPI_IN_PLACE, nlocals, nproc,
+     &     MPI_INTEGER,MPI_SUM, MPI_COMM_WORLD, ierror)
+c     call MPI_Allgather(nlocal, 1, MPI_INTEGER,nlocals, 1,
+c    &     MPI_INTEGER,MPI_COMM_WORLD, ierror)
 
 
 
@@ -3362,7 +3363,6 @@ c
       deallocate (fieldt)
       deallocate (fieldtp)
       deallocate (fieldtmp)
-c      deallocate (nlocals)
       return
       end
 c
