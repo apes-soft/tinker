@@ -2685,8 +2685,11 @@ c
       tdipdip = 0.0d0
 
       nlocals = 0 
-      call MPI_Allgather(nlocal, 1, MPI_INTEGER,nlocals, 1,
-     &     MPI_INTEGER,MPI_COMM_WORLD, ierror)
+      nlocals(rank+1) = nlocal
+      call MPI_Allreduce(MPI_IN_PLACE, nlocals, nproc,
+     &     MPI_INTEGER,MPI_SUM, MPI_COMM_WORLD, ierror)
+c     call MPI_Allgather(nlocal, 1, MPI_INTEGER,nlocals, 1,
+c    &     MPI_INTEGER,MPI_COMM_WORLD, ierror)
 
 c      print*, "nlocal for rank", rank, nlocal
 c      print*, "nlocals for rank", rank, nlocals
