@@ -188,6 +188,7 @@ c
       use potent
       use units
       use uprior
+      use mpiparams
       implicit none
       integer i,j,k,iter
       integer maxiter
@@ -210,6 +211,7 @@ c
       real*8, allocatable :: conjp(:,:)
       real*8, allocatable :: vec(:,:)
       real*8, allocatable :: vecp(:,:)
+      real*8, allocatable :: fieldtmp(:,:)
       logical done
       character*6 mode
 c
@@ -228,6 +230,9 @@ c     perform dynamic allocation of some local arrays
 c
       allocate (field(3,npole))
       allocate (fieldp(3,npole))
+
+      allocate (fieldtmp(3,npole))
+
       allocate (udir(3,npole))
       allocate (udirp(3,npole))
 c
@@ -240,6 +245,23 @@ c
       else
          call dfield0a (field,fieldp)
       end if
+
+      fieldtmp = 0.0d0
+      
+      call MPI_Allreduce(field, fieldtmp, 3*npole, 
+     &     MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
+     &     ierror)
+      
+      field = fieldtmp
+      fieldtmp = 0.0d0
+      
+      call MPI_Allreduce(fieldp, fieldtmp, 3*npole, 
+     &     MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &     ierror)
+      
+      fieldp = fieldtmp
+
+
 c
 c     set induced dipoles to polarizability times direct field
 c
@@ -300,6 +322,22 @@ c
          else
             call ufield0a (field,fieldp)
          end if
+
+         fieldtmp = 0.0d0
+         
+         call MPI_Allreduce(field, fieldtmp, 3*npole, 
+     &        MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
+     &        ierror)
+         
+         field = fieldtmp
+         fieldtmp = 0.0d0
+
+         call MPI_Allreduce(fieldp, fieldtmp, 3*npole, 
+     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &        ierror)
+
+         fieldp = fieldtmp
+
 c
 c     set initial conjugate gradient residual and conjugate vector
 c
@@ -342,7 +380,24 @@ c
                end do
             end do
             if (use_ewald) then
+               
                call ufield0c (field,fieldp)
+
+               fieldtmp = 0.0d0
+               
+               call MPI_Allreduce(field, fieldtmp, 3*npole, 
+     &              MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
+     &              ierror)
+               
+               field = fieldtmp
+               fieldtmp = 0.0d0
+               
+               call MPI_Allreduce(fieldp, fieldtmp, 3*npole, 
+     &              MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &              ierror)
+               
+               fieldp = fieldtmp
+               
             else if (use_mlist) then
                call ufield0b (field,fieldp)
             else
@@ -457,6 +512,9 @@ c
 c
 c     perform deallocation of some local arrays
 c
+
+      deallocate (fieldtmp)
+
       deallocate (field)
       deallocate (fieldp)
       deallocate (udir)
@@ -1477,57 +1535,42 @@ c      fieldtp = fieldp
          call udirect2a (field,fieldp)
       end if
 
-       call MPI_Allreduce(field, fieldtmp, 3*npole, 
-     &     MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
-     &     ierror)
-       
-       do i =1, npole
-          do j=1,3
-             field(j,i) = fieldtmp(j,i) + fieldt(j,i)
-          end do
-       end do
-       fieldtmp = 0.0d0
-
-       call MPI_Allreduce(fieldp, fieldtmp, 3*npole, 
-     &      MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
-     &      ierror)
-       
-       do i=1,npole
-          do j=1,3
-             fieldp(j,i) = fieldtp(j,i) + fieldtmp(j,i)
-          end do
-       end do
 c
 c     get the self-energy portion of the electrostatic field
 c
-      term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
-      do i = 1, npole
-         do j = 1, 3
-            field(j,i) = field(j,i) + term*rpole(j+1,i)
-            fieldp(j,i) = fieldp(j,i) + term*rpole(j+1,i)
-         end do
-      end do
-c
+
+       if (rank .eq. 0 ) then
+          term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
+          do i = 1, npole
+             do j = 1, 3
+                field(j,i) = field(j,i) + term*rpole(j+1,i) 
+     &               +fieldt(j,i)
+                fieldp(j,i) = fieldp(j,i) + term*rpole(j+1,i) 
+     &               + fieldtp(j,i)
+             end do
+          end do
+c     
 c     compute the cell dipole boundary correction to field
-c
-      if (boundary .eq. 'VACUUM') then
-         do i = 1, 3
-            ucell(i) = 0.0d0
-         end do
-         do i = 1, npole
-            ii = ipole(i)
-            ucell(1) = ucell(1) + rpole(2,i) + rpole(1,i)*x(ii)
-            ucell(2) = ucell(2) + rpole(3,i) + rpole(1,i)*y(ii)
-            ucell(3) = ucell(3) + rpole(4,i) + rpole(1,i)*z(ii)
-         end do
-         term = (4.0d0/3.0d0) * pi/volbox
-         do i = 1, npole
-            do j = 1, 3
-               field(j,i) = field(j,i) - term*ucell(j)
-               fieldp(j,i) = fieldp(j,i) - term*ucell(j)
-            end do
-         end do
-      end if
+c     
+          if (boundary .eq. 'VACUUM') then
+             do i = 1, 3
+                ucell(i) = 0.0d0
+             end do
+             do i = 1, npole
+                ii = ipole(i)
+                ucell(1) = ucell(1) + rpole(2,i) + rpole(1,i)*x(ii)
+                ucell(2) = ucell(2) + rpole(3,i) + rpole(1,i)*y(ii)
+                ucell(3) = ucell(3) + rpole(4,i) + rpole(1,i)*z(ii)
+             end do
+             term = (4.0d0/3.0d0) * pi/volbox
+             do i = 1, npole
+                do j = 1, 3
+                   field(j,i) = field(j,i) - term*ucell(j)
+                   fieldp(j,i) = fieldp(j,i) - term*ucell(j)
+                end do
+             end do
+          end if
+       end if
       return
       end
 c
@@ -1560,7 +1603,6 @@ c
       real*8 ucellp(3)
       real*8 field(3,*)
       real*8 fieldp(3,*)
-      real*8, allocatable :: fieldtmp(:,:)
       real*8, allocatable :: fieldt(:,:)
       real*8, allocatable :: fieldtp(:,:)
 c
@@ -1568,7 +1610,7 @@ c
 c     zero out the electrostatic field at each site
 c
 
-      allocate (fieldtmp(3,npole))
+ 
       allocate (fieldt(3,npole))
       allocate (fieldtp(3,npole))
 
@@ -1599,70 +1641,41 @@ c
          call umutual2a (field,fieldp)
       end if
 
-      fieldtmp = 0.0d0
-      
-      call MPI_Allreduce(field, fieldtmp, 3*npole, 
-     &     MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
-     &     ierror)
-         
-
-c      field = fieldtmp
-       do i =1, npole
-          do j=1,3
-             field(j,i) = fieldtmp(j,i) + fieldt(j,i)
-          end do
-       end do
-       fieldtmp = 0.0d0
-
-       call MPI_Allreduce(fieldp, fieldtmp, 3*npole, 
-     &      MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
-     &      ierror)
- 
-c       fieldp = fieldtmp
-       
-       do i=1,npole
-          do j=1,3
-             fieldp(j,i) =  fieldtmp(j,i) + fieldtp(j,i)
-          end do
-       end do
-
-      
-
-
 c
 c     get the self-energy portion of the electrostatic field
 c
-      term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
-      do i = 1, npole
-         do j = 1, 3
-            field(j,i) = field(j,i) + term*uind(j,i)
-            fieldp(j,i) = fieldp(j,i) + term*uinp(j,i)
+      if(rank .eq. 0) then 
+         term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
+         do i = 1, npole
+            do j = 1, 3
+               field(j,i) = field(j,i) + term*uind(j,i) + fieldt(j,i)
+               fieldp(j,i) = fieldp(j,i) + term*uinp(j,i) + fieldtp(j,i)
+            end do
          end do
-      end do
-c
+c     
 c     compute the cell dipole boundary correction to the field
-c
-      if (boundary .eq. 'VACUUM') then
-         do i = 1, 3
-            ucell(i) = 0.0d0
-            ucellp(i) = 0.0d0
-         end do
-         do i = 1, npole
-            do j = 1, 3
-               ucell(j) = ucell(j) + uind(j,i)
-               ucellp(j) = ucellp(j) + uinp(j,i)
+c     
+         if (boundary .eq. 'VACUUM') then
+            do i = 1, 3
+               ucell(i) = 0.0d0
+               ucellp(i) = 0.0d0
             end do
-         end do
-         term = (4.0d0/3.0d0) * pi/volbox
-         do i = 1, npole
-            do j = 1, 3
-               field(j,i) = field(j,i) - term*ucell(j)
-               fieldp(j,i) = fieldp(j,i) - term*ucellp(j)
+            do i = 1, npole
+               do j = 1, 3
+                  ucell(j) = ucell(j) + uind(j,i)
+                  ucellp(j) = ucellp(j) + uinp(j,i)
+               end do
             end do
-         end do
+            term = (4.0d0/3.0d0) * pi/volbox
+            do i = 1, npole
+               do j = 1, 3
+                  field(j,i) = field(j,i) - term*ucell(j)
+                  fieldp(j,i) = fieldp(j,i) - term*ucellp(j)
+               end do
+            end do
+         end if
       end if
 
-      deallocate(fieldtmp)
       deallocate(fieldt)
       deallocate(fieldtp)
 
@@ -2689,22 +2702,25 @@ c
       call MPI_Allreduce(MPI_IN_PLACE, nlocals, nproc,
      &     MPI_INTEGER,MPI_SUM, MPI_COMM_WORLD, ierror)
 
-c      print*, "nlocal for rank", rank, nlocal
-c      print*, "nlocals for rank", rank, nlocals
+
 
       ntpair = sum(nlocals)
-c      print*, "ntpair", rank, ntpair
       
       if (poltyp .eq. 'MUTUAL') then
 
          ntpair = sum(nlocals)
 
          lstart = 1
-         do i=0, rank
-            lstart = lstart + nlocals(i) 
-c            print*, "i for rank", rank, i
-         end do
-c         print*, "lstart is for rank", rank, lstart,lstart+nlocal-1
+         if(rank .gt.0) then
+            do i=1, rank
+               lstart = lstart + nlocals(i) 
+c     print*, "i for rank", rank, i
+            end do
+         end if
+c         print*, "ntpair is", ntpair
+c         print*, "nlocals", nlocals
+c         print*, "for rank lstart is", rank, lstart 
+
          
            k=lstart
          do i=1,nlocal
@@ -2716,77 +2732,16 @@ c         print*, "lstart is for rank", rank, lstart,lstart+nlocal-1
             k = k + 1
          end do
 
-
-C$$$         tindex = ilocal
-C$$$         tdipdip = dlocal
-         
-C$$$         ilocal = 0 
-C$$$         dlocal = 0.0d0
-
-C$$$         k=lstart
-C$$$         do i=1,nlocal
-C$$$            ilocal(1,k) = tindex(1,i)
-C$$$            ilocal(2,k) = tindex(2,i)
-C$$$            do j=1,6
-C$$$               dlocal(j,k) = tdipdip(j,i)
-C$$$            end do
-C$$$            k = k + 1
-C$$$         end do
-            
-C$$$         tindex = 0
-C$$$         tdipdip = 0.0d0
-
-         
-C$$$         call MPI_Allreduce(ilocal,tindex,2*maxlocal, 
-C$$$     &        MPI_INTEGER, MPI_SUM, MPI_COMM_WORLD, 
-C$$$     &        ierror)
-
-C$$$         call MPI_Allreduce(dlocal,tdipdip,6*maxlocal, 
-C$$$     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
-C$$$     &        ierror)
-
-         
-C$$$          do i=1,ntpair
-C$$$            if(tindex(1,i) .eq. 0 .or. tindex(2,i) .eq. 0) then
-C$$$               print*, "tindex is zero for", rank, i, tindex(1,i), 
-C$$$     &              tindex(2,i) 
-C$$$            end if
-C$$$            if(tindex(1,i) .gt. npole .or. tindex(2,i) .gt. npole) then
-C$$$               print*, "tindex is grater than npole", rank, i, 
-C$$$     &              tindex(1,i), tindex(2,i)
-C$$$            end if
-
-C$$$         end do
-
-
-
-C$$$         ntpair = ntpair
-
-c         print*, "ntpair after reduce", ntpair
-c         print*, "tindex", tindex(1,ntpair), tindex(2,ntpair)
-c         print*, "tindex", tindex(1,1), tindex(2,1)
-c         print*, "ilocal", ilocal(1,1), ilocal(2,1)
-c         print*, "ilocal", ilocal(1,2), ilocal(2,2)
-c         print*, "tdipdip", tdipdip(1,1), tdipdip(1,2), tdipdip(1,3)
-         !print*, "tindex last
-
          deallocate (ilocal)
          deallocate (dlocal)
 
       end if
 !$OMP END PARALLEL
 
-!     call system_clock(tock)
-
-!     print *,"udirect2b, ",rank,",",time1,",",
-!    &         (tock-tick)/real(rate,kind=8)
-!     call flush(6)
 
 c
 c     perform deallocation of some local arrays
 c
-
-c      print*, "DONE with udirect2b"
 
       deallocate (toffset)
       deallocate (pscale)
@@ -3312,13 +3267,16 @@ c
 c
 c     find the field terms for each pairwise interaction
 c
-      lstart =  1
-      do i = 0, rank
-         lstart = lstart + nlocals(i)
-      end do
+
+      lstart = 1
+      if(rank .gt.0) then
+         do i = 1, rank
+            lstart = lstart + nlocals(i)
+         end do
+      end if
       lend = lstart + nlocals(rank+1) - 1 
 c      print*,"lstart and lend are", rank, lstart, lend 
-c      print*, "nlocals from rank", rank, nlocals(rank)
+c      print*, "nlocals from rank", rank, nlocals(rank+1)
 
 !$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
       do m = lstart, lend !1, ntpair
@@ -3396,9 +3354,7 @@ C$$$       end do
 !$OMP END DO
 !$OMP END PARALLEL
 
-      
-
-
+   
 c
 c     perform deallocation of some local arrays
 c
