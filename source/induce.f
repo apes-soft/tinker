@@ -2712,10 +2712,15 @@ c      allocate(nlocals(nprocs))
          ntpair = sum(nlocals)
 
          lstart = 1
-         do i=0, rank
-            lstart = lstart + nlocals(i) 
-c            print*, "i for rank", rank, i
-         end do
+         if(rank .gt.0) then
+            do i=1, rank
+               lstart = lstart + nlocals(i) 
+c     print*, "i for rank", rank, i
+            end do
+         end if
+c         print*, "ntpair is", ntpair
+c         print*, "nlocals", nlocals
+c         print*, "for rank lstart is", rank, lstart 
 
          
            k=lstart
@@ -3263,13 +3268,16 @@ c
 c
 c     find the field terms for each pairwise interaction
 c
-      lstart =  1
-      do i = 0, rank
-         lstart = lstart + nlocals(i)
-      end do
+
+      lstart = 1
+      if(rank .gt.0) then
+         do i = 1, rank
+            lstart = lstart + nlocals(i)
+         end do
+      end if
       lend = lstart + nlocals(rank+1) - 1 
 c      print*,"lstart and lend are", rank, lstart, lend 
-c      print*, "nlocals from rank", rank, nlocals(rank)
+c      print*, "nlocals from rank", rank, nlocals(rank+1)
 
 !$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
       do m = lstart, lend !1, ntpair
