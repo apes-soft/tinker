@@ -1022,16 +1022,6 @@ c
       !viro    = vir
       viro    = 0.0d0
 
-      ! set OpenMP directives for the major loop structure
-
-!$OMP PARALLEL default(private) shared(nvdw,ivdw,ired,kred,
-!$OMP& jvdw,xred,yred,zred,use,nvlst,vlst,n12,n13,n14,n15,
-!$OMP& i12,i13,i14,i15,v2scale,v3scale,v4scale,v5scale,
-!$OMP& use_group,off2,radmin,epsilon,radmin4,epsilon4,ghal,dhal,
-!$OMP& cut2,vlambda,scalpha,scexp,mut,c0,c1,c2,c3,c4,c5,molcule)
-!$OMP& firstprivate(vscale,iv14) shared(evo,devo,viro,eintero)
-!$OMP DO reduction(+:evo,devo,viro,eintero) schedule(guided)
-
       ! work out the local array limits for this process
       ! Note that this assumes that nvlst will be of size
       ! nvdw.
@@ -1040,6 +1030,17 @@ c
         call fatal
       end if 
       call splitlimits(lstart, lend, nvlst)
+
+      ! set OpenMP directives for the major loop structure
+
+!$OMP PARALLEL default(private) shared(nvdw,ivdw,ired,
+!$OMP& kred,jvdw,xred,yred,zred,use,nvlst,vlst,n12,n13,n14,n15,
+!$OMP& i12,i13,i14,i15,v2scale,v3scale,v4scale,v5scale,
+!$OMP& use_group,off2,radmin,epsilon,radmin4,epsilon4,ghal,dhal,
+!$OMP& cut2,vlambda,scalpha,scexp,mut,c0,c1,c2,c3,c4,c5,molcule)
+!$OMP& firstprivate(lstart,lend,vscale,iv14) shared(evo,devo,viro,
+!$OMP& eintero)
+!$OMP DO reduction(+:evo,devo,viro,eintero) schedule(guided)
 
       ! find van der Waals energy and derivatives via neighbor list
       do ii = lstart, lend !1, nvdw
