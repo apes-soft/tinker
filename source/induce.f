@@ -2421,6 +2421,18 @@ c      print*, "maxlocal is ", maxlocal
       dscale = 1.0d0
       uscale = 1.0d0
 
+      ! Check that the size of the "cost" array is the same
+      ! as npole
+      if(size(nelst).ne.npole.and.rank.eq.0) then
+        print *,"ereal1d: size of nelst not equal to npole."
+        call fatal
+      end if
+
+      ! split the do loop limits
+      call splitlimits(lstart, lend, nelst)
+c      nlocal = lstart - 1
+c      print*,"for rank ... lstart is", rank, lstart
+
       ! set OpenMP directives for the major loop structure
 
 !$OMP PARALLEL default(private) shared(n,npole,ipole,x,y,z,pdamp,thole,
@@ -2429,7 +2441,7 @@ c      print*, "maxlocal is ", maxlocal
 !$OMP& n14,i14,n15,i15,np11,ip11,np12,ip12,np13,ip13,np14,ip14,nelst,
 !$OMP& elst,cut2,aewald,aesq2,aesq2n,poltyp,ntpair,tindex,tdipdip,
 !$OMP& toffset,toffset0,field,fieldp,fieldt,fieldtp,maxlocal)
-!$OMP& firstprivate(pscale,dscale,uscale,nlocal)
+!$OMP& firstprivate(pscale,dscale,uscale,nlocal,lstart,lend)
 
       ! perform dynamic allocation of some local arrays
       if (poltyp .eq. 'MUTUAL') then
@@ -2450,19 +2462,8 @@ c      print*, "maxlocal is ", maxlocal
       end do
 !$OMP END DO
 
-      ! Check that the size of the "cost" array is the same
-      ! as npole
-      if(size(nelst).ne.npole.and.rank.eq.0) then
-        print *,"ereal1d: size of nelst not equal to npole."
-        call fatal
-      end if
-
-      ! split the do loop limits
-      call splitlimits(lstart, lend, nelst)
-c      nlocal = lstart - 1
-c      print*,"for rank ... lstart is", rank, lstart
-
       ! compute the real space portion of the Ewald summation
+
 !$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
       do i = lstart, lend !1, npole
          ii   = ipole(i)
