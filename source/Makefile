@@ -46,11 +46,11 @@ LINKDIR = /usr/local/bin
 # below. If you are not clear what these mean look below under the
 # appropriate flag to see in detail what they mean.
 #
-# If none specified the default is: MPIGenericGfortranOpenMP
+# If none specified the default is: GenericGfortran
 
-#COMPARCH=MPIGenericGfortran
-#COMPARCH=MPIGenericGfortranOpenMP
-#COMPARCH=MPILinuxIntel
+#COMPARCH=GenericGfortranMPI
+#COMPARCH=GenericGfortranMPIOpenMP
+#COMPARCH=LinuxIntelMPI
 #COMPARCH=ARCHER
 #COMPARCH=MacIntel
 #COMPARCH=MacIntelOpenMP
@@ -67,7 +67,7 @@ HOSTNAME:=$(shell hostname)
 
 ifeq ($(HOSTNAME),ultra)              # EPCC ultra system
 
-   COMPARCH=MPILinuxIntel
+   COMPARCH=LinuxIntelMPI
 
 else ifeq (eslogin,$(findstring eslogin,$(HOSTNAME)))  # ARCHER front end
 
@@ -75,28 +75,28 @@ else ifeq (eslogin,$(findstring eslogin,$(HOSTNAME)))  # ARCHER front end
 
 else ifeq ($(HOSTNAME),phi.hydra)     # EPCC phi system on hydra
 
-   #COMPARCH=MPILinuxIntel
-   #COMPARCH=LinuxIntelMPIOpenMP
-   COMPARCH=MPIGenericGfortranOpenMP
+   #COMPARCH=LinuxIntelMPI
+   COMPARCH=LinuxIntelMPIOpenMP
+   #COMPARCH=GenericGfortranMPIOpenMP
    # Use the MPIP profiler
    #COMPARCH=MPIP
 
 else ifeq ($(HOSTNAME),mbp-ma.local)  # MA's Macbook pro
 
-   COMPARCH=MPIGenericGfortran
+   COMPARCH=GenericGfortranMPI
 
 else ifeq ($(HOSTNAME),mbp-ma.lan)    # MA's Macbook pro
 
-   COMPARCH=MPIGenericGfortran
+   COMPARCH=GenericGfortranMPI
 
 else ifeq ($(HOSTNAME),indy0)        # EPCC indy system
 
-   COMPARCH=MPIGenericGfortran
+   COMPARCH=GenericGfortranMPI
 
 endif
 
 
-ifeq ($(COMPARCH),MPIGenericGfortran)
+ifeq ($(COMPARCH),GenericGfortranMPI)
 
   ##  Machine:  Generic Linux or Macintosh
   ##  CPU Type: Intel x86 Compatibles
@@ -110,7 +110,7 @@ ifeq ($(COMPARCH),MPIGenericGfortran)
   RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc
 
-else ifeq ($(COMPARCH),MPIGenericGfortranOpenMP)
+else ifeq ($(COMPARCH),GenericGfortranMPIOpenMP)
 
   ##  Machine:  Generic Linux or Macintosh OS X
   ##  CPU Type: Intel x86 Compatible
@@ -134,7 +134,7 @@ else ifeq ($(COMPARCH),ARCHER)
   RANLIB    = ranlib
   LINKFLAGS = -static-libgcc -static-intel -openmp -v  -pg
 
-else ifeq ($(COMPARCH),MPILinuxIntel)
+else ifeq ($(COMPARCH),LinuxIntelMPI)
 
   ##  Machine:  Generic Linux
   ##  CPU Type: Intel x86 Compatible (also AMD)
