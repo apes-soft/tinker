@@ -9,27 +9,53 @@
 # Can add `time` in front to time execution. If NumOfProcs 
 # is not specified it defaults to 1.
 
-# Check if a number of processes has been 
+# Check if a number of processes or threads has been 
 # specified in the command line otherwise
-# default to 1.
-if [ "$#" -eq 1 ] 
+# default to 1 for each case.
+if [ "$#" -gt 2 ] 
 then 
+
+    echo
+    echo Usage: $0 NumProcs NumThreads
+    echo 
+    echo If only one number is specified that is used for the
+    echo number of processes, if no numbers are specified the
+    echo values default to 1.
+    echo
+    exit
+
+elif [ "$#" -eq 2 ] 
+then 
+
    nprocs=$1
+   nthreads=$2
+
+elif [ "$#" -eq 1 ]
+then
+
+   nprocs=$1
+   nthreads=1
+
 else
+
    nprocs=1
+   nthreads=1
+
 fi
 
 # Outfile name
 outfile="out.txt"
 
 # Dynamic command
-dynamic="../bin/dynamic dhfr 100 1.0 10.0 2 300.0" 
+dynamic="../bin/dynamic dhfr 10 1.0 10.0 2 300.0" 
 
 echo | tee -a $outfile                           # Add an empty line
 echo Using $nprocs processes. | tee -a $outfile  # How many procs are usd
 
-export OMP_NUM_THREADS=1
+export OMP_NUM_THREADS=$nthreads
 echo Explicitly setting OMP_NUM_THREADS to $OMP_NUM_THREADS. | tee -a $outfile
+
+#echo processes $nprocs, threads $nthreads
 
 # Command line arguments to dynamic:
 #
@@ -77,8 +103,8 @@ elif [ `hostname` = "phi.hydra" ]; then       # phi.hydra (system at EPCC).
   export SLURM_JOBID=
 
   # Run the code
-  #time mpirun -trace -np $nprocs $dynamic\
-  (time mpirun -np $nprocs $dynamic) 2>&1\
+  #(time mpirun -trace -np $nprocs $dynamic) 2>&1 \
+  (time mpirun -np $nprocs -trace $dynamic) 2>&1\
          | tee -a $outfile
 
 else
