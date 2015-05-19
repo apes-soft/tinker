@@ -52,11 +52,11 @@ LINKDIR = /usr/local/bin
 #COMPARCH=MPIGenericGfortranOpenMP
 #COMPARCH=MPILinuxIntel
 #COMPARCH=ARCHER
-#COMPARCH=LinuxIntelOpenMP
 #COMPARCH=MacIntel
 #COMPARCH=MacIntelOpenMP
 #COMPARCH=MacXeonIntelOpenMP
 #COMPARCH=LinuxIntelOpenMP
+#COMPARCH=LinuxIntelMPIOpenMP
 
 # Find out what machine we are on and
 # use this as a basis for picking which configuration we are
@@ -75,8 +75,11 @@ else ifeq (eslogin,$(findstring eslogin,$(HOSTNAME)))  # ARCHER front end
 
 else ifeq ($(HOSTNAME),phi.hydra)     # EPCC phi system on hydra
 
-   COMPARCH=MPILinuxIntel
-   #COMPARCH=MPIP                # Use the MPIP profiler
+   #COMPARCH=MPILinuxIntel
+   #COMPARCH=LinuxIntelMPIOpenMP
+   COMPARCH=MPIGenericGfortranOpenMP
+   # Use the MPIP profiler
+   #COMPARCH=MPIP
 
 else ifeq ($(HOSTNAME),mbp-ma.local)  # MA's Macbook pro
 
@@ -116,7 +119,7 @@ else ifeq ($(COMPARCH),MPIGenericGfortranOpenMP)
   FC        = mpif90
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
   FCFLAGS   = -c #-Wall
-  OPTFLAGS  = -g #-ffast-math -O3 #-fopenmp
+  OPTFLAGS  = -g -fopenmp #-ffast-math -O3
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc
@@ -189,6 +192,16 @@ else ifeq ($(COMPARCH),LinuxIntelOpenMP)
   #
 
   FC        = ifort
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_threads -lfftw3
+  FCFLAGS   = -c -xHost
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = $(OPTFLAGS) -static-libgcc -static-intel
+
+else ifeq ($(COMPARCH),LinuxIntelMPIOpenMP)
+
+  FC        = mpiifort
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_threads -lfftw3
   FCFLAGS   = -c -xHost
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
