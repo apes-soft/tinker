@@ -38,10 +38,8 @@ c
       real*8 norm
       logical header
 
-
+      ! ancillary array to store nlocal for processes involved
       allocate(nlocals(nprocs))
-
-      
 
       ! choose the method for computation of induced dipoles
       if (solvtyp(1:2) .eq. 'PB') then
@@ -159,8 +157,10 @@ c
             end do
          end if
       end if
-      
+
+      ! deallocate nlocals
       deallocate(nlocals)
+
       return
       end
 c
@@ -246,6 +246,7 @@ c
          call dfield0a (field,fieldp)
       end if
 
+      ! synchronize field and fieldp across all processes
       fieldtmp = 0.0d0
       
       call MPI_Allreduce(field, fieldtmp, 3*npole, 
@@ -323,6 +324,7 @@ c
             call ufield0a (field,fieldp)
          end if
 
+         ! synchronize filed and fieldp across all processes
          fieldtmp = 0.0d0
          
          call MPI_Allreduce(field, fieldtmp, 3*npole, 
@@ -383,6 +385,7 @@ c
                
                call ufield0c (field,fieldp)
 
+               ! synchronize filed and fieldp across all processes
                fieldtmp = 0.0d0
                
                call MPI_Allreduce(field, fieldtmp, 3*npole, 
@@ -2348,10 +2351,10 @@ c
       use tarray
       use units
       implicit none
-      integer i,j,k,m
+      integer i,j,k
       integer ii,kk,kkk
       integer nlocal,maxlocal
-      integer tid,toffset0
+      integer toffset0
 !$    integer omp_get_thread_num
       integer, allocatable :: toffset(:)
       integer, allocatable :: ilocal(:,:)
