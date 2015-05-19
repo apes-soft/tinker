@@ -78,6 +78,7 @@ c
 
       viro = 0.0d0
 
+      ! split loop iterations by the number of procs available
       call splitloop(lstart, lend, nopbend)
 
 c

@@ -62,6 +62,7 @@ c
       deubo = deub
       viro = 0.0d0
 
+      ! split loop iterations by number of procs available
       call splitloop(lstart,lend, nurey)
 
 C$$$      do i = 1, n
@@ -79,7 +80,7 @@ c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(private) shared(nurey,iury,ul,uk,
 !$OMP& use,x,y,z,cury,qury,ureyunit,use_group,use_polymer)
-!$OMP& shared(eubo,deubo,viro)
+!$OMP& shared(eubo,deubo,viro) firstprivate(lstart,lend)
 !$OMP DO reduction(+:eubo,deubo,viro) schedule(guided)
 c
 c     calculate the Urey-Bradley 1-3 energy and first derivatives

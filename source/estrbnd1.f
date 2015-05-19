@@ -83,6 +83,7 @@ c
       debao = deba
       viro = 0.0d0
 
+      ! split loop iterations by number of procs available
       call splitloop(lstart, lend, nstrbnd)
 
 C$$$      do i = 1, n
@@ -100,7 +101,7 @@ c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(private) shared(nstrbnd,isb,iang,sbk,
 !$OMP& anat,bl,bk,use,x,y,z,stbnunit,use_group,use_polymer)
-!$OMP& shared(ebao,debao,viro)
+!$OMP& shared(ebao,debao,viro) firstprivate(lstart,lend)
 !$OMP DO reduction(+:ebao,debao,viro) schedule(guided)
 c
 c     calculate the stretch-bend energy and first derivatives

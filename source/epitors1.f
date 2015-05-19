@@ -87,6 +87,7 @@ c
       end do
       viro = 0.0d0
 
+      ! split loop iterations by number of procs available
       call splitloop(lstart, lend, npitors)
 
 c
