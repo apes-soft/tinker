@@ -2685,14 +2685,8 @@ c
 c
 c     transfer the results from local to global arrays
 c
-!$OMP DO
-
-
       field = fieldt
       fieldp = fieldtp
-
-
-!$OMP END DO
 
       ! store terms needed later to compute mutual polarization
       
