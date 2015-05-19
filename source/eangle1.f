@@ -90,7 +90,7 @@ c
 c
 c     transfer global to local copies for OpenMP calculation
 c
-      eao = ea
+      eao  = ea
       deao = dea
       viro = 0.0d0
       
@@ -105,15 +105,24 @@ C$$$         viro(2,i) = vir(2,i)
 C$$$         viro(3,i) = vir(3,i)
 C$$$      end do
 
+      ! split loop variables
       call splitloop(lstart,lend, nangle)
-
 
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(private) shared(nangle,iang,anat,ak,afld,use,
+!$OMP PARALLEL default(none) shared(nangle,iang,anat,ak,afld,use,
 !$OMP& x,y,z,cang,qang,pang,sang,angtyp,angunit,use_group,use_polymer)
-!$OMP& shared(eao,deao,viro)
+!$OMP& shared(eao,deao,viro) firstprivate(lstart,lend)
+!$OMP& private(ia,ib,ic,id,ideal,force,xia,yia,zia,xib,yib,zib,xic,
+!$OMP& yic,zic,xab,yab,zab,xcb,ycb,zcb,rab2,rcb2,xp,yp,zp,rp,dot,
+!$OMP& cosine,angle,dt,dt2,dt3,dt4,e,deddt,factor,sine,fold,terma,
+!$OMP& termc,dedxia,dedyia,dedzia,dedxic,dedyic,dedzic,dedxib,dedyib,
+!$OMP& dedzib,vxx,vyx,vzx,vyy,vzy,vzz,xid,yid,zid,xad,yad,zad,
+!$OMP& xbd,ybd,zbd,xcd,ycd,zcd,xt,yt,zt,rt2,delta,xip,yip,zip,
+!$OMP& xap,yap,zap,xcp,ycp,zcp,rap2,rcp2,xm,ym,zm,rm,dedxip,
+!$OMP& dedyip,dedzip,delta2,ptrt2,term,dpdxia,dpdyia,dpdzia,
+!$OMP& dedxid,dedyid,dedzid,dpdxic,dpdyic,dpdzic,fgrp,proceed)
 !$OMP DO reduction(+:eao,deao,viro) schedule(guided)
 c
 c     calculate the bond angle bending energy term
@@ -417,26 +426,10 @@ c
 c
 c     transfer local to global copies for OpenMP calculation
 c
-      eatmp = eao
-      deatmp = deao
-C$$$ do i = 1,n
-C$$$         deatmp(1,i) = deao(1,i)
-C$$$         deatmp(2,i) = deao(2,i)
-C$$$         deatmp(3,i) = deao(3,i)
-C$$$      end do
+      eatmp   = eao
+      deatmp  = deao
       virtemp = virtemp + viro 
 
-      !ea = eao
-C$$$     do i = 1, n
-C$$$         dea(1,i) = deao(1,i)
-C$$$         dea(2,i) = deao(2,i)
-C$$$         dea(3,i) = deao(3,i)
-C$$$      end do
-C$$$      do i = 1, 3
-C$$$         vir(1,i) = viro(1,i)
-C$$$         vir(2,i) = viro(2,i)
-C$$$         vir(3,i) = viro(3,i)
-C$$$      end do
 c
 c     perform deallocation of some local arrays
 c
