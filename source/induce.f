@@ -2435,13 +2435,20 @@ c      print*,"for rank ... lstart is", rank, lstart
 
       ! set OpenMP directives for the major loop structure
 
-!$OMP PARALLEL default(private) shared(n,npole,ipole,x,y,z,pdamp,thole,
+!$OMP PARALLEL default(none) shared(n,npole,ipole,x,y,z,pdamp,thole,
 !$OMP& rpole,p2scale,p3scale,p4scale,p41scale,p5scale,d1scale,d2scale,
 !$OMP& d3scale,d4scale,u1scale,u2scale,u3scale,u4scale,n12,i12,n13,i13,
 !$OMP& n14,i14,n15,i15,np11,ip11,np12,ip12,np13,ip13,np14,ip14,nelst,
 !$OMP& elst,cut2,aewald,aesq2,aesq2n,poltyp,ntpair,tindex,tdipdip,
-!$OMP& toffset,toffset0,field,fieldp,fieldt,fieldtp,maxlocal)
+!$OMP& toffset,toffset0,field,fieldp,fieldt,fieldtp,maxlocal,nlocals,
+!$OMP& rank)
 !$OMP& firstprivate(pscale,dscale,uscale,nlocal,lstart,lend)
+!$OMP& private(ilocal,dlocal, ii, pdi, pti, ci, dix, diy, diz, qixx,
+!$OMP& qixy,qiyy,qiyz,qizz,kk,zr,r,r2, rr1,rr2,rr3,rr5,rr7,ck,
+!$OMP& dkx,dky,dkz,qixz,xr,yr,qkxx,qkxy,qkxz,qkyy,qkyz,qkzz,ralpha,
+!$OMP& bn,exp2a,aefac,bfac,scale3,scale5,scale7,damp,pgamma,expdamp,
+!$OMP& dir,qix,qiy,qiz,qir,dkr,qkx,qky,qkz,qkr,bcn,fimd,fkmd,fimp,
+!$OMP& fkmp)
 
       ! perform dynamic allocation of some local arrays
       if (poltyp .eq. 'MUTUAL') then
@@ -2683,6 +2690,7 @@ c
          end do
       end do
 !$OMP END DO
+
 c
 c     transfer the results from local to global arrays
 c
@@ -2690,13 +2698,16 @@ c
       fieldp = fieldtp
 
       ! store terms needed later to compute mutual polarization
+      nlocals = 0 
+      nlocals(rank+1) = nlocal
       
+!$OMP END PARALLEL
+
       ! reset values
       tindex  = 0
       tdipdip = 0.0d0
 
-      nlocals = 0 
-      nlocals(rank+1) = nlocal
+
       call MPI_Allreduce(MPI_IN_PLACE, nlocals, nproc,
      &     MPI_INTEGER,MPI_SUM, MPI_COMM_WORLD, ierror)
 
@@ -2734,7 +2745,7 @@ c         print*, "for rank lstart is", rank, lstart
          deallocate (dlocal)
 
       end if
-!$OMP END PARALLEL
+
 
 
 c
@@ -3251,7 +3262,7 @@ c
       ! set OpenMP directives for the major loop structure
 
 !$OMP PARALLEL default(private) shared(npole,uind,uinp,ntpair,tindex,
-!$OMP& tdipdip,field,fieldp,fieldt,fieldtp)
+!$OMP& tdipdip,field,fieldp,fieldt,fieldtp) firstprivate(nlocals)
 
       ! initialize local variables for OpenMP calculation
 !$OMP DO collapse(2)
@@ -3267,14 +3278,14 @@ c     find the field terms for each pairwise interaction
 c
 
       lstart = 1
-      if(rank .gt.0) then
+      if(rank.gt.0) then
          do i = 1, rank
             lstart = lstart + nlocals(i)
          end do
       end if
       lend = lstart + nlocals(rank+1) - 1 
-c      print*,"lstart and lend are", rank, lstart, lend 
-c      print*, "nlocals from rank", rank, nlocals(rank+1)
+       print*,"lstart and lend are", rank, lstart, lend 
+       print*, "rank, nlocal, ntpair", rank, nlocals(rank+1),ntpair
 
 !$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
       do m = lstart, lend !1, ntpair
