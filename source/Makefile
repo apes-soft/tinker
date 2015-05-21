@@ -68,7 +68,7 @@ COMPARCH=GenericGfortranMPI
 # going to use. Start by finding out the hostname:
 HOSTNAME:=$(shell hostname)
 
-# On the basis of this set-up some defaults:
+# Set-up defaults based on the machine name:
 
 ifeq ($(HOSTNAME),ultra)              # EPCC ultra system
 
@@ -107,8 +107,8 @@ ifeq ($(COMPARCH),GenericGfortranMPI)
   ##  CPU Type: Intel x86 Compatibles
   ##  Compiler: GNU gfortran
 
-  FC        = ftn ###mpif90
-  LIBS      = -lfftw3 #-L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3
+  FC        = mpif90
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3
   FCFLAGS   = -Wall -c
   OPTFLAGS  = -O3 -ffast-math
   LIBFLAGS  = -crusv
@@ -131,7 +131,10 @@ else ifeq ($(COMPARCH),GenericGfortranMPIOpenMP)
 
 else ifeq ($(COMPARCH),ARCHER)
 
-  FC        = ftn # ifort
+  # Assumes that the intel programming environment is being used.
+  # Need to also ensure that the fftw module has been loaded.
+
+  FC        = ftn 
   LIBS      = -lfftw3_threads -lfftw3
   FCFLAGS   = -c -xHost  -pg
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
