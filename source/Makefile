@@ -46,9 +46,14 @@ LINKDIR = /usr/local/bin
 # below. If you are not clear what these mean look below under the
 # appropriate flag to see in detail what they mean.
 #
-# If none specified the default is: GenericGfortran
+# If none specified the default is: GenericGfortranMPI
 
-#COMPARCH=GenericGfortranMPI
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Note that all versions that use OpenMP are currently
+# broken.
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+COMPARCH=GenericGfortranMPI
 #COMPARCH=GenericGfortranMPIOpenMP
 #COMPARCH=LinuxIntelMPI
 #COMPARCH=ARCHER
@@ -75,8 +80,8 @@ else ifeq (eslogin,$(findstring eslogin,$(HOSTNAME)))  # ARCHER front end
 
 else ifeq ($(HOSTNAME),phi.hydra)     # EPCC phi system on hydra
 
-   #COMPARCH=LinuxIntelMPI
-   COMPARCH=LinuxIntelMPIOpenMP
+   COMPARCH=LinuxIntelMPI
+   #COMPARCH=LinuxIntelMPIOpenMP
    #COMPARCH=GenericGfortranMPIOpenMP
    # Use the MPIP profiler
    #COMPARCH=MPIP
@@ -204,7 +209,7 @@ else ifeq ($(COMPARCH),LinuxIntelMPIOpenMP)
   FC        = mpiifort
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_threads -lfftw3
   FCFLAGS   = -c -xHost
-  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
+  OPTFLAGS  = -diag-enable=openmp -g -debug all -openmp #-O3 -no-ipo -no-prec-div -recursive
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = $(OPTFLAGS) -static-libgcc -static-intel
