@@ -126,7 +126,10 @@ else ifeq ($(COMPARCH),GenericGfortranMPIOpenMP)
 
 else ifeq ($(COMPARCH),ARCHER)
 
-  FC        = ftn # ifort
+  # Assumes that the intel programming environment is being used.
+  # Need to also ensure that the fftw module has been loaded.
+
+  FC        = ftn 
   LIBS      = -lfftw3_threads -lfftw3
   FCFLAGS   = -c -xHost  -pg
   OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
