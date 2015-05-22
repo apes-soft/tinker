@@ -2430,8 +2430,6 @@ c      print*, "maxlocal is ", maxlocal
 
       ! split the do loop limits
       call splitlimits(lstart, lend, nelst)
-c      nlocal = lstart - 1
-c      print*,"for rank ... lstart is", rank, lstart
 
       ! set OpenMP directives for the major loop structure
 
@@ -2441,7 +2439,7 @@ c      print*,"for rank ... lstart is", rank, lstart
 !$OMP& n14,i14,n15,i15,np11,ip11,np12,ip12,np13,ip13,np14,ip14,nelst,
 !$OMP& elst,cut2,aewald,aesq2,aesq2n,poltyp,ntpair,tindex,tdipdip,
 !$OMP& toffset,toffset0,field,fieldp,fieldt,fieldtp,maxlocal,nlocals,
-!$OMP& rank)
+!$OMP& rank,MPI_IN_PLACE,nprocs,ierror)
 !$OMP& firstprivate(pscale,dscale,uscale,nlocal,lstart,lend)
 !$OMP& private(ilocal,dlocal, ii, pdi, pti, ci, dix, diy, diz, qixx,
 !$OMP& qixy,qiyy,qiyz,qizz,kk,zr,r,r2, rr1,rr2,rr3,rr5,rr7,ck,
@@ -2454,10 +2452,12 @@ c      print*,"for rank ... lstart is", rank, lstart
       if (poltyp .eq. 'MUTUAL') then
          allocate (ilocal(2,maxlocal))
          allocate (dlocal(6,maxlocal))
+
+         ! initialise the local arrays
+         ilocal = 0
+         dlocal = 0.0d0
       end if
 
-      ilocal = 0
-      dlocal = 0.0d0
 
       ! initialize local variables for OpenMP calculation
 !$OMP DO collapse(2)
@@ -2633,19 +2633,6 @@ c
                   dlocal(6,nlocal) = -bcn(1) + bcn(2)*zr*zr
                end if
 
-c               print*, "nlocal for rank is", rank, nlocal
-
-c               if(i .lt. lstart+10) then
-c                  print*, "rank,i, nlocal, ilocal", rank,i, nlocal, 
-c     &                 ilocal(1,i), ilocal(2,i)
-c               end if
-
-C$$$               if(i .lt. 10) then
-C$$$                  print*,"for i", i
-C$$$                  print*, "nlocal is", nlocal
-C$$$                  print*, "ilocal is ",ilocal(1,nlocal),ilocal(2,nlocal)
-C$$$               end if
-
 c
 c     increment the field at each site due to this interaction
 c
@@ -2701,37 +2688,27 @@ c
       nlocals = 0 
       nlocals(rank+1) = nlocal
       
-!$OMP END PARALLEL
-
       ! reset values
       tindex  = 0
       tdipdip = 0.0d0
 
 
-      call MPI_Allreduce(MPI_IN_PLACE, nlocals, nproc,
+      ! collect the values of nlocal from the processes
+      call MPI_Allreduce(MPI_IN_PLACE, nlocals, nprocs,
      &     MPI_INTEGER,MPI_SUM, MPI_COMM_WORLD, ierror)
 
-
-
       ntpair = sum(nlocals)
-      
-      if (poltyp .eq. 'MUTUAL') then
 
-         ntpair = sum(nlocals)
+      if (poltyp .eq. 'MUTUAL') then
 
          lstart = 1
          if(rank .gt.0) then
             do i=1, rank
                lstart = lstart + nlocals(i) 
-c     print*, "i for rank", rank, i
             end do
          end if
-c         print*, "ntpair is", ntpair
-c         print*, "nlocals", nlocals
-c         print*, "for rank lstart is", rank, lstart 
-
          
-           k=lstart
+         k=lstart
          do i=1,nlocal
             tindex(1,k) = ilocal(1,i)
             tindex(2,k) = ilocal(2,i)
@@ -2746,7 +2723,7 @@ c         print*, "for rank lstart is", rank, lstart
 
       end if
 
-
+!$OMP END PARALLEL
 
 c
 c     perform deallocation of some local arrays
@@ -3284,8 +3261,8 @@ c
          end do
       end if
       lend = lstart + nlocals(rank+1) - 1 
-       print*,"lstart and lend are", rank, lstart, lend 
-       print*, "rank, nlocal, ntpair", rank, nlocals(rank+1),ntpair
+      !print*,"lstart and lend are", rank, lstart, lend 
+      !print*, "rank, nlocal, ntpair", rank, nlocals(rank+1),ntpair
 
 !$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
       do m = lstart, lend !1, ntpair
@@ -3330,28 +3307,6 @@ c
 c     end OpenMP directives for the major loop structure
 c
       fieldtmp = 0.0d0
-
-C$$$      call MPI_Allreduce(fieldt, fieldtmp, 3*npole, 
-C$$$     &     MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
-C$$$     &     ierror)
-       
-C$$$       do i =1, npole
-C$$$          do j=1,3
-C$$$             field(j,i) = fieldtmp(j,i) + field(j,i)
-C$$$          end do
-C$$$       end do
-C$$$       fieldtmp = 0.0d0
-
-C$$$       call MPI_Allreduce(fieldtp, fieldtmp, 3*npole, 
-C$$$     &      MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
-C$$$     &      ierror)
-       
-C$$$       do i=1,npole
-C$$$          do j=1,3
-C$$$             fieldp(j,i) = fieldtmp(j,i) + fieldp(j,i)
-C$$$          end do
-C$$$       end do
-
 
 !$OMP DO
       do i = 1, npole
