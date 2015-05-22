@@ -104,7 +104,8 @@ elif [ `hostname` = "phi.hydra" ]; then       # phi.hydra (system at EPCC).
 
   # Run the code
   #(time mpirun -trace -np $nprocs $dynamic) 2>&1 \
-  (time mpirun -np $nprocs -trace $dynamic) 2>&1\
+  #(time mpirun -np $nprocs inspxe-cl -collect mi2 -r rmi3 $dynamic) 2>&1\
+  (time mpirun -np $nprocs $dynamic) 2>&1\
          | tee -a $outfile
 
 else
