@@ -54,8 +54,10 @@ LINKDIR = /usr/local/bin
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 COMPARCH=GenericGfortranMPI
+#COMPARCH=GenericGfortran
 #COMPARCH=GenericGfortranMPIOpenMP
 #COMPARCH=LinuxIntelMPI
+#COMPARCH=LinuxIntel
 #COMPARCH=ARCHER
 #COMPARCH=MacIntel
 #COMPARCH=MacIntelOpenMP
@@ -101,7 +103,21 @@ else ifeq ($(HOSTNAME),indy0)        # EPCC indy system
 endif
 
 
-ifeq ($(COMPARCH),GenericGfortranMPI)
+ifeq ($(COMPARCH),GenericGfortran)
+
+  ##  Machine:  Generic Linux or Macintosh
+  ##  CPU Type: Intel x86 Compatibles
+  ##  Compiler: GNU gfortran
+
+  FC        = gfortran
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3
+  FCFLAGS   = -Wall -c
+  OPTFLAGS  = -O3 -ffast-math
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = $(OPTFLAGS) -static-libgcc
+
+else ifeq ($(COMPARCH),GenericGfortranMPI)
 
   ##  Machine:  Generic Linux or Macintosh
   ##  CPU Type: Intel x86 Compatibles
@@ -160,6 +176,22 @@ else ifeq ($(COMPARCH),LinuxIntelMPI)
 
   FC        = mpiifort
   LIBS      =
+  FCFLAGS   = -c -xHost -warn all,nointerfaces
+  #OPTFLAGS  = -g -check -traceback 
+  OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = -static-libgcc -static-intel
+
+else ifeq ($(COMPARCH),LinuxIntel)
+
+  ##  Machine:  Generic Linux
+  ##  CPU Type: Intel x86 Compatible (also AMD)
+  ##  Oper Sys: Fedora Core
+  ##  Compiler: Intel Fortran for Linux 14.0
+
+  FC        = ifort
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3
   FCFLAGS   = -c -xHost -warn all,nointerfaces
   #OPTFLAGS  = -g -check -traceback 
   OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive
