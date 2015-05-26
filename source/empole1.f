@@ -28,7 +28,7 @@ c
 
       ! choose the method for summing over multipole interactions
       if (use_ewald) then
-         if (use_mlist) then
+         if (use_mlist) then   ! use multipole neighbor list
             call empole1d
          else
             call empole1c

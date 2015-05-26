@@ -51,8 +51,9 @@ c
       end if
 
       ! update the lists of previous induced dipole values
-      if (use_pred) then
-         nualt = min(nualt+1,maxualt)
+      if (use_pred) then      ! use induced dipole prediction
+         ! number of induced dipoles sets stored
+         nualt = min(nualt+1,maxualt) 
          do i = 1, npole
             do j = 1, 3
                do k = nualt, 2, -1

@@ -75,9 +75,9 @@ c
 c     apply reduction factors to find coordinates for each site
 c
       do i = 1, nvdw
-         ii = ivdw(i)
-         iv = ired(ii)
-         rdn = kred(ii)
+         ii = ivdw(i)    ! atom number for vdw site i
+         iv = ired(ii)   ! attached atom from which red factor applied
+         rdn = kred(ii)  ! reduction factor
          xred(i) = rdn*(x(ii)-x(iv)) + x(iv)
          yred(i) = rdn*(y(ii)-y(iv)) + y(iv)
          zred(i) = rdn*(z(ii)-z(iv)) + z(iv)
@@ -85,7 +85,7 @@ c
 c
 c     neighbor list cannot be used with the replicates method
 c
-      radius = sqrt(vbuf2)
+      radius = sqrt(vbuf2) ! vdw cutoff plus neighbor list buffer
       call replica (radius)
       if (use_replica) then
          write (iout,10)
