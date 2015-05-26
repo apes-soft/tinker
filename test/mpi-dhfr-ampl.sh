@@ -40,7 +40,7 @@ outfile="out-ampl.txt"
 printf "\n\nUsing $nprocs processes\n\n" | tee -a $outfile
 
 
-#(time mpirun -np $nprocs \
-#            amplxe-cl -r S2_$nprocs -collect hotspots -- \
-(time mpirun -np $nprocs -mps \
+#(time mpirun -np $nprocs -mps \
+(time mpirun -np $nprocs \
+            amplxe-cl -r S2_$nprocs -collect hotspots -- \
             ../bin/dynamic dhfr 100 1.0 1.0 2 300.0) 2>&1 | tee -a $outfile
