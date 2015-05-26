@@ -36,6 +36,7 @@ thirdparty/
 *.exe
 *.o
 *.so
+*__genmod.f90
 
 ############
 # Packages #
@@ -75,5 +76,7 @@ Thumbs.db
 #########################
 
 source/TAGS
-source/Makefile
+Makefile.master
+bench7.sh
+testcode/
 
