@@ -79,5 +79,6 @@ Thumbs.db
 
 source/TAGS
 *.info*
+Makefile.m
 
 

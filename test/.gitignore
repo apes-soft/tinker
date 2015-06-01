@@ -7,4 +7,5 @@ jobs*.sh
 my_result*
 dynamic*
 S?_*
+M_*
 *.pyc
