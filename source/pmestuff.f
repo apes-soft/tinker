@@ -1230,33 +1230,31 @@ c
       ! initialize
       temp = 0.0d0
 
+      ! collect the distributed values by doing a global sum.
       call MPI_Allreduce(fdip_phi1, temp, 10*npole, 
      &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
      &        ierror)
 
 
+       ! Put values back in the original value.
        fdip_phi1 = temp
 
-!     print "(A,I2,A,D12.5)","Rank ",rank," fdip_phi1 = ", 
-!    &                       sum(sum(fdip_phi1,2),1)
-!     print "(A,I2,A,D12.5)","Rank ",rank," temp = ", sum(sum(temp,2),1)
-
+      ! clear the value
       temp = 0.0d0
 
+      ! collect the distributed values by doing a global sum.
       call MPI_Allreduce(fdip_phi2, temp, 10*npole, 
      &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
      &        ierror)
 
 
+      ! reassign the original variable.
       fdip_phi2 = temp
 
-
-!     print "(A,I2,A,D12.5)","Rank ",rank," fdip_phi2 = ", 
-!    &                       sum(sum(fdip_phi2,2),1)
-!     print "(A,I2,A,D12.5)","Rank ",rank," temp = ", sum(sum(temp,2),1)
-
+      ! Deallocate to reuse.
       deallocate(temp)
 
+      ! now the same for bigger array
       allocate(temp(20,npole))
       temp = 0.0d0
       call MPI_Allreduce(fdip_sum_phi, temp, 20*npole, 
