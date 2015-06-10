@@ -951,6 +951,7 @@ c
       use sizes
       use mpole
       use pme
+      use mpiparams
       implicit none
       integer i,j,k
       integer isite,iatm
@@ -979,9 +980,26 @@ c
       real*8 tuv101,tuv011,tuv300,tuv030
       real*8 tuv003,tuv210,tuv201,tuv120
       real*8 tuv021,tuv102,tuv012,tuv111
-      real*8 fdip_phi1(10,*)
-      real*8 fdip_phi2(10,*)
-      real*8 fdip_sum_phi(20,*)
+      real*8 fdip_phi1(10,npole)
+      real*8 fdip_phi2(10,npole)
+      real*8 fdip_sum_phi(20,npole)
+      integer lstart, lend
+      real*8, allocatable :: temp(:,:)
+
+
+      call splitloop(lstart, lend, npole)
+      !print*, "lstart and end for rank in fphi", rank, lstart, lend
+      !print*, "npole is", npole
+
+      do i = 1, npole
+         do k = 1, 10
+            fdip_phi1(k,i) = 0.0d0
+            fdip_phi2(k,i) = 0.0d0
+         end do
+      end do
+c      fdip_sum_phi = 0.0d0
+
+
 c
 c
 c     set OpenMP directives for the major loop structure
@@ -993,7 +1011,7 @@ c
 c
 c     extract the induced dipole field at each site
 c
-      do isite = 1, npole
+      do isite = lstart, lend   !1, npole
          iatm = ipole(isite)
          igrd0 = igrid(1,iatm)
          jgrd0 = igrid(2,iatm)
@@ -1199,11 +1217,54 @@ c
          fdip_sum_phi(19,isite) = tuv012
          fdip_sum_phi(20,isite) = tuv111
       end do
+
 c
 c     end OpenMP directive for the major loop structure
 c
 !$OMP END DO
 !$OMP END PARALLEL
+
+      ! use as a temporary.
+      allocate(temp(10,npole))
+
+      ! initialize
+      temp = 0.0d0
+
+      call MPI_Allreduce(fdip_phi1, temp, 10*npole, 
+     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &        ierror)
+
+
+       fdip_phi1 = temp
+
+!     print "(A,I2,A,D12.5)","Rank ",rank," fdip_phi1 = ", 
+!    &                       sum(sum(fdip_phi1,2),1)
+!     print "(A,I2,A,D12.5)","Rank ",rank," temp = ", sum(sum(temp,2),1)
+
+      temp = 0.0d0
+
+      call MPI_Allreduce(fdip_phi2, temp, 10*npole, 
+     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &        ierror)
+
+
+      fdip_phi2 = temp
+
+
+!     print "(A,I2,A,D12.5)","Rank ",rank," fdip_phi2 = ", 
+!    &                       sum(sum(fdip_phi2,2),1)
+!     print "(A,I2,A,D12.5)","Rank ",rank," temp = ", sum(sum(temp,2),1)
+
+      deallocate(temp)
+
+      allocate(temp(20,npole))
+      temp = 0.0d0
+      call MPI_Allreduce(fdip_sum_phi, temp, 20*npole, 
+     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &        ierror)
+      fdip_sum_phi = temp
+      deallocate(temp)
+
       return
       end
 c
