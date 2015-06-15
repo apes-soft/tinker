@@ -152,11 +152,11 @@ else ifeq ($(COMPARCH),ARCHER)
 
   FC        = ftn 
   LIBS      = -lfftw3_threads -lfftw3
-  FCFLAGS   = -c -xHost  -pg
-  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
+  FCFLAGS   = -c -xHost #-g
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive  #-check #-openmp
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
-  LINKFLAGS = -static-libgcc -static-intel -openmp -v  -pg
+  LINKFLAGS = -static-libgcc -static-intel #-v #-openmp -v  -pg
 
 else ifeq ($(COMPARCH),LinuxIntelMPI)
 

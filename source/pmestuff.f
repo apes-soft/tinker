@@ -984,12 +984,8 @@ c
       real*8 fdip_phi2(10,npole)
       real*8 fdip_sum_phi(20,npole)
       integer lstart, lend
-      real*8, allocatable :: temp(:,:)
-
 
       call splitloop(lstart, lend, npole)
-      !print*, "lstart and end for rank in fphi", rank, lstart, lend
-      !print*, "npole is", npole
 
       do i = 1, npole
          do k = 1, 10
@@ -997,8 +993,6 @@ c
             fdip_phi2(k,i) = 0.0d0
          end do
       end do
-c      fdip_sum_phi = 0.0d0
-
 
 c
 c
@@ -1011,7 +1005,7 @@ c
 c
 c     extract the induced dipole field at each site
 c
-      do isite = lstart, lend   !1, npole
+      do isite = lstart, lend  
          iatm = ipole(isite)
          igrd0 = igrid(1,iatm)
          jgrd0 = igrid(2,iatm)
@@ -1223,45 +1217,6 @@ c     end OpenMP directive for the major loop structure
 c
 !$OMP END DO
 !$OMP END PARALLEL
-
-      ! use as a temporary.
-      allocate(temp(10,npole))
-
-      ! initialize
-      temp = 0.0d0
-
-      ! collect the distributed values by doing a global sum.
-      call MPI_Allreduce(fdip_phi1, temp, 10*npole, 
-     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
-     &        ierror)
-
-
-       ! Put values back in the original value.
-       fdip_phi1 = temp
-
-      ! clear the value
-      temp = 0.0d0
-
-      ! collect the distributed values by doing a global sum.
-      call MPI_Allreduce(fdip_phi2, temp, 10*npole, 
-     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
-     &        ierror)
-
-
-      ! reassign the original variable.
-      fdip_phi2 = temp
-
-      ! Deallocate to reuse.
-      deallocate(temp)
-
-      ! now the same for bigger array
-      allocate(temp(20,npole))
-      temp = 0.0d0
-      call MPI_Allreduce(fdip_sum_phi, temp, 20*npole, 
-     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
-     &        ierror)
-      fdip_sum_phi = temp
-      deallocate(temp)
 
       return
       end

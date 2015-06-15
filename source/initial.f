@@ -95,8 +95,8 @@ c!$    call omp_set_num_threads (nthread)
       ! Commented out - better to set the OpenMP environment
       ! variable OMP_STACKSIZE and to ensure that 
       ! is set in the shell ulimit -s unlimited
-c!$    call kmp_set_stacksize_s (2**28)
-c!$    call kmp_set_blocktime (0)
+!$    call kmp_set_stacksize_s (2**28)
+!$    call kmp_set_blocktime (0)
 
       ! values of machine precision constants
       tiny  = precise (1)

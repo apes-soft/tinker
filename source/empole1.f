@@ -5847,6 +5847,7 @@ c
       use polpot
       use potent
       use virial
+      use mpiparams
       implicit none
       integer i,j,k,ii
       integer j1,j2,j3
@@ -5882,6 +5883,8 @@ c
       real*8, allocatable :: fphidp(:,:)
       real*8, allocatable :: cphi(:,:)
       real*8, allocatable :: qgrip(:,:,:,:)
+      real*8, allocatable :: temp(:,:)
+
 c
 c     derivative indices into the fphi and fphidp arrays
 c
@@ -6304,6 +6307,45 @@ c     perform 3-D FFT backward transform and get potential
 c
          call fftback
          call fphi_uind (fphid,fphip,fphidp)
+
+         allocate(temp(10,npole))
+         
+! initialize
+         temp = 0.0d0
+         
+      ! collect the distributed values by doing a global sum.
+         call MPI_Allreduce(fphid, temp, 10*npole, 
+     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &        ierror)
+         
+
+       ! Put values back in the original value.
+         fphid = temp
+
+      ! clear the value
+         temp = 0.0d0
+
+      ! collect the distributed values by doing a global sum.
+         call MPI_Allreduce(fphip, temp, 10*npole, 
+     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &        ierror)
+
+
+      ! reassign the original variable.
+         fphip = temp
+
+      ! Deallocate to reuse.
+         deallocate(temp)
+
+         allocate(temp(20,npole))
+         temp = 0.0d0
+         call MPI_Allreduce(fphidp, temp, 20*npole, 
+     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &        ierror)
+         fphidp = temp
+         deallocate(temp)
+
+
          do i = 1, npole
             do j = 1, 10
                fphid(j,i) = electric * fphid(j,i)

@@ -2761,6 +2761,7 @@ c
       use mpole
       use pme
       use polar
+      use mpiparams
       implicit none
       integer i,j,k
       real*8 term
@@ -2774,6 +2775,8 @@ c
       real*8, allocatable :: fdip_sum_phi(:,:)
       real*8, allocatable :: dipfield1(:,:)
       real*8, allocatable :: dipfield2(:,:)
+      real*8, allocatable :: temp(:,:)
+      integer lstart, lend
 c
 c
 c     return if the Ewald coefficient is zero
@@ -2826,6 +2829,7 @@ c
 c     perform 3-D FFT backward transform and get field
 c
       call fftback
+      call splitloop(lstart, lend, npole)
       call fphi_uind (fdip_phi1,fdip_phi2,fdip_sum_phi)
 c
 c     convert the dipole fields from fractional to Cartesian
@@ -2835,7 +2839,7 @@ c
          a(i,2) = dble(nfft2) * recip(i,2)
          a(i,3) = dble(nfft3) * recip(i,3)
       end do
-      do i = 1, npole
+      do i = lstart, lend !1, npole
          do k = 1, 3
             dipfield1(k,i) = a(k,1)*fdip_phi1(2,i)
      &                          + a(k,2)*fdip_phi1(3,i)
@@ -2845,9 +2849,32 @@ c
      &                          + a(k,3)*fdip_phi2(4,i)
          end do
       end do
+
+      allocate(temp(3,npole))
+      temp = 0.0d0
+         
+      ! collect the distributed values by doing a global sum.
+         call MPI_Allreduce(dipfield1, temp, 3*npole, 
+     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &        ierror)
+         
+
+       ! Put values back in the original value.
+         dipfield1 = temp
+
+      ! clear the value
+         temp = 0.0d0
+
+      ! collect the distributed values by doing a global sum.
+         call MPI_Allreduce(dipfield2, temp, 3*npole, 
+     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &        ierror)
+         
+         dipfield2 = temp
+         deallocate(temp)
 c
 c     increment the field at each multipole site
-c
+c      
       do i = 1, npole
          do k = 1, 3
             field(k,i) = field(k,i) - dipfield1(k,i)
