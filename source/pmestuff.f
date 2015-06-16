@@ -630,6 +630,7 @@ c
       use chunks
       use mpole
       use pme
+      use mpiparams
       implicit none
       integer i,j,k,m
       integer ii,jj,kk
@@ -646,6 +647,9 @@ c
       real*8 term02,term12
       real*8 fuind(3,*)
       real*8 fuinp(3,*)
+      integer lstart, lend, iter
+      real*8 qgrid_temp(2,nfft1, nfft2, nfft3)
+      
 c
 c
 c     zero out the particle mesh Ewald charge grid
@@ -658,6 +662,15 @@ c
             end do
          end do
       end do
+
+      qgrid_temp = qgrid
+
+      call splitloop(lstart, lend, npole*nchunk)
+      
+      lstart = lstart - 1
+      lend = lend - 1 
+
+
 c
 c     set OpenMP directives for the major loop structure
 c
@@ -668,7 +681,10 @@ c
 c
 c     put the induced dipole moments onto the grid
 c
-      do ichk = 1, nchunk
+        do iter = lstart, lend
+
+         isite = mod(iter, npole) + 1
+         ichk = iter/npole + 1
          cid(1) = mod(ichk-1,nchk1)
          cid(2) = mod(((ichk-1-cid(1))/nchk1),nchk2)
          cid(3) = mod((ichk-1)/(nchk1*nchk2),nchk3)
@@ -678,63 +694,69 @@ c
          cbound(4) = cbound(3) + ngrd2 - 1
          cbound(5) = cid(3)*ngrd3 + 1
          cbound(6) = cbound(5) + ngrd3 - 1
-         do isite = 1, npole
-            iatm = ipole(isite)
-            if (pmetable(iatm,ichk) .eq. 1) then
-               nearpt(1) = igrid(1,iatm) + grdoff
-               nearpt(2) = igrid(2,iatm) + grdoff
-               nearpt(3) = igrid(3,iatm) + grdoff
-               abound(1) = nearpt(1) - nlpts
-               abound(2) = nearpt(1) + nrpts
-               abound(3) = nearpt(2) - nlpts
-               abound(4) = nearpt(2) + nrpts
-               abound(5) = nearpt(3) - nlpts
-               abound(6) = nearpt(3) + nrpts
-               call adjust (offsetx,nfft1,nchk1,abound(1),
-     &                        abound(2),cbound(1),cbound(2))
-               call adjust (offsety,nfft2,nchk2,abound(3),
-     &                        abound(4),cbound(3),cbound(4))
-               call adjust (offsetz,nfft3,nchk3,abound(5),
-     &                        abound(6),cbound(5),cbound(6))
-               do kk = abound(5), abound(6)
-                  k = kk
-                  m = k + offsetz
-                  if (k .lt. 1)  k = k + nfft3
-                  v0 = thetai3(1,m,iatm)
-                  v1 = thetai3(2,m,iatm)
-                  do jj = abound(3), abound(4)
-                     j = jj
-                     m = j + offsety
-                     if (j .lt. 1)  j = j + nfft2
-                     u0 = thetai2(1,m,iatm)
-                     u1 = thetai2(2,m,iatm)
-                     term01 = fuind(2,isite)*u1*v0
-     &                           + fuind(3,isite)*u0*v1
-                     term11 = fuind(1,isite)*u0*v0
-                     term02 = fuinp(2,isite)*u1*v0
-     &                           + fuinp(3,isite)*u0*v1
-                     term12 = fuinp(1,isite)*u0*v0
-                     do ii = abound(1), abound(2)
-                        i = ii
-                        m = i + offsetx
-                        if (i .lt. 1)  i = i + nfft1
-                        t0 = thetai1(1,m,iatm)
-                        t1 = thetai1(2,m,iatm)
-                        qgrid(1,i,j,k) = qgrid(1,i,j,k) + term01*t0
-     &                                      + term11*t1
-                        qgrid(2,i,j,k) = qgrid(2,i,j,k) + term02*t0
-     &                                      + term12*t1
-                     end do
+         iatm = ipole(isite)
+         if (pmetable(iatm,ichk) .eq. 1) then
+            nearpt(1) = igrid(1,iatm) + grdoff
+            nearpt(2) = igrid(2,iatm) + grdoff
+            nearpt(3) = igrid(3,iatm) + grdoff
+            abound(1) = nearpt(1) - nlpts
+            abound(2) = nearpt(1) + nrpts
+            abound(3) = nearpt(2) - nlpts
+            abound(4) = nearpt(2) + nrpts
+            abound(5) = nearpt(3) - nlpts
+            abound(6) = nearpt(3) + nrpts
+            call adjust (offsetx,nfft1,nchk1,abound(1),
+     &           abound(2),cbound(1),cbound(2))
+            call adjust (offsety,nfft2,nchk2,abound(3),
+     &           abound(4),cbound(3),cbound(4))
+            call adjust (offsetz,nfft3,nchk3,abound(5),
+     &           abound(6),cbound(5),cbound(6))
+            do kk = abound(5), abound(6)
+               k = kk
+               m = k + offsetz
+               if (k .lt. 1)  k = k + nfft3
+               v0 = thetai3(1,m,iatm)
+               v1 = thetai3(2,m,iatm)
+               do jj = abound(3), abound(4)
+                  j = jj
+                  m = j + offsety
+                  if (j .lt. 1)  j = j + nfft2
+                  u0 = thetai2(1,m,iatm)
+                  u1 = thetai2(2,m,iatm)
+                  term01 = fuind(2,isite)*u1*v0
+     &                 + fuind(3,isite)*u0*v1
+                  term11 = fuind(1,isite)*u0*v0
+                  term02 = fuinp(2,isite)*u1*v0
+     &                 + fuinp(3,isite)*u0*v1
+                  term12 = fuinp(1,isite)*u0*v0
+                  do ii = abound(1), abound(2)
+                     i = ii
+                     m = i + offsetx
+                     if (i .lt. 1)  i = i + nfft1
+                     t0 = thetai1(1,m,iatm)
+                     t1 = thetai1(2,m,iatm)
+                     qgrid(1,i,j,k) = qgrid(1,i,j,k) + term01*t0
+     &                    + term11*t1
+                     qgrid(2,i,j,k) = qgrid(2,i,j,k) + term02*t0
+     &                    + term12*t1
                   end do
                end do
-            end if
-         end do
+            end do
+         end if
       end do
-c
+      
+c     
 c     end OpenMP directive for the major loop structure
-c
+c     
 !$OMP END DO
 !$OMP END PARALLEL
+
+      call MPI_Allreduce(qgrid, qgrid_temp, 2*nfft1*nfft2*nfft3,
+     &     MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, ierror) 
+      
+      qgrid = qgrid_temp
+      
+      
       return
       end
 c
