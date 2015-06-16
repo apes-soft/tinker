@@ -1070,6 +1070,7 @@ c
       use light
       use mpole
       use neigh
+      use mpiparams
       implicit none
       integer i,j,k
       integer ii,kk
@@ -1082,6 +1083,9 @@ c
       real*8, allocatable :: ysort(:)
       real*8, allocatable :: zsort(:)
       logical repeat
+      integer lstart, lend
+      integer, allocatable :: temp(:)
+      integer, allocatable :: temp_list(:,:)
 c
 c
 c     perform dynamic allocation of some local arrays
@@ -1113,6 +1117,9 @@ c
       deallocate (xsort)
       deallocate (ysort)
       deallocate (zsort)
+
+      call splitloop(lstart, lend, npole)
+
 c
 c     set OpenMP directives for the major loop structure
 c
@@ -1122,7 +1129,7 @@ c
 c
 c     loop over all atoms computing the neighbor lists
 c
-      do i = 1, npole
+      do i = lstart, lend !1, npole
          ii = ipole(i)
          xi = x(ii)
          yi = y(ii)
@@ -1185,6 +1192,27 @@ c     end OpenMP directives for the major loop structure
 c
 !$OMP END DO
 !$OMP END PARALLEL
+
+      allocate (temp(n))
+      allocate (temp_list(maxelst, n))
+      temp = 0
+      
+      call MPI_ALLreduce(nelst,temp, n, MPI_integer, MPI_SUM, 
+     &     MPI_COMM_WORLD, ierror)
+      
+      nelst = temp
+      temp_list = 0 
+
+      call MPI_Allreduce(elst,temp_list,maxelst*n, MPI_integer, 
+     &     MPI_SUM, MPI_COMM_WORLD, ierror)
+
+      elst = temp_list
+      
+      deallocate(temp)
+      deallocate(temp_list)
+
+
+
       return
       end
 c
