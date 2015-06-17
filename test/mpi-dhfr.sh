@@ -47,10 +47,11 @@ fi
 outfile="out.txt"
 
 # Dynamic command
-dynamic="../bin/dynamic dhfr 10 1.0 10.0 2 300.0" 
+dynamic="../bin/dynamic dhfr 100 1.0 10.0 2 300.0" 
 
 echo | tee -a $outfile                           # Add an empty line
 echo Using $nprocs processes. | tee -a $outfile  # How many procs are usd
+echo Started run on `date`. | tee -a $outfile  # How many procs are usd
 
 export OMP_NUM_THREADS=$nthreads
 echo Explicitly setting OMP_NUM_THREADS to $OMP_NUM_THREADS. | tee -a $outfile
