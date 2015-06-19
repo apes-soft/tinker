@@ -4901,6 +4901,17 @@ c
       depo2   = 0.0d0  ! nx3 matrix
       viro    = 0.0d0  ! 3x3 matrix
 
+
+      ! work out the local array limits for this process
+      ! Assumes that size of nelst is the same as npole.
+      if(size(nelst).ne.npole.and.rank.eq.0) then
+        print *,"ereal1d: size of nelst not equal to npole."
+        call fatal
+      end if
+      call splitlimits(lstart, lend, nelst)
+
+
+
       ! set OpenMP directives for the major loop structure
 
 !$OMP PARALLEL default(shared) firstprivate(f)
@@ -4924,14 +4935,7 @@ c
 !$OMP DO reduction(+:emo,epo,eintrao,demo1,demo2,depo1,depo2,viro)
 !$OMP& schedule(guided)
 
-      ! work out the local array limits for this process
-      ! Assumes that size of nelst is the same as npole.
-      if(size(nelst).ne.npole.and.rank.eq.0) then
-        print *,"ereal1d: size of nelst not equal to npole."
-        call fatal
-      end if
-      call splitlimits(lstart, lend, nelst)
-
+     
       ! compute the real space portion of the Ewald summation
       do i = lstart, lend   ! originally run from 1, npole
          ii    = ipole(i)   ! atom number of multipole site 

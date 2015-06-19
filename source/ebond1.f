@@ -38,7 +38,7 @@ c
       real*8 xab,yab,zab,rab
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
-      real*8 viro(3,3), virotmp(3,3)
+      real*8 viro(3,3) !, virotmp(3,3)
       integer lstart, lend
       real*8, allocatable :: debo(:,:)
       logical proceed
@@ -47,7 +47,7 @@ c
 c     zero out the bond energy and first derivatives
 c
       eb = 0.0d0
-      virotmp = 0.0d0
+c      virotmp = 0.0d0
       do i = 1, n
          deb(1,i) = 0.0d0
          deb(2,i) = 0.0d0
@@ -83,7 +83,7 @@ c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(private) shared(nbond,ibnd,bl,bk,use,
 !$OMP& x,y,z,cbnd,qbnd,bndtyp,bndunit,use_group,use_polymer)
-!$OMP& shared(ebo,debo,viro)
+!$OMP& shared(ebo,debo,viro,lstart,lend,virtemp)
 !$OMP DO reduction(+:ebo,debo,viro) schedule(guided)
 c
 c     calculate the bond stretch energy and first derivatives

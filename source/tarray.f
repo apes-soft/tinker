@@ -22,5 +22,6 @@ c
       integer ntpair
       integer, allocatable :: tindex(:,:)
       real*8, allocatable :: tdipdip(:,:)
+      integer, allocatable :: nlocals(:)
       save
       end

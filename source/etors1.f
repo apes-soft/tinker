@@ -135,7 +135,7 @@ c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(private) shared(ntors,itors,tors1,tors2,tors3,
 !$OMP& tors4,tors5,tors6,use,x,y,z,torsunit,use_group,use_polymer)
-!$OMP& shared(eto,deto,viro)
+!$OMP& shared(eto,deto,viro,lstart,lend,virtemp)
 !$OMP DO reduction(+:eto,deto,viro) schedule(guided)
 c
 c     calculate the torsional angle energy and first derivatives

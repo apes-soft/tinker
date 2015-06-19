@@ -31,10 +31,15 @@ c
       use solute
       use units
       use uprior
+      use mpiparams
+      use tarray
       implicit none
       integer i,j,k
       real*8 norm
       logical header
+
+      ! ancillary array to store nlocal for processes involved
+      allocate(nlocals(nprocs))
 
 
       ! choose the method for computation of induced dipoles
@@ -153,6 +158,10 @@ c
             end do
          end if
       end if
+
+      ! deallocate nlocals
+      deallocate(nlocals)
+
       return
       end
 c
@@ -1469,26 +1478,26 @@ c      fieldtp = fieldp
          call udirect2a (field,fieldp)
       end if
 
-       call MPI_Allreduce(field, fieldtmp, 3*npole, 
-     &     MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
-     &     ierror)
+C$$$       call MPI_Allreduce(field, fieldtmp, 3*npole, 
+C$$$     &     MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
+C$$$     &     ierror)
        
-       do i =1, npole
-          do j=1,3
-             field(j,i) = fieldtmp(j,i) + fieldt(j,i)
-          end do
-       end do
-       fieldtmp = 0.0d0
+C$$$       do i =1, npole
+C$$$          do j=1,3
+C$$$             field(j,i) = fieldtmp(j,i) + fieldt(j,i)
+C$$$          end do
+C$$$       end do
+C$$$       fieldtmp = 0.0d0
 
-       call MPI_Allreduce(fieldp, fieldtmp, 3*npole, 
-     &      MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
-     &      ierror)
+C$$$       call MPI_Allreduce(fieldp, fieldtmp, 3*npole, 
+C$$$     &      MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+C$$$     &      ierror)
        
-       do i=1,npole
-          do j=1,3
-             fieldp(j,i) = fieldtp(j,i) + fieldtmp(j,i)
-          end do
-       end do
+C$$$       do i=1,npole
+C$$$          do j=1,3
+C$$$             fieldp(j,i) = fieldtp(j,i) + fieldtmp(j,i)
+C$$$          end do
+C$$$       end do
 c
 c     get the self-energy portion of the electrostatic field
 c
@@ -2277,9 +2286,9 @@ c
       integer i,j,k,m
       integer ii,kk,kkk
       integer nlocal,maxlocal
-      integer tid,toffset0
-!$    integer omp_get_thread_num
-      integer, allocatable :: toffset(:)
+c      integer tid,toffset0
+c!$    integer omp_get_thread_num
+c      integer, allocatable :: toffset(:)
       integer, allocatable :: ilocal(:,:)
       real*8 xr,yr,zr,r,r2
       real*8 rr1,rr2,rr3
@@ -2315,9 +2324,9 @@ c
       character*6 mode
       external erfc
       integer:: lstart, lend
-      integer, allocatable, dimension(:):: nlocals, disps
-      integer, allocatable, dimension(:,:):: myilocal
-      real*8, allocatable, dimension(:,:):: mydlocal
+c      integer, allocatable, dimension(:):: nlocals, disps
+c      integer, allocatable, dimension(:,:):: myilocal
+c      real*8, allocatable, dimension(:,:):: mydlocal
 
       ! check for multipoles and set cutoff coefficients
       if (npole .eq. 0)  return
@@ -2327,11 +2336,11 @@ c
       aesq2n = 0.0d0
       if (aewald .gt. 0.0d0)  aesq2n = 1.0d0 / (sqrtpi*aewald)
       nlocal   = 0
-      toffset0 = 0
-      maxlocal = int(dble(npole)*dble(maxelst)/dble(nthread))
+c      toffset0 = 0
+      maxlocal = int(dble(npole)*dble(maxelst)/1.0)!dble(nthread))
 
       ! perform dynamic allocation of some local arrays
-      allocate (toffset(0:nthread-1))
+c      allocate (toffset(0:nthread-1))
       allocate (pscale(n))
       allocate (dscale(n))
       allocate (uscale(n))
@@ -2345,6 +2354,15 @@ c
       dscale = 1.0d0
       uscale = 1.0d0
 
+      ! Check that the size of the "cost" array is the same
+      ! as npole
+      if(size(nelst).ne.npole.and.rank.eq.0) then
+        print *,"ereal1d: size of nelst not equal to npole."
+        call fatal
+      end if
+      call splitlimits(lstart, lend, nelst)
+
+
       ! set OpenMP directives for the major loop structure
 
 !$OMP PARALLEL default(private) shared(n,npole,ipole,x,y,z,pdamp,thole,
@@ -2352,15 +2370,21 @@ c
 !$OMP& d3scale,d4scale,u1scale,u2scale,u3scale,u4scale,n12,i12,n13,i13,
 !$OMP& n14,i14,n15,i15,np11,ip11,np12,ip12,np13,ip13,np14,ip14,nelst,
 !$OMP& elst,cut2,aewald,aesq2,aesq2n,poltyp,ntpair,tindex,tdipdip,
-!$OMP& toffset,toffset0,field,fieldp,fieldt,fieldtp,maxlocal)
+!$OMP& field,fieldp,fieldt,fieldtp,maxlocal,nlocals,rank,MPI_IN_PLACE,
+!$OMP& nprocs,ierror,lstart,lend)
 !$OMP& firstprivate(pscale,dscale,uscale,nlocal)
 
       ! perform dynamic allocation of some local arrays
       if (poltyp .eq. 'MUTUAL') then
          allocate (ilocal(2,maxlocal))
          allocate (dlocal(6,maxlocal))
+      
+         ! initialise the local arrays
+         ilocal = 0
+         dlocal = 0.0d0
       end if
 
+         
       ! initialize local variables for OpenMP calculation
 !$OMP DO collapse(2)
       do i = 1, npole
@@ -2370,14 +2394,6 @@ c
          end do
       end do
 !$OMP END DO
-
-      ! Check that the size of the "cost" array is the same
-      ! as npole
-      if(size(nelst).ne.npole.and.rank.eq.0) then
-        print *,"ereal1d: size of nelst not equal to npole."
-        call fatal
-      end if
-      call splitlimits(lstart, lend, nelst)
 
       ! compute the real space portion of the Ewald summation
 !$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
@@ -2585,29 +2601,34 @@ c
          end do
       end do
 !$OMP END DO
+!$OMP END PARALLEL
 c
 c     transfer the results from local to global arrays
 c
-!$OMP DO
+
 
       ! Get the distributed field components
-C$$$ fieldtmp = 0.0d0
-C$$$      call MPI_Allreduce(fieldt, fieldtmp, 3*npole, 
-C$$$     &                   MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
-C$$$     &                   ierror)
-C$$$      field = field + fieldtmp
+      fieldtmp = 0.0d0
+      call MPI_Allreduce(fieldt, fieldtmp, 3*npole, 
+     &                   MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
+     &                   ierror)
+c      field = field + fieldtmp
+      fieldt = fieldtmp
 
-C$$$      fieldtmp = 0.0d0
-C$$$      call MPI_Allreduce(fieldtp, fieldtmp, 3*npole, 
-C$$$     &                   MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
-C$$$     &                   ierror)
-C$$$      fieldp = fieldp + fieldtmp
+      fieldtmp = 0.0d0
+      call MPI_Allreduce(fieldtp, fieldtmp, 3*npole, 
+     &                   MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &                   ierror)
+c      fieldp = fieldp + fieldtmp
+      fieldtp = fieldtmp
 
-      field = fieldt
-      fieldp = fieldtp
+c      field = fieldt
+c      fieldp = fieldtp
 
+      field = fieldt + field
+      fieldp = fieldtp + fieldp
 
-
+c!$OMP DO
       !do i = 1, npole
       !   do j = 1, 3
       !      field(j,i) = fieldt(j,i) + field(j,i)
@@ -2615,111 +2636,151 @@ C$$$      fieldp = fieldp + fieldtmp
       !   end do
       !end do
 
-!$OMP END DO
+C$$$!$OMP END DO
+
 
       ! store terms needed later to compute mutual polarization
-!$OMP CRITICAL
-
-      ! collect the number of distributed "nlocal"s
-      allocate(nlocals(nprocs))
       nlocals = 0 
-      call MPI_Allgather(nlocal, 1, MPI_INTEGER,nlocals, 1,
-     &                   MPI_INTEGER,MPI_COMM_WORLD, ierror)
-
-      ! Now gather ilocal and dlocal
-      if (poltyp .eq. 'MUTUAL') then
-
-         ! create some temporary auxiliary arrays
-         allocate(myilocal(2,nlocal),mydlocal(6,nlocal))
-         allocate(disps(nprocs))
-
-         ! transfer ilocal and dlocal contents to local arrays
-         myilocal = ilocal(:,1:nlocal)
-         mydlocal = dlocal(:,1:nlocal)
-         
-         ! calculate the displacments for ilocal
-         ! used to calculate: recvbuf + disp[i] * extent(recvtype)
-         ! disps only has to be correct for proc 0 apparently
-         disps = 0
-         do i=2,nprocs
-            ! array has 2 integers per element so multiply 
-            ! by 2 for displacements
-            disps(i) = disps(i-1) + nlocals(i-1)*2
-         end do 
-
-         ! do an MPI allgatherv of ilocal so all procs ends with 
-         ! all the information
-         call MPI_Allgatherv(myilocal,2*nlocal, MPI_INTEGER,
-     &                       ilocal,2*nlocals, disps, MPI_INTEGER,
-     &                       MPI_COMM_WORLD, ierror)
-
-
-         ! calculate the displacments for dlocal
-         disps = 0
-         do i=2,nprocs
-            ! multiply by 6 as we have 6 doubles in each row
-            disps(i) = disps(i-1) + nlocals(i-1)*6
-         end do 
-
-         ! do an allgather of dlocal
-         call MPI_Allgatherv(mydlocal,6*nlocal, MPI_DOUBLE_PRECISION,
-     &                       dlocal,6*nlocals, disps, 
-     &                       MPI_DOUBLE_PRECISION, MPI_COMM_WORLD, 
-     &                       ierror)
-
-         ! remove auxiliary arrays
-         deallocate(myilocal, mydlocal,disps)
-
-      end if
-
-      ! reset nlocal to be the global sum of locals
-      nlocal = sum(nlocals)
-
-      ! Deallocate auxiliary arrays
-      deallocate (nlocals)
-
-      tid = 0
-!$    tid = omp_get_thread_num ()
-
-      toffset(tid) = toffset0
-
-      ! end offset
-      toffset0     = toffset0 + nlocal
-
-      ! number of stored dipole-dipole matrix elements
-      ntpair       = toffset0 
-
-!$OMP END CRITICAL
-
+      nlocals(rank+1) = nlocal
+      
       ! reset values
       tindex  = 0
       tdipdip = 0.0d0
 
+
+      ! collect the values of nlocal from the processes
+      call MPI_Allreduce(MPI_IN_PLACE, nlocals, nprocs,
+     &     MPI_INTEGER,MPI_SUM, MPI_COMM_WORLD, ierror)
+
+      ntpair = sum(nlocals)
+
       if (poltyp .eq. 'MUTUAL') then
-         k = toffset(tid)
-         do i = 1, nlocal
-            m = k + i
-            tindex(1,m) = ilocal(1,i)
-            tindex(2,m) = ilocal(2,i)
-            do j = 1, 6
-               tdipdip(j,m) = dlocal(j,i)
+
+         lstart = 1
+         if(rank .gt.0) then
+            do i=1, rank
+               lstart = lstart + nlocals(i) 
             end do
+         end if
+         
+         k=lstart
+         do i=1,nlocal
+            tindex(1,k) = ilocal(1,i)
+            tindex(2,k) = ilocal(2,i)
+            do j=1,6
+               tdipdip(j,k) = dlocal(j,i)
+            end do
+            k = k + 1
          end do
+
          deallocate (ilocal)
          deallocate (dlocal)
+
       end if
-!$OMP END PARALLEL
 
-!     call system_clock(tock)
+C$$$      ! store terms needed later to compute mutual polarization
+C$$$!$OMP CRITICAL
 
-!     print *,"udirect2b, ",rank,",",time1,",",
-!    &         (tock-tick)/real(rate,kind=8)
-!     call flush(6)
+C$$$      ! collect the number of distributed "nlocal"s
+C$$$c      allocate(nlocals(nprocs))
+C$$$      nlocals = 0 
+C$$$      call MPI_Allgather(nlocal, 1, MPI_INTEGER,nlocals, 1,
+C$$$     &                   MPI_INTEGER,MPI_COMM_WORLD, ierror)
+
+C$$$      ! Now gather ilocal and dlocal
+C$$$      if (poltyp .eq. 'MUTUAL') then
+
+C$$$         ! create some temporary auxiliary arrays
+C$$$         allocate(myilocal(2,nlocal),mydlocal(6,nlocal))
+C$$$         allocate(disps(nprocs))
+
+C$$$         ! transfer ilocal and dlocal contents to local arrays
+C$$$         myilocal = ilocal(:,1:nlocal)
+C$$$         mydlocal = dlocal(:,1:nlocal)
+         
+C$$$         ! calculate the displacments for ilocal
+C$$$         ! used to calculate: recvbuf + disp[i] * extent(recvtype)
+C$$$         ! disps only has to be correct for proc 0 apparently
+C$$$         disps = 0
+C$$$         do i=2,nprocs
+C$$$            ! array has 2 integers per element so multiply 
+C$$$            ! by 2 for displacements
+C$$$            disps(i) = disps(i-1) + nlocals(i-1)*2
+C$$$         end do 
+
+C$$$         ! do an MPI allgatherv of ilocal so all procs ends with 
+C$$$         ! all the information
+C$$$         call MPI_Allgatherv(myilocal,2*nlocal, MPI_INTEGER,
+C$$$     &                       ilocal,2*nlocals, disps, MPI_INTEGER,
+C$$$     &                       MPI_COMM_WORLD, ierror)
+
+
+C$$$         ! calculate the displacments for dlocal
+C$$$         disps = 0
+C$$$         do i=2,nprocs
+C$$$            ! multiply by 6 as we have 6 doubles in each row
+C$$$            disps(i) = disps(i-1) + nlocals(i-1)*6
+C$$$         end do 
+
+C$$$         ! do an allgather of dlocal
+C$$$         call MPI_Allgatherv(mydlocal,6*nlocal, MPI_DOUBLE_PRECISION,
+C$$$     &                       dlocal,6*nlocals, disps, 
+C$$$     &                       MPI_DOUBLE_PRECISION, MPI_COMM_WORLD, 
+C$$$     &                       ierror)
+
+C$$$         ! remove auxiliary arrays
+C$$$         deallocate(myilocal, mydlocal,disps)
+
+C$$$      end if
+
+C$$$      ! reset nlocal to be the global sum of locals
+C$$$      nlocal = sum(nlocals)
+
+C$$$      ! Deallocate auxiliary arrays
+C$$$      deallocate (nlocals)
+
+C$$$      tid = 0
+C$$$!$    tid = omp_get_thread_num ()
+
+C$$$      toffset(tid) = toffset0
+
+C$$$      ! end offset
+C$$$      toffset0     = toffset0 + nlocal
+
+C$$$      ! number of stored dipole-dipole matrix elements
+C$$$      ntpair       = toffset0 
+
+C$$$!$OMP END CRITICAL
+
+C$$$      ! reset values
+C$$$      tindex  = 0
+C$$$      tdipdip = 0.0d0
+
+C$$$      if (poltyp .eq. 'MUTUAL') then
+C$$$         k = toffset(tid)
+C$$$         do i = 1, nlocal
+C$$$            m = k + i
+C$$$            tindex(1,m) = ilocal(1,i)
+C$$$            tindex(2,m) = ilocal(2,i)
+C$$$            do j = 1, 6
+C$$$               tdipdip(j,m) = dlocal(j,i)
+C$$$            end do
+C$$$         end do
+C$$$         deallocate (ilocal)
+C$$$         deallocate (dlocal)
+C$$$      end if
+C$$$!$OMP END PARALLEL
+
+C$$$!     call system_clock(tock)
+
+C$$$!     print *,"udirect2b, ",rank,",",time1,",",
+C$$$!    &         (tock-tick)/real(rate,kind=8)
+C$$$!     call flush(6)
 
 c
 c     perform deallocation of some local arrays
 c
-      deallocate (toffset)
+c      deallocate (toffset)
       deallocate (pscale)
       deallocate (dscale)
       deallocate (uscale)
@@ -3202,6 +3263,7 @@ c
       use mpole
       use polar
       use tarray
+      use mpiparams
       implicit none
       integer i,j,k,m
       real*8 fimd(3),fkmd(3)
@@ -3210,6 +3272,22 @@ c
       real*8 fieldp(3,*)
       real*8, allocatable :: fieldt(:,:)
       real*8, allocatable :: fieldtp(:,:)
+      real*8, allocatable :: fieldtmp(:,:)
+      integer lstart, lend
+
+
+      lend = 0
+      lstart = 1
+      
+      if(rank.gt.0) then
+         do i = 1, rank
+            lstart = lstart + nlocals(i)
+         end do
+      end if
+      lend = lstart + nlocals(rank+1) - 1 
+      !print*,"lstart and lend are", rank, lstart, lend 
+      !print*, "rank, nlocal, ntpair", rank, nlocals(rank+1),ntpair
+
 
 
       ! check for multipoles and set cutoff coefficients
@@ -3218,11 +3296,12 @@ c
       ! perform dynamic allocation of some local arrays
       allocate (fieldt(3,npole))
       allocate (fieldtp(3,npole))
+      allocate (fieldtmp(3,npole))
 
       ! set OpenMP directives for the major loop structure
 
 !$OMP PARALLEL default(private) shared(npole,uind,uinp,ntpair,tindex,
-!$OMP& tdipdip,field,fieldp,fieldt,fieldtp)
+!$OMP& tdipdip,field,fieldp,fieldt,fieldtp,lstart,lend)
 
       ! initialize local variables for OpenMP calculation
 !$OMP DO collapse(2)
@@ -3237,7 +3316,7 @@ c
 c     find the field terms for each pairwise interaction
 c
 !$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
-      do m = 1, ntpair
+      do m = lstart, lend !1, ntpair
          i = tindex(1,m)
          k = tindex(2,m)
          fimd(1) = tdipdip(1,m)*uind(1,k) + tdipdip(2,m)*uind(2,k)
@@ -3275,23 +3354,42 @@ c
          end do
       end do
 !$OMP END DO
+!$OMP END PARALLEL
+
+
+      fieldtmp = 0.0d0
+      call MPI_Allreduce(fieldt, fieldtmp, 3*npole, 
+     &     MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
+     &     ierror)
+      
+      fieldt =  fieldtmp
+      fieldtmp = 0.0d0
+      
+      call MPI_Allreduce(fieldtp, fieldtmp, 3*npole, 
+     &     MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &     ierror)
+      
+      fieldtp = fieldtmp
+
+
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP DO
+c!$OMP DO
       do i = 1, npole
          do j = 1, 3
             field(j,i) = fieldt(j,i) + field(j,i)
             fieldp(j,i) = fieldtp(j,i) + fieldp(j,i)
          end do
       end do
-!$OMP END DO
-!$OMP END PARALLEL
+c!$OMP END DO
+C$$$!$OMP END PARALLEL
 c
 c     perform deallocation of some local arrays
 c
       deallocate (fieldt)
       deallocate (fieldtp)
+      deallocate (fieldtmp)
       return
       end
 c

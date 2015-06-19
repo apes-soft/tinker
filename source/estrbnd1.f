@@ -100,7 +100,7 @@ c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(private) shared(nstrbnd,isb,iang,sbk,
 !$OMP& anat,bl,bk,use,x,y,z,stbnunit,use_group,use_polymer)
-!$OMP& shared(ebao,debao,viro)
+!$OMP& shared(ebao,debao,viro,lstart,lend,virtemp)
 !$OMP DO reduction(+:ebao,debao,viro) schedule(guided)
 c
 c     calculate the stretch-bend energy and first derivatives
