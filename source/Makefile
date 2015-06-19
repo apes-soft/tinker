@@ -176,9 +176,9 @@ else ifeq ($(COMPARCH),LinuxIntelMPI)
 
   FC        = mpiifort
   LIBS      =
-  FCFLAGS   = -c -xHost -warn all,nointerfaces
-  #OPTFLAGS  = -g -check -traceback 
-  OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive
+  FCFLAGS   = -c  -warn all,nointerfaces
+  OPTFLAGS  = -g -check -traceback 
+  #OPTFLAGS  = -xHost -O3 -g -no-ipo -no-prec-div -recursive
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = -static-libgcc -static-intel
@@ -911,6 +911,10 @@ all: ${EXEFILES}
 dynamic: dynamic.o libtinker.a
 	${FC} ${LINKFLAGS} -o $@ $?  -L . -ltinker ${LIBS}
 	mv dynamic $(BINDIR)/dynamic
+
+dynamic2: dynamic.o libtinker.a
+	${FC} ${LINKFLAGS} -o $@ $?  -L . -ltinker ${LIBS}
+	mv dynamic2 $(BINDIR)/dynamic2
 
 install: rename
 
