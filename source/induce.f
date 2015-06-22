@@ -2383,9 +2383,9 @@ c      allocate (toffset(0:nthread-1))
 !$OMP& n14,i14,n15,i15,np11,ip11,np12,ip12,np13,ip13,np14,ip14,nelst,
 !$OMP& elst,cut2,aewald,aesq2,aesq2n,poltyp,ntpair,tindex,tdipdip,
 !$OMP& field,fieldp,fieldt,fieldtp,maxlocal,nlocals,
-!$OMP& rank,MPI_IN_PLACE,nprocs,ierror,lstart,lend)
+!$OMP& rank,MPI_IN_PLACE,nprocs,ierror,lstart,lend,ilocal,dlocal)
 !$OMP& firstprivate(pscale,dscale,uscale,nlocal)
-!$OMP& private(ilocal,dlocal, ii, pdi, pti, ci, dix, diy, diz, qixx,
+!$OMP& private(ii, pdi, pti, ci, dix, diy, diz, qixx,
 !$OMP& qixy,qiyy,qiyz,qizz,kk,zr,r,r2, rr1,rr2,rr3,rr5,rr7,ck,
 !$OMP& dkx,dky,dkz,qixz,xr,yr,qkxx,qkxy,qkxz,qkyy,qkyz,qkzz,ralpha,
 !$OMP& bn,exp2a,aefac,bfac,scale3,scale5,scale7,damp,pgamma,expdamp,
@@ -2403,7 +2403,7 @@ c      allocate (toffset(0:nthread-1))
 !$OMP END DO
 
       ! compute the real space portion of the Ewald summation
-!$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
+!$OMP DO reduction(+:fieldt,fieldtp,ilocal,dlocal) schedule(guided)
       do i = lstart, lend !1, npole
          ii   = ipole(i)
          pdi  = pdamp(i)
@@ -2612,12 +2612,13 @@ c
        ! store terms needed later to compute mutual polarization
       nlocals = 0 
       nlocals(rank+1) = nlocal
+c      print*, "nlocals", rank, nlocals(rank+1)
 
 !$OMP END PARALLEL
 c
 c     transfer the results from local to global arrays
 c
-
+c       print*, "nlocals", rank, nlocals
 
       ! Get the distributed field components
       fieldtmp = 0.0d0
@@ -2650,6 +2651,8 @@ c!$OMP DO
 
 C$$$!$OMP END DO
 
+c      if (rank .eq. 1 ) print*, ilocal
+
 
       ! store terms needed later to compute mutual polarization
 c      nlocals = 0 
@@ -2674,9 +2677,10 @@ c      nlocals(rank+1) = nlocal
                lstart = lstart + nlocals(i) 
             end do
          end if
-         
+         lend = nlocals(rank+1)
+
          k=lstart
-         do i=1,nlocal
+         do i=1,lend
             tindex(1,k) = ilocal(1,i)
             tindex(2,k) = ilocal(2,i)
             do j=1,6
