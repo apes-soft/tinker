@@ -1041,7 +1041,7 @@ c      allocate (devotmp(3,n))
 !$OMP& use_group,off2,radmin,epsilon,radmin4,epsilon4,ghal,dhal,
 !$OMP& cut2,vlambda,scalpha,scexp,mut,c0,c1,c2,c3,c4,c5,molcule)
 !$OMP& firstprivate(vscale,iv14) shared(evo,devo,viro,eintero)
-!$OMP& shared(lstart,lend,etmp,virtemp)       
+!$OMP& shared(lstart,lend,etmp)       
 !$OMP DO reduction(+:evo,devo,viro,eintero) schedule(guided)
  
       ! find van der Waals energy and derivatives via neighbor list

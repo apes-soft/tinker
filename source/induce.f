@@ -1440,7 +1440,7 @@ c
       real*8 fieldp(3,*)
       real*8 fieldt(3,npole)
       real*8 fieldtp(3,npole)
-      real*8 fieldtmp(3,npole)
+c      real*8 fieldtmp(3,npole)
 c
 c
 c     zero out the value of the field at each site
@@ -1470,7 +1470,7 @@ c
 
 c      fieldt = field
 c      fieldtp = fieldp
-      fieldtmp = 0.0d0
+c      fieldtmp = 0.0d0
 
       if (use_mlist) then
          call udirect2b (field,fieldp)
@@ -2337,7 +2337,7 @@ c      real*8, allocatable, dimension(:,:):: mydlocal
       if (aewald .gt. 0.0d0)  aesq2n = 1.0d0 / (sqrtpi*aewald)
       nlocal   = 0
 c      toffset0 = 0
-      maxlocal = int(dble(npole)*dble(maxelst)/1.0)!dble(nthread))
+      maxlocal = int(dble(npole)*dble(maxelst)/1.0) !dble(nthread))
 
       ! perform dynamic allocation of some local arrays
 c      allocate (toffset(0:nthread-1))
@@ -2363,18 +2363,7 @@ c      allocate (toffset(0:nthread-1))
       call splitlimits(lstart, lend, nelst)
 
 
-      ! set OpenMP directives for the major loop structure
-
-!$OMP PARALLEL default(private) shared(n,npole,ipole,x,y,z,pdamp,thole,
-!$OMP& rpole,p2scale,p3scale,p4scale,p41scale,p5scale,d1scale,d2scale,
-!$OMP& d3scale,d4scale,u1scale,u2scale,u3scale,u4scale,n12,i12,n13,i13,
-!$OMP& n14,i14,n15,i15,np11,ip11,np12,ip12,np13,ip13,np14,ip14,nelst,
-!$OMP& elst,cut2,aewald,aesq2,aesq2n,poltyp,ntpair,tindex,tdipdip,
-!$OMP& field,fieldp,fieldt,fieldtp,maxlocal,nlocals,rank,MPI_IN_PLACE,
-!$OMP& nprocs,ierror,lstart,lend)
-!$OMP& firstprivate(pscale,dscale,uscale,nlocal)
-
-      ! perform dynamic allocation of some local arrays
+       ! perform dynamic allocation of some local arrays
       if (poltyp .eq. 'MUTUAL') then
          allocate (ilocal(2,maxlocal))
          allocate (dlocal(6,maxlocal))
@@ -2384,7 +2373,25 @@ c      allocate (toffset(0:nthread-1))
          dlocal = 0.0d0
       end if
 
-         
+
+
+      ! set OpenMP directives for the major loop structure
+
+!$OMP PARALLEL default(none) shared(n,npole,ipole,x,y,z,pdamp,thole,
+!$OMP& rpole,p2scale,p3scale,p4scale,p41scale,p5scale,d1scale,d2scale,
+!$OMP& d3scale,d4scale,u1scale,u2scale,u3scale,u4scale,n12,i12,n13,i13,
+!$OMP& n14,i14,n15,i15,np11,ip11,np12,ip12,np13,ip13,np14,ip14,nelst,
+!$OMP& elst,cut2,aewald,aesq2,aesq2n,poltyp,ntpair,tindex,tdipdip,
+!$OMP& field,fieldp,fieldt,fieldtp,maxlocal,nlocals,
+!$OMP& rank,MPI_IN_PLACE,nprocs,ierror,lstart,lend)
+!$OMP& firstprivate(pscale,dscale,uscale,nlocal)
+!$OMP& private(ilocal,dlocal, ii, pdi, pti, ci, dix, diy, diz, qixx,
+!$OMP& qixy,qiyy,qiyz,qizz,kk,zr,r,r2, rr1,rr2,rr3,rr5,rr7,ck,
+!$OMP& dkx,dky,dkz,qixz,xr,yr,qkxx,qkxy,qkxz,qkyy,qkyz,qkzz,ralpha,
+!$OMP& bn,exp2a,aefac,bfac,scale3,scale5,scale7,damp,pgamma,expdamp,
+!$OMP& dir,qix,qiy,qiz,qir,dkr,qkx,qky,qkz,qkr,bcn,fimd,fkmd,fimp,
+!$OMP& fkmp)
+       
       ! initialize local variables for OpenMP calculation
 !$OMP DO collapse(2)
       do i = 1, npole
@@ -2601,6 +2608,11 @@ c
          end do
       end do
 !$OMP END DO
+
+       ! store terms needed later to compute mutual polarization
+      nlocals = 0 
+      nlocals(rank+1) = nlocal
+
 !$OMP END PARALLEL
 c
 c     transfer the results from local to global arrays
@@ -2640,8 +2652,8 @@ C$$$!$OMP END DO
 
 
       ! store terms needed later to compute mutual polarization
-      nlocals = 0 
-      nlocals(rank+1) = nlocal
+c      nlocals = 0 
+c      nlocals(rank+1) = nlocal
       
       ! reset values
       tindex  = 0
@@ -2786,6 +2798,7 @@ c      deallocate (toffset)
       deallocate (uscale)
       deallocate (fieldt)
       deallocate (fieldtp)
+      deallocate (fieldtmp)
 
 
       return

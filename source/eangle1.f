@@ -113,7 +113,7 @@ c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(private) shared(nangle,iang,anat,ak,afld,use,
 !$OMP& x,y,z,cang,qang,pang,sang,angtyp,angunit,use_group,use_polymer)
-!$OMP& shared(eao,deao,viro,lstart,lend,virtemp)
+!$OMP& shared(eao,deao,viro,lstart,lend)
 !$OMP DO reduction(+:eao,deao,viro) schedule(guided)
 c
 c     calculate the bond angle bending energy term
