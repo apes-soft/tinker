@@ -2338,8 +2338,8 @@ c
       nlocal   = 0
       offset = 0 
 c      toffset0 = 0
-      maxlocal = int(dble(npole)*dble(maxelst)/1.0) !dble(nthread))
-      minlocal = int(dble(maxlocal)/dble(nprocs))
+      maxlocal = int(dble(npole)*dble(maxelst)/dble(nprocs)) 
+      minlocal = int(dble(maxlocal)/dble(nthread))
 
       ! perform dynamic allocation of some local arrays
       allocate (pscale(n))
@@ -2373,7 +2373,6 @@ c      toffset0 = 0
          ilocal = 0
          dlocal = 0.0d0
       end if
-
 
 
       ! set OpenMP directives for the major loop structure
