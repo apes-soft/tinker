@@ -2286,8 +2286,8 @@ c
       integer i,j,k,m
       integer ii,kk,kkk
       integer nlocal,maxlocal
-c      integer tid,toffset0
-c!$    integer omp_get_thread_num
+      integer tid !,toffset0
+!$    integer omp_get_thread_num
 c      integer, allocatable :: toffset(:)
       integer, allocatable :: ilocal(:,:)
       real*8 xr,yr,zr,r,r2
@@ -2324,9 +2324,11 @@ c      integer, allocatable :: toffset(:)
       character*6 mode
       external erfc
       integer:: lstart, lend
+      integer offset
 c      integer, allocatable, dimension(:):: nlocals, disps
-c      integer, allocatable, dimension(:,:):: myilocal
-c      real*8, allocatable, dimension(:,:):: mydlocal
+      integer, allocatable, dimension(:,:):: myilocal
+      real*8, allocatable, dimension(:,:):: mydlocal
+      integer minlocal
 
       ! check for multipoles and set cutoff coefficients
       if (npole .eq. 0)  return
@@ -2336,8 +2338,10 @@ c      real*8, allocatable, dimension(:,:):: mydlocal
       aesq2n = 0.0d0
       if (aewald .gt. 0.0d0)  aesq2n = 1.0d0 / (sqrtpi*aewald)
       nlocal   = 0
+      offset = 0 
 c      toffset0 = 0
       maxlocal = int(dble(npole)*dble(maxelst)/1.0) !dble(nthread))
+      minlocal = int(dble(maxlocal)/dble(nprocs))
 
       ! perform dynamic allocation of some local arrays
 c      allocate (toffset(0:nthread-1))
@@ -2367,10 +2371,16 @@ c      allocate (toffset(0:nthread-1))
       if (poltyp .eq. 'MUTUAL') then
          allocate (ilocal(2,maxlocal))
          allocate (dlocal(6,maxlocal))
-      
+         !allocate (myilocal(2,minlocal))
+         !allocate (mydlocal(6,minlocal))
+
+
          ! initialise the local arrays
          ilocal = 0
          dlocal = 0.0d0
+         !myilocal = 0
+         !mydlocal = 0.0d0
+         !offset = 0
       end if
 
 
@@ -2382,16 +2392,28 @@ c      allocate (toffset(0:nthread-1))
 !$OMP& d3scale,d4scale,u1scale,u2scale,u3scale,u4scale,n12,i12,n13,i13,
 !$OMP& n14,i14,n15,i15,np11,ip11,np12,ip12,np13,ip13,np14,ip14,nelst,
 !$OMP& elst,cut2,aewald,aesq2,aesq2n,poltyp,ntpair,tindex,tdipdip,
-!$OMP& field,fieldp,fieldt,fieldtp,maxlocal,nlocals,
+!$OMP& offset, field,fieldp,fieldt,fieldtp,maxlocal,nlocals,minlocal,
 !$OMP& rank,MPI_IN_PLACE,nprocs,ierror,lstart,lend,ilocal,dlocal)
 !$OMP& firstprivate(pscale,dscale,uscale,nlocal)
-!$OMP& private(ii, pdi, pti, ci, dix, diy, diz, qixx,
+!$OMP& private(ii, pdi, pti, ci, dix, diy, diz, qixx, tid,
 !$OMP& qixy,qiyy,qiyz,qizz,kk,zr,r,r2, rr1,rr2,rr3,rr5,rr7,ck,
 !$OMP& dkx,dky,dkz,qixz,xr,yr,qkxx,qkxy,qkxz,qkyy,qkyz,qkzz,ralpha,
 !$OMP& bn,exp2a,aefac,bfac,scale3,scale5,scale7,damp,pgamma,expdamp,
 !$OMP& dir,qix,qiy,qiz,qir,dkr,qkx,qky,qkz,qkr,bcn,fimd,fkmd,fimp,
-!$OMP& fkmp)
+!$OMP& fkmp, myilocal, mydlocal)
        
+      
+       if (poltyp .eq. 'MUTUAL') then
+          allocate (myilocal(2,minlocal))
+          allocate (mydlocal(6,minlocal))
+
+         ! initialise the local arrays
+          myilocal = 0
+          mydlocal = 0.0d0
+       end if
+
+
+
       ! initialize local variables for OpenMP calculation
 !$OMP DO collapse(2)
       do i = 1, npole
@@ -2403,7 +2425,7 @@ c      allocate (toffset(0:nthread-1))
 !$OMP END DO
 
       ! compute the real space portion of the Ewald summation
-!$OMP DO reduction(+:fieldt,fieldtp,ilocal,dlocal) schedule(guided)
+!$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
       do i = lstart, lend !1, npole
          ii   = ipole(i)
          pdi  = pdamp(i)
@@ -2555,14 +2577,22 @@ c
                   bcn(1) = bn(1) - (1.0d0-scale3*uscale(kk))*rr3
                   bcn(2) = bn(2) - 3.0d0*(1.0d0-scale5*uscale(kk))*rr5
                   nlocal = nlocal + 1
-                  ilocal(1,nlocal) = i
-                  ilocal(2,nlocal) = k
-                  dlocal(1,nlocal) = -bcn(1) + bcn(2)*xr*xr
-                  dlocal(2,nlocal) = bcn(2)*xr*yr
-                  dlocal(3,nlocal) = bcn(2)*xr*zr
-                  dlocal(4,nlocal) = -bcn(1) + bcn(2)*yr*yr
-                  dlocal(5,nlocal) = bcn(2)*yr*zr
-                  dlocal(6,nlocal) = -bcn(1) + bcn(2)*zr*zr
+C$$$                  ilocal(1,nlocal) = i
+C$$$                  ilocal(2,nlocal) = k
+C$$$                  dlocal(1,nlocal) = -bcn(1) + bcn(2)*xr*xr
+C$$$                  dlocal(2,nlocal) = bcn(2)*xr*yr
+C$$$                  dlocal(3,nlocal) = bcn(2)*xr*zr
+C$$$                  dlocal(4,nlocal) = -bcn(1) + bcn(2)*yr*yr
+C$$$                  dlocal(5,nlocal) = bcn(2)*yr*zr
+C$$$                  dlocal(6,nlocal) = -bcn(1) + bcn(2)*zr*zr
+                  myilocal(1,nlocal) = i
+                  myilocal(2,nlocal) = k
+                  mydlocal(1,nlocal) = -bcn(1) + bcn(2)*xr*xr
+                  mydlocal(2,nlocal) = bcn(2)*xr*yr
+                  mydlocal(3,nlocal) = bcn(2)*xr*zr
+                  mydlocal(4,nlocal) = -bcn(1) + bcn(2)*yr*yr
+                  mydlocal(5,nlocal) = bcn(2)*yr*zr
+                  mydlocal(6,nlocal) = -bcn(1) + bcn(2)*zr*zr
                end if
 c
 c     increment the field at each site due to this interaction
@@ -2610,11 +2640,45 @@ c
 !$OMP END DO
 
        ! store terms needed later to compute mutual polarization
-      nlocals = 0 
-      nlocals(rank+1) = nlocal
+      tid = omp_get_thread_num()
+c      print*,"rank, thread, nlocal", nlocal, rank, tid
+
+
+      if (poltyp .eq. 'MUTUAL') then
+
+!$OMP CRITICAL 
+             
+c      print*, "offset ", rank, tid, offset 
+         do i=1,nlocal
+            k = offset + i 
+            ilocal(1,k) = myilocal(1,i)
+            ilocal(2,k) = myilocal(2,i)
+!ilocal(1,k) = ilocal(1,i)
+!ilocal(2,k) = ilocal(2,i)
+            do j=1,6
+               dlocal(j,k) = mydlocal(j,i)
+!dlocal(j,k) = dlocal(j,i)
+            end do
+         end do
+         offset = offset + nlocal
+         
+c      print*, "rank, thread, offset,nlocal", rank, tid,offset, nlocal
+         
+!$OMP END CRITICAL 
+
+         deallocate (myilocal)
+         deallocate (mydlocal)
+
+      end if
+      
 c      print*, "nlocals", rank, nlocals(rank+1)
 
 !$OMP END PARALLEL
+
+      nlocals = 0 
+      nlocals(rank+1) = offset  
+c      print*, "offset", rank, offset
+
 c
 c     transfer the results from local to global arrays
 c
@@ -2680,17 +2744,21 @@ c      nlocals(rank+1) = nlocal
          lend = nlocals(rank+1)
 
          k=lstart
-         do i=1,lend
+         do i=1,lend !ntpair
             tindex(1,k) = ilocal(1,i)
             tindex(2,k) = ilocal(2,i)
+            !tindex(1,i) = ilocal(1,i)
+            !tindex(2,i) = ilocal(2,i)
             do j=1,6
                tdipdip(j,k) = dlocal(j,i)
+               !tdipdip(j,i) = dlocal(j,i)
             end do
             k = k + 1
          end do
 
          deallocate (ilocal)
          deallocate (dlocal)
+        
 
       end if
 
