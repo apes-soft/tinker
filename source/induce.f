@@ -2288,7 +2288,6 @@ c
       integer nlocal,maxlocal
       integer tid !,toffset0
 !$    integer omp_get_thread_num
-c      integer, allocatable :: toffset(:)
       integer, allocatable :: ilocal(:,:)
       real*8 xr,yr,zr,r,r2
       real*8 rr1,rr2,rr3
@@ -2325,7 +2324,6 @@ c      integer, allocatable :: toffset(:)
       external erfc
       integer:: lstart, lend
       integer offset
-c      integer, allocatable, dimension(:):: nlocals, disps
       integer, allocatable, dimension(:,:):: myilocal
       real*8, allocatable, dimension(:,:):: mydlocal
       integer minlocal
@@ -2344,7 +2342,6 @@ c      toffset0 = 0
       minlocal = int(dble(maxlocal)/dble(nprocs))
 
       ! perform dynamic allocation of some local arrays
-c      allocate (toffset(0:nthread-1))
       allocate (pscale(n))
       allocate (dscale(n))
       allocate (uscale(n))
@@ -2371,16 +2368,10 @@ c      allocate (toffset(0:nthread-1))
       if (poltyp .eq. 'MUTUAL') then
          allocate (ilocal(2,maxlocal))
          allocate (dlocal(6,maxlocal))
-         !allocate (myilocal(2,minlocal))
-         !allocate (mydlocal(6,minlocal))
-
 
          ! initialise the local arrays
          ilocal = 0
          dlocal = 0.0d0
-         !myilocal = 0
-         !mydlocal = 0.0d0
-         !offset = 0
       end if
 
 
@@ -2577,14 +2568,6 @@ c
                   bcn(1) = bn(1) - (1.0d0-scale3*uscale(kk))*rr3
                   bcn(2) = bn(2) - 3.0d0*(1.0d0-scale5*uscale(kk))*rr5
                   nlocal = nlocal + 1
-C$$$                  ilocal(1,nlocal) = i
-C$$$                  ilocal(2,nlocal) = k
-C$$$                  dlocal(1,nlocal) = -bcn(1) + bcn(2)*xr*xr
-C$$$                  dlocal(2,nlocal) = bcn(2)*xr*yr
-C$$$                  dlocal(3,nlocal) = bcn(2)*xr*zr
-C$$$                  dlocal(4,nlocal) = -bcn(1) + bcn(2)*yr*yr
-C$$$                  dlocal(5,nlocal) = bcn(2)*yr*zr
-C$$$                  dlocal(6,nlocal) = -bcn(1) + bcn(2)*zr*zr
                   myilocal(1,nlocal) = i
                   myilocal(2,nlocal) = k
                   mydlocal(1,nlocal) = -bcn(1) + bcn(2)*xr*xr
@@ -2640,29 +2623,20 @@ c
 !$OMP END DO
 
        ! store terms needed later to compute mutual polarization
-      tid = omp_get_thread_num()
-c      print*,"rank, thread, nlocal", nlocal, rank, tid
-
 
       if (poltyp .eq. 'MUTUAL') then
 
 !$OMP CRITICAL 
-             
-c      print*, "offset ", rank, tid, offset 
+              
          do i=1,nlocal
             k = offset + i 
             ilocal(1,k) = myilocal(1,i)
             ilocal(2,k) = myilocal(2,i)
-!ilocal(1,k) = ilocal(1,i)
-!ilocal(2,k) = ilocal(2,i)
             do j=1,6
                dlocal(j,k) = mydlocal(j,i)
-!dlocal(j,k) = dlocal(j,i)
             end do
          end do
          offset = offset + nlocal
-         
-c      print*, "rank, thread, offset,nlocal", rank, tid,offset, nlocal
          
 !$OMP END CRITICAL 
 
@@ -2671,57 +2645,32 @@ c      print*, "rank, thread, offset,nlocal", rank, tid,offset, nlocal
 
       end if
       
-c      print*, "nlocals", rank, nlocals(rank+1)
-
 !$OMP END PARALLEL
 
       nlocals = 0 
       nlocals(rank+1) = offset  
-c      print*, "offset", rank, offset
 
 c
 c     transfer the results from local to global arrays
 c
-c       print*, "nlocals", rank, nlocals
 
       ! Get the distributed field components
       fieldtmp = 0.0d0
       call MPI_Allreduce(fieldt, fieldtmp, 3*npole, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
      &                   ierror)
-c      field = field + fieldtmp
       fieldt = fieldtmp
 
       fieldtmp = 0.0d0
       call MPI_Allreduce(fieldtp, fieldtmp, 3*npole, 
      &                   MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
      &                   ierror)
-c      fieldp = fieldp + fieldtmp
       fieldtp = fieldtmp
-
-c      field = fieldt
-c      fieldp = fieldtp
 
       field = fieldt + field
       fieldp = fieldtp + fieldp
 
-c!$OMP DO
-      !do i = 1, npole
-      !   do j = 1, 3
-      !      field(j,i) = fieldt(j,i) + field(j,i)
-      !      fieldp(j,i) = fieldtp(j,i) + fieldp(j,i)
-      !   end do
-      !end do
-
-C$$$!$OMP END DO
-
-c      if (rank .eq. 1 ) print*, ilocal
-
-
-      ! store terms needed later to compute mutual polarization
-c      nlocals = 0 
-c      nlocals(rank+1) = nlocal
-      
+     
       ! reset values
       tindex  = 0
       tdipdip = 0.0d0
@@ -2744,134 +2693,30 @@ c      nlocals(rank+1) = nlocal
          lend = nlocals(rank+1)
 
          k=lstart
-         do i=1,lend !ntpair
+         do i=1,lend 
             tindex(1,k) = ilocal(1,i)
             tindex(2,k) = ilocal(2,i)
-            !tindex(1,i) = ilocal(1,i)
-            !tindex(2,i) = ilocal(2,i)
             do j=1,6
                tdipdip(j,k) = dlocal(j,i)
-               !tdipdip(j,i) = dlocal(j,i)
             end do
             k = k + 1
          end do
 
          deallocate (ilocal)
          deallocate (dlocal)
-        
-
+      
       end if
-
-C$$$      ! store terms needed later to compute mutual polarization
-C$$$!$OMP CRITICAL
-
-C$$$      ! collect the number of distributed "nlocal"s
-C$$$c      allocate(nlocals(nprocs))
-C$$$      nlocals = 0 
-C$$$      call MPI_Allgather(nlocal, 1, MPI_INTEGER,nlocals, 1,
-C$$$     &                   MPI_INTEGER,MPI_COMM_WORLD, ierror)
-
-C$$$      ! Now gather ilocal and dlocal
-C$$$      if (poltyp .eq. 'MUTUAL') then
-
-C$$$         ! create some temporary auxiliary arrays
-C$$$         allocate(myilocal(2,nlocal),mydlocal(6,nlocal))
-C$$$         allocate(disps(nprocs))
-
-C$$$         ! transfer ilocal and dlocal contents to local arrays
-C$$$         myilocal = ilocal(:,1:nlocal)
-C$$$         mydlocal = dlocal(:,1:nlocal)
-         
-C$$$         ! calculate the displacments for ilocal
-C$$$         ! used to calculate: recvbuf + disp[i] * extent(recvtype)
-C$$$         ! disps only has to be correct for proc 0 apparently
-C$$$         disps = 0
-C$$$         do i=2,nprocs
-C$$$            ! array has 2 integers per element so multiply 
-C$$$            ! by 2 for displacements
-C$$$            disps(i) = disps(i-1) + nlocals(i-1)*2
-C$$$         end do 
-
-C$$$         ! do an MPI allgatherv of ilocal so all procs ends with 
-C$$$         ! all the information
-C$$$         call MPI_Allgatherv(myilocal,2*nlocal, MPI_INTEGER,
-C$$$     &                       ilocal,2*nlocals, disps, MPI_INTEGER,
-C$$$     &                       MPI_COMM_WORLD, ierror)
-
-
-C$$$         ! calculate the displacments for dlocal
-C$$$         disps = 0
-C$$$         do i=2,nprocs
-C$$$            ! multiply by 6 as we have 6 doubles in each row
-C$$$            disps(i) = disps(i-1) + nlocals(i-1)*6
-C$$$         end do 
-
-C$$$         ! do an allgather of dlocal
-C$$$         call MPI_Allgatherv(mydlocal,6*nlocal, MPI_DOUBLE_PRECISION,
-C$$$     &                       dlocal,6*nlocals, disps, 
-C$$$     &                       MPI_DOUBLE_PRECISION, MPI_COMM_WORLD, 
-C$$$     &                       ierror)
-
-C$$$         ! remove auxiliary arrays
-C$$$         deallocate(myilocal, mydlocal,disps)
-
-C$$$      end if
-
-C$$$      ! reset nlocal to be the global sum of locals
-C$$$      nlocal = sum(nlocals)
-
-C$$$      ! Deallocate auxiliary arrays
-C$$$      deallocate (nlocals)
-
-C$$$      tid = 0
-C$$$!$    tid = omp_get_thread_num ()
-
-C$$$      toffset(tid) = toffset0
-
-C$$$      ! end offset
-C$$$      toffset0     = toffset0 + nlocal
-
-C$$$      ! number of stored dipole-dipole matrix elements
-C$$$      ntpair       = toffset0 
-
-C$$$!$OMP END CRITICAL
-
-C$$$      ! reset values
-C$$$      tindex  = 0
-C$$$      tdipdip = 0.0d0
-
-C$$$      if (poltyp .eq. 'MUTUAL') then
-C$$$         k = toffset(tid)
-C$$$         do i = 1, nlocal
-C$$$            m = k + i
-C$$$            tindex(1,m) = ilocal(1,i)
-C$$$            tindex(2,m) = ilocal(2,i)
-C$$$            do j = 1, 6
-C$$$               tdipdip(j,m) = dlocal(j,i)
-C$$$            end do
-C$$$         end do
-C$$$         deallocate (ilocal)
-C$$$         deallocate (dlocal)
-C$$$      end if
-C$$$!$OMP END PARALLEL
-
-C$$$!     call system_clock(tock)
-
-C$$$!     print *,"udirect2b, ",rank,",",time1,",",
-C$$$!    &         (tock-tick)/real(rate,kind=8)
-C$$$!     call flush(6)
 
 c
 c     perform deallocation of some local arrays
 c
-c      deallocate (toffset)
+
       deallocate (pscale)
       deallocate (dscale)
       deallocate (uscale)
       deallocate (fieldt)
       deallocate (fieldtp)
       deallocate (fieldtmp)
-
 
       return
       end
