@@ -2261,6 +2261,7 @@ c
       integer i,j,k,m
       integer ii,kk,kkk
       integer nlocal,maxlocal
+!$    integer omp_get_thread_num
       integer, allocatable :: ilocal(:,:)
       real*8 xr,yr,zr,r,r2
       real*8 rr1,rr2,rr3
