@@ -5776,6 +5776,7 @@ c
       use sizes
       use atoms
       use mpole
+      use mpiparams
       use neigh
       use polar
       use polgrp
@@ -5796,13 +5797,14 @@ c
       real*8 m1,m2,m3
       real*8 m4,m5,m6
       real*8, allocatable :: dscale(:)
-      real*8 rsd(3,*)
-      real*8 rsdp(3,*)
-      real*8 zrsd(3,*)
-      real*8 zrsdp(3,*)
+      real*8 rsd(3,npole)
+      real*8 rsdp(3,npole)
+      real*8 zrsd(3,npole)
+      real*8 zrsdp(3,npole)
       real*8, allocatable :: zrsdt(:,:)
       real*8, allocatable :: zrsdtp(:,:)
       character*6 mode
+      integer lstart, lend
 c
 c
 c     apply the preconditioning matrix to the current residual
@@ -5813,18 +5815,23 @@ c     perform dynamic allocation of some local arrays
 c
          allocate (zrsdt(3,npole))
          allocate (zrsdtp(3,npole))
+
+      ! Determine the loop splitting start and end points
+      call splitloop(lstart, lend, npole)
 c
 c     use diagonal preconditioner elements as first approximation
 c
+         zrsd   = 0.0d0
+         zrsdp  = 0.0d0
+         zrsdt  = 0.0d0
+         zrsdtp = 0.0d0
          polmin = 0.00000001d0
-         do i = 1, npole
+
+         ! Intialize only those variables responsible for.
+         do i = lstart, lend !∑1, npole
             poli = udiag * max(polmin,polarity(i))
-            do j = 1, 3
-               zrsd(j,i) = 0.0d0
-               zrsdp(j,i) = 0.0d0
-               zrsdt(j,i) = poli * rsd(j,i)
-               zrsdtp(j,i) = poli * rsdp(j,i)
-            end do
+            zrsdt(:,i)  = poli * rsd(:,i)
+            zrsdtp(:,i) = poli * rsdp(:,i)
          end do
 c
 c     use the off-diagonal preconditioner elements in second phase
@@ -5832,7 +5839,7 @@ c
 !$OMP PARALLEL default(private) shared(npole,mindex,minv,nulst,ulst,
 !$OMP& rsd,rsdp,zrsd,zrsdp,zrsdt,zrsdtp)
 !$OMP DO reduction(+:zrsdt,zrsdtp) schedule(guided)
-         do i = 1, npole
+         do i = lstart, lend ! 1, npole
             m = mindex(i)
             do kk = 1, nulst(i)
                k = ulst(kk,i)
@@ -5873,6 +5880,16 @@ c
 c
 c     transfer the results from local to global arrays
 c
+
+        ! Bring together the loops
+         call MPI_Allreduce(MPI_IN_PLACE,zrsdt, 3*npole,
+     &        MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD,
+     &        ierror)
+
+
+         call MPI_Allreduce(MPI_IN_PLACE,zrsdtp, 3*npole,
+     &        MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, ierror)
+        
 !$OMP DO
          do i = 1, npole
             do j = 1, 3
