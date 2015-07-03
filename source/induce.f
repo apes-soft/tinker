@@ -1467,10 +1467,6 @@ c
 c     get the real space portion of the electrostatic field
 c
 
-c      fieldt = field
-c      fieldtp = fieldp
-c      fieldtmp = 0.0d0
-
       if (use_mlist) then
          call udirect2b (field,fieldp)
       else
@@ -2303,6 +2299,7 @@ c
       integer, allocatable, dimension(:,:):: myilocal
       real*8, allocatable, dimension(:,:):: mydlocal
       integer minlocal
+      integer maxl
 
       ! check for multipoles and set cutoff coefficients
       if (npole .eq. 0)  return
@@ -2313,8 +2310,8 @@ c
       if (aewald .gt. 0.0d0)  aesq2n = 1.0d0 / (sqrtpi*aewald)
       nlocal   = 0
       offset = 0 
-c      toffset0 = 0
-      maxlocal = int(dble(npole)*dble(maxelst)/dble(nprocs)) 
+      maxl = SUM(nelst)/2
+      maxlocal = int(dble(maxl)/dble(nprocs)) 
       minlocal = int(dble(maxlocal)/dble(nthread))
 
       ! perform dynamic allocation of some local arrays
@@ -2323,7 +2320,6 @@ c      toffset0 = 0
       allocate (uscale(n))
       allocate (fieldt(3,npole))
       allocate (fieldtp(3,npole))
-c      allocate (fieldtmp(3,npole))
 
       ! set arrays needed to scale connected atom interactions
       ! 1xn arrays
