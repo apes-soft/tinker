@@ -1440,7 +1440,7 @@ c
       real*8 fieldp(3,*)
       real*8 fieldt(3,npole)
       real*8 fieldtp(3,npole)
-c
+
 c
 c     zero out the value of the field at each site
 c
@@ -2261,7 +2261,6 @@ c
       integer i,j,k,m
       integer ii,kk,kkk
       integer nlocal,maxlocal
-!$    integer omp_get_thread_num
       integer, allocatable :: ilocal(:,:)
       real*8 xr,yr,zr,r,r2
       real*8 rr1,rr2,rr3
@@ -2300,6 +2299,7 @@ c
       integer, allocatable, dimension(:,:):: myilocal
       real*8, allocatable, dimension(:,:):: mydlocal
       integer minlocal
+      integer maxl
 
       ! check for multipoles and set cutoff coefficients
       if (npole .eq. 0)  return
@@ -2310,8 +2310,8 @@ c
       if (aewald .gt. 0.0d0)  aesq2n = 1.0d0 / (sqrtpi*aewald)
       nlocal   = 0
       offset = 0 
-c      toffset0 = 0
-      maxlocal = int(dble(npole)*dble(maxelst)/dble(nprocs)) 
+      maxl = SUM(nelst)/2
+      maxlocal = int(dble(maxl)/dble(nprocs)) 
       minlocal = int(dble(maxlocal)/dble(nthread))
 
       ! perform dynamic allocation of some local arrays
@@ -2357,7 +2357,7 @@ c      toffset0 = 0
 !$OMP& offset, field,fieldp,fieldt,fieldtp,maxlocal,nlocals,minlocal,
 !$OMP& rank,MPI_IN_PLACE,nprocs,ierror,lstart,lend,ilocal,dlocal)
 !$OMP& firstprivate(pscale,dscale,uscale,nlocal)
-!$OMP& private(ii, pdi, pti, ci, dix, diy, diz, qixx, 
+!$OMP& private(ii, pdi, pti, ci, dix, diy, diz, qixx,
 !$OMP& qixy,qiyy,qiyz,qizz,kk,zr,r,r2, rr1,rr2,rr3,rr5,rr7,ck,
 !$OMP& dkx,dky,dkz,qixz,xr,yr,qkxx,qkxy,qkxz,qkyy,qkyz,qkzz,ralpha,
 !$OMP& bn,exp2a,aefac,bfac,scale3,scale5,scale7,damp,pgamma,expdamp,
@@ -2623,14 +2623,16 @@ c
 c     transfer the results from local to global arrays
 c
 
-       call MPI_Allreduce(MPI_IN_PLACE,fieldt, 3*npole, 
+      ! Get the distributed field components
+     
+      call MPI_Allreduce(MPI_IN_PLACE,fieldt,3*npole, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
      &                   ierror)
-
-      call MPI_Allreduce(MPI_IN_PLACE, fieldtp, 3*npole, 
+    
+      call MPI_Allreduce(MPI_IN_PLACE,fieldtp,3*npole, 
      &                   MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
      &                   ierror)
-
+     
 
       field = fieldt + field
       fieldp = fieldtp + fieldp
@@ -3177,14 +3179,13 @@ c
          end do
       end if
       lend = lstart + nlocals(rank+1) - 1 
-    
+
       ! check for multipoles and set cutoff coefficients
       if (npole .eq. 0)  return
 
       ! perform dynamic allocation of some local arrays
       allocate (fieldt(3,npole))
       allocate (fieldtp(3,npole))
-
 
       ! set OpenMP directives for the major loop structure
 
@@ -3244,13 +3245,15 @@ c
 !$OMP END DO
 !$OMP END PARALLEL
 
-      call MPI_Allreduce(MPI_IN_PLACE,fieldt, 3*npole, 
-     &                   MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
-     &                   ierror)
 
-      call MPI_Allreduce(MPI_IN_PLACE, fieldtp, 3*npole, 
-     &                   MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
-     &                   ierror)
+      call MPI_Allreduce(MPI_IN_PLACE,fieldt,3*npole, 
+     &     MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, 
+     &     ierror)
+      
+      call MPI_Allreduce(MPI_IN_PLACE,fieldtp,3*npole, 
+     &     MPI_DOUBLE_PRECISION, MPI_SUM, MPI_COMM_WORLD, 
+     &     ierror)
+      
 
 c
 c     end OpenMP directives for the major loop structure
