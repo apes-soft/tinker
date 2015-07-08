@@ -47,6 +47,11 @@ c
       use uprior
       use usage
       use mpiparams
+      use neigh
+      use math
+      use polpot
+      use tarray
+      use limits
 
       implicit none
 
@@ -58,7 +63,7 @@ c
       real*8 maxwell,speed
       real*8 amass,gmass
       real*8 hmax,hmass
-      real*8 sum,dmass
+      real*8 summ,dmass
       real*8 vec(3)
       real*8, allocatable :: derivs(:,:)
       logical exist,heavy
@@ -67,6 +72,7 @@ c
       character*120 dynfile
       character*120 record
       character*120 string
+      integer sizel
 c
 c
 c     set default parameters for the dynamics trajectory
@@ -175,15 +181,15 @@ c
          hmax = 4.0d0
          do i = 1, n
             nh = 0
-            sum = mass(i)
+            summ = mass(i)
             do j = 1, n12(i)
                k = i12(j,i)
                if (atomic(k) .eq. 1) then
                   nh = nh + 1
-                  sum = sum + mass(k)
+                  summ = summ + mass(k)
                end if
             end do
-            hmass = max(hmax,sum/dble(nh+1))
+            hmass = max(hmax,summ/dble(nh+1))
             do j = 1, n12(i)
                k = i12(j,i)
                if (atomic(k) .eq. 1) then
@@ -466,6 +472,18 @@ c
       else
          allocate (derivs(3,n))
          call gradient (e,derivs)
+         sizel = SUM(nelst) 
+c         print*, "sum(nlest) is", sum(nelst)
+c         print*, "use_mlist", use_mlist
+c         print*, "poltyp", poltyp
+                 
+         if(use_mlist .and. (poltyp .eq. 'MUTUAL')) then
+            if (allocated(tindex))  deallocate (tindex)
+            if (allocated(tdipdip))  deallocate (tdipdip)
+            allocate (tindex(2,sizel))
+            allocate (tdipdip(6,sizel))
+         end if
+
          do i = 1, n
             amass = mass(i)
             if (use(i) .and. amass.ne.0.0d0) then
