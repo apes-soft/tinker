@@ -2310,22 +2310,7 @@ c
       if (aewald .gt. 0.0d0)  aesq2n = 1.0d0 / (sqrtpi*aewald)
       nlocal   = 0
       offset = 0 
-      maxl = SUM(nelst)/2
-      maxlocal = int(dble(maxl)/dble(nprocs)) 
-      minlocal = int(dble(maxlocal)/dble(nthread))
-
-      ! perform dynamic allocation of some local arrays
-      allocate (pscale(n))
-      allocate (dscale(n))
-      allocate (uscale(n))
-      allocate (fieldt(3,npole))
-      allocate (fieldtp(3,npole))
-
-      ! set arrays needed to scale connected atom interactions
-      ! 1xn arrays
-      pscale = 1.0d0
-      dscale = 1.0d0
-      uscale = 1.0d0
+      maxl = 0
 
       ! Check that the size of the "cost" array is the same
       ! as npole
@@ -2336,7 +2321,58 @@ c
       call splitlimits(lstart, lend, nelst)
 
 
-       ! perform dynamic allocation of some local arrays
+
+      do i=lstart, lend !1,npole
+         ii = ipole(i)
+         do kkk = 1, nelst(i)
+            k  = elst(kkk,i)
+            kk = ipole(k)
+            xr = x(kk) - x(ii)
+            yr = y(kk) - y(ii)
+            zr = z(kk) - z(ii)
+            call image (xr,yr,zr)
+            r2 = xr*xr + yr* yr + zr*zr
+            if (r2 .le. cut2) maxlocal = maxlocal + 1
+         end do 
+      end do
+
+c      maxlocal = maxlocal + maxlocal/nthread
+c      print*, "maxlocal is", rank, maxlocal
+
+c      print*, "maxl calc is", maxl
+
+c      maxl = int(dble(SUM(nelst))/1.5)
+c      print*, "nelst sum is", sum(nelst)
+c      print*, "maxl /2 ", maxl/2
+c      maxlocal = 0 
+c      maxlocal = int(dble(maxl)/dble(nprocs)) !+ nprocs
+c      print*, "maxlocal", maxlocal
+c      maxlocal = maxlocal
+      if(nthread .gt. 2) then
+         minlocal = ceiling(dble(maxlocal)/dble(nthread))*2 
+      else
+         minlocal = maxlocal 
+      end if
+
+c      minlocal = minlocal + (minlocal*2)/(nthread) 
+c      print*, "minlocal is",rank, minlocal
+
+      ! perform dynamic allocation of some local arrays
+      allocate (pscale(n))
+      allocate (dscale(n))
+      allocate (uscale(n))
+      allocate (fieldt(3,npole))
+      allocate (fieldtp(3,npole))
+      
+c      print*, "npole and n are",npole, n
+
+      ! set arrays needed to scale connected atom interactions
+      ! 1xn arrays
+      pscale = 1.0d0
+      dscale = 1.0d0
+      uscale = 1.0d0
+
+      ! perform dynamic allocation of some local arrays
       if (poltyp .eq. 'MUTUAL') then
          allocate (ilocal(2,maxlocal))
          allocate (dlocal(6,maxlocal))
@@ -2607,10 +2643,10 @@ c
          end do
          offset = offset + nlocal
          
-!$OMP END CRITICAL 
-
          deallocate (myilocal)
          deallocate (mydlocal)
+
+!$OMP END CRITICAL 
 
       end if
       
@@ -2648,6 +2684,7 @@ c
      &     MPI_INTEGER,MPI_SUM, MPI_COMM_WORLD, ierror)
 
       ntpair = sum(nlocals)
+c      print*, "ntpair is", ntpair
 
       if (poltyp .eq. 'MUTUAL') then
 
