@@ -177,8 +177,8 @@ else ifeq ($(COMPARCH),LinuxIntelMPI)
   FC        = mpiifort
   LIBS      =
   FCFLAGS   = -c  -warn all,nointerfaces
-  OPTFLAGS  = -g -check -traceback 
-  #OPTFLAGS  = -xHost -O3 -g -no-ipo -no-prec-div -recursive
+  #OPTFLAGS  = -g -check all -traceback 
+  OPTFLAGS  = -xHost -O3 -g -no-ipo -no-prec-div -recursive
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = -static-libgcc -static-intel
