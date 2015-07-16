@@ -80,5 +80,6 @@ Thumbs.db
 source/TAGS
 *.info*
 Makefile.m
-
+bench7.sh
+testcode/
 
