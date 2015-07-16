@@ -183,6 +183,7 @@ c
       use inform
       use iounit
       use limits
+      use mpiparams
       use mpole
       use polar
       use polpot
@@ -506,6 +507,8 @@ c
 c     terminate the calculation if dipoles failed to converge
 c
          if (iter.ge.maxiter .or. eps.gt.epsold) then
+            print *,"3. rank: ",rank," iter: ",iter," maxiter: ",
+     &              maxiter," eps: ",eps," epsold ",epsold 
             write (iout,40)
    40       format (/,' INDUCE  --  Warning, Induced Dipoles',
      &                 ' are not Converged')
@@ -3374,6 +3377,7 @@ c
       use inform
       use iounit
       use mpole
+      use mpiparams
       use polar
       use polpot
       use potent
@@ -3702,6 +3706,8 @@ c
 c     terminate the calculation if dipoles failed to converge
 c
          if (iter.ge.maxiter .or. eps.gt.epsold) then
+            print *,"1. rank: ",rank," iter: ",iter," maxiter: ",
+     &              maxiter," eps: ",eps," epsold ",epsold 
             write (iout,40)
    40       format (/,' INDUCE  --  Warning, Induced Dipoles',
      &                 ' are not Converged')
@@ -4575,6 +4581,7 @@ c
       use atoms
       use inform
       use iounit
+      use mpiparams
       use mpole
       use polar
       use polpot
@@ -4904,6 +4911,8 @@ c
 c     terminate the calculation if dipoles failed to converge
 c
          if (iter.ge.maxiter .or. eps.gt.epsold) then
+            print *,"2. rank: ",rank," iter: ",iter," maxiter: ",
+     &              maxiter," eps: ",eps," epsold ",epsold 
             write (iout,40)
    40       format (/,' INDUCE  --  Warning, Induced Dipoles',
      &                 ' are not Converged')

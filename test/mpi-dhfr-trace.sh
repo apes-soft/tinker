@@ -43,21 +43,14 @@ else
 
 fi
 
-# Unlimit the stack
-ulimit -s unlimited
-
-# Create an OpenMP stack
-export OMP_STACKSIZE=200M
-
 # Outfile name
 outfile="out.txt"
 
 # Dynamic command
-dynamic="../bin/dynamic dhfr 10 1.0 10.0 2 300.0" 
+dynamic="../bin/dynamic dhfr 100 1.0 10.0 2 300.0" 
 
 echo | tee -a $outfile                           # Add an empty line
 echo Using $nprocs processes. | tee -a $outfile  # How many procs are usd
-echo Started run on `date`. | tee -a $outfile  # How many procs are usd
 
 export OMP_NUM_THREADS=$nthreads
 echo Explicitly setting OMP_NUM_THREADS to $OMP_NUM_THREADS. | tee -a $outfile
@@ -112,7 +105,7 @@ elif [ `hostname` = "phi.hydra" ]; then       # phi.hydra (system at EPCC).
   # Run the code
   #(time mpirun -trace -np $nprocs $dynamic) 2>&1 \
   #(time mpirun -np $nprocs inspxe-cl -collect mi2 -r rmi3 $dynamic) 2>&1\
-  (time mpirun -np $nprocs $dynamic) 2>&1\
+  (time mpirun -trace -np $nprocs $dynamic) 2>&1\
          | tee -a $outfile
 
 else
