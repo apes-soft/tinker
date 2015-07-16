@@ -43,11 +43,17 @@ else
 
 fi
 
+# Unlimit the stack
+ulimit -s unlimited
+
+# Create an OpenMP stack
+export OMP_STACKSIZE=200M
+
 # Outfile name
 outfile="out.txt"
 
 # Dynamic command
-dynamic="../bin/dynamic dhfr 100 1.0 10.0 2 300.0" 
+dynamic="../bin/dynamic dhfr 10 1.0 10.0 2 300.0" 
 
 echo | tee -a $outfile                           # Add an empty line
 echo Using $nprocs processes. | tee -a $outfile  # How many procs are usd
