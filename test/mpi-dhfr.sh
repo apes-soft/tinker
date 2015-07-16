@@ -50,13 +50,13 @@ ulimit -s unlimited
 export OMP_STACKSIZE=200M
 
 # Outfile name
-outfile="out.txt"
+outfile="out2.txt"
 
 # Dynamic command
 dynamic="../bin/dynamic dhfr 10 1.0 10.0 2 300.0" 
 
 echo | tee -a $outfile                           # Add an empty line
-echo Using $nprocs processes. | tee -a $outfile  # How many procs are usd
+echo Using $nprocs processes and $nthreads threads. | tee -a $outfile  # How many procs are usd
 echo Started run on `date`. | tee -a $outfile  # How many procs are usd
 
 export OMP_NUM_THREADS=$nthreads
