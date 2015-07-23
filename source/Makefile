@@ -161,7 +161,7 @@ else ifeq ($(COMPARCH),MPILinuxIntelOpenMP)
   FC        = mpiifort
   LIBS      =
   FCFLAGS   = -c -xHost -warn all,nointerfaces
-  #OPTFLAGS  = -g -check -traceback 
+  #OPTFLAGS  = -g -check -traceback -openmp
   OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive -openmp
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
