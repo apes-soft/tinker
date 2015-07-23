@@ -75,7 +75,8 @@ else ifeq (eslogin,$(findstring eslogin,$(HOSTNAME)))  # ARCHER front end
 
 else ifeq ($(HOSTNAME),phi.hydra)     # EPCC phi system on hydra
 
-   COMPARCH=MPILinuxIntel
+   #COMPARCH=MPILinuxIntel
+   COMPARCH=MPILinuxIntelOpenMP
 
 else ifeq ($(HOSTNAME),mbp-ma.local)  # MA's Macbook pro
 
@@ -151,6 +152,17 @@ else ifeq ($(COMPARCH),MPILinuxIntel)
   FCFLAGS   = -c -xHost -warn all,nointerfaces
   #OPTFLAGS  = -g -check -traceback 
   OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = -static-libgcc -static-intel
+
+else ifeq ($(COMPARCH),MPILinuxIntelOpenMP)
+
+  FC        = mpiifort
+  LIBS      =
+  FCFLAGS   = -c -xHost -warn all,nointerfaces
+  #OPTFLAGS  = -g -check -traceback 
+  OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive -openmp
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
   LINKFLAGS = -static-libgcc -static-intel
