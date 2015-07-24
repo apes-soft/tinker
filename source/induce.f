@@ -2301,6 +2301,9 @@ c
       integer minlocal
       integer maxl
 
+      ! Initialise maxlocal
+      maxlocal = 0
+
       ! check for multipoles and set cutoff coefficients
       if (npole .eq. 0)  return
       mode = 'EWALD'
