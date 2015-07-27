@@ -2258,7 +2258,7 @@ c
       use tarray
       use units
       implicit none
-      integer i,j,k,m
+      integer i,j,k
       integer ii,kk,kkk
       integer nlocal,maxlocal
       integer, allocatable :: ilocal(:,:)
