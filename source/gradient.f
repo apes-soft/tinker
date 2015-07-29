@@ -32,7 +32,6 @@ c
       use vdwpot
       use virial
       implicit none
-      integer i,j
       real*8 energy,cutoff
       real*8 derivs(3,n)
       real*8 tmpdvs(3,n)  ! Temporary derivative sums
