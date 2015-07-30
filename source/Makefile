@@ -76,7 +76,8 @@ else ifeq (eslogin,$(findstring eslogin,$(HOSTNAME)))  # ARCHER front end
 else ifeq ($(HOSTNAME),phi.hydra)     # EPCC phi system on hydra
 
    #COMPARCH=MPILinuxIntel
-   COMPARCH=MPILinuxIntelOpenMP
+   #COMPARCH=MPILinuxIntelOpenMP
+   COMPARCH=MPIP
 
 else ifeq ($(HOSTNAME),mbp-ma.local)  # MA's Macbook pro
 
@@ -114,7 +115,7 @@ else ifeq ($(COMPARCH),MPIGenericGfortranOpenMP)
   ##  Compiler: GNU gfortran
   ##  Parallel: OpenMP
   FC        = mpif90
-  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_omp -lfftw3
+  LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3 -lfftw3_threads 
   FCFLAGS   = -c #-Wall
   OPTFLAGS  = -g #-ffast-math -O3 #-fopenmp
   LIBFLAGS  = -crusv
@@ -159,13 +160,27 @@ else ifeq ($(COMPARCH),MPILinuxIntel)
 else ifeq ($(COMPARCH),MPILinuxIntelOpenMP)
 
   FC        = mpiifort
-  LIBS      = -L ../thirdparty/fftw/lib -lfftw3_threads -lfftw3
+  LIBS      = -L ../thirdparty/fftw/lib -lfftw3_omp -lfftw3
   FCFLAGS   = -c -xHost -warn all,nointerfaces
   #OPTFLAGS  = -g -traceback  -fp-stack-check -check all -openmp
   OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive -openmp
   LIBFLAGS  = -crus
   RANLIB    = ranlib
   LINKFLAGS =  -openmp -g #-static-libgcc -static-intel
+
+else ifeq ($(COMPARCH),MPIP)
+
+  # Use the mpip profiler (http://mpip.sourceforge.net/)
+  FC        = mpiifort
+  LIBS      = -L/home/h018/mario/mpiP/lib -lmpiP\
+              -L/home/h018/mario/libunwind/lib -lunwind\
+              -L ../thirdparty/fftw/lib   -lfftw3_omp -lfftw3
+  FCFLAGS   = -c -xHost -warn all,nointerfaces
+  #OPTFLAGS  = -g -traceback  -fp-stack-check -check all -openmp
+  OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive -openmp
+  LIBFLAGS  = -crusv
+  RANLIB    = ranlib
+  LINKFLAGS = -openmp
 
 else ifeq ($(COMPARCH),LinuxIntelOpenMP)
 
