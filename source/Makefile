@@ -75,9 +75,9 @@ else ifeq (eslogin,$(findstring eslogin,$(HOSTNAME)))  # ARCHER front end
 
 else ifeq ($(HOSTNAME),phi.hydra)     # EPCC phi system on hydra
 
-   #COMPARCH=MPILinuxIntel
+   COMPARCH=MPILinuxIntel
    #COMPARCH=MPILinuxIntelOpenMP
-   COMPARCH=MPIP
+   #COMPARCH=MPIP
 
 else ifeq ($(HOSTNAME),mbp-ma.local)  # MA's Macbook pro
 
@@ -151,7 +151,7 @@ else ifeq ($(COMPARCH),MPILinuxIntel)
   FC        = mpiifort
   LIBS      = -L ../thirdparty/fftw/lib -lfftw3_threads -lfftw3
   FCFLAGS   = -c -xHost -warn all,nointerfaces
-  #OPTFLAGS  = -g -check -traceback 
+  #OPTFLAGS  = -g -check all -traceback 
   OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
@@ -174,13 +174,13 @@ else ifeq ($(COMPARCH),MPIP)
   FC        = mpiifort
   LIBS      = -L/home/h018/mario/mpiP/lib -lmpiP\
               -L/home/h018/mario/libunwind/lib -lunwind\
-              -L ../thirdparty/fftw/lib   -lfftw3_omp -lfftw3
+              -L ../thirdparty/fftw/lib  -lfftw3
   FCFLAGS   = -c -xHost -warn all,nointerfaces
   #OPTFLAGS  = -g -traceback  -fp-stack-check -check all -openmp
-  OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive -openmp
+  OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive 
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
-  LINKFLAGS = -openmp
+  LINKFLAGS = 
 
 else ifeq ($(COMPARCH),LinuxIntelOpenMP)
 
