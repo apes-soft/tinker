@@ -124,9 +124,39 @@ c
          allocate (deg(3,n))
          allocate (dex(3,n))
       end if
+
+c
+c     zero out the virial and the intermolecular energy
+c
+      do i = 1, 3
+         do j = 1, 3
+            vir(j,i) = 0.0d0
+         end do
+      end do
+      einter = 0.0d0
+
+
+C$$$!$OMP parallel default(none) shared(n, deb, dea, deba, deub, deaa, 
+C$$$!$OMP& deopb, deopd, deid, deit, det, dept, debt, deat, dett, dev, 
+C$$$!$OMP& dec, decd, ded, dem, dep, des, delf, deg, dex, vir, einter, 
+C$$$!$OMP& use_bounds, use_rigid, use_list, der, cutoff, use_born, 
+C$$$!$OMP& use_orbit, use_bond, use_angle, vdwtyp, use_charge, use_chgdpl,
+C$$$!$OMP& use_dipole, use_mpole, use_polar, use_rxnfld, use_solv, use_geom, 
+C$$$!$OMP& use_metal, use_strbnd, use_urey, use_angang, use_opbend, 
+C$$$!$OMP& use_opdist,use_improp, use_imptor, use_tors, use_pitors,
+C$$$!$OMP& use_strtor, use_angtor,use_tortor, use_vdw, use_extra, esum,  
+C$$$!$OMP& eb, ea,eba, eub, eaa, eopb, eopd, eid, eit, et, ept, ebt, eat, 
+C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum) 
+C$$$!$OMP& reduction(+:deb,vir)
+
+!$OMP parallel default(shared) 
+!$OMP& reduction(+:deb,vir)
+    
 c
 c     zero out each of the first derivative components
 c
+
+!$OMP DO schedule(guided)
       do i = 1, n
          do j = 1, 3
             deb(j,i) = 0.0d0
@@ -156,19 +186,17 @@ c
             dex(j,i) = 0.0d0
          end do
       end do
-c
-c     zero out the virial and the intermolecular energy
-c
-      do i = 1, 3
-         do j = 1, 3
-            vir(j,i) = 0.0d0
-         end do
-      end do
-      einter = 0.0d0
+!$OMP END DO
+
+
 c
 c     maintain any periodic boundary conditions
 c
+
       if (use_bounds .and. .not.use_rigid)  call bounds
+
+!$OMP END PARALLEL
+
 c
 c     update the pairwise interaction neighbor lists
 c
@@ -234,7 +262,9 @@ c
       esum = eb + ea + eba + eub + eaa + eopb + eopd + eid + eit
      &          + et + ept + ebt + eat + ett + ev + ec + ecd + ed
      &          + em + ep + er + es + elf + eg + ex
-      energy = esum
+    
+
+ccc!$OMP DO schedule(guided)      
       do i = 1, n
          do j = 1, 3
             desum(j,i) = deb(j,i) + dea(j,i) + deba(j,i)
@@ -246,9 +276,20 @@ c
      &                      + dem(j,i) + dep(j,i) + der(j,i)
      &                      + des(j,i) + delf(j,i) + deg(j,i)
      &                      + dex(j,i)
-            derivs(j,i) = desum(j,i)
          end do
       end do
+
+ccc!$OMP END DO
+
+
+        energy = esum
+
+        do i=1, n
+           do j=1,3
+              derivs(j,i) = desum(j,i)
+           end do 
+        end do
+
 c
 c     check for an illegal value for the total energy
 c

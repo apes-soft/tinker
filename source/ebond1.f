@@ -71,10 +71,16 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(private) shared(nbond,ibnd,bl,bk,use,
-!$OMP& x,y,z,cbnd,qbnd,bndtyp,bndunit,use_group,use_polymer)
-!$OMP& shared(ebo,debo,viro)
-!$OMP DO reduction(+:ebo,debo,viro) schedule(guided)
+cc!$OMP PARALLEL default(none) shared(nbond,ibnd,bl,bk,use,
+cc!$OMP& x,y,z,cbnd,qbnd,bndtyp,bndunit,use_group,use_polymer)
+cc!$OMP& shared(ebo,debo,viro)
+
+cc!$OMP reduction(+:ebo,debo,viro)
+cc!$OMP DO private shared(nbond,ibnd,bl,bk,use,
+cc!$OMP& x,y,z,cbnd,qbnd,bndtyp,bndunit,use_group,use_polymer)
+!$OMP DO private(ia, ib, ideal, force, proceed, fgrp,xab,yab,
+!$OMP& zab,rab,dt,dt2,e,deddt,expterm,bde,de,dedx,dedy,dedz,vxx,
+!$OMP& vyx,vzx,vyy,vzy,vzz) schedule(guided)
 c
 c     calculate the bond stretch energy and first derivatives
 c
@@ -171,7 +177,7 @@ c
 c     end OpenMP directives for the major loop structure
 c
 !$OMP END DO
-!$OMP END PARALLEL
+cc!$OMP END PARALLEL
 c
 c     transfer local to global copies for OpenMP calculation
 c
