@@ -150,7 +150,7 @@ C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum)
 C$$$!$OMP& reduction(+:deb,vir)
 
 !$OMP parallel default(shared) 
-!$OMP& reduction(+:deb,vir)
+!$OMP& reduction(+:deb,vir,eb)
     
 c
 c     zero out each of the first derivative components

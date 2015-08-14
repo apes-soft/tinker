@@ -29,7 +29,7 @@ c
       use virial
       implicit none
       integer i,ia,ib
-      real*8 e,ebo
+      real*8 e
       real*8 ideal,force
       real*8 expterm,bde,fgrp
       real*8 dt,dt2,deddt
@@ -37,8 +37,6 @@ c
       real*8 xab,yab,zab,rab
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
-      real*8 viro(3,3)
-      real*8, allocatable :: debo(:,:)
       logical proceed
 c
 c
@@ -50,34 +48,11 @@ c
          deb(2,i) = 0.0d0
          deb(3,i) = 0.0d0
       end do
-c
-c     perform dynamic allocation of some local arrays
-c
-      allocate (debo(3,n))
-c
-c     transfer global to local copies for OpenMP calculation
-c
-      ebo = eb
-      do i = 1, n
-         debo(1,i) = deb(1,i)
-         debo(2,i) = deb(2,i)
-         debo(3,i) = deb(3,i)
-      end do
-      do i = 1, 3
-         viro(1,i) = vir(1,i)
-         viro(2,i) = vir(2,i)
-         viro(3,i) = vir(3,i)
-      end do
+
 c
 c     set OpenMP directives for the major loop structure
 c
-cc!$OMP PARALLEL default(none) shared(nbond,ibnd,bl,bk,use,
-cc!$OMP& x,y,z,cbnd,qbnd,bndtyp,bndunit,use_group,use_polymer)
-cc!$OMP& shared(ebo,debo,viro)
 
-cc!$OMP reduction(+:ebo,debo,viro)
-cc!$OMP DO private shared(nbond,ibnd,bl,bk,use,
-cc!$OMP& x,y,z,cbnd,qbnd,bndtyp,bndunit,use_group,use_polymer)
 !$OMP DO private(ia, ib, ideal, force, proceed, fgrp,xab,yab,
 !$OMP& zab,rab,dt,dt2,e,deddt,expterm,bde,de,dedx,dedy,dedz,vxx,
 !$OMP& vyx,vzx,vyy,vzy,vzz) schedule(guided)
@@ -146,13 +121,14 @@ c
 c
 c     increment the total bond energy and first derivatives
 c
-            ebo = ebo + e
-            debo(1,ia) = debo(1,ia) + dedx
-            debo(2,ia) = debo(2,ia) + dedy
-            debo(3,ia) = debo(3,ia) + dedz
-            debo(1,ib) = debo(1,ib) - dedx
-            debo(2,ib) = debo(2,ib) - dedy
-            debo(3,ib) = debo(3,ib) - dedz
+            eb = eb + e
+            deb(1,ia) = deb(1,ia) + dedx
+            deb(2,ia) = deb(2,ia) + dedy
+            deb(3,ia) = deb(3,ia) + dedz
+            deb(1,ib) = deb(1,ib) - dedx
+            deb(2,ib) = deb(2,ib) - dedy
+            deb(3,ib) = deb(3,ib) - dedz
+
 c
 c     increment the internal virial tensor components
 c
@@ -162,39 +138,21 @@ c
             vyy = yab * dedy
             vzy = zab * dedy
             vzz = zab * dedz
-            viro(1,1) = viro(1,1) + vxx
-            viro(2,1) = viro(2,1) + vyx
-            viro(3,1) = viro(3,1) + vzx
-            viro(1,2) = viro(1,2) + vyx
-            viro(2,2) = viro(2,2) + vyy
-            viro(3,2) = viro(3,2) + vzy
-            viro(1,3) = viro(1,3) + vzx
-            viro(2,3) = viro(2,3) + vzy
-            viro(3,3) = viro(3,3) + vzz
+            vir(1,1) = vir(1,1) + vxx
+            vir(2,1) = vir(2,1) + vyx
+            vir(3,1) = vir(3,1) + vzx
+            vir(1,2) = vir(1,2) + vyx
+            vir(2,2) = vir(2,2) + vyy
+            vir(3,2) = vir(3,2) + vzy
+            vir(1,3) = vir(1,3) + vzx
+            vir(2,3) = vir(2,3) + vzy
+            vir(3,3) = vir(3,3) + vzz
          end if
       end do
 c
 c     end OpenMP directives for the major loop structure
 c
 !$OMP END DO
-cc!$OMP END PARALLEL
-c
-c     transfer local to global copies for OpenMP calculation
-c
-      eb = ebo
-      do i = 1, n
-         deb(1,i) = debo(1,i)
-         deb(2,i) = debo(2,i)
-         deb(3,i) = debo(3,i)
-      end do
-      do i = 1, 3
-         vir(1,i) = viro(1,i)
-         vir(2,i) = viro(2,i)
-         vir(3,i) = viro(3,i)
-      end do
-c
-c     perform deallocation of some local arrays
-c
-      deallocate (debo)
+
       return
       end
