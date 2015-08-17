@@ -20,6 +20,9 @@ c
       use sizes
       use atoms
       use bound
+      use bndstr
+      use bndpot
+      use group
       use couple
       use deriv
       use energi
@@ -30,6 +33,7 @@ c
       use rigid
       use vdwpot
       use virial
+      use usage
       implicit none
       integer i,j
       real*8 energy,cutoff
@@ -149,8 +153,9 @@ C$$$!$OMP& eb, ea,eba, eub, eaa, eopb, eopd, eid, eit, et, ept, ebt, eat,
 C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum) 
 C$$$!$OMP& reduction(+:deb,vir)
 
-!$OMP parallel default(shared) 
-!$OMP& reduction(+:deb,vir,eb)
+!$OMP parallel default(shared) shared(nbond,ibnd,bl,bk,use,
+!$OMP& x,y,z,cbnd,qbnd,bndtyp,bndunit,use_group,use_polymer)
+ccc!$OMP& reduction(+:deb,vir,eb)
     
 c
 c     zero out each of the first derivative components
@@ -187,20 +192,23 @@ c
          end do
       end do
 !$OMP END DO
-
+cc!$OMP END PARALLEL
 
 c
 c     maintain any periodic boundary conditions
 c
 
       if (use_bounds .and. .not.use_rigid)  call bounds
-
-!$OMP END PARALLEL
-
 c
 c     update the pairwise interaction neighbor lists
 c
+!$OMP critical       
       if (use_list)  call nblist
+!$OMP end critical 
+
+c!$OMP end single  
+c!$OMP barrier
+c!$OMP END PARALLEL    
 c
 c     remove any previous use of the replicates method
 c
@@ -214,10 +222,17 @@ c
 c     alter bond and torsion constants for pisystem
 c
       if (use_orbit)  call picalc
+c!$OMP barrier
+
+c!$OMP end master
+!$OMP barrier
+!$OMP flush
 c
 c     call the local geometry energy and gradient routines
 c
+c!$OMP END PARALLEL   
       if (use_bond)  call ebond1
+!$OMP END PARALLEL
       if (use_angle)  call eangle1
       if (use_strbnd)  call estrbnd1
       if (use_urey)  call eurey1

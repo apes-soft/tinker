@@ -38,6 +38,7 @@ c
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
       logical proceed
+      real*8 viro(3,3)
 c
 c
 c     zero out the bond energy and first derivatives
@@ -48,6 +49,8 @@ c
          deb(2,i) = 0.0d0
          deb(3,i) = 0.0d0
       end do
+      viro = vir
+      vir = 0.0d0
 
 c
 c     set OpenMP directives for the major loop structure
@@ -55,7 +58,7 @@ c
 
 !$OMP DO private(ia, ib, ideal, force, proceed, fgrp,xab,yab,
 !$OMP& zab,rab,dt,dt2,e,deddt,expterm,bde,de,dedx,dedy,dedz,vxx,
-!$OMP& vyx,vzx,vyy,vzy,vzz) schedule(guided)
+!$OMP& vyx,vzx,vyy,vzy,vzz) reduction(+:eb,deb,vir) schedule(guided)
 c
 c     calculate the bond stretch energy and first derivatives
 c
@@ -128,7 +131,6 @@ c
             deb(1,ib) = deb(1,ib) - dedx
             deb(2,ib) = deb(2,ib) - dedy
             deb(3,ib) = deb(3,ib) - dedz
-
 c
 c     increment the internal virial tensor components
 c
@@ -146,7 +148,7 @@ c
             vir(3,2) = vir(3,2) + vzy
             vir(1,3) = vir(1,3) + vzx
             vir(2,3) = vir(2,3) + vzy
-            vir(3,3) = vir(3,3) + vzz
+            vir(3,3) = vir(3,3) + vzz        
          end if
       end do
 c
@@ -154,5 +156,11 @@ c     end OpenMP directives for the major loop structure
 c
 !$OMP END DO
 
+      vir = viro + vir
+cc!$OMP single
+c      print*, "vir, eb, deb", sum(vir), eb, sum(deb)
+c      print*, "eb", eb
+c      print*, "sum of deb", sum(deb)
+cc!$OMP end single
       return
       end

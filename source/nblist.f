@@ -109,8 +109,8 @@ c
 c     test sites for displacement exceeding half the buffer, and
 c     rebuild the higher numbered neighbors of updated sites
 c
-!$OMP PARALLEL default(shared) private(i,j,k,xi,yi,zi,xr,yr,zr,r2)
-!$OMP DO schedule(guided)
+c!$OMP PARALLEL default(shared) private(i,j,k,xi,yi,zi,xr,yr,zr,r2)
+c!$OMP DO schedule(guided)
       do i = 1, nvdw
          xi = xred(i)
          yi = yred(i)
@@ -140,11 +140,11 @@ c
             end do
          end if
       end do
-!$OMP END DO
+c!$OMP END DO
 c
 c     adjust lists of lower numbered neighbors of updated sites
 c
-!$OMP DO schedule(guided)
+c!$OMP DO schedule(guided)
       do i = 1, nvdw
          if (update(i)) then
             xi = xred(i)
@@ -158,16 +158,16 @@ c
                   call imagen (xr,yr,zr)
                   r2 = xr*xr + yr*yr + zr*zr
                   if (r2 .le. vbuf2) then
-!$OMP CRITICAL
+c!$OMP CRITICAL
                      do j = 1, nvlst(k)
                         if (vlst(j,k) .eq. i)  goto 20
                      end do
                      nvlst(k) = nvlst(k) + 1
                      vlst(nvlst(k),k) = i
    20                continue
-!$OMP END CRITICAL
+c!$OMP END CRITICAL
                   else if (r2 .le. vbufx) then
-!$OMP CRITICAL
+c!$OMP CRITICAL
                      do j = 1, nvlst(k)
                         if (vlst(j,k) .eq. i) then
                            vlst(j,k) = vlst(nvlst(k),k)
@@ -176,17 +176,17 @@ c
                         end if
                      end do
    30                continue
-!$OMP END CRITICAL
+c!$OMP END CRITICAL
                   end if
                end if
             end do
          end if
       end do
-!$OMP END DO
+c!$OMP END DO
 c
 c     check to see if any neighbor lists are too long
 c
-!$OMP DO schedule(guided)
+c!$OMP DO schedule(guided)
       do i = 1, nvdw
          if (nvlst(i) .ge. maxvlst) then
             write (iout,40)
@@ -195,8 +195,8 @@ c
             call fatal
          end if
       end do
-!$OMP END DO
-!$OMP END PARALLEL
+c!$OMP END DO
+c!$OMP END PARALLEL
 c
 c     perform deallocation of some local arrays
 c
@@ -236,8 +236,8 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(shared) private(i,k,xi,yi,zi,xr,yr,zr,r2)
-!$OMP DO schedule(guided)
+c!$OMP PARALLEL default(shared) private(i,k,xi,yi,zi,xr,yr,zr,r2)
+c!$OMP DO schedule(guided)
 c
 c     store coordinates to reflect update of the site
 c
@@ -276,8 +276,8 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP END DO
-!$OMP END PARALLEL
+c!$OMP END DO
+c!$OMP END PARALLEL
       return
       end
 c
@@ -349,9 +349,9 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(shared) private(i,j,k,xi,yi,zi,
-!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
-!$OMP DO schedule(guided)
+c!$OMP PARALLEL default(shared) private(i,j,k,xi,yi,zi,
+c!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
+c!$OMP DO schedule(guided)
 c
 c     loop over all atoms computing the neighbor lists
 c
@@ -414,8 +414,8 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP END DO
-!$OMP END PARALLEL
+c!$OMP END DO
+c!$OMP END PARALLEL
       return
       end
 c
@@ -478,8 +478,8 @@ c
 c     test sites for displacement exceeding half the buffer, and
 c     rebuild the higher numbered neighbors of updated sites
 c
-!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
-!$OMP DO schedule(guided)
+c!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
+c!$OMP DO schedule(guided)
       do i = 1, nion
          ii = kion(i)
          xi = x(ii)
@@ -511,11 +511,11 @@ c
             end do
          end if
       end do
-!$OMP END DO
+c!$OMP END DO
 c
 c     adjust lists of lower numbered neighbors of updated sites
 c
-!$OMP DO schedule(guided)
+c!$OMP DO schedule(guided)
       do i = 1, nion
          if (update(i)) then
             ii = kion(i)
@@ -530,16 +530,16 @@ c
                   call imagen (xr,yr,zr)
                   r2 = xr*xr + yr*yr + zr*zr
                   if (r2 .le. cbuf2) then
-!$OMP CRITICAL
+c!$OMP CRITICAL
                      do j = 1, nelst(k)
                         if (elst(j,k) .eq. i)  goto 20
                      end do
                      nelst(k) = nelst(k) + 1
                      elst(nelst(k),k) = i
    20                continue
-!$OMP END CRITICAL
+c!$OMP END CRITICAL
                   else if (r2 .le. cbufx) then
-!$OMP CRITICAL
+c!$OMP CRITICAL
                      do j = 1, nelst(k)
                         if (elst(j,k) .eq. i) then
                            elst(j,k) = elst(nelst(k),k)
@@ -548,17 +548,17 @@ c
                         end if
                      end do
    30                continue
-!$OMP END CRITICAL
+c!$OMP END CRITICAL
                   end if
                end if
             end do
          end if
       end do
-!$OMP END DO
+c!$OMP END DO
 c
 c     check to see if any neighbor lists are too long
 c
-!$OMP DO schedule(guided)
+c!$OMP DO schedule(guided)
       do i = 1, nion
          if (nelst(i) .ge. maxelst) then
             write (iout,40)
@@ -567,8 +567,8 @@ c
             call fatal
          end if
       end do
-!$OMP END DO
-!$OMP END PARALLEL
+c!$OMP END DO
+c!$OMP END PARALLEL
 c
 c     perform deallocation of some local arrays
 c
@@ -604,8 +604,8 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(shared) private(i,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
-!$OMP DO schedule(guided)
+c!$OMP PARALLEL default(shared) private(i,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
+c!$OMP DO schedule(guided)
 c
 c     store new coordinates to reflect update of the site
 c
@@ -646,8 +646,8 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP END DO
-!$OMP END PARALLEL
+c!$OMP END DO
+c!$OMP END PARALLEL
       return
       end
 c
@@ -718,9 +718,9 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,
-!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
-!$OMP DO schedule(guided)
+c!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,
+c!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
+c!$OMP DO schedule(guided)
 c
 c     loop over all atoms computing the neighbor lists
 c
@@ -785,8 +785,8 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP END DO
-!$OMP END PARALLEL
+c!$OMP END DO
+c!$OMP END PARALLEL
       return
       end
 c
@@ -849,8 +849,8 @@ c
 c     test sites for displacement exceeding half the buffer, and
 c     rebuild the higher numbered neighbors of updated sites
 c
-!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
-!$OMP DO schedule(guided)
+c!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
+c!$OMP DO schedule(guided)
       do i = 1, npole
          ii = ipole(i)
          xi = x(ii)
@@ -882,11 +882,11 @@ c
             end do
          end if
       end do
-!$OMP END DO
+c!$OMP END DO
 c
 c     adjust lists of lower numbered neighbors of updated sites
 c
-!$OMP DO schedule (guided)
+c!$OMP DO schedule (guided)
       do i = 1, npole
          if (update(i)) then
             ii = ipole(i)
@@ -901,16 +901,16 @@ c
                   call imagen (xr,yr,zr)
                   r2 = xr*xr + yr*yr + zr*zr
                   if (r2 .le. mbuf2) then
-!$OMP CRITICAL
+c!$OMP CRITICAL
                      do j = 1, nelst(k)
                         if (elst(j,k) .eq. i)  goto 20
                      end do
                      nelst(k) = nelst(k) + 1
                      elst(nelst(k),k) = i
    20                continue
-!$OMP END CRITICAL
+c!$OMP END CRITICAL
                   else if (r2 .le. mbufx) then
-!$OMP CRITICAL
+c!$OMP CRITICAL
                      do j = 1, nelst(k)
                         if (elst(j,k) .eq. i) then
                            elst(j,k) = elst(nelst(k),k)
@@ -919,17 +919,17 @@ c
                         end if
                      end do
    30                continue
-!$OMP END CRITICAL
+c!$OMP END CRITICAL
                   end if
                end if
             end do
          end if
       end do
-!$OMP END DO
+c!$OMP END DO
 c
 c     check to see if any neighbor lists are too long
 c
-!$OMP DO schedule(guided)
+c!$OMP DO schedule(guided)
       do i = 1, npole
          if (nelst(i) .ge. maxelst) then
             write (iout,40)
@@ -938,8 +938,8 @@ c
             call fatal
          end if
       end do
-!$OMP END DO
-!$OMP END PARALLEL
+c!$OMP END DO
+c!$OMP END PARALLEL
 c
 c     perform deallocation of some local arrays
 c
@@ -975,8 +975,8 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(shared) private(i,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
-!$OMP DO schedule(guided)
+c!$OMP PARALLEL default(shared) private(i,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
+c!$OMP DO schedule(guided)
 c
 c     store new coordinates to reflect update of the site
 c
@@ -1017,8 +1017,8 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP END DO
-!$OMP END PARALLEL
+c!$OMP END DO
+c!$OMP END PARALLEL
       return
       end
 c
@@ -1089,9 +1089,9 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,
-!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
-!$OMP DO schedule(guided)
+c!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,
+c!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
+c!$OMP DO schedule(guided)
 c
 c     loop over all atoms computing the neighbor lists
 c
@@ -1156,8 +1156,8 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP END DO
-!$OMP END PARALLEL
+c!$OMP END DO
+c!$OMP END PARALLEL
       return
       end
 c
@@ -1220,8 +1220,8 @@ c
 c     test sites for displacement exceeding half the buffer, and
 c     rebuild the higher numbered neighbors of updated sites
 c
-!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
-!$OMP DO schedule(guided)
+c!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
+c!$OMP DO schedule(guided)
       do i = 1, npole
          ii = ipole(i)
          xi = x(ii)
@@ -1253,11 +1253,11 @@ c
             end do
          end if
       end do
-!$OMP END DO
+c!$OMP END DO
 c
 c     adjust lists of lower numbered neighbors of updated sites
 c
-!$OMP DO schedule(guided)
+c!$OMP DO schedule(guided)
       do i = 1, npole
          if (update(i)) then
             ii = ipole(i)
@@ -1272,16 +1272,16 @@ c
                   call imagen (xr,yr,zr)
                   r2 = xr*xr + yr*yr + zr*zr
                   if (r2 .le. ubuf2) then
-!$OMP CRITICAL
+c!$OMP CRITICAL
                      do j = 1, nulst(k)
                         if (ulst(j,k) .eq. i)  goto 20
                      end do
                      nulst(k) = nulst(k) + 1
                      ulst(nulst(k),k) = i
    20                continue
-!$OMP END CRITICAL
+c!$OMP END CRITICAL
                   else if (r2 .le. ubufx) then
-!$OMP CRITICAL
+c!$OMP CRITICAL
                      do j = 1, nulst(k)
                         if (ulst(j,k) .eq. i) then
                            ulst(j,k) = ulst(nulst(k),k)
@@ -1290,17 +1290,17 @@ c
                         end if
                      end do
    30                continue
-!$OMP END CRITICAL
+c!$OMP END CRITICAL
                   end if
                end if
             end do
          end if
       end do
-!$OMP END DO
+c!$OMP END DO
 c
 c     check to see if any neighbor lists are too long
 c
-!$OMP DO schedule(guided)
+c!$OMP DO schedule(guided)
       do i = 1, npole
          if (nulst(i) .ge. maxulst) then
             write (iout,40)
@@ -1309,8 +1309,8 @@ c
             call fatal
          end if
       end do
-!$OMP END DO
-!$OMP END PARALLEL
+c!$OMP END DO
+c!$OMP END PARALLEL
 c
 c     perform deallocation of some local arrays
 c
@@ -1346,8 +1346,8 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(shared) private(i,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
-!$OMP DO schedule(guided)
+c!$OMP PARALLEL default(shared) private(i,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
+c!$OMP DO schedule(guided)
 c
 c     store new coordinates to reflect update of the site
 c
@@ -1388,8 +1388,8 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP END DO
-!$OMP END PARALLEL
+c!$OMP END DO
+c!$OMP END PARALLEL
       return
       end
 c
@@ -1461,9 +1461,9 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,
-!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
-!$OMP DO schedule(guided)
+c!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,
+c!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
+c!$OMP DO schedule(guided)
 c
 c     loop over all atoms computing the neighbor lists
 c
@@ -1528,8 +1528,8 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP END DO
-!$OMP END PARALLEL
+c!$OMP END DO
+c!$OMP END PARALLEL
       return
       end
 c
