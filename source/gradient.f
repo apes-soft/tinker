@@ -202,13 +202,12 @@ c
 c
 c     update the pairwise interaction neighbor lists
 c
-!$OMP critical       
+c!$OMP critical
+!$OMP master       
       if (use_list)  call nblist
-!$OMP end critical 
+!$OMP end master
+c!$OMP end critical 
 
-c!$OMP end single  
-c!$OMP barrier
-c!$OMP END PARALLEL    
 c
 c     remove any previous use of the replicates method
 c
@@ -222,9 +221,7 @@ c
 c     alter bond and torsion constants for pisystem
 c
       if (use_orbit)  call picalc
-c!$OMP barrier
 
-c!$OMP end master
 !$OMP barrier
 !$OMP flush
 c
