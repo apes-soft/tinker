@@ -75,8 +75,8 @@ else ifeq (eslogin,$(findstring eslogin,$(HOSTNAME)))  # ARCHER front end
 
 else ifeq ($(HOSTNAME),phi.hydra)     # EPCC phi system on hydra
 
-   COMPARCH=MPILinuxIntel
-   #COMPARCH=MPILinuxIntelOpenMP
+   #COMPARCH=MPILinuxIntel
+   COMPARCH=MPILinuxIntelOpenMP
    #COMPARCH=MPIP
 
 else ifeq ($(HOSTNAME),mbp-ma.local)  # MA's Macbook pro
@@ -134,36 +134,37 @@ else ifeq ($(COMPARCH),ARCHER)
 
 else ifeq ($(COMPARCH),MPILinuxIntel)
 
-  ##  Machine:  Generic Linux
-  ##  CPU Type: Intel x86 Compatible (also AMD)
-  ##  Oper Sys: Fedora Core
-  ##  Compiler: Intel Fortran for Linux 14.0
+	  ##  Machine:  Generic Linux
+	  ##  CPU Type: Intel x86 Compatible (also AMD)
+	  ##  Oper Sys: Fedora Core
+	  ##  Compiler: Intel Fortran for Linux 14.0
 
-  # May have to set one of the following environment
-  # variables to get it to use the Intel compiler if
-  # mpif90 is used as opposed to the Intel mpiifort
-  # wrapper script.
-  #
-  # export I_MPI_F77=ifort
-  # export I_MPI_F90=ifort
-  #
+	  # May have to set one of the following environment
+	  # variables to get it to use the Intel compiler if
+	  # mpif90 is used as opposed to the Intel mpiifort
+	  # wrapper script.
+	  #
+	  # export I_MPI_F77=ifort
+	  # export I_MPI_F90=ifort
+	  #
 
-  FC        = mpiifort
-  LIBS      = -L ../thirdparty/fftw/lib -lfftw3_threads -lfftw3
-  FCFLAGS   = -c -xHost -warn all,nointerfaces
-  #OPTFLAGS  = -g -check all -traceback 
-  OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive
-  LIBFLAGS  = -crusv
-  RANLIB    = ranlib
-  LINKFLAGS = -static-libgcc -static-intel
+	  FC        = mpiifort
+	  LIBS      = -L ../thirdparty/fftw/lib -lfftw3_threads -lfftw3
+	  FCFLAGS   = -c -xHost -warn all,nointerfaces
+	  #OPTFLAGS  = -g -check all -traceback 
+	  OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive
+	  LIBFLAGS  = -crusv
+	  RANLIB    = ranlib
+	  LINKFLAGS = -static-libgcc -static-intel
 
 else ifeq ($(COMPARCH),MPILinuxIntelOpenMP)
 
   FC        = mpiifort
-  LIBS      = -L ../thirdparty/fftw/lib -lfftw3_omp -lfftw3
+  #LIBS      = -L ../thirdparty/fftw/lib -lfftw3_omp -lfftw3
+  LIBS      = -L ../thirdparty/fftw/lib -lfftw3_threads -lfftw3
   FCFLAGS   = -c -xHost -warn all,nointerfaces
-  #OPTFLAGS  = -g -traceback  -fp-stack-check -check all -openmp
-  OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive -openmp
+  OPTFLAGS  = -g  -fp-stack-check -check all -traceback -openmp
+  #OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive -openmp
   LIBFLAGS  = -crus
   RANLIB    = ranlib
   LINKFLAGS =  -openmp -g #-static-libgcc -static-intel
