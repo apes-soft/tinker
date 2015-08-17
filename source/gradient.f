@@ -153,8 +153,9 @@ C$$$!$OMP& eb, ea,eba, eub, eaa, eopb, eopd, eid, eit, et, ept, ebt, eat,
 C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum) 
 C$$$!$OMP& reduction(+:deb,vir)
 
-!$OMP parallel default(shared) shared(nbond,ibnd,bl,bk,use,
-!$OMP& x,y,z,cbnd,qbnd,bndtyp,bndunit,use_group,use_polymer)
+!$OMP parallel default(shared) 
+ccshared(nbond,ibnd,bl,bk,use,
+cc!$OMP& x,y,z,cbnd,qbnd,bndtyp,bndunit,use_group,use_polymer)
 ccc!$OMP& reduction(+:deb,vir,eb)
     
 c
@@ -192,7 +193,7 @@ c
          end do
       end do
 !$OMP END DO
-cc!$OMP END PARALLEL
+
 
 c
 c     maintain any periodic boundary conditions
@@ -202,11 +203,11 @@ c
 c
 c     update the pairwise interaction neighbor lists
 c
-c!$OMP critical
+
 !$OMP master       
       if (use_list)  call nblist
 !$OMP end master
-c!$OMP end critical 
+
 
 c
 c     remove any previous use of the replicates method
@@ -227,18 +228,21 @@ c
 c
 c     call the local geometry energy and gradient routines
 c
-c!$OMP END PARALLEL   
+
       if (use_bond)  call ebond1
-!$OMP END PARALLEL
       if (use_angle)  call eangle1
+!$OMP END PARALLEL
       if (use_strbnd)  call estrbnd1
       if (use_urey)  call eurey1
       if (use_angang)  call eangang1
+
       if (use_opbend)  call eopbend1
       if (use_opdist)  call eopdist1
       if (use_improp)  call eimprop1
       if (use_imptor)  call eimptor1
+
       if (use_tors)  call etors1
+
       if (use_pitors)  call epitors1
       if (use_strtor)  call estrtor1
       if (use_angtor)  call eangtor1

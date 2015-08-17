@@ -157,10 +157,6 @@ c
 !$OMP END DO
 
       vir = viro + vir
-cc!$OMP single
-c      print*, "vir, eb, deb", sum(vir), eb, sum(deb)
-c      print*, "eb", eb
-c      print*, "sum of deb", sum(deb)
-cc!$OMP end single
+
       return
       end
