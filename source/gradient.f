@@ -234,11 +234,10 @@ c
 
       if (use_bond)  call ebond1
       if (use_angle)  call eangle1
-
       if (use_strbnd)  call estrbnd1
-!$OMP END PARALLEL
-      if (use_urey)  call eurey1
 
+      if (use_urey)  call eurey1
+!$OMP END PARALLEL
       if (use_angang)  call eangang1 ! no omp
       if (use_opbend)  call eopbend1 ! no omp
       if (use_opdist)  call eopdist1 ! no omp
