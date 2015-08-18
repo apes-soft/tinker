@@ -33,7 +33,7 @@ c
       implicit none
       integer i,j,k,istrbnd
       integer ia,ib,ic
-      real*8 e!,ebao
+      real*8 e
       real*8 dr1,dr2,dt
       real*8 fgrp,angle
       real*8 force1,force2
@@ -57,8 +57,6 @@ c
       real*8 dedxic,dedyic,dedzic
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
-      real*8 viro(3,3)
-c      real*8, allocatable :: debao(:,:)
       logical proceed
 c
 c
@@ -70,45 +68,10 @@ c
          deba(2,i) = 0.0d0
          deba(3,i) = 0.0d0
       end do
-c
-c     perform dynamic allocation of some local arrays
-c
-c      allocate (debao(3,n))
-c
-c     transfer global to local copies for OpenMP calculation
-c
-C$$$      ebao = eba
-C$$$      do i = 1, n
-C$$$         debao(1,i) = deba(1,i)
-C$$$         debao(2,i) = deba(2,i)
-C$$$         debao(3,i) = deba(3,i)
-C$$$      end do
-C$$$      do i = 1, 3
-C$$$         viro(1,i) = vir(1,i)
-C$$$         viro(2,i) = vir(2,i)
-C$$$         viro(3,i) = vir(3,i)
-C$$$      end do
-
-
-      viro = vir 
-c      vir = 0.0d0
-
 
 c
 c     set OpenMP directives for the major loop structure
 c
-C$$$!$OMP PARALLEL default(none) shared(nstrbnd,isb,iang,sbk,
-C$$$!$OMP& anat,bl,bk,use,x,y,z,stbnunit,use_group,use_polymer)
-C$$$!$OMP& shared(ebao,debao,viro)
-C$$$!$OMP& private(i,ia,ib,ic,force1,force2,proceed,fgrp,xia,
-C$$$!$OMP& yia,zia,xib,yib,zib,xic,yic,zic,xab,yab,zab,xcb,ycb,
-C$$$!$OMP& zcb,rab2,rcb2,rab,rcb,xp,yp,zp,rp,dot,cosine,angle,
-C$$$!$OMP& dt,term1,term2,ddtdxia,ddtdyia,ddtdxic,ddtdyic,ddtdzic,
-C$$$!$OMP& j,k,dr1,dr2,ddrdxia,ddrdyia,ddrdxic,ddrdyic,ddrdzic,
-C$$$!$OMP& termr, term1t,term2t,e,dedxia,dedyia,dedzia,ddrdzia,
-C$$$!$OMP& dedxic,dedyic,dedzic,dedxib,dedyib,dedzib,vxx,vyx,vzx,
-C$$$!$OMP& vyy,vzy,vzz, ddtdzia)
-
 
 !$OMP DO  private(i,ia,ib,ic,force1,force2,proceed,fgrp,xia,
 !$OMP& yia,zia,xib,yib,zib,xic,yic,zic,xab,yab,zab,xcb,ycb,
@@ -269,26 +232,6 @@ c
 c     end OpenMP directives for the major loop structure
 c
 !$OMP END DO
-cc!$OMP END PARALLEL
-c
-c     transfer local to global copies for OpenMP calculation
-c
-C$$$      eba = ebao
-C$$$      do i = 1, n
-C$$$         deba(1,i) = debao(1,i)
-C$$$         deba(2,i) = debao(2,i)
-C$$$         deba(3,i) = debao(3,i)
-C$$$      end do
-C$$$      do i = 1, 3
-C$$$         vir(1,i) = viro(1,i)
-C$$$         vir(2,i) = viro(2,i)
-C$$$         vir(3,i) = viro(3,i)
-C$$$      end do
-C$$$c
-C$$$c     perform deallocation of some local arrays
-C$$$c
-C$$$      deallocate (debao)
 
-c      vir = viro + vir
       return
       end
