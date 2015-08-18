@@ -68,7 +68,6 @@ c
       real*8 dpdxic,dpdyic,dpdzic
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
-      real*8 viro(3,3)
       logical proceed
 c
 c
@@ -80,19 +79,6 @@ c
          dea(2,i) = 0.0d0
          dea(3,i) = 0.0d0
       end do
-
-c
-c     transfer global to local copies for OpenMP calculation
-c
-
-      do i = 1, 3
-         viro(1,i) = vir(1,i)
-         viro(2,i) = vir(2,i)
-         viro(3,i) = vir(3,i)
-      end do
-      viro = vir 
-c      vir = 0.0d0
-
 
 c
 c     set OpenMP directives for the major loop structure
@@ -407,10 +393,6 @@ c
 c     end OpenMP directives for the major loop structure
 c
 !$OMP END DO
-c
-c     transfer local to global copies for OpenMP calculation
-c
-c      vir = vir + viro
 
       return
       end
