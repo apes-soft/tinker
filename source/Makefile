@@ -127,10 +127,10 @@ else ifeq ($(COMPARCH),ARCHER)
   FC        = ftn # ifort
   LIBS      = -L ../thirdparty/fftw/lib -lfftw3_threads -lfftw3
   FCFLAGS   = -c -xHost # -pg
-  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive
+  OPTFLAGS  = -O3 -no-ipo -no-prec-div -recursive -openmp
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
-  LINKFLAGS = -static-libgcc -static-intel  # -pg
+  LINKFLAGS = -static-libgcc -static-intel -openmp # -pg
 
 else ifeq ($(COMPARCH),MPILinuxIntel)
 
