@@ -227,7 +227,7 @@ c
       if (use_orbit)  call picalc  ! no omp
 
 !$OMP barrier
-!$OMP flush
+
 c
 c     call the local geometry energy and gradient routines
 c
@@ -238,29 +238,23 @@ c
       if (use_urey)  call eurey1
 !$OMP master
       if (use_angang)  call eangang1 ! no omp
-      if (use_opbend)  call eopbend1 ! no omp
+      if (use_opbend)  call eopbend1 ! no omp - used
       if (use_opdist)  call eopdist1 ! no omp
       if (use_improp)  call eimprop1 ! no omp
       if (use_imptor)  call eimptor1 ! no omp
 !$OMP end master
-c!$OMP END PARALLEL
 !$OMP barrier
-c!$OMP flush
 
-c      if(use_tors) call etors1
-      if (use_tors)  then
-         if (use_smooth) then
-            call etors1b
-         else
-            call etors1a
-         end if
-      end if
-!$OMP END PARALLEL
+      if(use_tors) call etors1
 
-      if (use_pitors)  call epitors1 ! no omp
+!$OMP master
+      if (use_pitors)  call epitors1 ! no omp - used 
       if (use_strtor)  call estrtor1 ! no omp
       if (use_angtor)  call eangtor1 ! no omp
-      if (use_tortor)  call etortor1 ! no omp
+      if (use_tortor)  call etortor1 ! no omp - used
+!$OMP end master
+!$OMP barrier
+
 c
 c     call the van der Waals energy and gradient routines
 c
@@ -269,28 +263,9 @@ c
          if (vdwtyp .eq. 'BUCKINGHAM')  call ebuck1
          if (vdwtyp .eq. 'MM3-HBOND')  call emm3hb1
          if (vdwtyp .eq. 'BUFFERED-14-7')  call ehal1
-    
-C$$$      if (vdwtyp .eq. 'BUFFERED-14-7')  then
-C$$$           if (use_lights) then
-C$$$               call ehal1b
-C$$$            else if (use_vlist) then
-C$$$               call ehal1c
-C$$$            else
-C$$$               call ehal1a
-C$$$            end if
-C$$$c     
-C$$$c     apply long range van der Waals correction if desired
-C$$$c     
-C$$$            if (use_vcorr) then
-C$$$               call evcorr1 (elrc,vlrc)
-C$$$               ev = ev + elrc
-C$$$               vir(1,1) = vir(1,1) + vlrc
-C$$$               vir(2,2) = vir(2,2) + vlrc
-C$$$               vir(3,3) = vir(3,3) + vlrc
-C$$$            end if
-C$$$         end if
          if (vdwtyp .eq. 'GAUSSIAN')  call egauss1
       end if
+!$OMP END PARALLEL
 c
 c     call the electrostatic energy and gradient routines
 c
