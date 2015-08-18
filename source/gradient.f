@@ -235,25 +235,27 @@ c
       if (use_bond)  call ebond1
       if (use_angle)  call eangle1
       if (use_strbnd)  call estrbnd1
-
       if (use_urey)  call eurey1
-!$OMP END PARALLEL
+!$OMP master
       if (use_angang)  call eangang1 ! no omp
       if (use_opbend)  call eopbend1 ! no omp
       if (use_opdist)  call eopdist1 ! no omp
       if (use_improp)  call eimprop1 ! no omp
       if (use_imptor)  call eimptor1 ! no omp
+!$OMP end master
+c!$OMP END PARALLEL
+!$OMP barrier
+c!$OMP flush
 
-
-      if(use_tors) call etors1
-C$$$      if (use_tors)  then
-C$$$         if (use_smooth) then
-C$$$            call etors1b
-C$$$         else
-C$$$            call etors1a
-C$$$         end if
-C$$$      end if
-
+c      if(use_tors) call etors1
+      if (use_tors)  then
+         if (use_smooth) then
+            call etors1b
+         else
+            call etors1a
+         end if
+      end if
+!$OMP END PARALLEL
 
       if (use_pitors)  call epitors1 ! no omp
       if (use_strtor)  call estrtor1 ! no omp
