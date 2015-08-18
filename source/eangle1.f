@@ -91,7 +91,7 @@ c
          viro(3,i) = vir(3,i)
       end do
       viro = vir 
-      vir = 0.0d0
+c      vir = 0.0d0
 
 
 c
@@ -410,7 +410,7 @@ c
 c
 c     transfer local to global copies for OpenMP calculation
 c
-      vir = vir + viro
+c      vir = vir + viro
 
       return
       end

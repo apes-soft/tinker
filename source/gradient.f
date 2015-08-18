@@ -34,10 +34,13 @@ c
       use vdwpot
       use virial
       use usage
+
+      use warp 
       implicit none
       integer i,j
       real*8 energy,cutoff
       real*8 derivs(3,*)
+      real*8 elrc, vlrc
 c
 c
 c     zero out each of the potential energy components
@@ -199,7 +202,7 @@ c
 c     maintain any periodic boundary conditions
 c
 
-      if (use_bounds .and. .not.use_rigid)  call bounds
+      if (use_bounds .and. .not.use_rigid)  call bounds ! no omp
 c
 c     update the pairwise interaction neighbor lists
 c
@@ -213,15 +216,15 @@ c
 c     remove any previous use of the replicates method
 c
       cutoff = 0.0d0
-      call replica (cutoff)
+      call replica (cutoff)  ! no omp
 c
 c     many implicit solvation models require Born radii
 c
-      if (use_born)  call born
+      if (use_born)  call born ! no omp 
 c
 c     alter bond and torsion constants for pisystem
 c
-      if (use_orbit)  call picalc
+      if (use_orbit)  call picalc  ! no omp
 
 !$OMP barrier
 !$OMP flush
@@ -231,22 +234,32 @@ c
 
       if (use_bond)  call ebond1
       if (use_angle)  call eangle1
-!$OMP END PARALLEL
+
       if (use_strbnd)  call estrbnd1
+!$OMP END PARALLEL
       if (use_urey)  call eurey1
-      if (use_angang)  call eangang1
 
-      if (use_opbend)  call eopbend1
-      if (use_opdist)  call eopdist1
-      if (use_improp)  call eimprop1
-      if (use_imptor)  call eimptor1
+      if (use_angang)  call eangang1 ! no omp
+      if (use_opbend)  call eopbend1 ! no omp
+      if (use_opdist)  call eopdist1 ! no omp
+      if (use_improp)  call eimprop1 ! no omp
+      if (use_imptor)  call eimptor1 ! no omp
 
-      if (use_tors)  call etors1
 
-      if (use_pitors)  call epitors1
-      if (use_strtor)  call estrtor1
-      if (use_angtor)  call eangtor1
-      if (use_tortor)  call etortor1
+      if(use_tors) call etors1
+C$$$      if (use_tors)  then
+C$$$         if (use_smooth) then
+C$$$            call etors1b
+C$$$         else
+C$$$            call etors1a
+C$$$         end if
+C$$$      end if
+
+
+      if (use_pitors)  call epitors1 ! no omp
+      if (use_strtor)  call estrtor1 ! no omp
+      if (use_angtor)  call eangtor1 ! no omp
+      if (use_tortor)  call etortor1 ! no omp
 c
 c     call the van der Waals energy and gradient routines
 c
@@ -255,6 +268,26 @@ c
          if (vdwtyp .eq. 'BUCKINGHAM')  call ebuck1
          if (vdwtyp .eq. 'MM3-HBOND')  call emm3hb1
          if (vdwtyp .eq. 'BUFFERED-14-7')  call ehal1
+    
+C$$$      if (vdwtyp .eq. 'BUFFERED-14-7')  then
+C$$$           if (use_lights) then
+C$$$               call ehal1b
+C$$$            else if (use_vlist) then
+C$$$               call ehal1c
+C$$$            else
+C$$$               call ehal1a
+C$$$            end if
+C$$$c     
+C$$$c     apply long range van der Waals correction if desired
+C$$$c     
+C$$$            if (use_vcorr) then
+C$$$               call evcorr1 (elrc,vlrc)
+C$$$               ev = ev + elrc
+C$$$               vir(1,1) = vir(1,1) + vlrc
+C$$$               vir(2,2) = vir(2,2) + vlrc
+C$$$               vir(3,3) = vir(3,3) + vlrc
+C$$$            end if
+C$$$         end if
          if (vdwtyp .eq. 'GAUSSIAN')  call egauss1
       end if
 c
