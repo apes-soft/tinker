@@ -83,6 +83,34 @@ c
 c
 c     calculate the pi-orbital torsion angle energy term
 c
+C$$$!$OMP PARALLEL default(none) private(ia,ib,ic,id,ie,ig,proceed,
+C$$$!$OMP& fgrp,xia,yia,zia,xib,yib,zib,xic,yic,zic,xid,yid,zid,xie,
+C$$$!$OMP& yie,zie,xig,yig,zig,xad,yad,zad,xbd,ybd,zbd,xec,yec,zec,
+C$$$!$OMP& xgc,ygc,zgc,xip,yip,zip,xiq,ziq,yiq,xcp,ycp,zcp,xdc,ydc,
+C$$$!$OMP& zdc,xqd,yqd,zqd,xt,yt,zt,xu,yu,zu,xtu,ytu,ztu,rt2,ru2,rtru,
+C$$$!$OMP& rdc,cosine,sine,v2,c2,s2,cosine2,sine2,phi2,dphi2,e,dedphi,
+C$$$!$OMP& xdp,ydp,zdp,xqc,yqc,zqc,dedxt,dedyt,dedzt,dedxu,dedyu,dedzu,
+C$$$!$OMP& dedxip,dedyip,dedzip,dedxic,dedyic,dedzic,dedxid,dedyid,
+C$$$!$OMP& dedzid,dedxiq,dedyiq,dedziq,dedzia,dedxib,dedyib,dedxia,
+C$$$!$OMP& dedzib,dedxie,dedyie,dedzie,dedxig,dedyig,dedzig,vxterm,vyterm,
+C$$$!$OMP& vzterm,vxx,vyx,vzx,vyy,vzy,dedyia,vzz)
+C$$$!$OMP& shared(ipit,use_group,use,ept,dept,vir,npitors,x,y,z,
+C$$$!$OMP& use_polymer,kpit,ptorunit)
+
+!$OMP DO  private(ia,ib,ic,id,ie,ig,proceed,
+!$OMP& fgrp,xia,yia,zia,xib,yib,zib,xic,yic,zic,xid,yid,zid,xie,
+!$OMP& yie,zie,xig,yig,zig,xad,yad,zad,xbd,ybd,zbd,xec,yec,zec,
+!$OMP& xgc,ygc,zgc,xip,yip,zip,xiq,ziq,yiq,xcp,ycp,zcp,xdc,ydc,
+!$OMP& zdc,xqd,yqd,zqd,xt,yt,zt,xu,yu,zu,xtu,ytu,ztu,rt2,ru2,rtru,
+!$OMP& rdc,cosine,sine,v2,c2,s2,cosine2,sine2,phi2,dphi2,e,dedphi,
+!$OMP& xdp,ydp,zdp,xqc,yqc,zqc,dedxt,dedyt,dedzt,dedxu,dedyu,dedzu,
+!$OMP& dedxip,dedyip,dedzip,dedxic,dedyic,dedzic,dedxid,dedyid,
+!$OMP& dedzid,dedxiq,dedyiq,dedziq,dedzia,dedxib,dedyib,dedxia,
+!$OMP& dedzib,dedxie,dedyie,dedzie,dedxig,dedyig,dedzig,vxterm,vyterm,
+!$OMP& vzterm,vxx,vyx,vzx,vyy,vzy,dedyia,vzz)
+!$OMP& reduction(+:ept, dept, vir) schedule(static,128)
+
+
       do i = 1, npitors
          ia = ipit(1,i)
          ib = ipit(2,i)
@@ -295,5 +323,7 @@ c
             end if
          end if
       end do
+!$OMP end do
+c!$OMP end parallel
       return
       end

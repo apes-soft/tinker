@@ -72,6 +72,32 @@ c
          deopb(2,i) = 0.0d0
          deopb(3,i) = 0.0d0
       end do
+
+C$$$ccc!$OMP PARALLEL default(none) private(i,ia,ib,ic,id,force,proceed,
+C$$$!$OMP& fgrp,xia,yia,zia,yib,xib,zib,xic,yic,zic,xid,yid,zid,xab,yab,
+C$$$!$OMP& zab,xcb,ycb,zcb,rab2,rcb2,dot,cc,rad2,rcd2,ee,rdb2,bkk2,cosine,
+C$$$!$OMP& angle,zdb,ydb,xdb,xad,yad,zad,xcd,ycd,zcd,dt,dt2,dt3,dt4,e,
+C$$$!$OMP& deddt,dedcos,term,dccdyia,dccdzia,dccdyic,dccdxic,dccdzic,
+C$$$!$OMP& dccdxid,dccdyid,dccdxia,dccdzid,deedxia,deedyia,deedzia,deedxic,
+C$$$!$OMP& deedyic,deedzic,deedxid,deedyid,deedzid,dedxia,dedyia,dedzia,
+C$$$!$OMP& dedxid,dedyid,dedzid,dedxib,dedyib,dedxic,dedyic,dedzic,dedzib,
+C$$$!$OMP& vxx,vyx,vzx,vyy,vzy,vzz)
+C$$$!$OMP& shared(nopbend,iang,opbk,x,y,z,iopb,use_group,use,use_polymer,
+C$$$!$OMP& opbtyp,opbunit,copb,qopb,popb,sopb,eopb,deopb,vir)
+
+
+!$OMP DO private(i,ia,ib,ic,id,force,proceed,
+!$OMP& fgrp,xia,yia,zia,yib,xib,zib,xic,yic,zic,xid,yid,zid,xab,yab,
+!$OMP& zab,xcb,ycb,zcb,rab2,rcb2,dot,cc,rad2,rcd2,ee,rdb2,bkk2,cosine,
+!$OMP& angle,zdb,ydb,xdb,xad,yad,zad,xcd,ycd,zcd,dt,dt2,dt3,dt4,e,
+!$OMP& deddt,dedcos,term,dccdyia,dccdzia,dccdyic,dccdxic,dccdzic,
+!$OMP& dccdxid,dccdyid,dccdxia,dccdzid,deedxia,deedyia,deedzia,deedxic,
+!$OMP& deedyic,deedzic,deedxid,deedyid,deedzid,dedxia,dedyia,dedzia,
+!$OMP& dedxid,dedyid,dedzid,dedxib,dedyib,dedxic,dedyic,dedzic,dedzib,
+!$OMP& vxx,vyx,vzx,vyy,vzy,vzz) reduction(+:eopb,deopb,vir) 
+!$OMP& schedule(guided)
+
+
 c
 c     calculate the out-of-plane bending energy and derivatives
 c
@@ -263,5 +289,8 @@ c
             end if
          end if
       end do
+!$OMP end do 
+cc!$OMP end parallel 
+
       return
       end

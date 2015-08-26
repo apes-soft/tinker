@@ -142,6 +142,20 @@ c
       end do
       einter = 0.0d0
 
+      if (use_bounds .and. .not.use_rigid)  call bounds ! no omp
+      
+      cutoff = 0.0d0
+      call replica (cutoff)     ! no omp
+c
+c     many implicit solvation models require Born radii
+c
+      if (use_born)  call born ! no omp 
+c
+c     alter bond and torsion constants for pisystem
+c
+      if (use_orbit)  call picalc  ! no omp
+
+      if (use_list)  call nblist
 
 C$$$!$OMP parallel default(none) shared(n, deb, dea, deba, deub, deaa, 
 C$$$!$OMP& deopb, deopd, deid, deit, det, dept, debt, deat, dett, dev, 
@@ -157,15 +171,11 @@ C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum)
 C$$$!$OMP& reduction(+:deb,vir)
 
 !$OMP parallel default(shared) 
-ccshared(nbond,ibnd,bl,bk,use,
-cc!$OMP& x,y,z,cbnd,qbnd,bndtyp,bndunit,use_group,use_polymer)
-ccc!$OMP& reduction(+:deb,vir,eb)
-    
 c
 c     zero out each of the first derivative components
 c
 
-!$OMP DO schedule(guided)
+!$OMP DO schedule(static)
       do i = 1, n
          do j = 1, 3
             deb(j,i) = 0.0d0
@@ -202,29 +212,29 @@ c
 c     maintain any periodic boundary conditions
 c
 
-      if (use_bounds .and. .not.use_rigid)  call bounds ! no omp
+c      if (use_bounds .and. .not.use_rigid)  call bounds ! no omp
 c
 c     update the pairwise interaction neighbor lists
 c
 
-!$OMP master       
-      if (use_list)  call nblist
-!$OMP end master
+c!$OMP master       
+c      if (use_list)  call nblist
+c!$OMP end master
 
 
 c
 c     remove any previous use of the replicates method
 c
-      cutoff = 0.0d0
-      call replica (cutoff)  ! no omp
-c
-c     many implicit solvation models require Born radii
-c
-      if (use_born)  call born ! no omp 
-c
-c     alter bond and torsion constants for pisystem
-c
-      if (use_orbit)  call picalc  ! no omp
+C$$$      cutoff = 0.0d0
+C$$$      call replica (cutoff)  ! no omp
+C$$$c
+C$$$c     many implicit solvation models require Born radii
+C$$$c
+C$$$      if (use_born)  call born ! no omp 
+C$$$c
+C$$$c     alter bond and torsion constants for pisystem
+C$$$c
+C$$$      if (use_orbit)  call picalc  ! no omp
 
 !$OMP barrier
 
@@ -236,9 +246,11 @@ c
       if (use_angle)  call eangle1
       if (use_strbnd)  call estrbnd1
       if (use_urey)  call eurey1
+
+     
+      if (use_opbend)  call eopbend1 ! no omp - used
 !$OMP master
       if (use_angang)  call eangang1 ! no omp
-      if (use_opbend)  call eopbend1 ! no omp - used
       if (use_opdist)  call eopdist1 ! no omp
       if (use_improp)  call eimprop1 ! no omp
       if (use_imptor)  call eimptor1 ! no omp
@@ -246,9 +258,9 @@ c
 !$OMP barrier
 
       if(use_tors) call etors1
-
-!$OMP master
       if (use_pitors)  call epitors1 ! no omp - used 
+!$OMP master
+     
       if (use_strtor)  call estrtor1 ! no omp
       if (use_angtor)  call eangtor1 ! no omp
       if (use_tortor)  call etortor1 ! no omp - used
