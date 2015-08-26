@@ -93,6 +93,36 @@ c
 c
 c     calculate the torsion-torsion interaction energy term
 c
+
+C$$$!$OMP parallel default(none) private(ia,ib,ic,id,ie,i,k,proceed,
+C$$$!$OMP& fgrp,xia,yia,zia,xib,yib,zib,xic,yic,zic,xid,yid,zid,xie,yie,
+C$$$!$OMP& zie,xba,yba,zba,xcb,ycb,zcb,xdc,ydc,zdc,xed,yed,zed, xt,yt,zt,
+C$$$!$OMP& xu,zu,yu,xtu,ytu,ztu,rt2,ru2,rtru,xv,yv,zv,xuv,yuv,zuv,rv2,rurv,
+C$$$!$OMP& rcb,cosine1,angle1,sign,value1,rdc,cosine2,angle2,value2,nlo,nhi,
+C$$$!$OMP& tnx,nt,ttx,xlo,tny,tty,ylo,xh,yh,x1l,x1u,y1l,y1u,pos2,pos1,ftt,
+C$$$!$OMP& ft1,ft2,ft12,e,dedang1,dedang2,xca,yca,zca,xdb,ydb,dedxt,dedyt,
+C$$$!$OMP& dedzt,dedxu,dedyu,dedzu,dedxia,dedyia,dedzia,dedxib,zdb,dedyib,
+C$$$!$OMP& dedzib,dedxic,dedyic,dedzic,dedxid,dedyid,dedzid,xec,yec,zec,
+C$$$!$OMP& dedxu2,dedyu2,dedzu2,dedxv2,dedyv2,dedzv2,dedxib2,dedyib2,
+C$$$!$OMP& dedxic2,dedyic2,dedzic2,dedxid2,dedyid2,dedzid2,dedxie2,dedyie2,
+C$$$!$OMP& dedzie2,dedzib2,vxx,vyx,vzx,vyy,vzz,vxx2,vyx2,vzx2,vyy2,vzy2,
+C$$$!$OMP& vzz2,vzy)
+C$$$!$OMP& shared(ntortor,itt,ibitor,use_group,ett,dett,vir,use,x,y,z,
+C$$$!$OMP& use_polymer,tbf,tbx,tby,tbxy,ttorunit,tnx,ttx,tny,tty)
+
+!$OMP DO private(ia,ib,ic,id,ie,i,k,proceed,
+!$OMP& fgrp,xia,yia,zia,xib,yib,zib,xic,yic,zic,xid,yid,zid,xie,yie,
+!$OMP& zie,xba,yba,zba,xcb,ycb,zcb,xdc,ydc,zdc,xed,yed,zed, xt,yt,zt,
+!$OMP& xu,zu,yu,xtu,ytu,ztu,rt2,ru2,rtru,xv,yv,zv,xuv,yuv,zuv,rv2,rurv,
+!$OMP& rcb,cosine1,angle1,sign,value1,rdc,cosine2,angle2,value2,nlo,nhi,
+!$OMP& nt,xlo,ylo,xh,yh,x1l,x1u,y1l,y1u,pos2,pos1,ftt,
+!$OMP& ft1,ft2,ft12,e,dedang1,dedang2,xca,yca,zca,xdb,ydb,dedxt,dedyt,
+!$OMP& dedzt,dedxu,dedyu,dedzu,dedxia,dedyia,dedzia,dedxib,zdb,dedyib,
+!$OMP& dedzib,dedxic,dedyic,dedzic,dedxid,dedyid,dedzid,xec,yec,zec,
+!$OMP& dedxu2,dedyu2,dedzu2,dedxv2,dedyv2,dedzv2,dedxib2,dedyib2,
+!$OMP& dedxic2,dedyic2,dedzic2,dedxid2,dedyid2,dedzid2,dedxie2,dedyie2,
+!$OMP& dedzie2,dedzib2,vxx,vyx,vzx,vyy,vzz,vxx2,vyx2,vzx2,vyy2,vzy2,
+!$OMP& vzz2,vzy) schedule(guided) reduction(+:vir,ett,dett)
       do itortor = 1, ntortor
          i = itt(1,itortor)
          k = itt(2,itortor)
@@ -371,5 +401,7 @@ c
             end if
          end if
       end do
+!$OMP end do
+cc!$OMP end parallel
       return
       end

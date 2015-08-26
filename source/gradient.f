@@ -142,18 +142,21 @@ c
       end do
       einter = 0.0d0
 
-      if (use_bounds .and. .not.use_rigid)  call bounds ! no omp
+      if (use_bounds .and. .not.use_rigid) call bounds ! no omp - used
+      
       
       cutoff = 0.0d0
       call replica (cutoff)     ! no omp
 c
 c     many implicit solvation models require Born radii
 c
-      if (use_born)  call born ! no omp 
+c      if (use_born)  call born  ! no omp - not used
+        
 c
 c     alter bond and torsion constants for pisystem
 c
-      if (use_orbit)  call picalc  ! no omp
+c      if (use_orbit) call picalc ! no omp - not used
+        
 
       if (use_list)  call nblist
 
@@ -236,7 +239,7 @@ C$$$c     alter bond and torsion constants for pisystem
 C$$$c
 C$$$      if (use_orbit)  call picalc  ! no omp
 
-!$OMP barrier
+c!$OMP barrier
 
 c
 c     call the local geometry energy and gradient routines
@@ -246,27 +249,22 @@ c
       if (use_angle)  call eangle1
       if (use_strbnd)  call estrbnd1
       if (use_urey)  call eurey1
-
-     
-      if (use_opbend)  call eopbend1 ! no omp - used
-!$OMP master
-      if (use_angang)  call eangang1 ! no omp
-      if (use_opdist)  call eopdist1 ! no omp
-      if (use_improp)  call eimprop1 ! no omp
-      if (use_imptor)  call eimptor1 ! no omp
-!$OMP end master
-!$OMP barrier
+           
+      if (use_opbend)  call eopbend1 
 
       if(use_tors) call etors1
-      if (use_pitors)  call epitors1 ! no omp - used 
-!$OMP master
-     
-      if (use_strtor)  call estrtor1 ! no omp
-      if (use_angtor)  call eangtor1 ! no omp
-      if (use_tortor)  call etortor1 ! no omp - used
-!$OMP end master
-!$OMP barrier
+      if (use_pitors)  call epitors1
+      if (use_tortor)  call etortor1
 
+c the following subroutines are not used by bench7
+
+C$$$      if (use_angang)  call eangang1 ! no omp
+C$$$      if (use_opdist)  call eopdist1 ! no omp
+C$$$      if (use_improp)  call eimprop1 ! no omp
+C$$$      if (use_imptor)  call eimptor1 ! no omp
+C$$$      if (use_strtor)  call estrtor1 ! no omp
+C$$$      if (use_angtor)  call eangtor1 ! no omp
+   
 c
 c     call the van der Waals energy and gradient routines
 c
