@@ -27,8 +27,9 @@ c
       use group
       use usage
       use virial
+      use openmp
       implicit none
-      integer i,ia,ib
+      integer i,ia,ib,j
       real*8 e
       real*8 ideal,force
       real*8 expterm,bde,fgrp
@@ -38,27 +39,33 @@ c
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
       logical proceed
-      real*8 viro(3,3)
+!$    integer omp_get_thread_num
+c      integer tid
+c      real*8 viro(3,3)
 c
 c
 c     zero out the bond energy and first derivatives
 c
       eb = 0.0d0
-      do i = 1, n
+      do i = 1, n   
          deb(1,i) = 0.0d0
          deb(2,i) = 0.0d0
          deb(3,i) = 0.0d0
       end do
-      viro = vir
-      vir = 0.0d0
+c      viro = vir
+c      vir1 = 0.0d0
+      
 
 c
 c     set OpenMP directives for the major loop structure
 c
+      th_id = 1
+!$      th_id = omp_get_thread_num() + 1
+c      print*, " TH_ID",th_id
 
 !$OMP DO private(ia, ib, ideal, force, proceed, fgrp,xab,yab,
 !$OMP& zab,rab,dt,dt2,e,deddt,expterm,bde,de,dedx,dedy,dedz,vxx,
-!$OMP& vyx,vzx,vyy,vzy,vzz) reduction(+:eb,deb,vir) schedule(guided)
+!$OMP& vyx,vzx,vyy,vzy,vzz) firstprivate(th_id) schedule(guided)
 c
 c     calculate the bond stretch energy and first derivatives
 c
@@ -124,13 +131,22 @@ c
 c
 c     increment the total bond energy and first derivatives
 c
+
+!$OMP atomic
             eb = eb + e
+
+            call OMP_set_lock(lck_drv(ia))
             deb(1,ia) = deb(1,ia) + dedx
             deb(2,ia) = deb(2,ia) + dedy
             deb(3,ia) = deb(3,ia) + dedz
+            call OMP_unset_lock(lck_drv(ia))
+
+            call OMP_set_lock(lck_drv(ib))
             deb(1,ib) = deb(1,ib) - dedx
             deb(2,ib) = deb(2,ib) - dedy
             deb(3,ib) = deb(3,ib) - dedz
+            call OMP_unset_lock(lck_drv(ib))
+
 c
 c     increment the internal virial tensor components
 c
@@ -140,23 +156,25 @@ c
             vyy = yab * dedy
             vzy = zab * dedy
             vzz = zab * dedz
-            vir(1,1) = vir(1,1) + vxx
-            vir(2,1) = vir(2,1) + vyx
-            vir(3,1) = vir(3,1) + vzx
-            vir(1,2) = vir(1,2) + vyx
-            vir(2,2) = vir(2,2) + vyy
-            vir(3,2) = vir(3,2) + vzy
-            vir(1,3) = vir(1,3) + vzx
-            vir(2,3) = vir(2,3) + vzy
-            vir(3,3) = vir(3,3) + vzz        
+           
+            vir_th(th_id,1,1) = vir_th(th_id,1,1) + vxx
+            vir_th(th_id,2,1) = vir_th(th_id,2,1) + vyx          
+            vir_th(th_id,3,1) = vir_th(th_id,3,1) + vzx
+
+            vir_th(th_id,1,2) = vir_th(th_id,1,2) + vyx
+            vir_th(th_id,2,2) = vir_th(th_id,2,2) + vyy
+            vir_th(th_id,3,2) = vir_th(th_id,3,2) + vzy
+
+            vir_th(th_id,1,3) = vir_th(th_id,1,3) + vzx
+            vir_th(th_id,2,3) = vir_th(th_id,2,3) + vzy
+            vir_th(th_id,3,3) = vir_th(th_id,3,3) + vzz   
+
          end if
       end do
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP END DO
-
-      vir = viro + vir
-
+!$OMP END DO no wait
+     
       return
       end

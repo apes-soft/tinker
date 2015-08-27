@@ -30,6 +30,7 @@ c
       use math
       use usage
       use virial
+      use openmp
       implicit none
       integer i,ia,ib,ic,id
       real*8 e
@@ -69,6 +70,8 @@ c
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
       logical proceed
+!$    integer omp_get_thread_num
+
 c
 c
 c     zero out energy and first derivative components
@@ -79,6 +82,9 @@ c
          dea(2,i) = 0.0d0
          dea(3,i) = 0.0d0
       end do
+
+      th_id = 1
+!$    th_id = omp_get_thread_num() + 1
 
 c
 c     set OpenMP directives for the major loop structure
@@ -93,8 +99,8 @@ c
 !$OMP& zid,xad,yad,zad,xbd,ybd,zbd,xcd,ycd,zcd,xt,yt,zt,rt2,delta,xip,
 !$OMP& yip, zip, xap,yap,zap, xcp,ycp,zcp, rap2,rcp2,xm,ym,zm,rm,
 !$OMP& dedxip,dedyip,dedzip,delta2,ptrt2,term,dpdxia,dpdyia,dpdzia,
-!$OMP& dpdxic,dpdyic,dpdzic,dedxid,dedyid,dedzid)
-!$OMP& reduction(+:ea,dea,vir) schedule(guided)
+!$OMP& dpdxic,dpdyic,dpdzic,dedxid,dedyid,dedzid) firstprivate(th_id)
+!$OMP& schedule(guided)
 c
 c     calculate the bond angle bending energy term
 c
@@ -205,17 +211,29 @@ c
                   dedzib = -dedzia - dedzic
 c
 c     increment the total bond angle energy and derivatives
-c
+c     
+c                  call OMP_set_lock(lck_en)
+!$OMP atomic                  
                   ea = ea + e
+c                  call OMP_unset_lock(lck_en)
+
+                  call OMP_set_lock(lck_drv(ia))
                   dea(1,ia) = dea(1,ia) + dedxia
                   dea(2,ia) = dea(2,ia) + dedyia
                   dea(3,ia) = dea(3,ia) + dedzia
+                  call OMP_unset_lock(lck_drv(ia))
+
+                  call OMP_set_lock(lck_drv(ib))
                   dea(1,ib) = dea(1,ib) + dedxib
                   dea(2,ib) = dea(2,ib) + dedyib
                   dea(3,ib) = dea(3,ib) + dedzib
+                  call OMP_unset_lock(lck_drv(ib))
+                  
+                  call OMP_set_lock(lck_drv(ic))
                   dea(1,ic) = dea(1,ic) + dedxic
                   dea(2,ic) = dea(2,ic) + dedyic
                   dea(3,ic) = dea(3,ic) + dedzic
+                  call OMP_unset_lock(lck_drv(ic))
 c
 c     increment the internal virial tensor components
 c
@@ -225,15 +243,22 @@ c
                   vyy = yab*dedyia + ycb*dedyic
                   vzy = zab*dedyia + zcb*dedyic
                   vzz = zab*dedzia + zcb*dedzic
-                  vir(1,1) = vir(1,1) + vxx
-                  vir(2,1) = vir(2,1) + vyx
-                  vir(3,1) = vir(3,1) + vzx
-                  vir(1,2) = vir(1,2) + vyx
-                  vir(2,2) = vir(2,2) + vyy
-                  vir(3,2) = vir(3,2) + vzy
-                  vir(1,3) = vir(1,3) + vzx
-                  vir(2,3) = vir(2,3) + vzy
-                  vir(3,3) = vir(3,3) + vzz
+
+c                  call OMP_set_lock(lck_vir_th(th_id,1))
+                  vir_th(th_id,1,1) = vir_th(th_id,1,1) + vxx
+                  vir_th(th_id,2,1) = vir_th(th_id,2,1) + vyx
+                  vir_th(th_id,3,1) = vir_th(th_id,3,1) + vzx
+c                  call OMP_unset_lock(lck_vir_th(th_id,1))
+c                  call OMP_set_lock(lck_vir_th(th_id,2))
+                  vir_th(th_id,1,2) = vir_th(th_id,1,2) + vyx
+                  vir_th(th_id,2,2) = vir_th(th_id,2,2) + vyy
+                  vir_th(th_id,3,2) = vir_th(th_id,3,2) + vzy
+c                  call OMP_unset_lock(lck_vir_th(th_id,2))
+c                  call OMP_set_lock(lck_vir_th(th_id,3))
+                  vir_th(th_id,1,3) = vir_th(th_id,1,3) + vzx
+                  vir_th(th_id,2,3) = vir_th(th_id,2,3) + vzy
+                  vir_th(th_id,3,3) = vir_th(th_id,3,3) + vzz
+c                  call OMP_unset_lock(lck_vir_th(th_id,3))
                end if
 c
 c     compute the projected in-plane angle energy and gradient
@@ -354,19 +379,35 @@ c
 c
 c     increment the total bond angle energy and derivatives
 c
+c                  call OMP_set_lock(lck_en)
+ 
+!$OMP atomic
                   ea = ea + e
+c                  call OMP_unset_lock(lck_en)
+
+                  call OMP_set_lock(lck_drv(ia))
                   dea(1,ia) = dea(1,ia) + dedxia
                   dea(2,ia) = dea(2,ia) + dedyia
                   dea(3,ia) = dea(3,ia) + dedzia
+                  call OMP_unset_lock(lck_drv(ia))
+                  
+                  call OMP_set_lock(lck_drv(ib))
                   dea(1,ib) = dea(1,ib) + dedxib
                   dea(2,ib) = dea(2,ib) + dedyib
                   dea(3,ib) = dea(3,ib) + dedzib
+                  call OMP_unset_lock(lck_drv(ib))
+
+                  call OMP_set_lock(lck_drv(ic))
                   dea(1,ic) = dea(1,ic) + dedxic
                   dea(2,ic) = dea(2,ic) + dedyic
                   dea(3,ic) = dea(3,ic) + dedzic
+                  call OMP_unset_lock(lck_drv(ic))
+
+                  call OMP_set_lock(lck_drv(id))
                   dea(1,id) = dea(1,id) + dedxid
                   dea(2,id) = dea(2,id) + dedyid
                   dea(3,id) = dea(3,id) + dedzid
+                  call OMP_unset_lock(lck_drv(id))
 c
 c     increment the internal virial tensor components
 c
@@ -376,15 +417,21 @@ c
                   vyy = yad*dedyia + ybd*dedyib + ycd*dedyic
                   vzy = zad*dedyia + zbd*dedyib + zcd*dedyic
                   vzz = zad*dedzia + zbd*dedzib + zcd*dedzic
-                  vir(1,1) = vir(1,1) + vxx
-                  vir(2,1) = vir(2,1) + vyx
-                  vir(3,1) = vir(3,1) + vzx
-                  vir(1,2) = vir(1,2) + vyx
-                  vir(2,2) = vir(2,2) + vyy
-                  vir(3,2) = vir(3,2) + vzy
-                  vir(1,3) = vir(1,3) + vzx
-                  vir(2,3) = vir(2,3) + vzy
-                  vir(3,3) = vir(3,3) + vzz
+c                  call OMP_set_lock(lck_vir_th(th_id,1))
+                  vir_th(th_id,1,1) = vir_th(th_id,1,1) + vxx
+                  vir_th(th_id,2,1) = vir_th(th_id,2,1) + vyx
+                  vir_th(th_id,3,1) = vir_th(th_id,3,1) + vzx
+c                  call OMP_unset_lock(lck_vir_th(th_id,1))
+c                  call OMP_set_lock(lck_vir_th(th_id,2))
+                  vir_th(th_id,1,2) = vir_th(th_id,1,2) + vyx
+                  vir_th(th_id,2,2) = vir_th(th_id,2,2) + vyy
+                  vir_th(th_id,3,2) = vir_th(th_id,3,2) + vzy
+c                  call OMP_unset_lock(lck_vir_th(th_id,2))
+c                  call OMP_set_lock(lck_vir_th(th_id,3))
+                  vir_th(th_id,1,3) = vir_th(th_id,1,3) + vzx
+                  vir_th(th_id,2,3) = vir_th(th_id,2,3) + vzy
+                  vir_th(th_id,3,3) = vir_th(th_id,3,3) + vzz
+c                  call OMP_unset_lock(lck_vir_th(th_id,3))
                end if
             end if
          end if
@@ -392,7 +439,7 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP END DO
+!$OMP END DO no wait
 
       return
       end

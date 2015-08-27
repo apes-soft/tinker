@@ -20,5 +20,6 @@ c
       implicit none
       integer nproc
       integer nthread
+      integer th_id
       save
       end

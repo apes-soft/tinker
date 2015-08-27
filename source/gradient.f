@@ -34,13 +34,22 @@ c
       use vdwpot
       use virial
       use usage
+      use openmp
 
       use warp 
       implicit none
-      integer i,j
+      integer i,j,k
       real*8 energy,cutoff
       real*8 derivs(3,*)
       real*8 elrc, vlrc
+      real*8 viro(3,3)
+!$    integer omp_get_thread_num
+c      integer(kind = 8),dimension(3,n):: lck_drv
+c      integer(kind = 8) :: lck_en
+c      integer(kind = 8),dimension(3,3) :: lck_vir
+      
+
+c      real*8 vir1(3.3),vir2(3,3),vir3(3,3)
 c
 c
 c     zero out each of the potential energy components
@@ -132,15 +141,40 @@ c
          allocate (dex(3,n))
       end if
 
+      if(.not. allocated(lck_drv)) allocate(lck_drv(n))
+      if(.not. allocated(vir_th)) allocate(vir_th(nthread,3,3))
 c
 c     zero out the virial and the intermolecular energy
 c
       do i = 1, 3
          do j = 1, 3
             vir(j,i) = 0.0d0
+            viro(i,j) = 0.0d0
          end do
       end do
+
+      vir_th = 0.0d0
+c      th_id = 1
+
+c setting omp locks
+c      call omp_init_lock(lck_en)
+
+      do i=1,n
+c         do j=1,3
+            call omp_init_lock(lck_drv(i))
+c         end do
+      end do
+
+c      do i=1,3
+c         do j=1,3
+c            call omp_init_lock(lck_vir(i))
+c         end do
+c      end do
+
       einter = 0.0d0
+c      vir1 = 0.0d0
+c      vir2 = 0.0d0
+c      vir3 = 0.0d0
 
       if (use_bounds .and. .not.use_rigid) call bounds ! no omp - used
       
@@ -174,11 +208,12 @@ C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum)
 C$$$!$OMP& reduction(+:deb,vir)
 
 !$OMP parallel default(shared) 
+
 c
 c     zero out each of the first derivative components
 c
-
-!$OMP DO schedule(static)
+      
+!$OMP DO schedule(dynamic,256)
       do i = 1, n
          do j = 1, 3
             deb(j,i) = 0.0d0
@@ -246,6 +281,8 @@ c     call the local geometry energy and gradient routines
 c
 
       if (use_bond)  call ebond1
+c!$OMP barrier   
+c!$OMP flush    
       if (use_angle)  call eangle1
       if (use_strbnd)  call estrbnd1
       if (use_urey)  call eurey1
@@ -316,15 +353,30 @@ ccc!$OMP DO schedule(guided)
 
 ccc!$OMP END DO
 
+      do i =1,3
+         do j = 1,3
+            do k = 1,nthread
+               viro(j,i) = viro(j,i) + vir_th(k,j,i)
+            end do
+         end do
+      end do
 
-        energy = esum
+      vir = vir + viro 
 
+      energy = esum
+        
         do i=1, n
            do j=1,3
               derivs(j,i) = desum(j,i)
            end do 
         end do
 
+c  destroy omp locks
+
+c        call omp_destroy_lock(lck_en)
+c        call omp_destroy_lock(lck_vir)
+        call omp_destroy_lock(lck_drv)
+     
 c
 c     check for an illegal value for the total energy
 c
