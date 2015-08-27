@@ -251,7 +251,7 @@ c
 !$OMP atomic
                eopb = eopb + e
                
-                call OMP_set_lock(lck_drv(ia))
+               call OMP_set_lock(lck_drv(ia))
                deopb(1,ia) = deopb(1,ia) + dedxia
                deopb(2,ia) = deopb(2,ia) + dedyia
                deopb(3,ia) = deopb(3,ia) + dedzia

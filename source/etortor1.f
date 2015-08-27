@@ -30,6 +30,7 @@ c
       use tortor
       use usage
       use virial
+      use openmp
       implicit none
       integer i,k,itortor
       integer pos1,pos2
@@ -80,6 +81,7 @@ c
       real*8 ftt(4),ft12(4)
       real*8 ft1(4),ft2(4)
       logical proceed
+!$    integer omp_get_thread_num
 c
 c
 c     zero out the torsion-torsion energy and first derivatives
@@ -90,25 +92,13 @@ c
          dett(2,i) = 0.0d0
          dett(3,i) = 0.0d0
       end do
+
+      th_id = 1
+!$      th_id = omp_get_thread_num() + 1
+
 c
 c     calculate the torsion-torsion interaction energy term
 c
-
-C$$$!$OMP parallel default(none) private(ia,ib,ic,id,ie,i,k,proceed,
-C$$$!$OMP& fgrp,xia,yia,zia,xib,yib,zib,xic,yic,zic,xid,yid,zid,xie,yie,
-C$$$!$OMP& zie,xba,yba,zba,xcb,ycb,zcb,xdc,ydc,zdc,xed,yed,zed, xt,yt,zt,
-C$$$!$OMP& xu,zu,yu,xtu,ytu,ztu,rt2,ru2,rtru,xv,yv,zv,xuv,yuv,zuv,rv2,rurv,
-C$$$!$OMP& rcb,cosine1,angle1,sign,value1,rdc,cosine2,angle2,value2,nlo,nhi,
-C$$$!$OMP& tnx,nt,ttx,xlo,tny,tty,ylo,xh,yh,x1l,x1u,y1l,y1u,pos2,pos1,ftt,
-C$$$!$OMP& ft1,ft2,ft12,e,dedang1,dedang2,xca,yca,zca,xdb,ydb,dedxt,dedyt,
-C$$$!$OMP& dedzt,dedxu,dedyu,dedzu,dedxia,dedyia,dedzia,dedxib,zdb,dedyib,
-C$$$!$OMP& dedzib,dedxic,dedyic,dedzic,dedxid,dedyid,dedzid,xec,yec,zec,
-C$$$!$OMP& dedxu2,dedyu2,dedzu2,dedxv2,dedyv2,dedzv2,dedxib2,dedyib2,
-C$$$!$OMP& dedxic2,dedyic2,dedzic2,dedxid2,dedyid2,dedzid2,dedxie2,dedyie2,
-C$$$!$OMP& dedzie2,dedzib2,vxx,vyx,vzx,vyy,vzz,vxx2,vyx2,vzx2,vyy2,vzy2,
-C$$$!$OMP& vzz2,vzy)
-C$$$!$OMP& shared(ntortor,itt,ibitor,use_group,ett,dett,vir,use,x,y,z,
-C$$$!$OMP& use_polymer,tbf,tbx,tby,tbxy,ttorunit,tnx,ttx,tny,tty)
 
 !$OMP DO private(ia,ib,ic,id,ie,i,k,proceed,
 !$OMP& fgrp,xia,yia,zia,xib,yib,zib,xic,yic,zic,xid,yid,zid,xie,yie,
@@ -122,7 +112,8 @@ C$$$!$OMP& use_polymer,tbf,tbx,tby,tbxy,ttorunit,tnx,ttx,tny,tty)
 !$OMP& dedxu2,dedyu2,dedzu2,dedxv2,dedyv2,dedzv2,dedxib2,dedyib2,
 !$OMP& dedxic2,dedyic2,dedzic2,dedxid2,dedyid2,dedzid2,dedxie2,dedyie2,
 !$OMP& dedzie2,dedzib2,vxx,vyx,vzx,vyy,vzz,vxx2,vyx2,vzx2,vyy2,vzy2,
-!$OMP& vzz2,vzy) schedule(guided) reduction(+:vir,ett,dett)
+!$OMP& vzz2,vzy) firstprivate(th_id) schedule(guided)
+
       do itortor = 1, ntortor
          i = itt(1,itortor)
          k = itt(2,itortor)
@@ -358,22 +349,38 @@ c
 c
 c     increment the torsion-torsion energy and gradient
 c
+!$OMP atomic               
                ett = ett + e
+
+               call OMP_set_lock(lck_drv(ia))
                dett(1,ia) = dett(1,ia) + dedxia
                dett(2,ia) = dett(2,ia) + dedyia
                dett(3,ia) = dett(3,ia) + dedzia
+               call OMP_unset_lock(lck_drv(ia))
+
+               call OMP_set_lock(lck_drv(ib))
                dett(1,ib) = dett(1,ib) + dedxib + dedxib2
                dett(2,ib) = dett(2,ib) + dedyib + dedyib2
                dett(3,ib) = dett(3,ib) + dedzib + dedzib2
+               call OMP_unset_lock(lck_drv(ib))
+
+               call OMP_set_lock(lck_drv(ic))
                dett(1,ic) = dett(1,ic) + dedxic + dedxic2
                dett(2,ic) = dett(2,ic) + dedyic + dedyic2
                dett(3,ic) = dett(3,ic) + dedzic + dedzic2
+               call OMP_unset_lock(lck_drv(ic))
+
+               call OMP_set_lock(lck_drv(id))
                dett(1,id) = dett(1,id) + dedxid + dedxid2
                dett(2,id) = dett(2,id) + dedyid + dedyid2
                dett(3,id) = dett(3,id) + dedzid + dedzid2
+               call OMP_unset_lock(lck_drv(id))
+
+               call OMP_set_lock(lck_drv(ie))
                dett(1,ie) = dett(1,ie) + dedxie2
                dett(2,ie) = dett(2,ie) + dedyie2
                dett(3,ie) = dett(3,ie) + dedzie2
+               call OMP_unset_lock(lck_drv(ie))
 c
 c     increment the internal virial tensor components
 c
@@ -389,19 +396,19 @@ c
                vyy2 = ydc*(dedyid2+dedyie2) - ycb*dedyib2 + yed*dedyie2
                vzy2 = zdc*(dedyid2+dedyie2) - zcb*dedyib2 + zed*dedyie2
                vzz2 = zdc*(dedzid2+dedzie2) - zcb*dedzib2 + zed*dedzie2
-               vir(1,1) = vir(1,1) + vxx + vxx2
-               vir(2,1) = vir(2,1) + vyx + vyx2
-               vir(3,1) = vir(3,1) + vzx + vzx2
-               vir(1,2) = vir(1,2) + vyx + vyx2
-               vir(2,2) = vir(2,2) + vyy + vyy2
-               vir(3,2) = vir(3,2) + vzy + vzy2
-               vir(1,3) = vir(1,3) + vzx + vzx2
-               vir(2,3) = vir(2,3) + vzy + vzy2
-               vir(3,3) = vir(3,3) + vzz + vzz2
+               vir_th(th_id,1,1) = vir_th(th_id,1,1) + vxx + vxx2
+               vir_th(th_id,2,1) = vir_th(th_id,2,1) + vyx + vyx2
+               vir_th(th_id,3,1) = vir_th(th_id,3,1) + vzx + vzx2
+               vir_th(th_id,1,2) = vir_th(th_id,1,2) + vyx + vyx2
+               vir_th(th_id,2,2) = vir_th(th_id,2,2) + vyy + vyy2
+               vir_th(th_id,3,2) = vir_th(th_id,3,2) + vzy + vzy2
+               vir_th(th_id,1,3) = vir_th(th_id,1,3) + vzx + vzx2
+               vir_th(th_id,2,3) = vir_th(th_id,2,3) + vzy + vzy2
+               vir_th(th_id,3,3) = vir_th(th_id,3,3) + vzz + vzz2
             end if
          end if
       end do
-!$OMP end do
-cc!$OMP end parallel
+!$OMP end do NOWAIT
+
       return
       end
