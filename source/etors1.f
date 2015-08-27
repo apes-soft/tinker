@@ -56,6 +56,7 @@ c
       use tors
       use usage
       use virial
+      use openmp
       implicit none
       integer i,ia,ib,ic,id
       real*8 e
@@ -93,6 +94,7 @@ c
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
       logical proceed
+!$    integer omp_get_thread_num
 c
 c
 c     zero out the torsional energy and first derivatives
@@ -103,6 +105,9 @@ c
          det(2,i) = 0.0d0
          det(3,i) = 0.0d0
       end do
+
+      th_id = 1
+!$    th_id = omp_get_thread_num() + 1
 
 c
 c     set OpenMP directives for the major loop structure
@@ -117,8 +122,8 @@ c
 !$OMP& dphi3,dphi4,dphi5,dphi6,e,dedphi,xca,yca,zca,xdb,ydb,dedxt,
 !$OMP& zdb,dedyt,dedzt,dedxu,dedyu,dedzu,dedxia,dedyia,dedzia,
 !$OMP& dedxib,dedyib,dedzib,dedxic,dedzic,dedxid,dedyid,dedzid,
-!$OMP& vxx,vyx,vzx,vyy,vzy,vzz,dedyic)
-!$OMP& reduction(+:et,det,vir) schedule(guided)
+!$OMP& vxx,vyx,vzx,vyy,vzy,vzz,dedyic) firstprivate(th_id)
+!$OMP&  schedule(guided)
 c
 c     calculate the torsional angle energy and first derivatives
 c
@@ -277,19 +282,31 @@ c
 c
 c     increment the total torsional angle energy and gradient
 c
+!$OMP atomic
                et = et + e
+               call OMP_set_lock(lck_drv(ia))
                det(1,ia) = det(1,ia) + dedxia
                det(2,ia) = det(2,ia) + dedyia
                det(3,ia) = det(3,ia) + dedzia
+               call OMP_unset_lock(lck_drv(ia))
+
+               call OMP_set_lock(lck_drv(ib))                 
                det(1,ib) = det(1,ib) + dedxib
                det(2,ib) = det(2,ib) + dedyib
                det(3,ib) = det(3,ib) + dedzib
+               call OMP_unset_lock(lck_drv(ib))
+
+               call OMP_set_lock(lck_drv(ic))
                det(1,ic) = det(1,ic) + dedxic
                det(2,ic) = det(2,ic) + dedyic
                det(3,ic) = det(3,ic) + dedzic
+               call OMP_unset_lock(lck_drv(ic))
+
+               call OMP_set_lock(lck_drv(id))
                det(1,id) = det(1,id) + dedxid
                det(2,id) = det(2,id) + dedyid
                det(3,id) = det(3,id) + dedzid
+               call OMP_unset_lock(lck_drv(id))
 c
 c     increment the internal virial tensor components
 c
@@ -299,22 +316,22 @@ c
                vyy = ycb*(dedyic+dedyid) - yba*dedyia + ydc*dedyid
                vzy = zcb*(dedyic+dedyid) - zba*dedyia + zdc*dedyid
                vzz = zcb*(dedzic+dedzid) - zba*dedzia + zdc*dedzid
-               vir(1,1) = vir(1,1) + vxx
-               vir(2,1) = vir(2,1) + vyx
-               vir(3,1) = vir(3,1) + vzx
-               vir(1,2) = vir(1,2) + vyx
-               vir(2,2) = vir(2,2) + vyy
-               vir(3,2) = vir(3,2) + vzy
-               vir(1,3) = vir(1,3) + vzx
-               vir(2,3) = vir(2,3) + vzy
-               vir(3,3) = vir(3,3) + vzz
+               vir_th(th_id,1,1) = vir_th(th_id,1,1) + vxx
+               vir_th(th_id,2,1) = vir_th(th_id,2,1) + vyx
+               vir_th(th_id,3,1) = vir_th(th_id,3,1) + vzx
+               vir_th(th_id,1,2) = vir_th(th_id,1,2) + vyx
+               vir_th(th_id,2,2) = vir_th(th_id,2,2) + vyy
+               vir_th(th_id,3,2) = vir_th(th_id,3,2) + vzy
+               vir_th(th_id,1,3) = vir_th(th_id,1,3) + vzx
+               vir_th(th_id,2,3) = vir_th(th_id,2,3) + vzy
+               vir_th(th_id,3,3) = vir_th(th_id,3,3) + vzz
             end if
          end if
       end do
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP END DO
+!$OMP END DO NOWAIT
       return
       end
 c
