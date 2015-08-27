@@ -27,6 +27,7 @@ c
       use urypot
       use usage
       use virial
+      use openmp
       implicit none
       integer i,ia,ic
       real*8 e
@@ -37,6 +38,7 @@ c
       real*8 vyx,vzx,vzy
       real*8 xac,yac,zac,rac
       logical proceed
+!$    integer omp_get_thread_num
 c
 c
 c     zero out the Urey-Bradley energy and first derivatives
@@ -47,6 +49,10 @@ c
          deub(2,i) = 0.0d0
          deub(3,i) = 0.0d0
       end do
+      
+      th_id = 1
+!$      th_id = omp_get_thread_num() + 1
+
 
 c
 c     set OpenMP directives for the major loop structure
@@ -54,7 +60,7 @@ c
 
 !$OMP DO private(ia,ic,ideal,force,proceed,fgrp,xac,yac,zac,rac,
 !$OMP& dt,dt2,e,deddt,de,dedx,dedy,dedz,vxx,vyx,vzx,vyy,vzy,vzz)
-!$OMP& reduction(+:eub,deub,vir) schedule(guided)
+!$OMP& firstprivate(th_id) schedule(guided)
 c
 c     calculate the Urey-Bradley 1-3 energy and first derivatives
 c
@@ -100,13 +106,20 @@ c
 c
 c     increment the total Urey-Bradley energy and first derivatives
 c
+!$OMP atomic
             eub = eub + e
+
+            call OMP_set_lock(lck_drv(ia))
             deub(1,ia) = deub(1,ia) + dedx
             deub(2,ia) = deub(2,ia) + dedy
             deub(3,ia) = deub(3,ia) + dedz
+            call OMP_unset_lock(lck_drv(ia))
+
+            call OMP_set_lock(lck_drv(ic))
             deub(1,ic) = deub(1,ic) - dedx
             deub(2,ic) = deub(2,ic) - dedy
             deub(3,ic) = deub(3,ic) - dedz
+            call OMP_unset_lock(lck_drv(ic))
 c
 c     increment the internal virial tensor components
 c
@@ -116,21 +129,21 @@ c
             vyy = yac * dedy
             vzy = zac * dedy
             vzz = zac * dedz
-            vir(1,1) = vir(1,1) + vxx
-            vir(2,1) = vir(2,1) + vyx
-            vir(3,1) = vir(3,1) + vzx
-            vir(1,2) = vir(1,2) + vyx
-            vir(2,2) = vir(2,2) + vyy
-            vir(3,2) = vir(3,2) + vzy
-            vir(1,3) = vir(1,3) + vzx
-            vir(2,3) = vir(2,3) + vzy
-            vir(3,3) = vir(3,3) + vzz
+            vir_th(th_id,1,1) = vir_th(th_id,1,1) + vxx
+            vir_th(th_id,2,1) = vir_th(th_id,2,1) + vyx
+            vir_th(th_id,3,1) = vir_th(th_id,3,1) + vzx
+            vir_th(th_id,1,2) = vir_th(th_id,1,2) + vyx
+            vir_th(th_id,2,2) = vir_th(th_id,2,2) + vyy
+            vir_th(th_id,3,2) = vir_th(th_id,3,2) + vzy
+            vir_th(th_id,1,3) = vir_th(th_id,1,3) + vzx
+            vir_th(th_id,2,3) = vir_th(th_id,2,3) + vzy
+            vir_th(th_id,3,3) = vir_th(th_id,3,3) + vzz
          end if
       end do
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP END DO
+!$OMP END DO no wait
 
       return
       end
