@@ -86,12 +86,12 @@ c
 c
 c     zero out the torsion-torsion energy and first derivatives
 c
-      ett = 0.0d0
-      do i = 1, n
-         dett(1,i) = 0.0d0
-         dett(2,i) = 0.0d0
-         dett(3,i) = 0.0d0
-      end do
+C$$$      ett = 0.0d0
+C$$$      do i = 1, n
+C$$$         dett(1,i) = 0.0d0
+C$$$         dett(2,i) = 0.0d0
+C$$$         dett(3,i) = 0.0d0
+C$$$      end do
 
       th_id = 1
 !$      th_id = omp_get_thread_num() + 1

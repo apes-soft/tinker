@@ -43,12 +43,12 @@ c
 c
 c     zero out the Urey-Bradley energy and first derivatives
 c
-      eub = 0.0d0
-      do i = 1, n
-         deub(1,i) = 0.0d0
-         deub(2,i) = 0.0d0
-         deub(3,i) = 0.0d0
-      end do
+C$$$      eub = 0.0d0
+C$$$      do i = 1, n
+C$$$         deub(1,i) = 0.0d0
+C$$$         deub(2,i) = 0.0d0
+C$$$         deub(3,i) = 0.0d0
+C$$$      end do
       
       th_id = 1
 !$      th_id = omp_get_thread_num() + 1

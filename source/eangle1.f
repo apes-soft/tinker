@@ -76,12 +76,12 @@ c
 c
 c     zero out energy and first derivative components
 c
-      ea = 0.0d0
-      do i = 1, n
-         dea(1,i) = 0.0d0
-         dea(2,i) = 0.0d0
-         dea(3,i) = 0.0d0
-      end do
+C$$$      ea = 0.0d0
+C$$$      do i = 1, n
+C$$$         dea(1,i) = 0.0d0
+C$$$         dea(2,i) = 0.0d0
+C$$$         dea(3,i) = 0.0d0
+C$$$      end do
 
       th_id = 1
 !$    th_id = omp_get_thread_num() + 1

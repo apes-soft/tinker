@@ -1007,12 +1007,12 @@ c
 c
 c     zero out the van der Waals energy and first derivatives
 c
-      ev = 0.0d0
-      do i = 1, n
-         dev(1,i) = 0.0d0
-         dev(2,i) = 0.0d0
-         dev(3,i) = 0.0d0
-      end do
+C$$$      ev = 0.0d0
+C$$$      do i = 1, n
+C$$$         dev(1,i) = 0.0d0
+C$$$         dev(2,i) = 0.0d0
+C$$$         dev(3,i) = 0.0d0
+C$$$      end do
 c
 c     perform dynamic allocation of some local arrays
 c

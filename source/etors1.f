@@ -99,12 +99,12 @@ c
 c
 c     zero out the torsional energy and first derivatives
 c
-      et = 0.0d0
-      do i = 1, n
-         det(1,i) = 0.0d0
-         det(2,i) = 0.0d0
-         det(3,i) = 0.0d0
-      end do
+C$$$      et = 0.0d0
+C$$$      do i = 1, n
+C$$$         det(1,i) = 0.0d0
+C$$$         det(2,i) = 0.0d0
+C$$$         det(3,i) = 0.0d0
+C$$$      end do
 
       th_id = 1
 !$    th_id = omp_get_thread_num() + 1
