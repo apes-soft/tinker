@@ -46,12 +46,12 @@ c
 c
 c     zero out the bond energy and first derivatives
 c
-      eb = 0.0d0
-      do i = 1, n   
-         deb(1,i) = 0.0d0
-         deb(2,i) = 0.0d0
-         deb(3,i) = 0.0d0
-      end do
+C$$$      eb = 0.0d0
+C$$$      do i = 1, n   
+C$$$         deb(1,i) = 0.0d0
+C$$$         deb(2,i) = 0.0d0
+C$$$         deb(3,i) = 0.0d0
+C$$$      end do
 c      viro = vir
 c      vir1 = 0.0d0
       

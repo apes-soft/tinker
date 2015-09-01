@@ -76,12 +76,12 @@ c
 c
 c     zero out the pi-orbital torsion energy and first derivatives
 c
-      ept = 0.0d0
-      do i = 1, n
-         dept(1,i) = 0.0d0
-         dept(2,i) = 0.0d0
-         dept(3,i) = 0.0d0
-      end do
+C$$$      ept = 0.0d0
+C$$$      do i = 1, n
+C$$$         dept(1,i) = 0.0d0
+C$$$         dept(2,i) = 0.0d0
+C$$$         dept(3,i) = 0.0d0
+C$$$      end do
 
       th_id = 1
 !$    th_id = omp_get_thread_num() + 1
