@@ -194,6 +194,7 @@ c      if (use_orbit) call picalc ! no omp - not used
 
       if (use_list)  call nblist
 
+
 C$$$!$OMP parallel default(none) shared(n, deb, dea, deba, deub, deaa, 
 C$$$!$OMP& deopb, deopd, deid, deit, det, dept, debt, deat, dett, dev, 
 C$$$!$OMP& dec, decd, ded, dem, dep, des, delf, deg, dex, vir, einter, 
@@ -208,6 +209,9 @@ C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum)
 C$$$!$OMP& reduction(+:deb,vir)
 
 !$OMP parallel default(shared) 
+      
+      th_id = 1
+!$      th_id = omp_get_thread_num() + 1
 
 c
 c     zero out each of the first derivative components

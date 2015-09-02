@@ -71,21 +71,6 @@ c
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
       logical proceed
-!$    integer omp_get_thread_num
-c
-c
-c     zero out the pi-orbital torsion energy and first derivatives
-c
-C$$$      ept = 0.0d0
-C$$$      do i = 1, n
-C$$$         dept(1,i) = 0.0d0
-C$$$         dept(2,i) = 0.0d0
-C$$$         dept(3,i) = 0.0d0
-C$$$      end do
-
-      th_id = 1
-!$    th_id = omp_get_thread_num() + 1
-
 
 c
 c     calculate the pi-orbital torsion angle energy term

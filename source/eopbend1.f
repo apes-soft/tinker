@@ -63,21 +63,9 @@ c
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
       logical proceed
-!$    integer omp_get_thread_num
 
-c
-c
-c     zero out out-of-plane energy and first derivatives
-c
-C$$$      eopb = 0.0d0
-C$$$      do i = 1, n
-C$$$         deopb(1,i) = 0.0d0
-C$$$         deopb(2,i) = 0.0d0
-C$$$         deopb(3,i) = 0.0d0
-C$$$      end do
 
-      th_id = 1
-!$      th_id = omp_get_thread_num() + 1
+c Starting OpenMP DO region
 
 !$OMP DO private(i,ia,ib,ic,id,force,proceed,
 !$OMP& fgrp,xia,yia,zia,yib,xib,zib,xic,yic,zic,xid,yid,zid,xab,yab,

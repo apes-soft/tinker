@@ -39,29 +39,10 @@ c
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
       logical proceed
-!$    integer omp_get_thread_num
-c      integer tid
-c      real*8 viro(3,3)
-c
-c
-c     zero out the bond energy and first derivatives
-c
-C$$$      eb = 0.0d0
-C$$$      do i = 1, n   
-C$$$         deb(1,i) = 0.0d0
-C$$$         deb(2,i) = 0.0d0
-C$$$         deb(3,i) = 0.0d0
-C$$$      end do
-c      viro = vir
-c      vir1 = 0.0d0
-      
-
+ 
 c
 c     set OpenMP directives for the major loop structure
 c
-      th_id = 1
-!$      th_id = omp_get_thread_num() + 1
-c      print*, " TH_ID",th_id
 
 !$OMP DO private(ia, ib, ideal, force, proceed, fgrp,xab,yab,
 !$OMP& zab,rab,dt,dt2,e,deddt,expterm,bde,de,dedx,dedy,dedz,vxx,

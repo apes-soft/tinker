@@ -22,4 +22,5 @@ c
       integer nthread
       integer th_id
       save
+!$OMP threadprivate(th_id)
       end
