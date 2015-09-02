@@ -153,7 +153,7 @@ c
          end do
       end do
 
-      vir_th = 0.0d0
+c      vir_th = 0.0d0
 c      th_id = 1
 
 c setting omp locks
@@ -212,6 +212,13 @@ C$$$!$OMP& reduction(+:deb,vir)
       
       th_id = 1
 !$      th_id = omp_get_thread_num() + 1
+
+      do i=1,3
+         do j=1,3
+            vir_th(th_id,j,i) = 0.0d0
+         end do
+      end do
+
 
 c
 c     zero out each of the first derivative components
