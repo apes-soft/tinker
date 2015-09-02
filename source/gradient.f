@@ -44,13 +44,8 @@ c
       real*8 elrc, vlrc
       real*8 viro(3,3)
 !$    integer omp_get_thread_num
-c      integer(kind = 8),dimension(3,n):: lck_drv
-c      integer(kind = 8) :: lck_en
-c      integer(kind = 8),dimension(3,3) :: lck_vir
-      
 
-c      real*8 vir1(3.3),vir2(3,3),vir3(3,3)
-c
+
 c
 c     zero out each of the potential energy components
 c
@@ -153,11 +148,7 @@ c
          end do
       end do
 
-c      vir_th = 0.0d0
-c      th_id = 1
-
 c setting omp locks
-c      call omp_init_lock(lck_en)
 
       do i=1,n
 c         do j=1,3
@@ -165,16 +156,7 @@ c         do j=1,3
 c         end do
       end do
 
-c      do i=1,3
-c         do j=1,3
-c            call omp_init_lock(lck_vir(i))
-c         end do
-c      end do
-
       einter = 0.0d0
-c      vir1 = 0.0d0
-c      vir2 = 0.0d0
-c      vir3 = 0.0d0
 
       if (use_bounds .and. .not.use_rigid) call bounds ! no omp - used
       
@@ -206,7 +188,6 @@ C$$$!$OMP& use_opdist,use_improp, use_imptor, use_tors, use_pitors,
 C$$$!$OMP& use_strtor, use_angtor,use_tortor, use_vdw, use_extra, esum,  
 C$$$!$OMP& eb, ea,eba, eub, eaa, eopb, eopd, eid, eit, et, ept, ebt, eat, 
 C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum) 
-C$$$!$OMP& reduction(+:deb,vir)
 
 !$OMP parallel default(shared) 
       
@@ -224,7 +205,7 @@ c
 c     zero out each of the first derivative components
 c
       
-!$OMP DO schedule(dynamic,256)
+!$OMP DO schedule(guided)
       do i = 1, n
          do j = 1, 3
             deb(j,i) = 0.0d0
@@ -285,21 +266,16 @@ C$$$c     alter bond and torsion constants for pisystem
 C$$$c
 C$$$      if (use_orbit)  call picalc  ! no omp
 
-c!$OMP barrier
 
 c
 c     call the local geometry energy and gradient routines
 c
 
-      if (use_bond)  call ebond1
-c!$OMP barrier   
-c!$OMP flush    
+      if (use_bond)  call ebond1 
       if (use_angle)  call eangle1
       if (use_strbnd)  call estrbnd1
-      if (use_urey)  call eurey1
-           
+      if (use_urey)  call eurey1           
       if (use_opbend)  call eopbend1 
-
       if(use_tors) call etors1
       if (use_pitors)  call epitors1
       if (use_tortor)  call etortor1
