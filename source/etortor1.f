@@ -99,7 +99,7 @@ c     starting OpenMP DO region
 !$OMP& dedxu2,dedyu2,dedzu2,dedxv2,dedyv2,dedzv2,dedxib2,dedyib2,
 !$OMP& dedxic2,dedyic2,dedzic2,dedxid2,dedyid2,dedzid2,dedxie2,dedyie2,
 !$OMP& dedzie2,dedzib2,vxx,vyx,vzx,vyy,vzz,vxx2,vyx2,vzx2,vyy2,vzy2,
-!$OMP& vzz2,vzy) firstprivate(th_id) schedule(guided)
+!$OMP& vzz2,vzy)  schedule(guided)
 
       do itortor = 1, ntortor
          i = itt(1,itortor)

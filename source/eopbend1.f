@@ -75,7 +75,7 @@ c Starting OpenMP DO region
 !$OMP& dccdxid,dccdyid,dccdxia,dccdzid,deedxia,deedyia,deedzia,deedxic,
 !$OMP& deedyic,deedzic,deedxid,deedyid,deedzid,dedxia,dedyia,dedzia,
 !$OMP& dedxid,dedyid,dedzid,dedxib,dedyib,dedxic,dedyic,dedzic,dedzib,
-!$OMP& vxx,vyx,vzx,vyy,vzy,vzz) firstprivate(th_id)
+!$OMP& vxx,vyx,vzx,vyy,vzy,vzz) 
 !$OMP& schedule(guided)
 
 

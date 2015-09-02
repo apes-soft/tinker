@@ -71,7 +71,7 @@ c
 !$OMP& j,k,dr1,dr2,ddrdxia,ddrdyia,ddrdxic,ddrdyic,ddrdzic,
 !$OMP& termr, term1t,term2t,e,dedxia,dedyia,dedzia,ddrdzia,
 !$OMP& dedxic,dedyic,dedzic,dedxib,dedyib,dedzib,vxx,vyx,vzx,
-!$OMP& vyy,vzy,vzz, ddtdzia) firstprivate(th_id)
+!$OMP& vyy,vzy,vzz, ddtdzia) 
 !$OMP& schedule(guided)
 c
 c     calculate the stretch-bend energy and first derivatives

@@ -46,7 +46,7 @@ c
 
 !$OMP DO private(ia, ib, ideal, force, proceed, fgrp,xab,yab,
 !$OMP& zab,rab,dt,dt2,e,deddt,expterm,bde,de,dedx,dedy,dedz,vxx,
-!$OMP& vyx,vzx,vyy,vzy,vzz) firstprivate(th_id) schedule(guided)
+!$OMP& vyx,vzx,vyy,vzy,vzz)  schedule(guided)
 c
 c     calculate the bond stretch energy and first derivatives
 c

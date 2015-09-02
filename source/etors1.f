@@ -108,7 +108,7 @@ c
 !$OMP& dphi3,dphi4,dphi5,dphi6,e,dedphi,xca,yca,zca,xdb,ydb,dedxt,
 !$OMP& zdb,dedyt,dedzt,dedxu,dedyu,dedzu,dedxia,dedyia,dedzia,
 !$OMP& dedxib,dedyib,dedzib,dedxic,dedzic,dedxid,dedyid,dedzid,
-!$OMP& vxx,vyx,vzx,vyy,vzy,vzz,dedyic) firstprivate(th_id)
+!$OMP& vxx,vyx,vzx,vyy,vzy,vzz,dedyic) 
 !$OMP&  schedule(guided)
 c
 c     calculate the torsional angle energy and first derivatives

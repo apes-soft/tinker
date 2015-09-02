@@ -87,7 +87,7 @@ c
 !$OMP& dedzid,dedxiq,dedyiq,dedziq,dedzia,dedxib,dedyib,dedxia,
 !$OMP& dedzib,dedxie,dedyie,dedzie,dedxig,dedyig,dedzig,vxterm,vyterm,
 !$OMP& vzterm,vxx,vyx,vzx,vyy,vzy,dedyia,vzz)
-!$OMP& firstprivate(th_id)  schedule(guided)
+!$OMP&  schedule(guided)
 
 
       do i = 1, npitors

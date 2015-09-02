@@ -84,7 +84,7 @@ c
 !$OMP& zid,xad,yad,zad,xbd,ybd,zbd,xcd,ycd,zcd,xt,yt,zt,rt2,delta,xip,
 !$OMP& yip, zip, xap,yap,zap, xcp,ycp,zcp, rap2,rcp2,xm,ym,zm,rm,
 !$OMP& dedxip,dedyip,dedzip,delta2,ptrt2,term,dpdxia,dpdyia,dpdzia,
-!$OMP& dpdxic,dpdyic,dpdzic,dedxid,dedyid,dedzid) firstprivate(th_id)
+!$OMP& dpdxic,dpdyic,dpdzic,dedxid,dedyid,dedzid)
 !$OMP& schedule(guided)
 c
 c     calculate the bond angle bending energy term

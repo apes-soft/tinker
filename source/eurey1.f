@@ -45,7 +45,7 @@ c
 
 !$OMP DO private(ia,ic,ideal,force,proceed,fgrp,xac,yac,zac,rac,
 !$OMP& dt,dt2,e,deddt,de,dedx,dedy,dedz,vxx,vyx,vzx,vyy,vzy,vzz)
-!$OMP& firstprivate(th_id) schedule(guided)
+!$OMP&  schedule(guided)
 c
 c     calculate the Urey-Bradley 1-3 energy and first derivatives
 c
