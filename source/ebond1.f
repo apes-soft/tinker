@@ -112,22 +112,14 @@ c
 c
 c     increment the total bond energy and first derivatives
 c
+            en_th(th_id) = en_th(th_id) + e
 
-!$OMP atomic
-            eb = eb + e
-
-c            call OMP_set_lock(lck_drv(ia))
             drv_th(th_id,1,ia) = drv_th(th_id,1,ia) + dedx
             drv_th(th_id,2,ia) = drv_th(th_id,2,ia) + dedy
             drv_th(th_id,3,ia) = drv_th(th_id,3,ia) + dedz
-c            call OMP_unset_lock(lck_drv(ia))
-
-c            call OMP_set_lock(lck_drv(ib))
             drv_th(th_id,1,ib) = drv_th(th_id,1,ib) - dedx
             drv_th(th_id,2,ib) = drv_th(th_id,2,ib) - dedy
             drv_th(th_id,3,ib) = drv_th(th_id,3,ib) - dedz
-c            call OMP_unset_lock(lck_drv(ib))
-
 c
 c     increment the internal virial tensor components
 c

@@ -91,20 +91,13 @@ c
 c
 c     increment the total Urey-Bradley energy and first derivatives
 c
-!$OMP atomic
-            eub = eub + e
-
-c            call OMP_set_lock(lck_drv(ia))
+            en_th(th_id) = en_th(th_id) + e
             drv_th(th_id,1,ia) = drv_th(th_id,1,ia) + dedx
             drv_th(th_id,2,ia) = drv_th(th_id,2,ia) + dedy
             drv_th(th_id,3,ia) = drv_th(th_id,3,ia) + dedz
-c            call OMP_unset_lock(lck_drv(ia))
-
-c            call OMP_set_lock(lck_drv(ic))
             drv_th(th_id,1,ic) = drv_th(th_id,1,ic) - dedx
             drv_th(th_id,2,ic) = drv_th(th_id,2,ic) - dedy
             drv_th(th_id,3,ic) = drv_th(th_id,3,ic) - dedz
-c            call OMP_unset_lock(lck_drv(ic))
 c
 c     increment the internal virial tensor components
 c

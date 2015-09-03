@@ -81,6 +81,7 @@ c
 
       if(.not. allocated(vir_th)) allocate(vir_th(nthread,3,3))
       if(.not. allocated(drv_th)) allocate(drv_th(nthread,3,n))
+      if(.not. allocated(en_th)) allocate(en_th(nthread))
 c
 c     zero out the virial and the intermolecular energy
 c
@@ -140,6 +141,7 @@ C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum)
          end do
       end do
 
+      en_th(th_id) = 0.0d0
 c
 c     zero out each of the first derivative components
 c
@@ -206,10 +208,17 @@ c      if (use_extra)  call extra1
 c
 c     sum up to get the total energy and first derivatives
 
+
       esum = ea + eba + eub + eopb 
      &          + et  + ett + ev + ept
      &          + em + ep + eb 
     
+      esum  = esum + sum(en_th) 
+     
+
+      
+
+C     putting together the first derivatives
       do i = 1, n
          do j = 1, 3
             desum(j,i) = dev(j,i) + dem(j,i) + dep(j,i) 

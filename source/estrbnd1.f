@@ -188,26 +188,17 @@ c
 c
 c     increment the total stretch-bend energy and derivatives
 c
-!$OMP atomic
-               eba = eba + e
-
-c               call OMP_set_lock(lck_drv(ia))
+             
+               en_th(th_id) = en_th(th_id) + e
                drv_th(th_id,1,ia) = drv_th(th_id,1,ia) + dedxia
                drv_th(th_id,2,ia) = drv_th(th_id,2,ia) + dedyia
                drv_th(th_id,3,ia) = drv_th(th_id,3,ia) + dedzia
-c               call OMP_unset_lock(lck_drv(ia))
-
-c               call OMP_set_lock(lck_drv(ib))
                drv_th(th_id,1,ib) = drv_th(th_id,1,ib) + dedxib
                drv_th(th_id,2,ib) = drv_th(th_id,2,ib) + dedyib
                drv_th(th_id,3,ib) = drv_th(th_id,3,ib) + dedzib
-c               call OMP_unset_lock(lck_drv(ib))
-               
-c               call OMP_set_lock(lck_drv(ic))
                drv_th(th_id,1,ic) = drv_th(th_id,1,ic) + dedxic
                drv_th(th_id,2,ic) = drv_th(th_id,2,ic) + dedyic
                drv_th(th_id,3,ic) = drv_th(th_id,3,ic) + dedzic
-c               call OMP_unset_lock(lck_drv(ic))
 c
 c     increment the internal virial tensor components
 c
