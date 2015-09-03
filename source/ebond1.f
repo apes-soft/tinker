@@ -116,17 +116,17 @@ c
 !$OMP atomic
             eb = eb + e
 
-            call OMP_set_lock(lck_drv(ia))
-            deb(1,ia) = deb(1,ia) + dedx
-            deb(2,ia) = deb(2,ia) + dedy
-            deb(3,ia) = deb(3,ia) + dedz
-            call OMP_unset_lock(lck_drv(ia))
+c            call OMP_set_lock(lck_drv(ia))
+            drv_th(th_id,1,ia) = drv_th(th_id,1,ia) + dedx
+            drv_th(th_id,2,ia) = drv_th(th_id,2,ia) + dedy
+            drv_th(th_id,3,ia) = drv_th(th_id,3,ia) + dedz
+c            call OMP_unset_lock(lck_drv(ia))
 
-            call OMP_set_lock(lck_drv(ib))
-            deb(1,ib) = deb(1,ib) - dedx
-            deb(2,ib) = deb(2,ib) - dedy
-            deb(3,ib) = deb(3,ib) - dedz
-            call OMP_unset_lock(lck_drv(ib))
+c            call OMP_set_lock(lck_drv(ib))
+            drv_th(th_id,1,ib) = drv_th(th_id,1,ib) - dedx
+            drv_th(th_id,2,ib) = drv_th(th_id,2,ib) - dedy
+            drv_th(th_id,3,ib) = drv_th(th_id,3,ib) - dedz
+c            call OMP_unset_lock(lck_drv(ib))
 
 c
 c     increment the internal virial tensor components

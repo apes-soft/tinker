@@ -153,6 +153,7 @@ C$$$      if (allocated(deaa)) deallocate(deaa)
       
       if(.not. allocated(lck_drv)) allocate(lck_drv(n))
       if(.not. allocated(vir_th)) allocate(vir_th(nthread,3,3))
+      if(.not. allocated(drv_th)) allocate(drv_th(nthread,3,n))
 c
 c     zero out the virial and the intermolecular energy
 c
@@ -215,6 +216,11 @@ C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum)
          end do
       end do
 
+        do i=1,n
+         do j=1,3
+            drv_th(th_id,j,i) = 0.0d0
+         end do
+      end do
 
 c
 c     zero out each of the first derivative components
@@ -378,6 +384,16 @@ ccc!$OMP END DO
             end do
          end do
       end do
+
+
+      do i=1,n
+         do j = 1,3
+            do k=1,nthread
+               desum(j,i) = desum(j,i) + drv_th(k,j,i)
+            end do
+         end do
+      end do
+
 
 c      vir = vir + viro 
 
