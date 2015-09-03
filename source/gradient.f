@@ -53,27 +53,28 @@ c
       ea = 0.0d0
       eba = 0.0d0
       eub = 0.0d0
-      eaa = 0.0d0
+c      eaa = 0.0d0
       eopb = 0.0d0
-      eopd = 0.0d0
-      eid = 0.0d0
+c      eopd = 0.0d0
+c      eid = 0.0d0
       eit = 0.0d0
       et = 0.0d0
       ept = 0.0d0
-      ebt = 0.0d0
-      eat = 0.0d0
+c      ebt = 0.0d0
+c      eat = 0.0d0
       ett = 0.0d0
       ev = 0.0d0
-      ec = 0.0d0
-      ecd = 0.0d0
-      ed = 0.0d0
+c      ec = 0.0d0
+c      ecd = 0.0d0
+c      ed = 0.0d0
       em = 0.0d0
       ep = 0.0d0
-      er = 0.0d0
-      es = 0.0d0
-      elf = 0.0d0
-      eg = 0.0d0
-      ex = 0.0d0
+c      er = 0.0d0
+c      es = 0.0d0
+c      elf = 0.0d0
+c      eg = 0.0d0
+c      ex = 0.0d0
+
 c
 c     perform dynamic allocation of some global arrays
 c
@@ -84,27 +85,27 @@ c
             deallocate (dea)
             deallocate (deba)
             deallocate (deub)
-            deallocate (deaa)
+c            deallocate (deaa)
             deallocate (deopb)
-            deallocate (deopd)
-            deallocate (deid)
+c            deallocate (deopd)
+c            deallocate (deid)
             deallocate (deit)
             deallocate (det)
             deallocate (dept)
-            deallocate (debt)
-            deallocate (deat)
+c            deallocate (debt)
+c            deallocate (deat)
             deallocate (dett)
             deallocate (dev)
-            deallocate (dec)
-            deallocate (decd)
-            deallocate (ded)
+c            deallocate (dec)
+c            deallocate (decd)
+c            deallocate (ded)
             deallocate (dem)
             deallocate (dep)
-            deallocate (der)
-            deallocate (des)
-            deallocate (delf)
-            deallocate (deg)
-            deallocate (dex)
+c            deallocate (der)
+c            deallocate (des)
+c            deallocate (delf)
+c            deallocate (deg)
+c            deallocate (dex)
          end if
       end if
       if (.not. allocated(desum)) then
@@ -113,29 +114,43 @@ c
          allocate (dea(3,n))
          allocate (deba(3,n))
          allocate (deub(3,n))
-         allocate (deaa(3,n))
+c         allocate (deaa(3,n))
          allocate (deopb(3,n))
-         allocate (deopd(3,n))
-         allocate (deid(3,n))
+c         allocate (deopd(3,n))
+c         allocate (deid(3,n))
          allocate (deit(3,n))
          allocate (det(3,n))
          allocate (dept(3,n))
-         allocate (debt(3,n))
-         allocate (deat(3,n))
+c         allocate (debt(3,n))
+c         allocate (deat(3,n))
          allocate (dett(3,n))
          allocate (dev(3,n))
-         allocate (dec(3,n))
-         allocate (decd(3,n))
-         allocate (ded(3,n))
+c         allocate (dec(3,n))
+c         allocate (decd(3,n))
+c         allocate (ded(3,n))
          allocate (dem(3,n))
          allocate (dep(3,n))
-         allocate (der(3,n))
-         allocate (des(3,n))
-         allocate (delf(3,n))
-         allocate (deg(3,n))
-         allocate (dex(3,n))
+c         allocate (der(3,n))
+c         allocate (des(3,n))
+c         allocate (delf(3,n))
+c         allocate (deg(3,n))
+c         allocate (dex(3,n))
       end if
 
+C$$$      if (allocated(dex)) deallocate(dex)
+C$$$      if (allocated(deg)) deallocate(deg)
+C$$$      if (allocated(delf)) deallocate(delf)
+C$$$      if (allocated(des)) deallocate(des)
+C$$$      if (allocated(der)) deallocate(der)
+C$$$      if (allocated(ded)) deallocate(ded)
+C$$$      if (allocated(decd)) deallocate(decd)
+C$$$      if (allocated(dec)) deallocate(dec)
+C$$$      if (allocated(deat)) deallocate(deat)
+C$$$      if (allocated(debt)) deallocate(debt)
+C$$$      if (allocated(deid)) deallocate(deid)
+C$$$      if (allocated(deopd)) deallocate(deopd)
+C$$$      if (allocated(deaa)) deallocate(deaa)
+      
       if(.not. allocated(lck_drv)) allocate(lck_drv(n))
       if(.not. allocated(vir_th)) allocate(vir_th(nthread,3,3))
 c
@@ -144,7 +159,7 @@ c
       do i = 1, 3
          do j = 1, 3
             vir(j,i) = 0.0d0
-            viro(i,j) = 0.0d0
+c            viro(i,j) = 0.0d0
          end do
       end do
 
@@ -212,27 +227,27 @@ c
             dea(j,i) = 0.0d0
             deba(j,i) = 0.0d0
             deub(j,i) = 0.0d0
-            deaa(j,i) = 0.0d0
+c            deaa(j,i) = 0.0d0
             deopb(j,i) = 0.0d0
-            deopd(j,i) = 0.0d0
-            deid(j,i) = 0.0d0
-            deit(j,i) = 0.0d0
+c            deopd(j,i) = 0.0d0
+c            deid(j,i) = 0.0d0
+c            deit(j,i) = 0.0d0
             det(j,i) = 0.0d0
             dept(j,i) = 0.0d0
-            debt(j,i) = 0.0d0
-            deat(j,i) = 0.0d0
+c            debt(j,i) = 0.0d0
+c            deat(j,i) = 0.0d0
             dett(j,i) = 0.0d0
             dev(j,i) = 0.0d0
-            dec(j,i) = 0.0d0
-            decd(j,i) = 0.0d0
-            ded(j,i) = 0.0d0
+c            dec(j,i) = 0.0d0
+c            decd(j,i) = 0.0d0
+c            ded(j,i) = 0.0d0
             dem(j,i) = 0.0d0
             dep(j,i) = 0.0d0
-            der(j,i) = 0.0d0
-            des(j,i) = 0.0d0
-            delf(j,i) = 0.0d0
-            deg(j,i) = 0.0d0
-            dex(j,i) = 0.0d0
+c            der(j,i) = 0.0d0
+c            des(j,i) = 0.0d0
+c            delf(j,i) = 0.0d0
+c            deg(j,i) = 0.0d0
+c            dex(j,i) = 0.0d0
          end do
       end do
 !$OMP END DO
@@ -314,41 +329,57 @@ c
       if (use_solv)  call esolv1
       if (use_metal)  call emetal1
       if (use_geom)  call egeom1
-      if (use_extra)  call extra1
+c      if (use_extra)  call extra1
 c
 c     sum up to get the total energy and first derivatives
-c
-      esum = eb + ea + eba + eub + eaa + eopb + eopd + eid + eit
-     &          + et + ept + ebt + eat + ett + ev + ec + ecd + ed
-     &          + em + ep + er + es + elf + eg + ex
-    
 
-ccc!$OMP DO schedule(guided)      
+      esum = ea + eba + eub + eopb 
+     &          + et  + ett + ev + ept
+     &          + em + ep + eb 
+    
       do i = 1, n
          do j = 1, 3
-            desum(j,i) = deb(j,i) + dea(j,i) + deba(j,i)
-     &                      + deub(j,i) + deaa(j,i) + deopb(j,i)
-     &                      + deopd(j,i) + deid(j,i) + deit(j,i)
-     &                      + det(j,i) + dept(j,i) + debt(j,i)
-     &                      + deat(j,i) + dett(j,i) + dev(j,i)
-     &                      + dec(j,i) + decd(j,i) + ded(j,i)
-     &                      + dem(j,i) + dep(j,i) + der(j,i)
-     &                      + des(j,i) + delf(j,i) + deg(j,i)
-     &                      + dex(j,i)
+            desum(j,i) = dea(j,i) + deba(j,i)
+     &                      + deub(j,i) + deopb(j,i)
+     &                      + det(j,i) + dept(j,i)
+     &                      + dett(j,i) + dev(j,i)
+     &                      + dem(j,i) + dep(j,i) + deb(j,i)
          end do
       end do
+
+
+c
+C$$$      esum = eb + ea + eba + eub + eaa + eopb + eopd + eid + eit
+C$$$     &          + et + ept + ebt + eat + ett + ev + ec + ecd + ed
+C$$$     &          + em + ep + er + es + elf + eg + ex
+    
+
+C$$$ccc!$OMP DO schedule(guided)      
+C$$$      do i = 1, n
+C$$$         do j = 1, 3
+C$$$            desum(j,i) = deb(j,i) + dea(j,i) + deba(j,i)
+C$$$     &                      + deub(j,i) + deaa(j,i) + deopb(j,i)
+C$$$     &                      + deopd(j,i) + deid(j,i) + deit(j,i)
+C$$$     &                      + det(j,i) + dept(j,i) + debt(j,i)
+C$$$     &                      + deat(j,i) + dett(j,i) + dev(j,i)
+C$$$     &                      + dec(j,i) + decd(j,i) + ded(j,i)
+C$$$     &                      + dem(j,i) + dep(j,i) + der(j,i)
+C$$$     &                      + des(j,i) + delf(j,i) + deg(j,i)
+C$$$     &                      + dex(j,i)
+C$$$         end do
+C$$$      end do
 
 ccc!$OMP END DO
 
       do i =1,3
          do j = 1,3
             do k = 1,nthread
-               viro(j,i) = viro(j,i) + vir_th(k,j,i)
+               vir(j,i) = vir(j,i) + vir_th(k,j,i)
             end do
          end do
       end do
 
-      vir = vir + viro 
+c      vir = vir + viro 
 
       energy = esum
         
@@ -360,8 +391,6 @@ ccc!$OMP END DO
 
 c  destroy omp locks
 
-c        call omp_destroy_lock(lck_en)
-c        call omp_destroy_lock(lck_vir)
         call omp_destroy_lock(lck_drv)
      
 c
