@@ -262,41 +262,41 @@ c
 !$OMP atomic
                ept = ept + e
 
-               call OMP_set_lock(lck_drv(ia))
-               dept(1,ia) = dept(1,ia) + dedxia
-               dept(2,ia) = dept(2,ia) + dedyia
-               dept(3,ia) = dept(3,ia) + dedzia
-               call OMP_unset_lock(lck_drv(ia))
+c               call OMP_set_lock(lck_drv(ia))
+               drv_th(th_id,1,ia) = drv_th(th_id,1,ia) + dedxia
+               drv_th(th_id,2,ia) = drv_th(th_id,2,ia) + dedyia
+               drv_th(th_id,3,ia) = drv_th(th_id,3,ia) + dedzia
+c               call OMP_unset_lock(lck_drv(ia))
 
-               call OMP_set_lock(lck_drv(ib))
-               dept(1,ib) = dept(1,ib) + dedxib
-               dept(2,ib) = dept(2,ib) + dedyib
-               dept(3,ib) = dept(3,ib) + dedzib
-               call OMP_unset_lock(lck_drv(ib))
+c               call OMP_set_lock(lck_drv(ib))
+               drv_th(th_id,1,ib) = drv_th(th_id,1,ib) + dedxib
+               drv_th(th_id,2,ib) = drv_th(th_id,2,ib) + dedyib
+               drv_th(th_id,3,ib) = drv_th(th_id,3,ib) + dedzib
+c               call OMP_unset_lock(lck_drv(ib))
 
-               call OMP_set_lock(lck_drv(ic))
-               dept(1,ic) = dept(1,ic) + dedxic
-               dept(2,ic) = dept(2,ic) + dedyic
-               dept(3,ic) = dept(3,ic) + dedzic
-               call OMP_unset_lock(lck_drv(ic))
+c               call OMP_set_lock(lck_drv(ic))
+               drv_th(th_id,1,ic) = drv_th(th_id,1,ic) + dedxic
+               drv_th(th_id,2,ic) = drv_th(th_id,2,ic) + dedyic
+               drv_th(th_id,3,ic) = drv_th(th_id,3,ic) + dedzic
+c               call OMP_unset_lock(lck_drv(ic))
 
-               call OMP_set_lock(lck_drv(id))
-               dept(1,id) = dept(1,id) + dedxid
-               dept(2,id) = dept(2,id) + dedyid
-               dept(3,id) = dept(3,id) + dedzid
-               call OMP_unset_lock(lck_drv(id))
+c               call OMP_set_lock(lck_drv(id))
+               drv_th(th_id,1,id) = drv_th(th_id,1,id) + dedxid
+               drv_th(th_id,2,id) = drv_th(th_id,2,id) + dedyid
+               drv_th(th_id,3,id) = drv_th(th_id,3,id) + dedzid
+c               call OMP_unset_lock(lck_drv(id))
 
-               call OMP_set_lock(lck_drv(ie))
-               dept(1,ie) = dept(1,ie) + dedxie
-               dept(2,ie) = dept(2,ie) + dedyie
-               dept(3,ie) = dept(3,ie) + dedzie
-               call OMP_unset_lock(lck_drv(ie))
+c               call OMP_set_lock(lck_drv(ie))
+               drv_th(th_id,1,ie) = drv_th(th_id,1,ie) + dedxie
+               drv_th(th_id,2,ie) = drv_th(th_id,2,ie) + dedyie
+               drv_th(th_id,3,ie) = drv_th(th_id,3,ie) + dedzie
+c               call OMP_unset_lock(lck_drv(ie))
 
-               call OMP_set_lock(lck_drv(ig))
-               dept(1,ig) = dept(1,ig) + dedxig
-               dept(2,ig) = dept(2,ig) + dedyig
-               dept(3,ig) = dept(3,ig) + dedzig
-               call OMP_unset_lock(lck_drv(ig))
+c               call OMP_set_lock(lck_drv(ig))
+               drv_th(th_id,1,ig) = drv_th(th_id,1,ig) + dedxig
+               drv_th(th_id,2,ig) = drv_th(th_id,2,ig) + dedyig
+               drv_th(th_id,3,ig) = drv_th(th_id,3,ig) + dedzig
+c               call OMP_unset_lock(lck_drv(ig))
 c
 c     increment the internal virial tensor components
 c
