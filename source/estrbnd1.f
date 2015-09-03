@@ -191,23 +191,23 @@ c
 !$OMP atomic
                eba = eba + e
 
-               call OMP_set_lock(lck_drv(ia))
-               deba(1,ia) = deba(1,ia) + dedxia
-               deba(2,ia) = deba(2,ia) + dedyia
-               deba(3,ia) = deba(3,ia) + dedzia
-               call OMP_unset_lock(lck_drv(ia))
+c               call OMP_set_lock(lck_drv(ia))
+               drv_th(th_id,1,ia) = drv_th(th_id,1,ia) + dedxia
+               drv_th(th_id,2,ia) = drv_th(th_id,2,ia) + dedyia
+               drv_th(th_id,3,ia) = drv_th(th_id,3,ia) + dedzia
+c               call OMP_unset_lock(lck_drv(ia))
 
-               call OMP_set_lock(lck_drv(ib))
-               deba(1,ib) = deba(1,ib) + dedxib
-               deba(2,ib) = deba(2,ib) + dedyib
-               deba(3,ib) = deba(3,ib) + dedzib
-               call OMP_unset_lock(lck_drv(ib))
+c               call OMP_set_lock(lck_drv(ib))
+               drv_th(th_id,1,ib) = drv_th(th_id,1,ib) + dedxib
+               drv_th(th_id,2,ib) = drv_th(th_id,2,ib) + dedyib
+               drv_th(th_id,3,ib) = drv_th(th_id,3,ib) + dedzib
+c               call OMP_unset_lock(lck_drv(ib))
                
-               call OMP_set_lock(lck_drv(ic))
-               deba(1,ic) = deba(1,ic) + dedxic
-               deba(2,ic) = deba(2,ic) + dedyic
-               deba(3,ic) = deba(3,ic) + dedzic
-               call OMP_unset_lock(lck_drv(ic))
+c               call OMP_set_lock(lck_drv(ic))
+               drv_th(th_id,1,ic) = drv_th(th_id,1,ic) + dedxic
+               drv_th(th_id,2,ic) = drv_th(th_id,2,ic) + dedyic
+               drv_th(th_id,3,ic) = drv_th(th_id,3,ic) + dedzic
+c               call OMP_unset_lock(lck_drv(ic))
 c
 c     increment the internal virial tensor components
 c
