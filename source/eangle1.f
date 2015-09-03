@@ -202,23 +202,23 @@ c                  call OMP_set_lock(lck_en)
                   ea = ea + e
 c                  call OMP_unset_lock(lck_en)
 
-                  call OMP_set_lock(lck_drv(ia))
-                  dea(1,ia) = dea(1,ia) + dedxia
-                  dea(2,ia) = dea(2,ia) + dedyia
-                  dea(3,ia) = dea(3,ia) + dedzia
-                  call OMP_unset_lock(lck_drv(ia))
+c                  call OMP_set_lock(lck_drv(ia))
+                  drv_th(th_id,1,ia) = drv_th(th_id,1,ia) + dedxia
+                  drv_th(th_id,2,ia) = drv_th(th_id,2,ia) + dedyia
+                  drv_th(th_id,3,ia) = drv_th(th_id,3,ia) + dedzia
+c                  call OMP_unset_lock(lck_drv(ia))
 
-                  call OMP_set_lock(lck_drv(ib))
-                  dea(1,ib) = dea(1,ib) + dedxib
-                  dea(2,ib) = dea(2,ib) + dedyib
-                  dea(3,ib) = dea(3,ib) + dedzib
-                  call OMP_unset_lock(lck_drv(ib))
+c                  call OMP_set_lock(lck_drv(ib))
+                  drv_th(th_id,1,ib) = drv_th(th_id,1,ib) + dedxib
+                  drv_th(th_id,2,ib) = drv_th(th_id,2,ib) + dedyib
+                  drv_th(th_id,3,ib) = drv_th(th_id,3,ib) + dedzib
+c                  call OMP_unset_lock(lck_drv(ib))
                   
-                  call OMP_set_lock(lck_drv(ic))
-                  dea(1,ic) = dea(1,ic) + dedxic
-                  dea(2,ic) = dea(2,ic) + dedyic
-                  dea(3,ic) = dea(3,ic) + dedzic
-                  call OMP_unset_lock(lck_drv(ic))
+c                  call OMP_set_lock(lck_drv(ic))
+                  drv_th(th_id,1,ic) = drv_th(th_id,1,ic) + dedxic
+                  drv_th(th_id,2,ic) = drv_th(th_id,2,ic) + dedyic
+                  drv_th(th_id,3,ic) = drv_th(th_id,3,ic) + dedzic
+c                  call OMP_unset_lock(lck_drv(ic))
 c
 c     increment the internal virial tensor components
 c
@@ -370,29 +370,29 @@ c                  call OMP_set_lock(lck_en)
                   ea = ea + e
 c                  call OMP_unset_lock(lck_en)
 
-                  call OMP_set_lock(lck_drv(ia))
-                  dea(1,ia) = dea(1,ia) + dedxia
-                  dea(2,ia) = dea(2,ia) + dedyia
-                  dea(3,ia) = dea(3,ia) + dedzia
-                  call OMP_unset_lock(lck_drv(ia))
+c                  call OMP_set_lock(lck_drv(ia))
+                  drv_th(th_id,1,ia) = drv_th(th_id,1,ia) + dedxia
+                  drv_th(th_id,2,ia) = drv_th(th_id,2,ia) + dedyia
+                  drv_th(th_id,3,ia) = drv_th(th_id,3,ia) + dedzia
+c                  call OMP_unset_lock(lck_drv(ia))
                   
-                  call OMP_set_lock(lck_drv(ib))
-                  dea(1,ib) = dea(1,ib) + dedxib
-                  dea(2,ib) = dea(2,ib) + dedyib
-                  dea(3,ib) = dea(3,ib) + dedzib
-                  call OMP_unset_lock(lck_drv(ib))
+c                  call OMP_set_lock(lck_drv(ib))
+                  drv_th(th_id,1,ib) = drv_th(th_id,1,ib) + dedxib
+                  drv_th(th_id,2,ib) = drv_th(th_id,2,ib) + dedyib
+                  drv_th(th_id,3,ib) = drv_th(th_id,3,ib) + dedzib
+c                  call OMP_unset_lock(lck_drv(ib))
 
-                  call OMP_set_lock(lck_drv(ic))
-                  dea(1,ic) = dea(1,ic) + dedxic
-                  dea(2,ic) = dea(2,ic) + dedyic
-                  dea(3,ic) = dea(3,ic) + dedzic
-                  call OMP_unset_lock(lck_drv(ic))
+c                  call OMP_set_lock(lck_drv(ic))
+                  drv_th(th_id,1,ic) = drv_th(th_id,1,ic) + dedxic
+                  drv_th(th_id,2,ic) = drv_th(th_id,2,ic) + dedyic
+                  drv_th(th_id,3,ic) = drv_th(th_id,3,ic) + dedzic
+c                  call OMP_unset_lock(lck_drv(ic))
 
-                  call OMP_set_lock(lck_drv(id))
-                  dea(1,id) = dea(1,id) + dedxid
-                  dea(2,id) = dea(2,id) + dedyid
-                  dea(3,id) = dea(3,id) + dedzid
-                  call OMP_unset_lock(lck_drv(id))
+c                  call OMP_set_lock(lck_drv(id))
+                  drv_th(th_id,1,id) = drv_th(th_id,1,id) + dedxid
+                  drv_th(th_id,2,id) = drv_th(th_id,2,id) + dedyid
+                  drv_th(th_id,3,id) = drv_th(th_id,3,id) + dedzid
+c                  call OMP_unset_lock(lck_drv(id))
 c
 c     increment the internal virial tensor components
 c
