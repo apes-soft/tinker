@@ -270,29 +270,29 @@ c     increment the total torsional angle energy and gradient
 c
 !$OMP atomic
                et = et + e
-               call OMP_set_lock(lck_drv(ia))
-               det(1,ia) = det(1,ia) + dedxia
-               det(2,ia) = det(2,ia) + dedyia
-               det(3,ia) = det(3,ia) + dedzia
-               call OMP_unset_lock(lck_drv(ia))
+c               call OMP_set_lock(lck_drv(ia))
+               drv_th(th_id,1,ia) = drv_th(th_id,1,ia) + dedxia
+               drv_th(th_id,2,ia) = drv_th(th_id,2,ia) + dedyia
+               drv_th(th_id,3,ia) = drv_th(th_id,3,ia) + dedzia
+c               call OMP_unset_lock(lck_drv(ia))
 
-               call OMP_set_lock(lck_drv(ib))                 
-               det(1,ib) = det(1,ib) + dedxib
-               det(2,ib) = det(2,ib) + dedyib
-               det(3,ib) = det(3,ib) + dedzib
-               call OMP_unset_lock(lck_drv(ib))
+c               call OMP_set_lock(lck_drv(ib))                 
+               drv_th(th_id,1,ib) = drv_th(th_id,1,ib) + dedxib
+               drv_th(th_id,2,ib) = drv_th(th_id,2,ib) + dedyib
+               drv_th(th_id,3,ib) = drv_th(th_id,3,ib) + dedzib
+c               call OMP_unset_lock(lck_drv(ib))
 
-               call OMP_set_lock(lck_drv(ic))
-               det(1,ic) = det(1,ic) + dedxic
-               det(2,ic) = det(2,ic) + dedyic
-               det(3,ic) = det(3,ic) + dedzic
-               call OMP_unset_lock(lck_drv(ic))
+c               call OMP_set_lock(lck_drv(ic))
+               drv_th(th_id,1,ic) = drv_th(th_id,1,ic) + dedxic
+               drv_th(th_id,2,ic) = drv_th(th_id,2,ic) + dedyic
+               drv_th(th_id,3,ic) = drv_th(th_id,3,ic) + dedzic
+c               call OMP_unset_lock(lck_drv(ic))
 
-               call OMP_set_lock(lck_drv(id))
-               det(1,id) = det(1,id) + dedxid
-               det(2,id) = det(2,id) + dedyid
-               det(3,id) = det(3,id) + dedzid
-               call OMP_unset_lock(lck_drv(id))
+c               call OMP_set_lock(lck_drv(id))
+               drv_th(th_id,1,id) = drv_th(th_id,1,id) + dedxid
+               drv_th(th_id,2,id) = drv_th(th_id,2,id) + dedyid
+               drv_th(th_id,3,id) = drv_th(th_id,3,id) + dedzid
+c               call OMP_unset_lock(lck_drv(id))
 c
 c     increment the internal virial tensor components
 c
