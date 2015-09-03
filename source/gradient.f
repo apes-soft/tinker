@@ -42,7 +42,6 @@ c
       real*8 energy,cutoff
       real*8 derivs(3,*)
       real*8 elrc, vlrc
-      real*8 viro(3,3)
 !$    integer omp_get_thread_num
 
 
@@ -53,27 +52,14 @@ c
       ea = 0.0d0
       eba = 0.0d0
       eub = 0.0d0
-c      eaa = 0.0d0
       eopb = 0.0d0
-c      eopd = 0.0d0
-c      eid = 0.0d0
       eit = 0.0d0
       et = 0.0d0
       ept = 0.0d0
-c      ebt = 0.0d0
-c      eat = 0.0d0
       ett = 0.0d0
       ev = 0.0d0
-c      ec = 0.0d0
-c      ecd = 0.0d0
-c      ed = 0.0d0
       em = 0.0d0
       ep = 0.0d0
-c      er = 0.0d0
-c      es = 0.0d0
-c      elf = 0.0d0
-c      eg = 0.0d0
-c      ex = 0.0d0
 
 c
 c     perform dynamic allocation of some global arrays
@@ -81,77 +67,18 @@ c
       if (allocated(desum)) then
          if (size(desum) .lt. 3*n) then
             deallocate (desum)
-            deallocate (deb)
-            deallocate (dea)
-            deallocate (deba)
-            deallocate (deub)
-c            deallocate (deaa)
-            deallocate (deopb)
-c            deallocate (deopd)
-c            deallocate (deid)
-            deallocate (deit)
-            deallocate (det)
-            deallocate (dept)
-c            deallocate (debt)
-c            deallocate (deat)
-            deallocate (dett)
             deallocate (dev)
-c            deallocate (dec)
-c            deallocate (decd)
-c            deallocate (ded)
             deallocate (dem)
             deallocate (dep)
-c            deallocate (der)
-c            deallocate (des)
-c            deallocate (delf)
-c            deallocate (deg)
-c            deallocate (dex)
          end if
       end if
       if (.not. allocated(desum)) then
          allocate (desum(3,n))
-         allocate (deb(3,n))
-         allocate (dea(3,n))
-         allocate (deba(3,n))
-         allocate (deub(3,n))
-c         allocate (deaa(3,n))
-         allocate (deopb(3,n))
-c         allocate (deopd(3,n))
-c         allocate (deid(3,n))
-         allocate (deit(3,n))
-         allocate (det(3,n))
-         allocate (dept(3,n))
-c         allocate (debt(3,n))
-c         allocate (deat(3,n))
-         allocate (dett(3,n))
          allocate (dev(3,n))
-c         allocate (dec(3,n))
-c         allocate (decd(3,n))
-c         allocate (ded(3,n))
          allocate (dem(3,n))
          allocate (dep(3,n))
-c         allocate (der(3,n))
-c         allocate (des(3,n))
-c         allocate (delf(3,n))
-c         allocate (deg(3,n))
-c         allocate (dex(3,n))
       end if
 
-C$$$      if (allocated(dex)) deallocate(dex)
-C$$$      if (allocated(deg)) deallocate(deg)
-C$$$      if (allocated(delf)) deallocate(delf)
-C$$$      if (allocated(des)) deallocate(des)
-C$$$      if (allocated(der)) deallocate(der)
-C$$$      if (allocated(ded)) deallocate(ded)
-C$$$      if (allocated(decd)) deallocate(decd)
-C$$$      if (allocated(dec)) deallocate(dec)
-C$$$      if (allocated(deat)) deallocate(deat)
-C$$$      if (allocated(debt)) deallocate(debt)
-C$$$      if (allocated(deid)) deallocate(deid)
-C$$$      if (allocated(deopd)) deallocate(deopd)
-C$$$      if (allocated(deaa)) deallocate(deaa)
-      
-      if(.not. allocated(lck_drv)) allocate(lck_drv(n))
       if(.not. allocated(vir_th)) allocate(vir_th(nthread,3,3))
       if(.not. allocated(drv_th)) allocate(drv_th(nthread,3,n))
 c
@@ -160,22 +87,13 @@ c
       do i = 1, 3
          do j = 1, 3
             vir(j,i) = 0.0d0
-c            viro(i,j) = 0.0d0
          end do
-      end do
-
-c setting omp locks
-
-      do i=1,n
-c         do j=1,3
-            call omp_init_lock(lck_drv(i))
-c         end do
       end do
 
       einter = 0.0d0
 
       if (use_bounds .and. .not.use_rigid) call bounds ! no omp - used
-      
+     
       
       cutoff = 0.0d0
       call replica (cutoff)     ! no omp
@@ -229,63 +147,12 @@ c
 !$OMP DO schedule(guided)
       do i = 1, n
          do j = 1, 3
-            deb(j,i) = 0.0d0
-            dea(j,i) = 0.0d0
-            deba(j,i) = 0.0d0
-            deub(j,i) = 0.0d0
-c            deaa(j,i) = 0.0d0
-            deopb(j,i) = 0.0d0
-c            deopd(j,i) = 0.0d0
-c            deid(j,i) = 0.0d0
-c            deit(j,i) = 0.0d0
-            det(j,i) = 0.0d0
-            dept(j,i) = 0.0d0
-c            debt(j,i) = 0.0d0
-c            deat(j,i) = 0.0d0
-            dett(j,i) = 0.0d0
             dev(j,i) = 0.0d0
-c            dec(j,i) = 0.0d0
-c            decd(j,i) = 0.0d0
-c            ded(j,i) = 0.0d0
             dem(j,i) = 0.0d0
             dep(j,i) = 0.0d0
-c            der(j,i) = 0.0d0
-c            des(j,i) = 0.0d0
-c            delf(j,i) = 0.0d0
-c            deg(j,i) = 0.0d0
-c            dex(j,i) = 0.0d0
          end do
       end do
 !$OMP END DO
-
-
-c
-c     maintain any periodic boundary conditions
-c
-
-c      if (use_bounds .and. .not.use_rigid)  call bounds ! no omp
-c
-c     update the pairwise interaction neighbor lists
-c
-
-c!$OMP master       
-c      if (use_list)  call nblist
-c!$OMP end master
-
-
-c
-c     remove any previous use of the replicates method
-c
-C$$$      cutoff = 0.0d0
-C$$$      call replica (cutoff)  ! no omp
-C$$$c
-C$$$c     many implicit solvation models require Born radii
-C$$$c
-C$$$      if (use_born)  call born ! no omp 
-C$$$c
-C$$$c     alter bond and torsion constants for pisystem
-C$$$c
-C$$$      if (use_orbit)  call picalc  ! no omp
 
 
 c
@@ -345,37 +212,13 @@ c     sum up to get the total energy and first derivatives
     
       do i = 1, n
          do j = 1, 3
-            desum(j,i) = dea(j,i) + deba(j,i)
-     &                      + deub(j,i) + deopb(j,i)
-     &                      + det(j,i) + dept(j,i)
-     &                      + dett(j,i) + dev(j,i)
-     &                      + dem(j,i) + dep(j,i) + deb(j,i)
+            desum(j,i) = dev(j,i) + dem(j,i) + dep(j,i) 
+            do k=1,nthread
+               desum(j,i) = desum(j,i) + drv_th(k,j,i)
+            end do
          end do
       end do
 
-
-c
-C$$$      esum = eb + ea + eba + eub + eaa + eopb + eopd + eid + eit
-C$$$     &          + et + ept + ebt + eat + ett + ev + ec + ecd + ed
-C$$$     &          + em + ep + er + es + elf + eg + ex
-    
-
-C$$$ccc!$OMP DO schedule(guided)      
-C$$$      do i = 1, n
-C$$$         do j = 1, 3
-C$$$            desum(j,i) = deb(j,i) + dea(j,i) + deba(j,i)
-C$$$     &                      + deub(j,i) + deaa(j,i) + deopb(j,i)
-C$$$     &                      + deopd(j,i) + deid(j,i) + deit(j,i)
-C$$$     &                      + det(j,i) + dept(j,i) + debt(j,i)
-C$$$     &                      + deat(j,i) + dett(j,i) + dev(j,i)
-C$$$     &                      + dec(j,i) + decd(j,i) + ded(j,i)
-C$$$     &                      + dem(j,i) + dep(j,i) + der(j,i)
-C$$$     &                      + des(j,i) + delf(j,i) + deg(j,i)
-C$$$     &                      + dex(j,i)
-C$$$         end do
-C$$$      end do
-
-ccc!$OMP END DO
 
       do i =1,3
          do j = 1,3
@@ -386,17 +229,6 @@ ccc!$OMP END DO
       end do
 
 
-      do i=1,n
-         do j = 1,3
-            do k=1,nthread
-               desum(j,i) = desum(j,i) + drv_th(k,j,i)
-            end do
-         end do
-      end do
-
-
-c      vir = vir + viro 
-
       energy = esum
         
         do i=1, n
@@ -404,11 +236,7 @@ c      vir = vir + viro
               derivs(j,i) = desum(j,i)
            end do 
         end do
-
-c  destroy omp locks
-
-        call omp_destroy_lock(lck_drv)
-     
+  
 c
 c     check for an illegal value for the total energy
 c
