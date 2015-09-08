@@ -32,7 +32,7 @@ c
       use virial
       use openmp
       implicit none
-      integer i,iopbend
+      integer i,iopbend,j
       integer ia,ib,ic,id
       real*8 e,angle,force
       real*8 dot,cosine,fgrp
@@ -64,6 +64,8 @@ c
       real*8 vyx,vzx,vzy
       logical proceed
 
+
+      vir_tmp = 0.0d0
 
 c Starting OpenMP DO region
 
@@ -258,19 +260,27 @@ c
                vyy = yab*dedyia + ycb*dedyic + ydb*dedyid
                vzy = zab*dedyia + zcb*dedyic + zdb*dedyid
                vzz = zab*dedzia + zcb*dedzic + zdb*dedzid
-               vir_th(th_id,1,1) = vir_th(th_id,1,1) + vxx
-               vir_th(th_id,2,1) = vir_th(th_id,2,1) + vyx
-               vir_th(th_id,3,1) = vir_th(th_id,3,1) + vzx
-               vir_th(th_id,1,2) = vir_th(th_id,1,2) + vyx
-               vir_th(th_id,2,2) = vir_th(th_id,2,2) + vyy
-               vir_th(th_id,3,2) = vir_th(th_id,3,2) + vzy
-               vir_th(th_id,1,3) = vir_th(th_id,1,3) + vzx
-               vir_th(th_id,2,3) = vir_th(th_id,2,3) + vzy
-               vir_th(th_id,3,3) = vir_th(th_id,3,3) + vzz
+               vir_tmp(1,1) = vir_tmp(1,1) + vxx
+               vir_tmp(2,1) = vir_tmp(2,1) + vyx
+               vir_tmp(3,1) = vir_tmp(3,1) + vzx
+               vir_tmp(1,2) = vir_tmp(1,2) + vyx
+               vir_tmp(2,2) = vir_tmp(2,2) + vyy
+               vir_tmp(3,2) = vir_tmp(3,2) + vzy
+               vir_tmp(1,3) = vir_tmp(1,3) + vzx
+               vir_tmp(2,3) = vir_tmp(2,3) + vzy
+               vir_tmp(3,3) = vir_tmp(3,3) + vzz
             end if
          end if
       end do
 !$OMP end do NOWAIT
+
+      
+      do i=1,3
+         do j=1,3
+            vir_th(th_id,j,i) = vir_th(th_id,j,i) +  vir_tmp(j,i)
+         end do
+      end do
+
 
       return
       end

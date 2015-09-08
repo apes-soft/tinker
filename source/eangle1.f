@@ -32,7 +32,7 @@ c
       use virial
       use openmp
       implicit none
-      integer i,ia,ib,ic,id
+      integer i,ia,ib,ic,id,j
       real*8 e
       real*8 ideal,force
       real*8 fold,factor,dot
@@ -74,6 +74,8 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
+
+      vir_tmp = 0.0d0
 
 
 !$OMP DO private(ia,ib,ic,id,ideal,force,proceed,fgrp,xia, yia, zia, 
@@ -216,15 +218,15 @@ c
                   vyy = yab*dedyia + ycb*dedyic
                   vzy = zab*dedyia + zcb*dedyic
                   vzz = zab*dedzia + zcb*dedzic
-                  vir_th(th_id,1,1) = vir_th(th_id,1,1) + vxx
-                  vir_th(th_id,2,1) = vir_th(th_id,2,1) + vyx
-                  vir_th(th_id,3,1) = vir_th(th_id,3,1) + vzx
-                  vir_th(th_id,1,2) = vir_th(th_id,1,2) + vyx
-                  vir_th(th_id,2,2) = vir_th(th_id,2,2) + vyy
-                  vir_th(th_id,3,2) = vir_th(th_id,3,2) + vzy
-                  vir_th(th_id,1,3) = vir_th(th_id,1,3) + vzx
-                  vir_th(th_id,2,3) = vir_th(th_id,2,3) + vzy
-                  vir_th(th_id,3,3) = vir_th(th_id,3,3) + vzz
+                  vir_tmp(1,1) = vir_tmp(1,1) + vxx
+                  vir_tmp(2,1) = vir_tmp(2,1) + vyx
+                  vir_tmp(3,1) = vir_tmp(3,1) + vzx
+                  vir_tmp(1,2) = vir_tmp(1,2) + vyx
+                  vir_tmp(2,2) = vir_tmp(2,2) + vyy
+                  vir_tmp(3,2) = vir_tmp(3,2) + vzy
+                  vir_tmp(1,3) = vir_tmp(1,3) + vzx
+                  vir_tmp(2,3) = vir_tmp(2,3) + vzy
+                  vir_tmp(3,3) = vir_tmp(3,3) + vzz
                end if
 c
 c     compute the projected in-plane angle energy and gradient
@@ -368,15 +370,15 @@ c
                   vyy = yad*dedyia + ybd*dedyib + ycd*dedyic
                   vzy = zad*dedyia + zbd*dedyib + zcd*dedyic
                   vzz = zad*dedzia + zbd*dedzib + zcd*dedzic
-                  vir_th(th_id,1,1) = vir_th(th_id,1,1) + vxx
-                  vir_th(th_id,2,1) = vir_th(th_id,2,1) + vyx
-                  vir_th(th_id,3,1) = vir_th(th_id,3,1) + vzx
-                  vir_th(th_id,1,2) = vir_th(th_id,1,2) + vyx
-                  vir_th(th_id,2,2) = vir_th(th_id,2,2) + vyy
-                  vir_th(th_id,3,2) = vir_th(th_id,3,2) + vzy
-                  vir_th(th_id,1,3) = vir_th(th_id,1,3) + vzx
-                  vir_th(th_id,2,3) = vir_th(th_id,2,3) + vzy
-                  vir_th(th_id,3,3) = vir_th(th_id,3,3) + vzz
+                  vir_tmp(1,1) = vir_tmp(1,1) + vxx
+                  vir_tmp(2,1) = vir_tmp(2,1) + vyx
+                  vir_tmp(3,1) = vir_tmp(3,1) + vzx
+                  vir_tmp(1,2) = vir_tmp(1,2) + vyx
+                  vir_tmp(2,2) = vir_tmp(2,2) + vyy
+                  vir_tmp(3,2) = vir_tmp(3,2) + vzy
+                  vir_tmp(1,3) = vir_tmp(1,3) + vzx
+                  vir_tmp(2,3) = vir_tmp(2,3) + vzy
+                  vir_tmp(3,3) = vir_tmp(3,3) + vzz
                end if
             end if
          end if
@@ -385,6 +387,12 @@ c
 c     end OpenMP directives for the major loop structure
 c
 !$OMP END DO no wait
+  
+      do i=1,3
+         do j=1,3
+            vir_th(th_id,j,i) = vir_th(th_id,j,i) +  vir_tmp(j,i)
+         end do
+      end do
 
       return
       end

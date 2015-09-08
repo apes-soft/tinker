@@ -1046,7 +1046,7 @@ c
          zred(i) = rdn*(z(i)-z(iv)) + z(iv)
       end do
       
-c      vir_tmp = 0.0d0
+      vir_tmp = 0.0d0
 c
 c     set OpenMP directives for the major loop structure
 c
@@ -1056,7 +1056,7 @@ c
 !$OMP& rho7,s1,s2,t1,t2,dt1drho,dt2drho,e,de,rv7,rik6,rik7,tau,
 !$OMP& tau7,dtau,gtau,rik3,rik4,rik5,taper,dtaper,dedx,dedy,dedz,
 !$OMP& redk,redkv,vxx,vyx,vzx,vyy,vzy,vzz)      
-!$OMP& reduction(+:ev,dev,einter) schedule(dynamic,128)
+!$OMP& reduction(+:ev,dev,einter) schedule(guided)
 c
 c     find van der Waals energy and derivatives via neighbor list
 c

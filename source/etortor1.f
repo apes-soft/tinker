@@ -32,7 +32,7 @@ c
       use virial
       use openmp
       implicit none
-      integer i,k,itortor
+      integer i,k,itortor,j
       integer pos1,pos2
       integer ia,ib,ic,id,ie
       integer nlo,nhi,nt
@@ -82,6 +82,7 @@ c
       real*8 ft1(4),ft2(4)
       logical proceed
 
+      vir_tmp = 0.0d0
 
 c
 c     calculate the torsion-torsion interaction energy term
@@ -376,18 +377,27 @@ c
                vyy2 = ydc*(dedyid2+dedyie2) - ycb*dedyib2 + yed*dedyie2
                vzy2 = zdc*(dedyid2+dedyie2) - zcb*dedyib2 + zed*dedyie2
                vzz2 = zdc*(dedzid2+dedzie2) - zcb*dedzib2 + zed*dedzie2
-               vir_th(th_id,1,1) = vir_th(th_id,1,1) + vxx + vxx2
-               vir_th(th_id,2,1) = vir_th(th_id,2,1) + vyx + vyx2
-               vir_th(th_id,3,1) = vir_th(th_id,3,1) + vzx + vzx2
-               vir_th(th_id,1,2) = vir_th(th_id,1,2) + vyx + vyx2
-               vir_th(th_id,2,2) = vir_th(th_id,2,2) + vyy + vyy2
-               vir_th(th_id,3,2) = vir_th(th_id,3,2) + vzy + vzy2
-               vir_th(th_id,1,3) = vir_th(th_id,1,3) + vzx + vzx2
-               vir_th(th_id,2,3) = vir_th(th_id,2,3) + vzy + vzy2
-               vir_th(th_id,3,3) = vir_th(th_id,3,3) + vzz + vzz2
+               vir_tmp(1,1) = vir_tmp(1,1) + vxx + vxx2
+               vir_tmp(2,1) = vir_tmp(2,1) + vyx + vyx2
+               vir_tmp(3,1) = vir_tmp(3,1) + vzx + vzx2
+               vir_tmp(1,2) = vir_tmp(1,2) + vyx + vyx2
+               vir_tmp(2,2) = vir_tmp(2,2) + vyy + vyy2
+               vir_tmp(3,2) = vir_tmp(3,2) + vzy + vzy2
+               vir_tmp(1,3) = vir_tmp(1,3) + vzx + vzx2
+               vir_tmp(2,3) = vir_tmp(2,3) + vzy + vzy2
+               vir_tmp(3,3) = vir_tmp(3,3) + vzz + vzz2
             end if
          end if
       end do
 !$OMP end do NOWAIT
+
+      
+      do i=1,3
+         do j=1,3
+            vir_th(th_id,j,i) = vir_th(th_id,j,i) +  vir_tmp(j,i)
+         end do
+      end do
+
+
       return
       end

@@ -29,7 +29,7 @@ c
       use virial
       use openmp
       implicit none
-      integer i,ia,ib,ic
+      integer i,ia,ib,ic,j
       integer id,ie,ig
       real*8 e,dedphi,fgrp
       real*8 xt,yt,zt,rt2
@@ -71,6 +71,8 @@ c
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
       logical proceed
+
+      vir_tmp = 0.0d0
 
 c
 c     calculate the pi-orbital torsion angle energy term
@@ -290,19 +292,26 @@ c
                vyy = ydc*vyterm + ycp*dedyip - yqd*dedyiq
                vzy = zdc*vyterm + zcp*dedyip - zqd*dedyiq
                vzz = zdc*vzterm + zcp*dedzip - zqd*dedziq
-               vir_th(th_id,1,1) = vir_th(th_id,1,1) + vxx
-               vir_th(th_id,2,1) = vir_th(th_id,2,1) + vyx
-               vir_th(th_id,3,1) = vir_th(th_id,3,1) + vzx
-               vir_th(th_id,1,2) = vir_th(th_id,1,2) + vyx
-               vir_th(th_id,2,2) = vir_th(th_id,2,2) + vyy
-               vir_th(th_id,3,2) = vir_th(th_id,3,2) + vzy
-               vir_th(th_id,1,3) = vir_th(th_id,1,3) + vzx
-               vir_th(th_id,2,3) = vir_th(th_id,2,3) + vzy
-               vir_th(th_id,3,3) = vir_th(th_id,3,3) + vzz
+               vir_tmp(1,1) = vir_tmp(1,1) + vxx
+               vir_tmp(2,1) = vir_tmp(2,1) + vyx
+               vir_tmp(3,1) = vir_tmp(3,1) + vzx
+               vir_tmp(1,2) = vir_tmp(1,2) + vyx
+               vir_tmp(2,2) = vir_tmp(2,2) + vyy
+               vir_tmp(3,2) = vir_tmp(3,2) + vzy
+               vir_tmp(1,3) = vir_tmp(1,3) + vzx
+               vir_tmp(2,3) = vir_tmp(2,3) + vzy
+               vir_tmp(3,3) = vir_tmp(3,3) + vzz
             end if
          end if
       end do
 !$OMP end do NOWAIT
+
+      
+      do i=1,3
+         do j=1,3
+            vir_th(th_id,j,i) = vir_th(th_id,j,i) +  vir_tmp(j,i)
+         end do
+      end do
 
       return
       end

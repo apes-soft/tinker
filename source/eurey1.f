@@ -29,7 +29,7 @@ c
       use virial
       use openmp
       implicit none
-      integer i,ia,ic
+      integer i,ia,ic,j
       real*8 e
       real*8 de,ideal,force
       real*8 dt,dt2,deddt,fgrp
@@ -38,6 +38,8 @@ c
       real*8 vyx,vzx,vzy
       real*8 xac,yac,zac,rac
       logical proceed
+
+      vir_tmp = 0.0d0
 
 c
 c     set OpenMP directives for the major loop structure
@@ -107,21 +109,28 @@ c
             vyy = yac * dedy
             vzy = zac * dedy
             vzz = zac * dedz
-            vir_th(th_id,1,1) = vir_th(th_id,1,1) + vxx
-            vir_th(th_id,2,1) = vir_th(th_id,2,1) + vyx
-            vir_th(th_id,3,1) = vir_th(th_id,3,1) + vzx
-            vir_th(th_id,1,2) = vir_th(th_id,1,2) + vyx
-            vir_th(th_id,2,2) = vir_th(th_id,2,2) + vyy
-            vir_th(th_id,3,2) = vir_th(th_id,3,2) + vzy
-            vir_th(th_id,1,3) = vir_th(th_id,1,3) + vzx
-            vir_th(th_id,2,3) = vir_th(th_id,2,3) + vzy
-            vir_th(th_id,3,3) = vir_th(th_id,3,3) + vzz
+            vir_tmp(1,1) = vir_tmp(1,1) + vxx
+            vir_tmp(2,1) = vir_tmp(2,1) + vyx
+            vir_tmp(3,1) = vir_tmp(3,1) + vzx
+            vir_tmp(1,2) = vir_tmp(1,2) + vyx
+            vir_tmp(2,2) = vir_tmp(2,2) + vyy
+            vir_tmp(3,2) = vir_tmp(3,2) + vzy
+            vir_tmp(1,3) = vir_tmp(1,3) + vzx
+            vir_tmp(2,3) = vir_tmp(2,3) + vzy
+            vir_tmp(3,3) = vir_tmp(3,3) + vzz
          end if
       end do
 c
 c     end OpenMP directives for the major loop structure
 c
 !$OMP END DO no wait
+
+      
+      do i=1,3
+         do j=1,3
+            vir_th(th_id,j,i) = vir_th(th_id,j,i) +  vir_tmp(j,i)
+         end do
+      end do
 
       return
       end
