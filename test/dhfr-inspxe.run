@@ -1,0 +1,4 @@
+ulimit -s unlimited
+export OMP_STACKSIZE=750M
+export OMP_NUM_THREADS=6
+inspxe-cl -collect ti3 -r qq ../bin/dynamic dhfr 10 1.0 1.0 2 300.0
