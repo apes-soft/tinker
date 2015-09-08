@@ -755,7 +755,9 @@ c
      &     MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, ierror) 
       
       qgrid = qgrid_temp
-      
+      !if(rank.eq.0) then 
+      !   print *,"grid_uind: rank ",rank," qgrid ",sum(qgrid)
+      !end if
       
       return
       end
@@ -1041,7 +1043,8 @@ c     set OpenMP directives for the major loop structure
 c
 !$OMP PARALLEL default(private) shared(npole,ipole,
 !$OMP& igrid,bsorder,nfft3,thetai3,nfft2,thetai2,nfft1,
-!$OMP& thetai1,qgrid,fdip_phi1,fdip_phi2,fdip_sum_phi)
+!$OMP& thetai1,qgrid,fdip_phi1,fdip_phi2,fdip_sum_phi,
+!$OMP& lstart, lend)
 !$OMP DO
 c
 c     extract the induced dipole field at each site
