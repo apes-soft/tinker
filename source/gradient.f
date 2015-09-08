@@ -42,9 +42,10 @@ c
       real*8 energy,cutoff
       real*8 derivs(3,*)
       real*8 elrc, vlrc
+
 !$    integer omp_get_thread_num
 
-
+      eint = 0.0d0
 c
 c     zero out each of the potential energy components
 c
@@ -132,7 +133,7 @@ C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum)
       do i=1,3
          do j=1,3
             vir_th(th_id,j,i) = 0.0d0
-            vir_tmp = 0.0d0
+c            vir_tmp = 0.0d0
          end do
       end do
 
@@ -195,21 +196,31 @@ c
 c
 c     call the electrostatic energy and gradient routines
 c
-      if (use_charge)  call echarge1
-      if (use_chgdpl)  call echgdpl1
-      if (use_dipole)  call edipole1
-      if (use_mpole .or. use_polar)  call empole1
-      if (use_rxnfld)  call erxnfld1
+      call chkpole
+      call rotpole
+      call induce
+      call emrecip1
+      call ereal1d(eint)
+      call empole1d
+      
+
+
+c      if (use_charge)  call echarge1
+c      if (use_chgdpl)  call echgdpl1
+c      if (use_dipole)  call edipole1
+c      if (use_mpole .or. use_polar)  call empole1
+c      if (use_rxnfld)  call erxnfld1
 c
 c     call any miscellaneous energy and gradient routines
 c
-      if (use_solv)  call esolv1
-      if (use_metal)  call emetal1
-      if (use_geom)  call egeom1
+c      if (use_solv)  call esolv1
+c      if (use_metal)  call emetal1
+c      if (use_geom)  call egeom1
 c      if (use_extra)  call extra1
 c
 c     sum up to get the total energy and first derivatives
 
+      einter = einter - eint
 
       esum = ea + eba + eub + eopb 
      &          + et  + ett + ev + ept

@@ -52,5 +52,6 @@ c
       real*8 er,es,elf
       real*8 eg,ex
       real*8, allocatable :: en_th(:)
+      real*8 eint
       save
       end

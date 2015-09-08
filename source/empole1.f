@@ -4570,14 +4570,14 @@ c
 c
 c     zero out multipole and polarization energy and derivatives
 c
-      em = 0.0d0
-      ep = 0.0d0
-      do i = 1, n
-         do j = 1, 3
-            dem(j,i) = 0.0d0
-            dep(j,i) = 0.0d0
-         end do
-      end do
+C$$$      em = 0.0d0
+C$$$      ep = 0.0d0
+C$$$      do i = 1, n
+C$$$         do j = 1, 3
+C$$$            dem(j,i) = 0.0d0
+C$$$            dep(j,i) = 0.0d0
+C$$$         end do
+C$$$      end do
       if (npole .eq. 0)  return
 c
 c     set the energy unit conversion factor
@@ -4586,23 +4586,23 @@ c
 c
 c     check the sign of multipole components at chiral sites
 c
-      call chkpole
+c      call chkpole
 c
 c     rotate the multipole components into the global frame
 c
-      call rotpole
+c      call rotpole
 c
 c     compute the induced dipole moment at each atom
 c
-      call induce
+c      call induce
 c
 c     compute the reciprocal space part of the Ewald summation
 c
-      call emrecip1
+c      call emrecip1
 c
 c     compute the real space part of the Ewald summation
 c
-      call ereal1d (eintra)
+c      call ereal1d (eintra)
 c
 c     compute the Ewald self-energy term over all the atoms
 c
@@ -4747,7 +4747,7 @@ c
 c
 c     intermolecular energy is total minus intramolecular part
 c
-      einter = einter + em + ep - eintra
+      einter = einter + em + ep !- eintra
       return
       end
 c
