@@ -41,6 +41,9 @@ c
       ! ancillary array to store nlocal for processes involved
       allocate(nlocals(nprocs))
 
+      ! Provide a default value for header
+      header = .true.
+
       ! choose the method for computation of induced dipoles
       if (solvtyp(1:2) .eq. 'PB') then
          call induce0e
@@ -78,7 +81,7 @@ c
       if (debug .and. use_polar) then
          do i = 1, npole
             if (polarity(i) .ne. 0.0d0) then
-               if (header) then
+                       if (header) then
                   header = .false.
                   if (solvtyp.eq.'GK' .or. solvtyp.eq.'PB') then
                      write (iout,10)
@@ -199,7 +202,7 @@ c
       real*8 epsd,epsp
       real*8 udsum,upsum
       real*8 a,ap,b,bp
-      real*8 sum,sump
+      real*8 mysum,mysump
       real*8, allocatable :: poli(:)
       real*8, allocatable :: field(:,:)
       real*8, allocatable :: fieldp(:,:)
@@ -263,7 +266,6 @@ c
      &     ierror)
       
       fieldp = fieldtmp
-
 
 c
 c     set induced dipoles to polarizability times direct field
@@ -384,7 +386,14 @@ c
                end do
             end do
             if (use_ewald) then
-               
+
+            if(rank.eq.0) then
+               print *,"BEFORE-ufield0c rank ",rank," field: ",
+     &                 sum(field)
+               print *,"BEFORE-ufield0c rank ",rank," fieldp: ",
+     &                 sum(fieldp)
+               end if
+
                call ufield0c (field,fieldp)
 
                ! synchronize filed and fieldp across all processes
@@ -402,12 +411,24 @@ c
      &              ierror)
                
                fieldp = fieldtmp
+
+            if(rank.eq.0) then 
+               print *,"BEFORE rank ",rank," field: ",
+     &                 sum(field)
+               print *,"BEFORE rank ",rank," fieldp: ",
+     &                 sum(fieldp)
+            end if
                
             else if (use_mlist) then
                call ufield0b (field,fieldp)
             else
                call ufield0a (field,fieldp)
             end if
+
+            print *,"rank ",rank," field: ",sum(sum(field,dim=2),dim=1)
+            print *,"rank ",rank," fieldp: ",
+     &              sum(sum(fieldp,dim=2),dim=1)
+
             do i = 1, npole
                do j = 1, 3
                   uind(j,i) = vec(j,i)
@@ -418,18 +439,18 @@ c
             end do
             a = 0.0d0
             ap = 0.0d0
-            sum = 0.0d0
-            sump = 0.0d0
+            mysum = 0.0d0
+            mysump = 0.0d0
             do i = 1, npole
                do j = 1, 3
                   a = a + conj(j,i)*vec(j,i)
                   ap = ap + conjp(j,i)*vecp(j,i)
-                  sum = sum + rsd(j,i)*zrsd(j,i)
-                  sump = sump + rsdp(j,i)*zrsdp(j,i)
+                  mysum = mysum + rsd(j,i)*zrsd(j,i)
+                  mysump = mysump + rsdp(j,i)*zrsdp(j,i)
                end do
             end do
-            if (a .ne. 0.0d0)  a = sum / a
-            if (ap .ne. 0.0d0)  ap = sump / ap
+            if (a .ne. 0.0d0)  a = mysum / a
+            if (ap .ne. 0.0d0)  ap = mysump / ap
             do i = 1, npole
                do j = 1, 3
                   uind(j,i) = uind(j,i) + a*conj(j,i)
@@ -451,8 +472,8 @@ c
                   bp = bp + rsdp(j,i)*zrsdp(j,i)
                end do
             end do
-            if (sum .ne. 0.0d0)  b = b / sum
-            if (sump .ne. 0.0d0)  bp = bp / sump
+            if (mysum .ne. 0.0d0)  b = b / mysum
+            if (mysump .ne. 0.0d0)  bp = bp / mysump
             epsd = 0.0d0
             epsp = 0.0d0
             do i = 1, npole
@@ -482,6 +503,7 @@ c
             if (eps .lt. poleps)  done = .true.
             if (eps .gt. epsold)  done = .true.
             if (iter .ge. politer)  done = .true.
+            print *,"rank ",rank," eps ",eps," iter ",iter
          end do
 c
 c     perform deallocation of some local arrays
@@ -909,6 +931,7 @@ c
 c
 c     zero out the value of the field at each site
 c
+
       do i = 1, npole
          do j = 1, 3
             field(j,i) = 0.0d0
@@ -1616,7 +1639,6 @@ c
 c
 c     zero out the electrostatic field at each site
 c
-
  
       allocate (fieldt(3,npole))
       allocate (fieldtp(3,npole))
@@ -2875,6 +2897,12 @@ c
          
          dipfield2 = temp
          deallocate(temp)
+
+        print *,"rank ",rank," umutual1:dipfield1: ",
+     &          sum(sum(dipfield1,dim=2),dim=1)
+        print *,"rank ",rank," umutual1:dipfield2: ",
+     &          sum(sum(dipfield2,dim=2),dim=1)
+
 c
 c     increment the field at each multipole site
 c      
