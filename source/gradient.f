@@ -132,6 +132,7 @@ C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum)
       do i=1,3
          do j=1,3
             vir_th(th_id,j,i) = 0.0d0
+            vir_tmp = 0.0d0
          end do
       end do
 
@@ -145,6 +146,7 @@ C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum)
 c
 c     zero out each of the first derivative components
 c
+
       
 !$OMP DO schedule(guided)
       do i = 1, n

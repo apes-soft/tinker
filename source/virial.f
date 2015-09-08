@@ -18,7 +18,9 @@ c
       module virial
       implicit none
       real*8 vir(3,3)
+      real*8 vir_tmp(3,3)
       real*8, allocatable :: vir_th(:,:,:)
       integer, allocatable :: lck_drv(:)
+!$OMP threadprivate(vir_tmp)      
       save
       end

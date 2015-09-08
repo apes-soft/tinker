@@ -972,6 +972,7 @@ c
       use vdw
       use vdwpot
       use virial
+      use openmp
       implicit none
       integer i,j,k
       integer ii,iv,it
@@ -1044,7 +1045,8 @@ c
          yred(i) = rdn*(y(i)-y(iv)) + y(iv)
          zred(i) = rdn*(z(i)-z(iv)) + z(iv)
       end do
-
+      
+c      vir_tmp = 0.0d0
 c
 c     set OpenMP directives for the major loop structure
 c
@@ -1054,7 +1056,7 @@ c
 !$OMP& rho7,s1,s2,t1,t2,dt1drho,dt2drho,e,de,rv7,rik6,rik7,tau,
 !$OMP& tau7,dtau,gtau,rik3,rik4,rik5,taper,dtaper,dedx,dedy,dedz,
 !$OMP& redk,redkv,vxx,vyx,vzx,vyy,vzy,vzz)      
-!$OMP& reduction(+:ev,dev,vir,einter) schedule(guided)
+!$OMP& reduction(+:ev,dev,einter) schedule(dynamic,128)
 c
 c     find van der Waals energy and derivatives via neighbor list
 c
@@ -1214,15 +1216,15 @@ c
                   vyy = yr * dedy
                   vzy = zr * dedy
                   vzz = zr * dedz
-                  vir(1,1) = vir(1,1) + vxx
-                  vir(2,1) = vir(2,1) + vyx
-                  vir(3,1) = vir(3,1) + vzx
-                  vir(1,2) = vir(1,2) + vyx
-                  vir(2,2) = vir(2,2) + vyy
-                  vir(3,2) = vir(3,2) + vzy
-                  vir(1,3) = vir(1,3) + vzx
-                  vir(2,3) = vir(2,3) + vzy
-                  vir(3,3) = vir(3,3) + vzz
+                  vir_tmp(1,1) = vir_tmp(1,1) + vxx
+                  vir_tmp(2,1) = vir_tmp(2,1) + vyx
+                  vir_tmp(3,1) = vir_tmp(3,1) + vzx
+                  vir_tmp(1,2) = vir_tmp(1,2) + vyx
+                  vir_tmp(2,2) = vir_tmp(2,2) + vyy
+                  vir_tmp(3,2) = vir_tmp(3,2) + vzy
+                  vir_tmp(1,3) = vir_tmp(1,3) + vzx
+                  vir_tmp(2,3) = vir_tmp(2,3) + vzy
+                  vir_tmp(3,3) = vir_tmp(3,3) + vzz
 c
 c     increment the total intermolecular energy
 c
@@ -1253,6 +1255,12 @@ c     end OpenMP directives for the major loop structure
 c
 !$OMP END DO
 
+      do i=1,3
+         do j=1,3
+            vir_th(th_id,j,i) = vir_th(th_id,j,i) +  vir_tmp(j,i)
+         end do
+      end do
+      
 c
 c     perform deallocation of some local arrays
 c
