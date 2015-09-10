@@ -977,7 +977,7 @@ c
       integer i,j,k
       integer ii,iv,it
       integer kk,kv,kt
-      integer, allocatable :: iv14(:)
+c      integer, allocatable :: iv14(:)
       real*8 e,de,eps,rdn
       real*8 fgrp,rv,rv7
       real*8 xi,yi,zi
@@ -1017,7 +1017,7 @@ C$$$      end do
 c
 c     perform dynamic allocation of some local arrays
 c
-      allocate (iv14(n))
+c      allocate (iv14(n))
 C$$$      allocate (xred(n))
 C$$$      allocate (yred(n))
 C$$$      allocate (zred(n))
@@ -1027,7 +1027,7 @@ c     set arrays needed to scale connected atom interactions
 c
       do i = 1, n
          vscale(i) = 1.0d0
-         iv14(i) = 0
+c         iv14(i) = 0
       end do
 c
 c     set the coefficients for the switching function
@@ -1085,7 +1085,7 @@ c
          end do
          do j = 1, n14(i)
             vscale(i14(j,i)) = v4scale
-            iv14(i14(j,i)) = i
+            iv14_th(i14(j,i)) = i
          end do
          do j = 1, n15(i)
             vscale(i15(j,i)) = v5scale
@@ -1117,7 +1117,7 @@ c
                   rik = sqrt(rik2)
                   rv = radmin(kt,it)
                   eps = epsilon(kt,it)
-                  if (iv14(k) .eq. i) then
+                  if (iv14_th(k) .eq. i) then
                      rv = radmin4(kt,it)
                      eps = epsilon4(kt,it)
                   end if
@@ -1267,7 +1267,7 @@ c
 c
 c     perform deallocation of some local arrays
 c
-      deallocate (iv14)
+c      deallocate (iv14)
 C$$$      deallocate (xred)
 C$$$      deallocate (yred)
 C$$$      deallocate (zred)

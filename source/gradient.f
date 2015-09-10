@@ -89,7 +89,7 @@ c
          allocate(yred_th(n))
          allocate(zred_th(n))
 c         allocate(vscale_th(n))
-c         allocate(iv14_th(n))
+         allocate(iv14_th(n))
       end if
 
 c
@@ -169,7 +169,7 @@ c
          yred_th(i) = 0.0d0
          zred_th(i) = 0.0d0
 c         vscale_th(i) = 1.0d0
-c         iv14_th(i) = 0
+         iv14_th(i) = 0
       end do
 !$OMP END DO
 
