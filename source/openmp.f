@@ -21,6 +21,11 @@ c
       integer nproc
       integer nthread
       integer th_id
+      real*8, allocatable :: xred_th(:)
+      real*8, allocatable :: yred_th(:)
+      real*8, allocatable :: zred_th(:)
+      real*8, allocatable :: vscale_th(:)
+      integer, allocatable :: iv14_th(:)
       save
 !$OMP threadprivate(th_id)
       end

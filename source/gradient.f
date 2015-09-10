@@ -83,6 +83,15 @@ c
       if(.not. allocated(vir_th)) allocate(vir_th(nthread,3,3))
       if(.not. allocated(drv_th)) allocate(drv_th(nthread,3,n))
       if(.not. allocated(en_th)) allocate(en_th(nthread))
+
+      if(.not. allocated(xred_th)) then
+         allocate(xred_th(n))
+         allocate(yred_th(n))
+         allocate(zred_th(n))
+c         allocate(vscale_th(n))
+c         allocate(iv14_th(n))
+      end if
+
 c
 c     zero out the virial and the intermolecular energy
 c
@@ -156,6 +165,11 @@ c
             dem(j,i) = 0.0d0
             dep(j,i) = 0.0d0
          end do
+         xred_th(i) = 0.0d0
+         yred_th(i) = 0.0d0
+         zred_th(i) = 0.0d0
+c         vscale_th(i) = 1.0d0
+c         iv14_th(i) = 0
       end do
 !$OMP END DO
 
@@ -192,12 +206,17 @@ c
          if (vdwtyp .eq. 'BUFFERED-14-7')  call ehal1
          if (vdwtyp .eq. 'GAUSSIAN')  call egauss1
       end if
+
+      call chkpole
+      call rotpole
+     
 !$OMP END PARALLEL
 c
 c     call the electrostatic energy and gradient routines
 c
-      call chkpole
-      call rotpole
+
+c      call chkpole
+c      call rotpole
       call induce
       call emrecip1
       call ereal1d(eint)

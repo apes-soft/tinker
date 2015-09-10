@@ -997,9 +997,9 @@ c
       real*8 vxx,vyy,vzz
       real*8 vyx,vzx,vzy
       real*8 viro(3,3)
-      real*8, allocatable :: xred(:)
-      real*8, allocatable :: yred(:)
-      real*8, allocatable :: zred(:)
+C$$$      real*8, allocatable :: xred(:)
+C$$$      real*8, allocatable :: yred(:)
+C$$$      real*8, allocatable :: zred(:)
       real*8, allocatable :: vscale(:)
       logical proceed,usei
       logical muti,mutk
@@ -1018,9 +1018,9 @@ c
 c     perform dynamic allocation of some local arrays
 c
       allocate (iv14(n))
-      allocate (xred(n))
-      allocate (yred(n))
-      allocate (zred(n))
+C$$$      allocate (xred(n))
+C$$$      allocate (yred(n))
+C$$$      allocate (zred(n))
       allocate (vscale(n))
 c
 c     set arrays needed to scale connected atom interactions
@@ -1037,14 +1037,17 @@ c
 c
 c     apply any reduction factor to the atomic coordinates
 c
+
+!$OMP DO private(i,iv,rdn)
       do k = 1, nvdw
          i = ivdw(k)
          iv = ired(i)
          rdn = kred(i)
-         xred(i) = rdn*(x(i)-x(iv)) + x(iv)
-         yred(i) = rdn*(y(i)-y(iv)) + y(iv)
-         zred(i) = rdn*(z(i)-z(iv)) + z(iv)
+         xred_th(i) = rdn*(x(i)-x(iv)) + x(iv)
+         yred_th(i) = rdn*(y(i)-y(iv)) + y(iv)
+         zred_th(i) = rdn*(z(i)-z(iv)) + z(iv)
       end do
+!$OMP end DO
       
       vir_tmp = 0.0d0
 c
@@ -1066,9 +1069,9 @@ c
          redi = kred(i)
          rediv = 1.0d0 - redi
          it = jvdw(i)
-         xi = xred(i)
-         yi = yred(i)
-         zi = zred(i)
+         xi = xred_th(i)
+         yi = yred_th(i)
+         zi = zred_th(i)
          usei = (use(i) .or. use(iv))
          muti = mut(i)
 c
@@ -1102,9 +1105,9 @@ c     compute the energy contribution for this interaction
 c
             if (proceed) then
                kt = jvdw(k)
-               xr = xi - xred(k)
-               yr = yi - yred(k)
-               zr = zi - zred(k)
+               xr = xi - xred_th(k)
+               yr = yi - yred_th(k)
+               zr = zi - zred_th(k)
                call image (xr,yr,zr)
                rik2 = xr*xr + yr*yr + zr*zr
 c
@@ -1265,9 +1268,9 @@ c
 c     perform deallocation of some local arrays
 c
       deallocate (iv14)
-      deallocate (xred)
-      deallocate (yred)
-      deallocate (zred)
+C$$$      deallocate (xred)
+C$$$      deallocate (yred)
+C$$$      deallocate (zred)
       deallocate (vscale)
       return
       end

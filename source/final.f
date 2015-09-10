@@ -35,6 +35,7 @@ c
       use dipole
       use disgeo
       use domega
+      use energi
       use faces
       use fracs
       use freeze
@@ -57,6 +58,7 @@ c
       use opbend
       use opdist
       use orbits
+      use openmp
       use paths
       use pbstuf
       use pdb
@@ -88,6 +90,7 @@ c
       use usolve
       use vdw
       use vibs
+      use virial
       use warp
       implicit none
 c
@@ -746,6 +749,19 @@ c
 c     deallocation of global arrays from module warp
 c
       if (allocated(m2))  deallocate (m2)
+
+c      
+c     deallocate openmp axiliary arrays
+c
+      if(allocated(vir_th)) deallocate(vir_th)
+      if(allocated(drv_th)) deallocate(drv_th)
+      if(allocated(en_th)) deallocate(en_th)
+      if(allocated(xred_th)) deallocate(xred_th)
+      if(allocated(yred_th)) deallocate(yred_th)
+      if(allocated(zred_th)) deallocate(zred_th)
+      if(allocated(vscale_th)) deallocate(vscale_th)
+      if(allocated(iv14_th)) deallocate(iv14_th)
+
 c
 c     free memory used by the APBS Poisson-Boltzmann solver
 c
