@@ -15,10 +15,6 @@ c
 c     "initial" sets up original values for some parameters and
 c     variables that might not otherwise get initialized
 c
-c     note the calls below to "kmp_set" routines are only needed by
-c     the Intel compiler and must be commented for other compilers
-c
-c
       subroutine initial
       use sizes
       use align
@@ -90,8 +86,10 @@ c!$    call omp_set_num_threads (nthread)
 c
 c     Intel compiler extensions to OpenMP standard
 c
-c!$    call kmp_set_stacksize_s (2**28)
-c!$    call kmp_set_blocktime (0)
+#ifdef __INTEL_COMPILER
+!$    call kmp_set_stacksize_s (2**28)
+!$    call kmp_set_blocktime (0)
+#endif
 c
 c     values of machine precision constants
 c
