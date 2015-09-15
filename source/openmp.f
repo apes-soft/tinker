@@ -28,4 +28,5 @@ c
       integer, allocatable :: iv14_th(:)
       save
 !$OMP threadprivate(th_id)
+!$OMP threadprivate(vscale_th)
       end

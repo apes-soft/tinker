@@ -92,6 +92,9 @@ c         allocate(vscale_th(n))
          allocate(iv14_th(n))
       end if
 
+
+c      print*, "allocated vscale_th"
+
 c
 c     zero out the virial and the intermolecular energy
 c
@@ -118,9 +121,9 @@ c     alter bond and torsion constants for pisystem
 c
 c      if (use_orbit) call picalc ! no omp - not used
         
-
+c      vscale_th = 1.0d0
       if (use_list)  call nblist
-
+c      vscale_th = 1.0d0
 
 C$$$!$OMP parallel default(none) shared(n, deb, dea, deba, deub, deaa, 
 C$$$!$OMP& deopb, deopd, deid, deit, det, dept, debt, deat, dett, dev, 
@@ -157,6 +160,8 @@ c
 c     zero out each of the first derivative components
 c
 
+      if(.not.allocated(vscale_th)) allocate(vscale_th(n))
+      
       
 !$OMP DO schedule(guided)
       do i = 1, n

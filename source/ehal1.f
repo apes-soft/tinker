@@ -1000,7 +1000,7 @@ c      integer, allocatable :: iv14(:)
 C$$$      real*8, allocatable :: xred(:)
 C$$$      real*8, allocatable :: yred(:)
 C$$$      real*8, allocatable :: zred(:)
-      real*8, allocatable :: vscale(:)
+c      real*8, allocatable :: vscale(:)
       logical proceed,usei
       logical muti,mutk
       character*6 mode
@@ -1021,14 +1021,15 @@ c      allocate (iv14(n))
 C$$$      allocate (xred(n))
 C$$$      allocate (yred(n))
 C$$$      allocate (zred(n))
-      allocate (vscale(n))
+c      allocate (vscale(n))
 c
 c     set arrays needed to scale connected atom interactions
 c
-      do i = 1, n
-         vscale(i) = 1.0d0
+c!$OMP barrier
+c      do i = 1, n
+c         vscale_th(i) = 1.0d0
 c         iv14(i) = 0
-      end do
+c      end do
 c
 c     set the coefficients for the switching function
 c
@@ -1050,6 +1051,8 @@ c
 !$OMP end DO
       
       vir_tmp = 0.0d0
+      vscale_th = 1.0d0
+
 c
 c     set OpenMP directives for the major loop structure
 c
@@ -1058,7 +1061,7 @@ c
 !$OMP& proceed,fgrp,kt,xr,yr,zr,rik2,rik,rv,eps,rho,rho6,scal,
 !$OMP& rho7,s1,s2,t1,t2,dt1drho,dt2drho,e,de,rv7,rik6,rik7,tau,
 !$OMP& tau7,dtau,gtau,rik3,rik4,rik5,taper,dtaper,dedx,dedy,dedz,
-!$OMP& redk,redkv,vxx,vyx,vzx,vyy,vzy,vzz)      
+!$OMP& redk,redkv,vxx,vyx,vzx,vyy,vzy,vzz)  
 !$OMP& reduction(+:ev,dev,einter) schedule(guided)
 c
 c     find van der Waals energy and derivatives via neighbor list
@@ -1074,21 +1077,26 @@ c
          zi = zred_th(i)
          usei = (use(i) .or. use(iv))
          muti = mut(i)
+
+c         do j=1,n
+c            vscale_th(j) = 1.0d0
+c         end do
+
 c
 c     set interaction scaling coefficients for connected atoms
 c
          do j = 1, n12(i)
-            vscale(i12(j,i)) = v2scale
+            vscale_th(i12(j,i)) = v2scale
          end do
          do j = 1, n13(i)
-            vscale(i13(j,i)) = v3scale
+            vscale_th(i13(j,i)) = v3scale
          end do
          do j = 1, n14(i)
-            vscale(i14(j,i)) = v4scale
+            vscale_th(i14(j,i)) = v4scale
             iv14_th(i14(j,i)) = i
          end do
          do j = 1, n15(i)
-            vscale(i15(j,i)) = v5scale
+            vscale_th(i15(j,i)) = v5scale
          end do
 c
 c     decide whether to compute the current interaction
@@ -1121,7 +1129,7 @@ c
                      rv = radmin4(kt,it)
                      eps = epsilon4(kt,it)
                   end if
-                  eps = eps * vscale(k)
+                  eps = eps * vscale_th(k)
 c
 c     get the energy and gradient, via soft core if necessary
 c
@@ -1240,18 +1248,21 @@ c
 c
 c     reset interaction scaling coefficients for connected atoms
 c
-         do j = 1, n12(i)
-            vscale(i12(j,i)) = 1.0d0
-         end do
-         do j = 1, n13(i)
-            vscale(i13(j,i)) = 1.0d0
-         end do
-         do j = 1, n14(i)
-            vscale(i14(j,i)) = 1.0d0
-         end do
-         do j = 1, n15(i)
-            vscale(i15(j,i)) = 1.0d0
-         end do
+C$$$         do j = 1, n12(i)
+C$$$            vscale_th(i12(j,i)) = 1.0d0
+C$$$         end do
+C$$$         do j = 1, n13(i)
+C$$$            vscale_th(i13(j,i)) = 1.0d0
+C$$$         end do
+C$$$         do j = 1, n14(i)
+C$$$            vscale_th(i14(j,i)) = 1.0d0
+C$$$         end do
+C$$$         do j = 1, n15(i)
+C$$$            vscale_th(i15(j,i)) = 1.0d0
+C$$$         end do
+c         do j=1,n
+         vscale_th = 1.0d0
+c         end do
       end do
 c
 c     end OpenMP directives for the major loop structure
@@ -1263,7 +1274,8 @@ c
             vir_th(th_id,j,i) = vir_th(th_id,j,i) +  vir_tmp(j,i)
          end do
       end do
-      
+
+c      vscale_th = 1.0d0
 c
 c     perform deallocation of some local arrays
 c
@@ -1271,6 +1283,6 @@ c      deallocate (iv14)
 C$$$      deallocate (xred)
 C$$$      deallocate (yred)
 C$$$      deallocate (zred)
-      deallocate (vscale)
+c      deallocate (vscale)
       return
       end
