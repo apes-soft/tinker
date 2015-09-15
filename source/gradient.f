@@ -88,12 +88,9 @@ c
          allocate(xred_th(n))
          allocate(yred_th(n))
          allocate(zred_th(n))
-         allocate(vscale_th(n))
+c         allocate(vscale_th(n))
          allocate(iv14_th(n))
       end if
-
-
-c      print*, "allocated vscale_th"
 
 c
 c     zero out the virial and the intermolecular energy
@@ -121,9 +118,9 @@ c     alter bond and torsion constants for pisystem
 c
 c      if (use_orbit) call picalc ! no omp - not used
         
-c      vscale_th = 1.0d0
+
       if (use_list)  call nblist
-      vscale_th = 1.0d0
+
 
 C$$$!$OMP parallel default(none) shared(n, deb, dea, deba, deub, deaa, 
 C$$$!$OMP& deopb, deopd, deid, deit, det, dept, debt, deat, dett, dev, 
@@ -137,7 +134,7 @@ C$$$!$OMP& use_strtor, use_angtor,use_tortor, use_vdw, use_extra, esum,
 C$$$!$OMP& eb, ea,eba, eub, eaa, eopb, eopd, eid, eit, et, ept, ebt, eat, 
 C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum) 
 
-!$OMP parallel default(shared) firstprivate(vscale_th)
+!$OMP parallel default(shared) 
       
       th_id = 1
 !$      th_id = omp_get_thread_num() + 1
@@ -160,8 +157,6 @@ c
 c     zero out each of the first derivative components
 c
 
-c      if(.not.allocated(vscale_th)) allocate(vscale_th(n))
-      
       
 !$OMP DO schedule(guided)
       do i = 1, n
@@ -173,7 +168,7 @@ c      if(.not.allocated(vscale_th)) allocate(vscale_th(n))
          xred_th(i) = 0.0d0
          yred_th(i) = 0.0d0
          zred_th(i) = 0.0d0
-         vscale_th(i) = 1.0d0
+c         vscale_th(i) = 1.0d0
          iv14_th(i) = 0
       end do
 !$OMP END DO
