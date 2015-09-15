@@ -1051,7 +1051,7 @@ c
 !$OMP end DO
       
       vir_tmp = 0.0d0
-      vscale_th = 1.0d0
+c      vscale_th = 1.0d0
 
 c
 c     set OpenMP directives for the major loop structure
@@ -1061,7 +1061,7 @@ c
 !$OMP& proceed,fgrp,kt,xr,yr,zr,rik2,rik,rv,eps,rho,rho6,scal,
 !$OMP& rho7,s1,s2,t1,t2,dt1drho,dt2drho,e,de,rv7,rik6,rik7,tau,
 !$OMP& tau7,dtau,gtau,rik3,rik4,rik5,taper,dtaper,dedx,dedy,dedz,
-!$OMP& redk,redkv,vxx,vyx,vzx,vyy,vzy,vzz)  
+!$OMP& redk,redkv,vxx,vyx,vzx,vyy,vzy,vzz) firstprivate(vscale_th) 
 !$OMP& reduction(+:ev,dev,einter) schedule(guided)
 c
 c     find van der Waals energy and derivatives via neighbor list
