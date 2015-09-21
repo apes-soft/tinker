@@ -22,13 +22,21 @@ c
       implicit none
 
       integer, optional, intent(in):: errcode  ! Specify an error code
+      integer :: err
 
       ! print a final warning message, then quit
       write (iout,*) ' TINKER is Unable to Continue; Terminating',
      &               ' the Current Calculation called by proc ',rank
 
+      ! Assign default if not passed a value
+      if(.not. present(errcode)) then 
+         err = 101
+      else
+         err = errcode
+      end if
+
       ! Abort the MPI program
-      call MPI_Abort(MPI_COMM_WORLD,errcode,ierror)
+      call MPI_Abort(MPI_COMM_WORLD,err,ierror)
 
       stop
       end
