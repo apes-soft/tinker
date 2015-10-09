@@ -4791,7 +4791,7 @@ c
       integer ii,kk,kkk
       integer iax,iay,iaz
       integer kax,kay,kaz
-      real*8 e,ei,f,bfac
+      real*8 e,ei,bfac !,f
       real*8 eintra,erfc
       real*8 damp,expdamp
       real*8 pdi,pti,pgamma
@@ -4857,14 +4857,14 @@ c
       real*8 gfr(7),gfri(6)
       real*8 gti(6),gtri(6)
       real*8 viro(3,3)
-      real*8, allocatable :: mscale(:)
-      real*8, allocatable :: pscale(:)
-      real*8, allocatable :: dscale(:)
-      real*8, allocatable :: uscale(:)
-      real*8, allocatable :: demo1(:,:)
-      real*8, allocatable :: demo2(:,:)
-      real*8, allocatable :: depo1(:,:)
-      real*8, allocatable :: depo2(:,:)
+C$$$      real*8, allocatable :: mscale(:)
+C$$$      real*8, allocatable :: pscale(:)
+C$$$      real*8, allocatable :: dscale(:)
+C$$$      real*8, allocatable :: uscale(:)
+c      real*8, allocatable :: demo1(:,:)
+c      real*8, allocatable :: demo2(:,:)
+c      real*8, allocatable :: depo1(:,:)
+c      real*8, allocatable :: depo2(:,:)
       logical dorl,dorli
       character*6 mode
       external erfc
@@ -4876,52 +4876,54 @@ c
 c
 c     perform dynamic allocation of some local arrays
 c
-      allocate (mscale(n))
-      allocate (pscale(n))
-      allocate (dscale(n))
-      allocate (uscale(n))
-      allocate (demo1(3,n))
-      allocate (demo2(3,n))
-      allocate (depo1(3,n))
-      allocate (depo2(3,n))
+c      allocate (mscale_omp(n))
+c      allocate (pscale_omp(n))
+c      allocate (dscale_omp(n))
+c      allocate (uscale_omp(n))
+      allocate (dem1(3,n))
+      allocate (dem2(3,n))
+      allocate (dep1(3,n))
+      allocate (dep2(3,n))
 c
 c     set arrays needed to scale connected atom interactions
 c
       do i = 1, n
-         mscale(i) = 1.0d0
-         pscale(i) = 1.0d0
-         dscale(i) = 1.0d0
-         uscale(i) = 1.0d0
+         mscale_omp(i) = 1.0d0
+         pscale_omp(i) = 1.0d0
+         dscale_omp(i) = 1.0d0
+         uscale_omp(i) = 1.0d0
       end do
 c
 c     set conversion factor, cutoff and switching coefficients
 c
-      f = electric / dielec
+      ff = electric / dielec
       mode = 'EWALD'
       call switch (mode)
 c
 c     initialize local variables for OpenMP calculation
 c
-      emo = 0.0d0
-      epo = 0.0d0
-      eintrao = eintra
+      emo = em !0.0d0
+      em = 0.0d0
+      epo = ep ! 0.0d0
+      ep = 0.0d0
+c      eintrao = eintra
       do i = 1, n
          do j = 1, 3
-            demo1(j,i) = 0.0d0
-            demo2(j,i) = 0.0d0
-            depo1(j,i) = 0.0d0
-            depo2(j,i) = 0.0d0
+            dem1(j,i) = 0.0d0
+            dem2(j,i) = 0.0d0
+            dep1(j,i) = 0.0d0
+            dep2(j,i) = 0.0d0
          end do
       end do
       do i = 1, 3
          do j = 1, 3
-            viro(j,i) = 0.0d0
+            vir_tmp(j,i) = 0.0d0
          end do
       end do
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(shared) firstprivate(f)
+!$OMP DO  
 !$OMP& private(i,j,k,ii,kk,kkk,e,ei,bfac,damp,expdamp,
 !$OMP& pdi,pti,pgamma,scale3,scale5,scale7,temp3,temp5,temp7,
 !$OMP& dsc3,dsc5,dsc7,psc3,psc5,psc7,usc3,usc5,alsq2,alsq2n,
@@ -4938,8 +4940,8 @@ c
 !$OMP& dixqkr,dkxqir,rxqkr,qkrxqir,rxqikr,rxqkir,rxqidk,rxqkdi,
 !$OMP& ddsc3,ddsc5,ddsc7,bn,sc,gl,sci,scip,gli,glip,gf,gfi,
 !$OMP& gfr,gfri,gti,gtri,dorl,dorli)
-!$OMP& firstprivate(mscale,pscale,dscale,uscale)
-!$OMP DO reduction(+:emo,epo,eintrao,demo1,demo2,depo1,depo2,viro)
+!$OMP& firstprivate(mscale_omp,pscale_omp,dscale_omp,uscale_omp)
+!$OMP& reduction(+:em,ep,eintra,dem1,dem2,dep1,dep2,vir_tmp)
 !$OMP& schedule(guided)
 c
 c     compute the real space portion of the Ewald summation
@@ -4965,40 +4967,40 @@ c
 c     set interaction scaling coefficients for connected atoms
 c
          do j = 1, n12(ii)
-            mscale(i12(j,ii)) = m2scale
-            pscale(i12(j,ii)) = p2scale
+            mscale_omp(i12(j,ii)) = m2scale
+            pscale_omp(i12(j,ii)) = p2scale
          end do
          do j = 1, n13(ii)
-            mscale(i13(j,ii)) = m3scale
-            pscale(i13(j,ii)) = p3scale
+            mscale_omp(i13(j,ii)) = m3scale
+            pscale_omp(i13(j,ii)) = p3scale
          end do
          do j = 1, n14(ii)
-            mscale(i14(j,ii)) = m4scale
-            pscale(i14(j,ii)) = p4scale
+            mscale_omp(i14(j,ii)) = m4scale
+            pscale_omp(i14(j,ii)) = p4scale
             do k = 1, np11(ii)
                 if (i14(j,ii) .eq. ip11(k,ii))
-     &            pscale(i14(j,ii)) = p4scale * p41scale
+     &            pscale_omp(i14(j,ii)) = p4scale * p41scale
             end do
          end do
          do j = 1, n15(ii)
-            mscale(i15(j,ii)) = m5scale
-            pscale(i15(j,ii)) = p5scale
+            mscale_omp(i15(j,ii)) = m5scale
+            pscale_omp(i15(j,ii)) = p5scale
          end do
          do j = 1, np11(ii)
-            dscale(ip11(j,ii)) = d1scale
-            uscale(ip11(j,ii)) = u1scale
+            dscale_omp(ip11(j,ii)) = d1scale
+            uscale_omp(ip11(j,ii)) = u1scale
          end do
          do j = 1, np12(ii)
-            dscale(ip12(j,ii)) = d2scale
-            uscale(ip12(j,ii)) = u2scale
+            dscale_omp(ip12(j,ii)) = d2scale
+            uscale_omp(ip12(j,ii)) = u2scale
          end do
          do j = 1, np13(ii)
-            dscale(ip13(j,ii)) = d3scale
-            uscale(ip13(j,ii)) = u3scale
+            dscale_omp(ip13(j,ii)) = d3scale
+            uscale_omp(ip13(j,ii)) = u3scale
          end do
          do j = 1, np14(ii)
-            dscale(ip14(j,ii)) = d4scale
-            uscale(ip14(j,ii)) = u4scale
+            dscale_omp(ip14(j,ii)) = d4scale
+            uscale_omp(ip14(j,ii)) = u4scale
          end do
          do kkk = 1, nelst(i)
             k = elst(kkk,i)
@@ -5078,14 +5080,14 @@ c
                      ddsc7(3) = temp7 * ddsc5(3)
                   end if
                end if
-               dsc3 = 1.0d0 - scale3*dscale(kk)
-               dsc5 = 1.0d0 - scale5*dscale(kk)
-               dsc7 = 1.0d0 - scale7*dscale(kk)
-               psc3 = 1.0d0 - scale3*pscale(kk)
-               psc5 = 1.0d0 - scale5*pscale(kk)
-               psc7 = 1.0d0 - scale7*pscale(kk)
-               usc3 = 1.0d0 - scale3*uscale(kk)
-               usc5 = 1.0d0 - scale5*uscale(kk)
+               dsc3 = 1.0d0 - scale3*dscale_omp(kk)
+               dsc5 = 1.0d0 - scale5*dscale_omp(kk)
+               dsc7 = 1.0d0 - scale7*dscale_omp(kk)
+               psc3 = 1.0d0 - scale3*pscale_omp(kk)
+               psc5 = 1.0d0 - scale5*pscale_omp(kk)
+               psc7 = 1.0d0 - scale7*pscale_omp(kk)
+               usc3 = 1.0d0 - scale3*uscale_omp(kk)
+               usc5 = 1.0d0 - scale5*uscale_omp(kk)
 c
 c     construct necessary auxiliary vectors
 c
@@ -5291,20 +5293,20 @@ c
                erli = 0.5d0*(rr3*(gli(1)+gli(6))*psc3
      &                   + rr5*(gli(2)+gli(7))*psc5
      &                   + rr7*gli(3)*psc7)
-               e = e - erl * (1.0d0-mscale(kk))
+               e = e - erl * (1.0d0-mscale_omp(kk))
                ei = ei - erli
-               e = f * e
-               ei = f * ei
-               emo = emo + e
-               epo = epo + ei
+               e = ff * e
+               ei = ff * ei
+               em = em + e
+               ep = ep + ei
 c
 c     increment the total intramolecular energy; assumes
 c     intramolecular distances are less than half of cell
 c     length and less than the ewald cutoff
 c
                if (molcule(ii) .eq. molcule(kk)) then
-                  eintrao = eintrao + mscale(kk)*erl*f
-                  eintrao = eintrao + 0.5d0*pscale(kk)
+                  eintrao = eintrao + mscale_omp(kk)*erl*ff
+                  eintrao = eintrao + 0.5d0*pscale_omp(kk)
      &                         * (rr3*(gli(1)+gli(6))*scale3
      &                              + rr5*(gli(2)+gli(7))*scale5
      &                              + rr7*gli(3)*scale7)
@@ -5314,7 +5316,7 @@ c     set flags to compute components without screening
 c
                dorl = .false.
                dorli = .false.
-               if (mscale(kk) .ne. 1.0d0)  dorl = .true.
+               if (mscale_omp(kk) .ne. 1.0d0)  dorl = .true.
                if (psc3 .ne. 0.0d0)  dorli = .true.
                if (dsc3 .ne. 0.0d0)  dorli = .true.
                if (usc3 .ne. 0.0d0)  dorli = .true.
@@ -5478,12 +5480,12 @@ c
 c
 c     account for partially excluded induced interactions
 c
-               temp3 = 0.5d0 * rr3 * ((gli(1)+gli(6))*pscale(kk)
-     &                                  +(glip(1)+glip(6))*dscale(kk))
-               temp5 = 0.5d0 * rr5 * ((gli(2)+gli(7))*pscale(kk)
-     &                                  +(glip(2)+glip(7))*dscale(kk))
-               temp7 = 0.5d0 * rr7 * (gli(3)*pscale(kk)
-     &                                  +glip(3)*dscale(kk))
+               temp3 = 0.5d0 * rr3 * ((gli(1)+gli(6))*pscale_omp(kk)
+     &              +(glip(1)+glip(6))*dscale_omp(kk))
+               temp5 = 0.5d0 * rr5 * ((gli(2)+gli(7))*pscale_omp(kk)
+     &              +(glip(2)+glip(7))*dscale_omp(kk))
+               temp7 = 0.5d0 * rr7 * (gli(3)*pscale_omp(kk)
+     &                                  +glip(3)*dscale_omp(kk))
                fridmp(1) = temp3*ddsc3(1) + temp5*ddsc5(1)
      &                        + temp7*ddsc7(1)
                fridmp(2) = temp3*ddsc3(2) + temp5*ddsc5(2)
@@ -5493,8 +5495,8 @@ c
 c
 c     find some scaling terms for induced-induced force
 c
-               temp3 = 0.5d0 * rr3 * uscale(kk) * scip(2)
-               temp5 = -0.5d0 * rr5 * uscale(kk)
+               temp3 = 0.5d0 * rr3 * uscale_omp(kk) * scip(2)
+               temp5 = -0.5d0 * rr5 * uscale_omp(kk)
      &                    * (sci(3)*scip(4)+scip(3)*sci(4))
                findmp(1) = temp3*ddsc3(1) + temp5*ddsc5(1)
                findmp(2) = temp3*ddsc3(2) + temp5*ddsc5(2)
@@ -5674,33 +5676,33 @@ c
 c     handle the case where scaling is used
 c
                do j = 1, 3
-                  ftm2(j) = f * (ftm2(j)-(1.0d0-mscale(kk))*ftm2r(j))
-                  ftm2i(j) = f * (ftm2i(j)-ftm2ri(j))
-                  ttm2(j) = f * (ttm2(j)-(1.0d0-mscale(kk))*ttm2r(j))
-                  ttm2i(j) = f * (ttm2i(j)-ttm2ri(j))
-                  ttm3(j) = f * (ttm3(j)-(1.0d0-mscale(kk))*ttm3r(j))
-                  ttm3i(j) = f * (ttm3i(j)-ttm3ri(j))
+                  ftm2(j) = ff*(ftm2(j)-(1.0d0-mscale_omp(kk))*ftm2r(j))
+                  ftm2i(j) = ff*(ftm2i(j)-ftm2ri(j))
+                  ttm2(j) = ff*(ttm2(j)-(1.0d0-mscale_omp(kk))*ttm2r(j))
+                  ttm2i(j) = ff * (ttm2i(j)-ttm2ri(j))
+                  ttm3(j) = ff*(ttm3(j)-(1.0d0-mscale_omp(kk))*ttm3r(j))
+                  ttm3i(j) = ff * (ttm3i(j)-ttm3ri(j))
                end do
 c
 c     increment gradient due to force and torque on first site
 c
-               demo1(1,ii) = demo1(1,ii) + ftm2(1)
-               demo1(2,ii) = demo1(2,ii) + ftm2(2)
-               demo1(3,ii) = demo1(3,ii) + ftm2(3)
-               depo1(1,ii) = depo1(1,ii) + ftm2i(1)
-               depo1(2,ii) = depo1(2,ii) + ftm2i(2)
-               depo1(3,ii) = depo1(3,ii) + ftm2i(3)
-               call torque3 (i,ttm2,ttm2i,frcxi,frcyi,frczi,demo1,depo1)
+               dem1(1,ii) = dem1(1,ii) + ftm2(1)
+               dem1(2,ii) = dem1(2,ii) + ftm2(2)
+               dem1(3,ii) = dem1(3,ii) + ftm2(3)
+               dep1(1,ii) = dep1(1,ii) + ftm2i(1)
+               dep1(2,ii) = dep1(2,ii) + ftm2i(2)
+               dep1(3,ii) = dep1(3,ii) + ftm2i(3)
+               call torque3 (i,ttm2,ttm2i,frcxi,frcyi,frczi,dem1,dep1)
 c
 c     increment gradient due to force and torque on second site
 c
-               demo2(1,kk) = demo2(1,kk) - ftm2(1)
-               demo2(2,kk) = demo2(2,kk) - ftm2(2)
-               demo2(3,kk) = demo2(3,kk) - ftm2(3)
-               depo2(1,kk) = depo2(1,kk) - ftm2i(1)
-               depo2(2,kk) = depo2(2,kk) - ftm2i(2)
-               depo2(3,kk) = depo2(3,kk) - ftm2i(3)
-               call torque3 (k,ttm3,ttm3i,frcxk,frcyk,frczk,demo2,depo2)
+               dem2(1,kk) = dem2(1,kk) - ftm2(1)
+               dem2(2,kk) = dem2(2,kk) - ftm2(2)
+               dem2(3,kk) = dem2(3,kk) - ftm2(3)
+               dep2(1,kk) = dep2(1,kk) - ftm2i(1)
+               dep2(2,kk) = dep2(2,kk) - ftm2i(2)
+               dep2(3,kk) = dep2(3,kk) - ftm2i(3)
+               call torque3 (k,ttm3,ttm3i,frcxk,frcyk,frczk,dem2,dep2)
 c
 c     increment the internal virial tensor components
 c
@@ -5752,86 +5754,90 @@ c
                vzz = -zr*(ftm2(3)+ftm2i(3)) + zix*frcxi(3)
      &                  + ziy*frcyi(3) + ziz*frczi(3) + zkx*frcxk(3)
      &                  + zky*frcyk(3) + zkz*frczk(3)
-               viro(1,1) = viro(1,1) + vxx
-               viro(2,1) = viro(2,1) + vyx
-               viro(3,1) = viro(3,1) + vzx
-               viro(1,2) = viro(1,2) + vyx
-               viro(2,2) = viro(2,2) + vyy
-               viro(3,2) = viro(3,2) + vzy
-               viro(1,3) = viro(1,3) + vzx
-               viro(2,3) = viro(2,3) + vzy
-               viro(3,3) = viro(3,3) + vzz
+               vir_tmp(1,1) = vir_tmp(1,1) + vxx
+               vir_tmp(2,1) = vir_tmp(2,1) + vyx
+               vir_tmp(3,1) = vir_tmp(3,1) + vzx
+               vir_tmp(1,2) = vir_tmp(1,2) + vyx
+               vir_tmp(2,2) = vir_tmp(2,2) + vyy
+               vir_tmp(3,2) = vir_tmp(3,2) + vzy
+               vir_tmp(1,3) = vir_tmp(1,3) + vzx
+               vir_tmp(2,3) = vir_tmp(2,3) + vzy
+               vir_tmp(3,3) = vir_tmp(3,3) + vzz
             end if
          end do
 c
 c     reset interaction scaling coefficients for connected atoms
 c
          do j = 1, n12(ii)
-            mscale(i12(j,ii)) = 1.0d0
-            pscale(i12(j,ii)) = 1.0d0
+            mscale_omp(i12(j,ii)) = 1.0d0
+            pscale_omp(i12(j,ii)) = 1.0d0
          end do
          do j = 1, n13(ii)
-            mscale(i13(j,ii)) = 1.0d0
-            pscale(i13(j,ii)) = 1.0d0
+            mscale_omp(i13(j,ii)) = 1.0d0
+            pscale_omp(i13(j,ii)) = 1.0d0
          end do
          do j = 1, n14(ii)
-            mscale(i14(j,ii)) = 1.0d0
-            pscale(i14(j,ii)) = 1.0d0
+            mscale_omp(i14(j,ii)) = 1.0d0
+            pscale_omp(i14(j,ii)) = 1.0d0
          end do
          do j = 1, n15(ii)
-            mscale(i15(j,ii)) = 1.0d0
-            pscale(i15(j,ii)) = 1.0d0
+            mscale_omp(i15(j,ii)) = 1.0d0
+            pscale_omp(i15(j,ii)) = 1.0d0
          end do
          do j = 1, np11(ii)
-            dscale(ip11(j,ii)) = 1.0d0
-            uscale(ip11(j,ii)) = 1.0d0
+            dscale_omp(ip11(j,ii)) = 1.0d0
+            uscale_omp(ip11(j,ii)) = 1.0d0
          end do
          do j = 1, np12(ii)
-            dscale(ip12(j,ii)) = 1.0d0
-            uscale(ip12(j,ii)) = 1.0d0
+            dscale_omp(ip12(j,ii)) = 1.0d0
+            uscale_omp(ip12(j,ii)) = 1.0d0
          end do
          do j = 1, np13(ii)
-            dscale(ip13(j,ii)) = 1.0d0
-            uscale(ip13(j,ii)) = 1.0d0
+            dscale_omp(ip13(j,ii)) = 1.0d0
+            uscale_omp(ip13(j,ii)) = 1.0d0
          end do
          do j = 1, np14(ii)
-            dscale(ip14(j,ii)) = 1.0d0
-            uscale(ip14(j,ii)) = 1.0d0
+            dscale_omp(ip14(j,ii)) = 1.0d0
+            uscale_omp(ip14(j,ii)) = 1.0d0
          end do
       end do
 c
 c     end OpenMP directives for the major loop structure
 c
 !$OMP END DO
-!$OMP END PARALLEL
+cc!$OMP END PARALLEL
 c
 c     add local copies to global variables for OpenMP calculation
 c
+
+c      eintra = eintrao
+   
+!$OMP master     
       em = em + emo
       ep = ep + epo
-      eintra = eintrao
-      do i = 1, n
+         do i = 1, n
          do j = 1, 3
-            dem(j,i) = dem(j,i) + demo1(j,i) + demo2(j,i)
-            dep(j,i) = dep(j,i) + depo1(j,i) + depo2(j,i)
+            dem(j,i) = dem(j,i) + dem1(j,i) + dem2(j,i)
+            dep(j,i) = dep(j,i) + dep1(j,i) + dep2(j,i)
          end do
       end do
       do i = 1, 3
          do j = 1, 3
-            vir(j,i) = vir(j,i) + viro(j,i)
+            vir(j,i) = vir(j,i) + vir_tmp(j,i)
          end do
       end do
+!$OMP end master
 c
 c     perform deallocation of some local arrays
 c
-      deallocate (mscale)
-      deallocate (pscale)
-      deallocate (dscale)
-      deallocate (uscale)
-      deallocate (demo1)
-      deallocate (demo2)
-      deallocate (depo1)
-      deallocate (depo2)
+c      deallocate (mscale_omp)
+c      deallocate (pscale_omp)
+c      deallocate (dscale_omp)
+c      deallocate (uscale_omp)
+      deallocate (dem1)
+      deallocate (dem2)
+      deallocate (dep1)
+      deallocate (dep2)
       return
       end
 c

@@ -229,6 +229,7 @@ c
 c
 c     get the electrostatic field due to permanent multipoles
 c
+
       if (use_ewald) then
          call dfield0c (field,fieldp)
       else if (use_mlist) then
@@ -236,6 +237,7 @@ c
       else
          call dfield0a (field,fieldp)
       end if
+!$OMP master
 c
 c     set induced dipoles to polarizability times direct field
 c
@@ -250,6 +252,8 @@ c
 c
 c     set tolerances for computation of mutual induced dipoles
 c
+
+
       if (poltyp .eq. 'MUTUAL') then
          done = .false.
          maxiter = 500
@@ -309,6 +313,7 @@ c
             end do
          end do
          mode = 'BUILD'
+ccc!$OMP master
          if (use_mlist) then
             call uscale0b (mode,rsd,rsdp,zrsd,zrsdp)
             mode = 'APPLY'
@@ -318,6 +323,9 @@ c
             mode = 'APPLY'
             call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
          end if
+ccc!$OMP end master
+ccc!$OMP barrier
+ccc!$OMP flush
          do i = 1, npole
             do j = 1, 3
                conj(j,i) = zrsd(j,i)
@@ -327,6 +335,7 @@ c
 c
 c     conjugate gradient iteration of the mutual induced dipoles
 c
+ccc!$OMP master
          do while (.not. done)
             iter = iter + 1
             do i = 1, npole
@@ -374,11 +383,13 @@ c
                   rsdp(j,i) = rsdp(j,i) - ap*vecp(j,i)
                end do
             end do
+ccc!$OMP master
             if (use_mlist) then
                call uscale0b (mode,rsd,rsdp,zrsd,zrsdp)
             else
                call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
             end if
+
             b = 0.0d0
             bp = 0.0d0
             do i = 1, npole
@@ -419,6 +430,7 @@ c
             if (eps .gt. epsold)  done = .true.
             if (iter .ge. politer)  done = .true.
          end do
+
 c
 c     perform deallocation of some local arrays
 c
@@ -442,6 +454,7 @@ c
 c
 c     terminate the calculation if dipoles failed to converge
 c
+ccc!$OMP master
          if (iter.ge.maxiter .or. eps.gt.epsold) then
             write (iout,40)
    40       format (/,' INDUCE  --  Warning, Induced Dipoles',
@@ -449,7 +462,12 @@ c
             call prterr
             call fatal
          end if
+ccc!$OMP end master
       end if
+!$OMP end master
+!$OMP barrier
+!$OMP flush
+
 c
 c     perform deallocation of some local arrays
 c
@@ -1426,6 +1444,7 @@ c
       use math
       use mpole
       use polar
+      use openmp
       implicit none
       integer i,j,ii
       real*8 term
@@ -1445,20 +1464,27 @@ c
 c
 c     get the reciprocal space part of the electrostatic field
 c
+!$OMP master
       call udirect1 (field)
       do i = 1, npole
          do j = 1, 3
             fieldp(j,i) = field(j,i)
          end do
       end do
+!$OMP end master
+!$OMP barrier
+!$OMP flush
 c
 c     get the real space portion of the electrostatic field
 c
+
       if (use_mlist) then
          call udirect2b (field,fieldp)
       else
          call udirect2a (field,fieldp)
       end if
+
+!$OMP master
 c
 c     get the self-energy portion of the electrostatic field
 c
@@ -1466,9 +1492,14 @@ c
       do i = 1, npole
          do j = 1, 3
             field(j,i) = field(j,i) + term*rpole(j+1,i)
+     &           + fieldt_omp(j,i)
             fieldp(j,i) = fieldp(j,i) + term*rpole(j+1,i)
+     &           + fieldtp_omp(j,i)
          end do
       end do
+!$OMP end master
+!$OMP barrier
+!$OMP flush
 c
 c     compute the cell dipole boundary correction to field
 c
@@ -1538,6 +1569,7 @@ c
 c
 c     get the real space portion of the electrostatic field
 c
+cc!$OMP master
       if (use_mlist) then
          call umutual2b (field,fieldp)
       else
@@ -1553,6 +1585,9 @@ c
             fieldp(j,i) = fieldp(j,i) + term*uinp(j,i)
          end do
       end do
+cc!$OMP end master 
+cc!$OMP barrier
+cc!$OMP flush
 c
 c     compute the cell dipole boundary correction to the field
 c
@@ -2242,14 +2277,15 @@ c
       use shunt
       use tarray
       use units
+      use virial
       implicit none
       integer i,j,k,m
       integer ii,kk,kkk
-      integer nlocal,maxlocal
-      integer tid,toffset0
+      integer maxlocal !,nlocal
+      integer tid!,toffset0
 !$    integer omp_get_thread_num
       integer, allocatable :: toffset(:)
-      integer, allocatable :: ilocal(:,:)
+c      integer, allocatable :: ilocal(:,:)
       real*8 xr,yr,zr,r,r2
       real*8 rr1,rr2,rr3
       real*8 rr5,rr7
@@ -2279,9 +2315,10 @@ c
       real*8 fieldp(3,*)
       real*8, allocatable :: fieldt(:,:)
       real*8, allocatable :: fieldtp(:,:)
-      real*8, allocatable :: dlocal(:,:)
+c      real*8, allocatable :: dlocal(:,:)
       character*6 mode
       external erfc
+      integer tmp_nthread
 c
 c
 c     check for multipoles and set cutoff coefficients
@@ -2294,56 +2331,69 @@ c
       if (aewald .gt. 0.0d0)  aesq2n = 1.0d0 / (sqrtpi*aewald)
       nlocal = 0
       toffset0 = 0
+      tmp_nthread = nthread
+c      nthread=1
       maxlocal = int(dble(npole)*dble(maxelst)/dble(nthread))
 c
 c     perform dynamic allocation of some local arrays
 c
-      allocate (toffset(0:nthread-1))
-      allocate (pscale(n))
-      allocate (dscale(n))
-      allocate (uscale(n))
-      allocate (fieldt(3,npole))
-      allocate (fieldtp(3,npole))
+c      allocate (toffset(0:nthread-1))
+c      allocate (pscale(n))
+c      allocate (dscale(n))
+c      allocate (uscale(n))
+c      allocate (fieldt(3,npole))
+c      allocate (fieldtp(3,npole))
 c
 c     set arrays needed to scale connected atom interactions
 c
       do i = 1, n
-         pscale(i) = 1.0d0
-         dscale(i) = 1.0d0
-         uscale(i) = 1.0d0
+         pscale_omp(i) = 1.0d0
+         dscale_omp(i) = 1.0d0
+         uscale_omp(i) = 1.0d0
       end do
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(private) shared(n,npole,ipole,x,y,z,pdamp,thole,
-!$OMP& rpole,p2scale,p3scale,p4scale,p41scale,p5scale,d1scale,d2scale,
-!$OMP& d3scale,d4scale,u1scale,u2scale,u3scale,u4scale,n12,i12,n13,i13,
-!$OMP& n14,i14,n15,i15,np11,ip11,np12,ip12,np13,ip13,np14,ip14,nelst,
-!$OMP& elst,cut2,aewald,aesq2,aesq2n,poltyp,ntpair,tindex,tdipdip,
-!$OMP& toffset,toffset0,field,fieldp,fieldt,fieldtp,maxlocal)
-!$OMP& firstprivate(pscale,dscale,uscale,nlocal)
+C$$$!$OMP PARALLEL default(none) shared(n,npole,ipole,x,y,z,pdamp,thole,
+C$$$!$OMP& rpole,p2scale,p3scale,p4scale,p41scale,p5scale,d1scale,d2scale,
+C$$$!$OMP& d3scale,d4scale,u1scale,u2scale,u3scale,u4scale,n12,i12,n13,i13,
+C$$$!$OMP& n14,i14,n15,i15,np11,ip11,np12,ip12,np13,ip13,np14,ip14,nelst,
+C$$$!$OMP& elst,cut2,aewald,aesq2,aesq2n,poltyp,ntpair,tindex,tdipdip,
+C$$$!$OMP& toffset,toffset0,field,fieldp,fieldt,fieldtp,maxlocal)
+C$$$!$OMP& firstprivate(pscale,dscale,uscale,nlocal)
+C$$$!$OMP& private(ilocal,dlocal,ii,pdi,pti,ci,dix,diy,diz,qixx,qixy,
+C$$$!$OMP& qixz,qiyy,qiyz,qizz,kk,xr,yr,zr,r2,r,rr1,rr2,rr3,rr5,rr7,ck,dkx,
+C$$$!$OMP& dky,dkz,qkxx,qkxy,qkxz,qkyy,qkyz,qkzz,ralpha,bn,exp2a,aefac,bfac,
+C$$$!$OMP& scale3,scale5,scale7,damp,pgamma,expdamp,dir,qix,qiy,qiz,dkr,qkx,
+C$$$!$OMP& qky,qkz,qkr,bcn,fimd,fkmd,qir,fimp,fkmp,tid,m)
 c
 c     perform dynamic allocation of some local arrays
 c
-      if (poltyp .eq. 'MUTUAL') then
-         allocate (ilocal(2,maxlocal))
-         allocate (dlocal(6,maxlocal))
-      end if
+C$$$      if (poltyp .eq. 'MUTUAL') then
+C$$$         allocate (ilocal(2,maxlocal))
+C$$$         allocate (dlocal(6,maxlocal))
+C$$$      end if
 c
 c     initialize local variables for OpenMP calculation
 c
 !$OMP DO collapse(2)
       do i = 1, npole
          do j = 1, 3
-            fieldt(j,i) = 0.0d0
-            fieldtp(j,i) = 0.0d0
+            fieldt_omp(j,i) = 0.0d0
+            fieldtp_omp(j,i) = 0.0d0
          end do
       end do
 !$OMP END DO
 c
 c     compute the real space portion of the Ewald summation
 c
-!$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
+!$OMP DO private(ii,pdi,pti,ci,dix,diy,diz,qixx,qixy,
+!$OMP& qixz,qiyy,qiyz,qizz,kk,xr,yr,zr,r2,r,rr1,rr2,rr3,rr5,rr7,ck,dkx,
+!$OMP& dky,dkz,qkxx,qkxy,qkxz,qkyy,qkyz,qkzz,ralpha,bn,exp2a,aefac,bfac,
+!$OMP& scale3,scale5,scale7,damp,pgamma,expdamp,dir,qix,qiy,qiz,dkr,qkx,
+!$OMP& qky,qkz,qkr,bcn,fimd,fkmd,qir,fimp,fkmp,tid,m) 
+!$OMP& reduction(+:fieldt_omp,fieldtp_omp) schedule(guided) 
+!$OMP& firstprivate(dscale_omp,pscale_omp,uscale_omp)
       do i = 1, npole
          ii = ipole(i)
          pdi = pdamp(i)
@@ -2359,36 +2409,36 @@ c
          qiyz = rpole(10,i)
          qizz = rpole(13,i)
          do j = 1, n12(ii)
-            pscale(i12(j,ii)) = p2scale
+            pscale_omp(i12(j,ii)) = p2scale
          end do
          do j = 1, n13(ii)
-            pscale(i13(j,ii)) = p3scale
+            pscale_omp(i13(j,ii)) = p3scale
          end do
          do j = 1, n14(ii)
-            pscale(i14(j,ii)) = p4scale
+            pscale_omp(i14(j,ii)) = p4scale
             do k = 1, np11(ii)
                if (i14(j,ii) .eq. ip11(k,ii))
-     &            pscale(i14(j,ii)) = p4scale * p41scale
+     &            pscale_omp(i14(j,ii)) = p4scale * p41scale
             end do
          end do
          do j = 1, n15(ii)
-            pscale(i15(j,ii)) = p5scale
+            pscale_omp(i15(j,ii)) = p5scale
          end do
          do j = 1, np11(ii)
-            dscale(ip11(j,ii)) = d1scale
-            uscale(ip11(j,ii)) = u1scale
+            dscale_omp(ip11(j,ii)) = d1scale
+            uscale_omp(ip11(j,ii)) = u1scale
          end do
          do j = 1, np12(ii)
-            dscale(ip12(j,ii)) = d2scale
-            uscale(ip12(j,ii)) = u2scale
+            dscale_omp(ip12(j,ii)) = d2scale
+            uscale_omp(ip12(j,ii)) = u2scale
          end do
          do j = 1, np13(ii)
-            dscale(ip13(j,ii)) = d3scale
-            uscale(ip13(j,ii)) = u3scale
+            dscale_omp(ip13(j,ii)) = d3scale
+            uscale_omp(ip13(j,ii)) = u3scale
          end do
          do j = 1, np14(ii)
-            dscale(ip14(j,ii)) = d4scale
-            uscale(ip14(j,ii)) = u4scale
+            dscale_omp(ip14(j,ii)) = d4scale
+            uscale_omp(ip14(j,ii)) = u4scale
          end do
          do kkk = 1, nelst(i)
             k = elst(kkk,i)
@@ -2458,9 +2508,9 @@ c
                qky = qkxy*xr + qkyy*yr + qkyz*zr
                qkz = qkxz*xr + qkyz*yr + qkzz*zr
                qkr = qkx*xr + qky*yr + qkz*zr
-               bcn(1) = bn(1) - (1.0d0-scale3*dscale(kk))*rr3
-               bcn(2) = bn(2) - 3.0d0*(1.0d0-scale5*dscale(kk))*rr5
-               bcn(3) = bn(3) - 15.0d0*(1.0d0-scale7*dscale(kk))*rr7
+               bcn(1) = bn(1) - (1.0d0-scale3*dscale_omp(kk))*rr3
+               bcn(2) = bn(2) - 3.0d0*(1.0d0-scale5*dscale_omp(kk))*rr5
+               bcn(3) = bn(3) - 15.0d0*(1.0d0-scale7*dscale_omp(kk))*rr7
                fimd(1) = -xr*(bcn(1)*ck-bcn(2)*dkr+bcn(3)*qkr)
      &                     - bcn(1)*dkx + 2.0d0*bcn(2)*qkx
                fimd(2) = -yr*(bcn(1)*ck-bcn(2)*dkr+bcn(3)*qkr)
@@ -2473,9 +2523,9 @@ c
      &                     - bcn(1)*diy - 2.0d0*bcn(2)*qiy
                fkmd(3) = zr*(bcn(1)*ci+bcn(2)*dir+bcn(3)*qir)
      &                     - bcn(1)*diz - 2.0d0*bcn(2)*qiz
-               bcn(1) = bn(1) - (1.0d0-scale3*pscale(kk))*rr3
-               bcn(2) = bn(2) - 3.0d0*(1.0d0-scale5*pscale(kk))*rr5
-               bcn(3) = bn(3) - 15.0d0*(1.0d0-scale7*pscale(kk))*rr7
+               bcn(1) = bn(1) - (1.0d0-scale3*pscale_omp(kk))*rr3
+               bcn(2) = bn(2) - 3.0d0*(1.0d0-scale5*pscale_omp(kk))*rr5
+               bcn(3) = bn(3) - 15.0d0*(1.0d0-scale7*pscale_omp(kk))*rr7
                fimp(1) = -xr*(bcn(1)*ck-bcn(2)*dkr+bcn(3)*qkr)
      &                     - bcn(1)*dkx + 2.0d0*bcn(2)*qkx
                fimp(2) = -yr*(bcn(1)*ck-bcn(2)*dkr+bcn(3)*qkr)
@@ -2492,106 +2542,116 @@ c
 c     find terms needed later to compute mutual polarization
 c
                if (poltyp .eq. 'MUTUAL') then
-                  bcn(1) = bn(1) - (1.0d0-scale3*uscale(kk))*rr3
-                  bcn(2) = bn(2) - 3.0d0*(1.0d0-scale5*uscale(kk))*rr5
+                  bcn(1) = bn(1) - (1.0d0-scale3*uscale_omp(kk))*rr3
+                  bcn(2) = bn(2) - 
+     &                 3.0d0*(1.0d0-scale5*uscale_omp(kk))*rr5
                   nlocal = nlocal + 1
-                  ilocal(1,nlocal) = i
-                  ilocal(2,nlocal) = k
-                  dlocal(1,nlocal) = -bcn(1) + bcn(2)*xr*xr
-                  dlocal(2,nlocal) = bcn(2)*xr*yr
-                  dlocal(3,nlocal) = bcn(2)*xr*zr
-                  dlocal(4,nlocal) = -bcn(1) + bcn(2)*yr*yr
-                  dlocal(5,nlocal) = bcn(2)*yr*zr
-                  dlocal(6,nlocal) = -bcn(1) + bcn(2)*zr*zr
+                  ilocal_omp(th_id,1,nlocal) = i
+                  ilocal_omp(th_id,2,nlocal) = k
+                  dlocal_omp(th_id,1,nlocal) = -bcn(1) + bcn(2)*xr*xr
+                  dlocal_omp(th_id,2,nlocal) = bcn(2)*xr*yr
+                  dlocal_omp(th_id,3,nlocal) = bcn(2)*xr*zr
+                  dlocal_omp(th_id,4,nlocal) = -bcn(1) + bcn(2)*yr*yr
+                  dlocal_omp(th_id,5,nlocal) = bcn(2)*yr*zr
+                  dlocal_omp(th_id,6,nlocal) = -bcn(1) + bcn(2)*zr*zr
                end if
 c
 c     increment the field at each site due to this interaction
 c
                do j = 1, 3
-                  fieldt(j,i) = fieldt(j,i) + fimd(j)
-                  fieldt(j,k) = fieldt(j,k) + fkmd(j)
-                  fieldtp(j,i) = fieldtp(j,i) + fimp(j)
-                  fieldtp(j,k) = fieldtp(j,k) + fkmp(j)
+                  fieldt_omp(j,i) = fieldt_omp(j,i) + fimd(j)
+                  fieldt_omp(j,k) = fieldt_omp(j,k) + fkmd(j)
+                  fieldtp_omp(j,i) = fieldtp_omp(j,i) + fimp(j)
+                  fieldtp_omp(j,k) = fieldtp_omp(j,k) + fkmp(j)
                end do
             end if
          end do
+
 c
 c     reset interaction scaling coefficients for connected atoms
 c
          do j = 1, n12(ii)
-            pscale(i12(j,ii)) = 1.0d0
+            pscale_omp(i12(j,ii)) = 1.0d0
          end do
          do j = 1, n13(ii)
-            pscale(i13(j,ii)) = 1.0d0
+            pscale_omp(i13(j,ii)) = 1.0d0
          end do
          do j = 1, n14(ii)
-            pscale(i14(j,ii)) = 1.0d0
+            pscale_omp(i14(j,ii)) = 1.0d0
          end do
          do j = 1, n15(ii)
-            pscale(i15(j,ii)) = 1.0d0
+            pscale_omp(i15(j,ii)) = 1.0d0
          end do
          do j = 1, np11(ii)
-            uscale(ip11(j,ii)) = 1.0d0
-            dscale(ip11(j,ii)) = 1.0d0
+            uscale_omp(ip11(j,ii)) = 1.0d0
+            dscale_omp(ip11(j,ii)) = 1.0d0
          end do
          do j = 1, np12(ii)
-            uscale(ip12(j,ii)) = 1.0d0
-            dscale(ip12(j,ii)) = 1.0d0
+            uscale_omp(ip12(j,ii)) = 1.0d0
+            dscale_omp(ip12(j,ii)) = 1.0d0
          end do
          do j = 1, np13(ii)
-            uscale(ip13(j,ii)) = 1.0d0
-            dscale(ip13(j,ii)) = 1.0d0
+            uscale_omp(ip13(j,ii)) = 1.0d0
+            dscale_omp(ip13(j,ii)) = 1.0d0
          end do
          do j = 1, np14(ii)
-            uscale(ip14(j,ii)) = 1.0d0
-            dscale(ip14(j,ii)) = 1.0d0
+            uscale_omp(ip14(j,ii)) = 1.0d0
+            dscale_omp(ip14(j,ii)) = 1.0d0
          end do
       end do
 !$OMP END DO
 c
 c     transfer the results from local to global arrays
 c
-!$OMP DO
-      do i = 1, npole
-         do j = 1, 3
-            field(j,i) = fieldt(j,i) + field(j,i)
-            fieldp(j,i) = fieldtp(j,i) + fieldp(j,i)
-         end do
-      end do
-!$OMP END DO
+
+C$$$!$OMP DO collapse(2) schedule(guided)
+C$$$      do i = 1, npole
+C$$$         do j = 1, 3
+C$$$            field(j,i) = fieldt_omp(j,i) + field(j,i)
+C$$$            fieldp(j,i) = fieldtp_omp(j,i) + fieldp(j,i)
+C$$$         end do
+C$$$      end do
+C$$$!$OMP END DO
 c
 c     store terms needed later to compute mutual polarization
 c
+
 !$OMP CRITICAL
       tid = 0
 !$    tid = omp_get_thread_num ()
-      toffset(tid) = toffset0
+      offset_omp(tid) = toffset0
       toffset0 = toffset0 + nlocal
       ntpair = toffset0
 !$OMP END CRITICAL
+
       if (poltyp .eq. 'MUTUAL') then
-         k = toffset(tid)
+         k = offset_omp(tid)
          do i = 1, nlocal
             m = k + i
-            tindex(1,m) = ilocal(1,i)
-            tindex(2,m) = ilocal(2,i)
+            tindex(1,m) = ilocal_omp(th_id,1,i)
+            tindex(2,m) = ilocal_omp(th_id,2,i)
             do j = 1, 6
-               tdipdip(j,m) = dlocal(j,i)
+               tdipdip(j,m) = dlocal_omp(th_id,j,i)
             end do
          end do
-         deallocate (ilocal)
-         deallocate (dlocal)
+c         deallocate (ilocal)
+c         deallocate (dlocal)
       end if
-!$OMP END PARALLEL
+c!$OMP end master
+c!$OMP barrier
+c!$OMP flush
+
+c!$OMP END PARALLEL
 c
 c     perform deallocation of some local arrays
 c
-      deallocate (toffset)
-      deallocate (pscale)
-      deallocate (dscale)
-      deallocate (uscale)
-      deallocate (fieldt)
-      deallocate (fieldtp)
+      nthread = tmp_nthread
+c      deallocate (toffset)
+c      deallocate (pscale)
+c      deallocate (dscale)
+c      deallocate (uscale)
+c      deallocate (fieldt)
+c      deallocate (fieldtp)
       return
       end
 c
@@ -3088,23 +3148,23 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(private) shared(npole,uind,uinp,ntpair,tindex,
-!$OMP& tdipdip,field,fieldp,fieldt,fieldtp)
+ccc!$OMP PARALLEL default(private) shared(npole,uind,uinp,ntpair,tindex,
+ccc!$OMP& tdipdip,field,fieldp,fieldt,fieldtp)
 c
 c     initialize local variables for OpenMP calculation
 c
-!$OMP DO collapse(2)
+ccc!$OMP DO collapse(2)
       do i = 1, npole
          do j = 1, 3
             fieldt(j,i) = 0.0d0
             fieldtp(j,i) = 0.0d0
          end do
       end do
-!$OMP END DO
+ccc!$OMP END DO
 c
 c     find the field terms for each pairwise interaction
 c
-!$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
+ccc!$OMP DO reduction(+:fieldt,fieldtp) schedule(guided)
       do m = 1, ntpair
          i = tindex(1,m)
          k = tindex(2,m)
@@ -3142,19 +3202,19 @@ c
             fieldtp(j,k) = fieldtp(j,k) + fkmp(j)
          end do
       end do
-!$OMP END DO
+ccc!$OMP END DO
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP DO
+ccc!$OMP DO
       do i = 1, npole
          do j = 1, 3
             field(j,i) = fieldt(j,i) + field(j,i)
             fieldp(j,i) = fieldtp(j,i) + fieldp(j,i)
          end do
       end do
-!$OMP END DO
-!$OMP END PARALLEL
+ccc!$OMP END DO
+ccc!$OMP END PARALLEL
 c
 c     perform deallocation of some local arrays
 c
@@ -3638,17 +3698,17 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(private) shared(npole,ipole,pdamp,thole,rborn,
-!$OMP& rpole,n12,n13,n14,n15,np11,np12,np13,np14,i12,i13,i14,i15,
-!$OMP% ip11,ip12,ip13,ip14,p2scale,p3scale,p4scale,p41scale,p5scale,
-!$OMP& d1scale,d2scale,d3scale,d4scale,use_intra,x,y,z,off2,fc,fd,fq,
-!$OMP& gkc,field,fieldp,fields,fieldps)
-!$OMP& firstprivate(dscale,pscale)
-!$OMP% shared(fieldt,fieldtp,fieldts,fieldtps)
+cc!$OMP PARALLEL default(private) shared(npole,ipole,pdamp,thole,rborn,
+cc!$OMP& rpole,n12,n13,n14,n15,np11,np12,np13,np14,i12,i13,i14,i15,
+cc!$OMP% ip11,ip12,ip13,ip14,p2scale,p3scale,p4scale,p41scale,p5scale,
+cc!$OMP& d1scale,d2scale,d3scale,d4scale,use_intra,x,y,z,off2,fc,fd,fq,
+cc!$OMP& gkc,field,fieldp,fields,fieldps)
+cc!$OMP& firstprivate(dscale,pscale)
+cc!$OMP% shared(fieldt,fieldtp,fieldts,fieldtps)
 c
 c     initialize local variables for OpenMP calculation
 c
-!$OMP DO collapse(2)
+cc!$OMP DO collapse(2)
       do i = 1, npole
          do j = 1, 3
             fieldt(j,i) = 0.0d0
@@ -3657,12 +3717,12 @@ c
             fieldtps(j,i) = 0.0d0
          end do
       end do
-!$OMP END DO
+cc!$OMP END DO
 c
 c     find the field terms for each pairwise interaction
 c
-!$OMP DO reduction(+:fieldt,fieldtp,fieldts,fieldtps)
-!$OMP& schedule(guided)
+cc!$OMP DO reduction(+:fieldt,fieldtp,fieldts,fieldtps)
+cc!$OMP& schedule(guided)
 c
 c     compute the direct induced dipole moment at each atom, and
 c     another set that also includes RF due to permanent multipoles
@@ -3986,11 +4046,11 @@ c
             dscale(ip14(j,ii)) = 1.0d0
          end do
       end do
-!$OMP END DO
+cc!$OMP END DO
 c
 c     add local copies to global variables for OpenMP calculation
 c
-!$OMP DO
+cc!$OMP DO
       do i = 1, npole
          do j = 1, 3
             field(j,i) = field(j,i) + fieldt(j,i)
@@ -3999,19 +4059,19 @@ c
             fieldps(j,i) = fieldps(j,i) + fieldtps(j,i)
          end do
       end do
-!$OMP END DO
+cc!$OMP END DO
 c
 c     combine permanent multipole field and GK reaction field
 c
-!$OMP DO
+cc!$OMP DO
       do i = 1, npole
          do j = 1, 3
             fields(j,i) = field(j,i) + fields(j,i)
             fieldps(j,i) = fieldp(j,i) + fieldps(j,i)
          end do
       end do
-!$OMP END DO
-!$OMP END PARALLEL
+cc!$OMP END DO
+cc!$OMP END PARALLEL
 c
 c     perform deallocation of some local arrays
 c
@@ -4128,15 +4188,15 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(private) shared(npole,ipole,pdamp,thole,rborn,
-!$OMP& uind,uinp,uinds,uinps,np11,np12,np13,np14,ip11,ip12,ip13,ip14,
-!$OMP& u1scale,u2scale,u3scale,u4scale,use_intra,x,y,z,off2,fd,gkc,
-!$OMP& field,fieldp,fields,fieldps)
-!$OMP& firstprivate(dscale) shared(fieldt,fieldtp,fieldts,fieldtps)
+cc!$OMP PARALLEL default(private) shared(npole,ipole,pdamp,thole,rborn,
+cc!$OMP& uind,uinp,uinds,uinps,np11,np12,np13,np14,ip11,ip12,ip13,ip14,
+cc!$OMP& u1scale,u2scale,u3scale,u4scale,use_intra,x,y,z,off2,fd,gkc,
+cc!$OMP& field,fieldp,fields,fieldps)
+cc!$OMP& firstprivate(dscale) shared(fieldt,fieldtp,fieldts,fieldtps)
 c
 c     initialize local variables for OpenMP calculation
 c
-!$OMP DO collapse(2)
+cc!$OMP DO collapse(2)
       do i = 1, npole
          do j = 1, 3
             fieldt(j,i) = 0.0d0
@@ -4145,12 +4205,12 @@ c
             fieldtps(j,i) = 0.0d0
          end do
       end do
-!$OMP END DO
+cc!$OMP END DO
 c
 c     find the field terms for each pairwise interaction
 c
-!$OMP DO reduction(+:fieldt,fieldtp,fieldts,fieldtps)
-!$OMP& schedule(guided)
+cc!$OMP DO reduction(+:fieldt,fieldtp,fieldts,fieldtps)
+cc!$OMP& schedule(guided)
 c
 c     compute the mutual electrostatic field at each atom,
 c     and another field including RF due to induced dipoles
@@ -4339,11 +4399,11 @@ c
             dscale(ip14(j,ii)) = 1.0d0
          end do
       end do
-!$OMP END DO
+cc!$OMP END DO
 c
 c     add local copies to global variables for OpenMP calculation
 c
-!$OMP DO
+cc!$OMP DO
       do i = 1, npole
          do j = 1, 3
             field(j,i) = field(j,i) + fieldt(j,i)
@@ -4352,8 +4412,8 @@ c
             fieldps(j,i) = fieldps(j,i) + fieldtps(j,i)
          end do
       end do
-!$OMP END DO
-!$OMP END PARALLEL
+cc!$OMP END DO
+cc!$OMP END PARALLEL
 c
 c     perform deallocation of some local arrays
 c
@@ -5636,9 +5696,9 @@ c
 c
 c     use the off-diagonal preconditioner elements in second phase
 c
-!$OMP PARALLEL default(private) shared(npole,mindex,minv,nulst,ulst,
-!$OMP& rsd,rsdp,zrsd,zrsdp,zrsdt,zrsdtp)
-!$OMP DO reduction(+:zrsdt,zrsdtp) schedule(guided)
+cc!$OMP PARALLEL default(private) shared(npole,mindex,minv,nulst,ulst,
+cc!$OMP& rsd,rsdp,zrsd,zrsdp,zrsdt,zrsdtp)
+cc!$OMP DO reduction(+:zrsdt,zrsdtp) schedule(guided)
          do i = 1, npole
             m = mindex(i)
             do kk = 1, nulst(i)
@@ -5676,19 +5736,19 @@ c
      &                         + m6*rsdp(3,i)
             end do
          end do
-!$OMP END DO
+cc!$OMP END DO
 c
 c     transfer the results from local to global arrays
 c
-!$OMP DO
+cc!$OMP DO
          do i = 1, npole
             do j = 1, 3
                zrsd(j,i) = zrsdt(j,i) + zrsd(j,i)
                zrsdp(j,i) = zrsdtp(j,i) + zrsdp(j,i)
             end do
          end do
-!$OMP END DO
-!$OMP END PARALLEL
+cc!$OMP END DO
+cc!$OMP END PARALLEL
 c
 c     perform deallocation of some local arrays
 c
@@ -5716,14 +5776,14 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-!$OMP PARALLEL default(private) shared(n,npole,ipole,x,y,z,pdamp,
-!$OMP& thole,polarity,u1scale,u2scale,u3scale,u4scale,np11,ip11,
-!$OMP& np12,ip12,np13,ip13,np14,ip14,nulst,ulst,mindex,minv)
-!$OMP& firstprivate (dscale)
+cc!$OMP PARALLEL default(private) shared(n,npole,ipole,x,y,z,pdamp,
+cc!$OMP& thole,polarity,u1scale,u2scale,u3scale,u4scale,np11,ip11,
+cc!$OMP& np12,ip12,np13,ip13,np14,ip14,nulst,ulst,mindex,minv)
+cc!$OMP& firstprivate (dscale)
 c
 c     determine the off-diagonal elements of the preconditioner
 c
-!$OMP DO schedule(guided)
+cc!$OMP DO schedule(guided)
          do i = 1, npole
             ii = ipole(i)
             xi = x(ii)
@@ -5793,8 +5853,8 @@ c
                dscale(ip14(j,ii)) = 1.0d0
             end do
          end do
-!$OMP END DO
-!$OMP END PARALLEL
+cc!$OMP END DO
+cc!$OMP END PARALLEL
 c
 c     perform deallocation of some local arrays
 c

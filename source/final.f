@@ -762,6 +762,17 @@ c
       if(allocated(vscale_th)) deallocate(vscale_th)
       if(allocated(iv14_th)) deallocate(iv14_th)
 
+      if(allocated(mscale_omp)) deallocate(mscale_omp)
+      if(allocated(pscale_omp)) deallocate(pscale_omp)
+      if(allocated(dscale_omp)) deallocate(dscale_omp)
+      if(allocated(uscale_omp)) deallocate(uscale_omp)
+
+      if(allocated(offset_omp)) deallocate(offset_omp)
+      if(allocated(ilocal_omp)) deallocate(ilocal_omp)
+      if(allocated(dlocal_omp)) deallocate(dlocal_omp)
+
+       if(allocated(field_omp)) deallocate(field_omp)
+       if(allocated(fieldp_omp)) deallocate(fieldp_omp)
 c
 c     free memory used by the APBS Poisson-Boltzmann solver
 c

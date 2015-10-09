@@ -1,4 +1,4 @@
-c
+c     
 c
 c     ###################################################
 c     ##  COPYRIGHT (C)  1990  by  Jay William Ponder  ##
@@ -35,16 +35,20 @@ c
       use virial
       use usage
       use openmp
-
+      use mpole
       use warp 
+      use neigh
+      use polpot
       implicit none
       integer i,j,k
       real*8 energy,cutoff
       real*8 derivs(3,*)
       real*8 elrc, vlrc
-
+      integer maxlocal
 !$    integer omp_get_thread_num
 
+
+      maxlocal = int(dble(npole)*dble(maxelst)/dble(nthread))
       eint = 0.0d0
 c
 c     zero out each of the potential energy components
@@ -83,6 +87,8 @@ c
       if(.not. allocated(vir_th)) allocate(vir_th(nthread,3,3))
       if(.not. allocated(drv_th)) allocate(drv_th(nthread,3,n))
       if(.not. allocated(en_th)) allocate(en_th(nthread))
+      if(.not. allocated(fieldt_omp)) allocate(fieldt_omp(3,n))
+      if(.not. allocated(fieldtp_omp)) allocate(fieldtp_omp(3,n))
 
       if(.not. allocated(xred_th)) then
          allocate(xred_th(n))
@@ -91,6 +97,31 @@ c
 c         allocate(vscale_th(n))
          allocate(iv14_th(n))
       end if
+
+      if(.not. allocated(pscale_omp)) then
+      allocate (mscale_omp(n))
+      allocate (pscale_omp(n))
+      allocate (dscale_omp(n))
+      allocate (uscale_omp(n))
+      end if
+
+      if(.not. allocated(field_omp)) then
+         allocate(field_omp(3,npole))
+         allocate(fieldp_omp(3,npole))
+      end if
+
+      field_omp = 0.0d0
+      fieldp_omp = 0.0d0
+
+
+      if(.not. allocated(offset_omp)) allocate(offset_omp(0:nthread-1))
+      
+
+      if (poltyp .eq. 'MUTUAL'.and. .not.allocated(ilocal_omp)) then
+         allocate (ilocal_omp(nthread,2,maxlocal))
+         allocate (dlocal_omp(nthread,6,maxlocal))
+      end if
+
 
 c
 c     zero out the virial and the intermolecular energy
@@ -209,7 +240,16 @@ c
 
       call chkpole
       call rotpole
+      call induce
+      
+  
+c!$OMP master
+
+c!$OMP end master
+c!$OMP barrier
+c!$OMP flush
      
+
 !$OMP END PARALLEL
 c
 c     call the electrostatic energy and gradient routines
@@ -217,7 +257,8 @@ c
 
 c      call chkpole
 c      call rotpole
-      call induce
+     
+c      call induce
       call emrecip1
       call ereal1d(eint)
       call empole1d

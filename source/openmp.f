@@ -26,6 +26,16 @@ c
       real*8, allocatable :: zred_th(:)
       real*8, allocatable :: vscale_th(:)
       integer, allocatable :: iv14_th(:)
+      real*8, allocatable :: fieldt_omp(:,:)
+      real*8, allocatable :: fieldtp_omp(:,:)
+      integer, allocatable :: offset_omp(:)
+      integer toffset0
+      integer nlocal
+      real*8, allocatable :: ilocal_omp(:,:,:)
+      real*8, allocatable :: dlocal_omp(:,:,:)
+      real*8, allocatable :: field_omp(:,:)
+      real*8, allocatable :: fieldp_omp(:,:)
       save
 !$OMP threadprivate(th_id)
+!$OMP threadprivate(nlocal)
       end

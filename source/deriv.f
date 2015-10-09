@@ -69,5 +69,10 @@ c
       real*8, allocatable :: deg(:,:)
       real*8, allocatable :: dex(:,:)
       real*8, allocatable :: drv_th(:,:,:)
+! to remove the omp parallel inside ereal1d
+      real*8, allocatable :: dep1(:,:)
+      real*8, allocatable :: dep2(:,:)
+      real*8, allocatable :: dem1(:,:)
+      real*8, allocatable :: dem2(:,:)
       save
       end
