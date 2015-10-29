@@ -113,6 +113,9 @@ c         allocate(vscale_th(n))
       field_omp = 0.0d0
       fieldp_omp = 0.0d0
 
+c      if(.not. allocated(uind_omp)) allocate(uind_omp(3,npole))
+c      if(.not. allocated(uind_omp)) allocate(uinp_omp(3,npole))
+
 
       if(.not. allocated(offset_omp)) allocate(offset_omp(0:nthread-1))
       

@@ -237,10 +237,11 @@ c
       else
          call dfield0a (field,fieldp)
       end if
-!$OMP master
+
 c
 c     set induced dipoles to polarizability times direct field
 c
+!$OMP master
       do i = 1, npole
          do j = 1, 3
             udir(j,i) = polarity(i) * field(j,i)
@@ -249,6 +250,9 @@ c
             uinp(j,i) = udirp(j,i)
          end do
       end do
+!$OMP end master
+!$OMP barrier
+!$OMP flush
 c
 c     set tolerances for computation of mutual induced dipoles
 c
@@ -263,7 +267,9 @@ c
 c
 c     estimated induced dipoles from polynomial predictor
 c
+
          if (use_pred .and. nualt.eq.maxualt) then
+!$OMP master
             call ulspred
             do i = 1, npole
                do j = 1, 3
@@ -277,6 +283,8 @@ c
                   uinp(j,i) = upsum
                end do
             end do
+!$OMP end master
+!$OMP barrier
          end if
 c
 c     perform dynamic allocation of some local arrays
@@ -294,12 +302,13 @@ c
 c     get the electrostatic field due to induced dipoles
 c
          if (use_ewald) then
-            call ufield0c (field,fieldp)
+            call ufield0c1 (field,fieldp)
          else if (use_mlist) then
             call ufield0b (field,fieldp)
          else
             call ufield0a (field,fieldp)
          end if
+!$OMP master
 c
 c     set initial conjugate gradient residual and conjugate vector
 c
@@ -463,10 +472,12 @@ ccc!$OMP master
             call fatal
          end if
 ccc!$OMP end master
-      end if
+
 !$OMP end master
 !$OMP barrier
 !$OMP flush
+      end if
+
 
 c
 c     perform deallocation of some local arrays
@@ -1612,6 +1623,107 @@ c
       end if
       return
       end
+
+c
+c
+c     ###############################################################
+c     ##                                                           ##
+c     ##  subroutine ufield0c1  --  mutual induction via Ewald sum  ##
+c     ##                                                           ##
+c     ###############################################################
+c
+c
+c     "ufield0c" computes the mutual electrostatic field due to
+c     induced dipole moments via Ewald summation
+c
+c
+      subroutine ufield0c1 (field,fieldp)
+      use sizes
+      use atoms
+      use boxes
+      use ewald
+      use limits
+      use math
+      use mpole
+      use polar
+      use openmp
+      implicit none
+      integer i,j
+      real*8 term
+      real*8 ucell(3)
+      real*8 ucellp(3)
+      real*8 field(3,*)
+      real*8 fieldp(3,*)
+c
+c
+c     zero out the electrostatic field at each site
+c
+      do i = 1, npole
+         do j = 1, 3
+            field(j,i) = 0.0d0
+            fieldp(j,i) = 0.0d0
+         end do
+      end do
+c
+c     get the reciprocal space part of the electrostatic field
+c
+!$OMP master
+      call umutual1 (field,fieldp)
+c
+c     get the real space portion of the electrostatic field
+c
+!$OMP end master
+!$OMP barrier
+!$OMP flush
+      if (use_mlist) then
+         call umutual2b1 (field,fieldp)
+      else
+         call umutual2a (field,fieldp)
+      end if
+
+!$OMP master
+c
+c     get the self-energy portion of the electrostatic field
+c
+      term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
+      do i = 1, npole
+         do j = 1, 3
+            field(j,i) = field(j,i) + term*uind(j,i) + fieldt_omp(j,i)
+            fieldp(j,i) = fieldp(j,i) + term*uinp(j,i)+ fieldtp_omp(j,i)
+         end do
+      end do
+
+!$OMP end master 
+!$OMP barrier
+!$OMP flush
+c
+c     compute the cell dipole boundary correction to the field
+c
+      if (boundary .eq. 'VACUUM') then
+!$OMP master
+         do i = 1, 3
+            ucell(i) = 0.0d0
+            ucellp(i) = 0.0d0
+         end do
+         do i = 1, npole
+            do j = 1, 3
+               ucell(j) = ucell(j) + uind(j,i)
+               ucellp(j) = ucellp(j) + uinp(j,i)
+            end do
+         end do
+         term = (4.0d0/3.0d0) * pi/volbox
+         do i = 1, npole
+            do j = 1, 3
+               field(j,i) = field(j,i) - term*ucell(j)
+               fieldp(j,i) = fieldp(j,i) - term*ucellp(j)
+            end do
+         end do
+!$OMP end master
+!$OMP barrier
+      end if
+      return
+      end
+
 c
 c
 c     #################################################################
@@ -3110,6 +3222,121 @@ c
       return
       end
 c
+c
+c     ##################################################################
+c     ##                                                              ##
+c     ##  subroutine umutual2b1  --  Ewald real mutual field via list  ##
+c     ##                                                              ##
+c     ##################################################################
+c
+c
+c     "umutual2b" computes the real space contribution of the induced
+c     atomic dipole moments to the field via a neighbor list
+c
+c
+      subroutine umutual2b1 (field,fieldp)
+      use sizes
+      use mpole
+      use polar
+      use tarray
+      use openmp
+      implicit none
+      integer i,j,k,m
+      real*8 fimd(3),fkmd(3)
+      real*8 fimp(3),fkmp(3)
+      real*8 field(3,*)
+      real*8 fieldp(3,*)
+      real*8, allocatable :: fieldt(:,:)
+      real*8, allocatable :: fieldtp(:,:)
+c
+c
+c     check for multipoles and set cutoff coefficients
+c
+      if (npole .eq. 0)  return
+c
+c     perform dynamic allocation of some local arrays
+c
+c      allocate (fieldt(3,npole))
+c      allocate (fieldtp(3,npole))
+c
+c     set OpenMP directives for the major loop structure
+c
+ccc!$OMP PARALLEL default(private) shared(npole,uind,uinp,ntpair,tindex,
+ccc!$OMP& tdipdip,field,fieldp,fieldt,fieldtp)
+c
+c     initialize local variables for OpenMP calculation
+c
+!$OMP DO collapse(2)
+      do i = 1, npole
+         do j = 1, 3
+            fieldt_omp(j,i) = 0.0d0
+            fieldtp_omp(j,i) = 0.0d0
+         end do
+      end do
+!$OMP END DO
+c
+c     find the field terms for each pairwise interaction
+c
+!$OMP DO reduction(+:fieldt_omp,fieldtp_omp) schedule(guided)
+      do m = 1, ntpair
+         i = tindex(1,m)
+         k = tindex(2,m)
+         fimd(1) = tdipdip(1,m)*uind(1,k) + tdipdip(2,m)*uind(2,k)
+     &                + tdipdip(3,m)*uind(3,k)
+         fimd(2) = tdipdip(2,m)*uind(1,k) + tdipdip(4,m)*uind(2,k)
+     &                + tdipdip(5,m)*uind(3,k)
+         fimd(3) = tdipdip(3,m)*uind(1,k) + tdipdip(5,m)*uind(2,k)
+     &                + tdipdip(6,m)*uind(3,k)
+         fkmd(1) = tdipdip(1,m)*uind(1,i) + tdipdip(2,m)*uind(2,i)
+     &                + tdipdip(3,m)*uind(3,i)
+         fkmd(2) = tdipdip(2,m)*uind(1,i) + tdipdip(4,m)*uind(2,i)
+     &                + tdipdip(5,m)*uind(3,i)
+         fkmd(3) = tdipdip(3,m)*uind(1,i) + tdipdip(5,m)*uind(2,i)
+     &                + tdipdip(6,m)*uind(3,i)
+         fimp(1) = tdipdip(1,m)*uinp(1,k) + tdipdip(2,m)*uinp(2,k)
+     &                + tdipdip(3,m)*uinp(3,k)
+         fimp(2) = tdipdip(2,m)*uinp(1,k) + tdipdip(4,m)*uinp(2,k)
+     &                + tdipdip(5,m)*uinp(3,k)
+         fimp(3) = tdipdip(3,m)*uinp(1,k) + tdipdip(5,m)*uinp(2,k)
+     &                + tdipdip(6,m)*uinp(3,k)
+         fkmp(1) = tdipdip(1,m)*uinp(1,i) + tdipdip(2,m)*uinp(2,i)
+     &                + tdipdip(3,m)*uinp(3,i)
+         fkmp(2) = tdipdip(2,m)*uinp(1,i) + tdipdip(4,m)*uinp(2,i)
+     &                + tdipdip(5,m)*uinp(3,i)
+         fkmp(3) = tdipdip(3,m)*uinp(1,i) + tdipdip(5,m)*uinp(2,i)
+     &                + tdipdip(6,m)*uinp(3,i)
+c
+c     increment the field at each site due to this interaction
+c
+         do j = 1, 3
+            fieldt_omp(j,i) = fieldt_omp(j,i) + fimd(j)
+            fieldt_omp(j,k) = fieldt_omp(j,k) + fkmd(j)
+            fieldtp_omp(j,i) = fieldtp_omp(j,i) + fimp(j)
+            fieldtp_omp(j,k) = fieldtp_omp(j,k) + fkmp(j)
+         end do
+      end do
+!$OMP END DO
+c
+c     end OpenMP directives for the major loop structure
+c
+C$$$ccc!$OMP DO
+C$$$      do i = 1, npole
+C$$$         do j = 1, 3
+C$$$            field(j,i) = fieldt(j,i) + field(j,i)
+C$$$            fieldp(j,i) = fieldtp(j,i) + fieldp(j,i)
+C$$$         end do
+C$$$      end do
+C$$$ccc!$OMP END DO
+C$$$ccc!$OMP END PARALLEL
+c
+c     perform deallocation of some local arrays
+c
+c      deallocate (fieldt)
+c      deallocate (fieldtp)
+      return
+      end
+
+
 c
 c     ##################################################################
 c     ##                                                              ##
