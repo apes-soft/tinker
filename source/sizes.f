@@ -34,7 +34,7 @@ c
       integer maxclass,maxcons
       integer maxref,maxgrp
       integer maxres,maxfix
-      parameter (maxatm=1000000)
+      parameter (maxatm=300000)
       parameter (maxtyp=5000)
       parameter (maxclass=1000)
       parameter (maxcons=8)
