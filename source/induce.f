@@ -81,8 +81,8 @@ c
       if (debug .and. use_polar) then
          do i = 1, npole
             if (polarity(i) .ne. 0.0d0) then
-                       if (header) then
-                  header = .false.
+                  if (header) then
+                     header = .false.
                   if (solvtyp.eq.'GK' .or. solvtyp.eq.'PB') then
                      write (iout,10)
    10                format (/,' Vacuum Induced Dipole Moments',
@@ -387,12 +387,12 @@ c
             end do
             if (use_ewald) then
 
-            if(rank.eq.0) then
-               print *,"BEFORE-ufield0c rank ",rank," field: ",
-     &                 sum(field)
-               print *,"BEFORE-ufield0c rank ",rank," fieldp: ",
-     &                 sum(fieldp)
-               end if
+!           if(rank.eq.0) then
+!              print *,"BEFORE-ufield0c rank ",rank," field: ",
+!    &                 sum(field)
+!              print *,"BEFORE-ufield0c rank ",rank," fieldp: ",
+!    &                 sum(fieldp)
+!              end if
 
                call ufield0c (field,fieldp)
 
@@ -412,12 +412,12 @@ c
                
                fieldp = fieldtmp
 
-            if(rank.eq.0) then 
-               print *,"BEFORE rank ",rank," field: ",
-     &                 sum(field)
-               print *,"BEFORE rank ",rank," fieldp: ",
-     &                 sum(fieldp)
-            end if
+!           if(rank.eq.0) then 
+!              print *,"BEFORE rank ",rank," field: ",
+!    &                 sum(field)
+!              print *,"BEFORE rank ",rank," fieldp: ",
+!    &                 sum(fieldp)
+!           end if
                
             else if (use_mlist) then
                call ufield0b (field,fieldp)
@@ -425,9 +425,9 @@ c
                call ufield0a (field,fieldp)
             end if
 
-            print *,"rank ",rank," field: ",sum(sum(field,dim=2),dim=1)
-            print *,"rank ",rank," fieldp: ",
-     &              sum(sum(fieldp,dim=2),dim=1)
+!           print *,"rank ",rank," field: ",sum(sum(field,dim=2),dim=1)
+!           print *,"rank ",rank," fieldp: ",
+!    &              sum(sum(fieldp,dim=2),dim=1)
 
             do i = 1, npole
                do j = 1, 3
@@ -503,7 +503,7 @@ c
             if (eps .lt. poleps)  done = .true.
             if (eps .gt. epsold)  done = .true.
             if (iter .ge. politer)  done = .true.
-            print *,"rank ",rank," eps ",eps," iter ",iter
+            !print *,"rank ",rank," eps ",eps," iter ",iter
          end do
 c
 c     perform deallocation of some local arrays
@@ -529,13 +529,14 @@ c
 c     terminate the calculation if dipoles failed to converge
 c
          if (iter.ge.maxiter .or. eps.gt.epsold) then
-            print *,"3. rank: ",rank," iter: ",iter," maxiter: ",
-     &              maxiter," eps: ",eps," epsold ",epsold 
+            print "(A,I3,A,I4,A,I4,A,F12.4,A,F12.4)","3. rank: ",rank,
+     &             " iter: ",iter," maxiter: ",maxiter,
+     &             " eps: ",eps," epsold ",epsold 
             write (iout,40)
    40       format (/,' INDUCE  --  Warning, Induced Dipoles',
      &                 ' are not Converged')
             call prterr
-            call fatal
+            call fatal(66)
          end if
       end if
 c
@@ -2898,10 +2899,10 @@ c
          dipfield2 = temp
          deallocate(temp)
 
-        print *,"rank ",rank," umutual1:dipfield1: ",
-     &          sum(sum(dipfield1,dim=2),dim=1)
-        print *,"rank ",rank," umutual1:dipfield2: ",
-     &          sum(sum(dipfield2,dim=2),dim=1)
+!       print *,"rank ",rank," umutual1:dipfield1: ",
+!    &          sum(sum(dipfield1,dim=2),dim=1)
+!       print *,"rank ",rank," umutual1:dipfield2: ",
+!    &          sum(sum(dipfield2,dim=2),dim=1)
 
 c
 c     increment the field at each multipole site
