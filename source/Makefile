@@ -82,8 +82,8 @@ else ifeq (eslogin,$(findstring eslogin,$(HOSTNAME)))  # ARCHER front end
 
 else ifeq ($(HOSTNAME),phi.hydra)     # EPCC phi system on hydra
 
-   COMPARCH=LinuxIntelMPI
-   #COMPARCH=LinuxIntelMPIOpenMP
+   #COMPARCH=LinuxIntelMPI
+   COMPARCH=LinuxIntelMPIOpenMP
    #COMPARCH=GenericGfortranMPIOpenMP
    # Use the MPIP profiler
    #COMPARCH=MPIP
@@ -244,10 +244,11 @@ else ifeq ($(COMPARCH),LinuxIntelMPIOpenMP)
   FC        = mpiifort
   LIBS      = -L$(TINKERDIR)/thirdparty/fftw/lib -lfftw3_threads -lfftw3
   FCFLAGS   = -c -xHost
-  OPTFLAGS  = -diag-enable=openmp -g -debug all -openmp #-O3 -no-ipo -no-prec-div -recursive
+  OPTFLAGS  = -diag-enable=openmp -g -debug all -openmp 
+  #OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive -openmp
   LIBFLAGS  = -crusv
   RANLIB    = ranlib
-  LINKFLAGS = $(OPTFLAGS) -static-libgcc -static-intel
+  LINKFLAGS = $(OPTFLAGS) #-static-libgcc -static-intel
 
 else ifeq ($(COMPARCH),MacIntelOpenMP)
 
