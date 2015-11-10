@@ -1676,7 +1676,8 @@ c
 !$OMP barrier
 !$OMP flush
       if (use_mlist) then
-         call umutual2b1 (field,fieldp)
+         call umutual2b1 
+c(field,fieldp)
       else
          call umutual2a (field,fieldp)
       end if
@@ -2874,12 +2875,16 @@ c
 c
 c     increment the field at each multipole site
 c
+c!$OMP master
       do i = 1, npole
          do k = 1, 3
             field(k,i) = field(k,i) - dipfield1(k,i)
             fieldp(k,i) = fieldp(k,i) - dipfield2(k,i)
          end do
       end do
+c!$OMP end master
+c!$OMP barrier
+c!$OMP flush
 c
 c     perform deallocation of some local arrays
 c
@@ -3234,7 +3239,8 @@ c     "umutual2b" computes the real space contribution of the induced
 c     atomic dipole moments to the field via a neighbor list
 c
 c
-      subroutine umutual2b1 (field,fieldp)
+      subroutine umutual2b1 
+c(field,fieldp)
       use sizes
       use mpole
       use polar
@@ -3244,10 +3250,11 @@ c
       integer i,j,k,m
       real*8 fimd(3),fkmd(3)
       real*8 fimp(3),fkmp(3)
-      real*8 field(3,*)
-      real*8 fieldp(3,*)
-      real*8, allocatable :: fieldt(:,:)
-      real*8, allocatable :: fieldtp(:,:)
+c      real*8 field(3,*)
+c      real*8 fieldp(3,*)
+c      real*8, allocatable :: fieldt(:,:)
+c      real*8, allocatable :: fieldtp(:,:)
+
 c
 c
 c     check for multipoles and set cutoff coefficients

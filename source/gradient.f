@@ -125,6 +125,13 @@ c      if(.not. allocated(uind_omp)) allocate(uinp_omp(3,npole))
          allocate (dlocal_omp(nthread,6,maxlocal))
       end if
 
+      if(.not. allocated(dem1)) then
+         allocate (dem1(3,n))
+         allocate (dem2(3,n))
+         allocate (dep1(3,n))
+         allocate (dep2(3,n))
+      end if
+
 
 c
 c     zero out the virial and the intermolecular energy
@@ -136,6 +143,9 @@ c
       end do
 
       einter = 0.0d0
+      eintra_omp = 0.0d0
+      ep_omp = 0.0d0
+      em_omp = 0.0d0
 
       if (use_bounds .and. .not.use_rigid) call bounds ! no omp - used
      
@@ -198,6 +208,10 @@ c
             dev(j,i) = 0.0d0
             dem(j,i) = 0.0d0
             dep(j,i) = 0.0d0
+            dem1(j,i) = 0.0d0
+            dem2(j,i) = 0.0d0
+            dep1(j,i) = 0.0d0
+            dep2(j,i) = 0.0d0
          end do
          xred_th(i) = 0.0d0
          yred_th(i) = 0.0d0
@@ -241,16 +255,25 @@ c
          if (vdwtyp .eq. 'GAUSSIAN')  call egauss1
       end if
 
+
+      print*, "vir inside gradient", vir
+
       call chkpole
       call rotpole
       call induce
       
   
-c!$OMP master
+!$OMP master
+      call emrecip1
+    
+!$OMP end master
+!$OMP barrier
+!$OMP flush
 
-c!$OMP end master
-c!$OMP barrier
-c!$OMP flush
+      print*, "vir inside gradient 2", vir
+
+      call ereal1d(eint)
+     
      
 
 !$OMP END PARALLEL
@@ -262,10 +285,10 @@ c      call chkpole
 c      call rotpole
      
 c      call induce
-      call emrecip1
-      call ereal1d(eint)
+c      call emrecip1
+c      call ereal1d(eint)
+     
       call empole1d
-      
 
 
 c      if (use_charge)  call echarge1
@@ -283,7 +306,7 @@ c      if (use_extra)  call extra1
 c
 c     sum up to get the total energy and first derivatives
 
-      einter = einter - eint
+      einter = einter - eint !eintra_omp !eint
 
       esum = ea + eba + eub + eopb 
      &          + et  + ett + ev + ept

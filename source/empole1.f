@@ -45,6 +45,7 @@ c
 c
 c     zero out energy and derivative terms which are not in use
 c
+!$OMP master
       if (.not. use_mpole) then
          em = 0.0d0
          do i = 1, npole
@@ -63,6 +64,9 @@ c
             end do
          end do
       end if
+!$OMP end master
+!$OMP barrier
+!$OMP flush
       return
       end
 c
@@ -4786,6 +4790,7 @@ c
       use polpot
       use shunt
       use virial
+      use openmp
       implicit none
       integer i,j,k
       integer ii,kk,kkk
@@ -4872,7 +4877,7 @@ c
 c
 c     zero out the intramolecular portion of the Ewald energy
 c
-      eintra = 0.0d0
+     
 c
 c     perform dynamic allocation of some local arrays
 c
@@ -4880,19 +4885,22 @@ c      allocate (mscale_omp(n))
 c      allocate (pscale_omp(n))
 c      allocate (dscale_omp(n))
 c      allocate (uscale_omp(n))
-      allocate (dem1(3,n))
-      allocate (dem2(3,n))
-      allocate (dep1(3,n))
-      allocate (dep2(3,n))
+C$$$      allocate (dem1(3,n))
+C$$$      allocate (dem2(3,n))
+C$$$      allocate (dep1(3,n))
+C$$$      allocate (dep2(3,n))
 c
 c     set arrays needed to scale connected atom interactions
 c
+
+!$OMP DO
       do i = 1, n
          mscale_omp(i) = 1.0d0
          pscale_omp(i) = 1.0d0
          dscale_omp(i) = 1.0d0
          uscale_omp(i) = 1.0d0
       end do
+!$OMP END DO
 c
 c     set conversion factor, cutoff and switching coefficients
 c
@@ -4902,11 +4910,22 @@ c
 c
 c     initialize local variables for OpenMP calculation
 c
-      emo = em !0.0d0
-      em = 0.0d0
-      epo = ep ! 0.0d0
-      ep = 0.0d0
-c      eintrao = eintra
+
+      eintra = 0.0d0
+
+      em_omp = 0.0d0 !em !0.0d0
+c      em = 0.0d0
+      ep_omp = 0.0d0 !ep ! 0.0d0
+c      ep = 0.0d0
+      eintra_omp = 0.0d0 !eintra
+
+      do i = 1, 3
+         do j = 1, 3
+            vir_tmp(j,i) = 0.0d0
+         end do
+      end do
+
+!$OMP DO 
       do i = 1, n
          do j = 1, 3
             dem1(j,i) = 0.0d0
@@ -4915,11 +4934,12 @@ c      eintrao = eintra
             dep2(j,i) = 0.0d0
          end do
       end do
-      do i = 1, 3
-         do j = 1, 3
-            vir_tmp(j,i) = 0.0d0
-         end do
-      end do
+!$OMP end DO
+
+      print*, "vir", vir
+      print*, "vir_tmp", vir_tmp
+
+
 c
 c     set OpenMP directives for the major loop structure
 c
@@ -4940,8 +4960,8 @@ c
 !$OMP& dixqkr,dkxqir,rxqkr,qkrxqir,rxqikr,rxqkir,rxqidk,rxqkdi,
 !$OMP& ddsc3,ddsc5,ddsc7,bn,sc,gl,sci,scip,gli,glip,gf,gfi,
 !$OMP& gfr,gfri,gti,gtri,dorl,dorli)
-!$OMP& firstprivate(mscale_omp,pscale_omp,dscale_omp,uscale_omp)
-!$OMP& reduction(+:em,ep,eintra,dem1,dem2,dep1,dep2,vir_tmp)
+!$OMP& firstprivate(mscale_omp,pscale_omp,dscale_omp,uscale_omp,ff)
+!$OMP& reduction(+:em_omp,ep_omp,eintra_omp,dem1,dem2,dep1,dep2,vir_tmp)
 !$OMP& schedule(guided)
 c
 c     compute the real space portion of the Ewald summation
@@ -5297,16 +5317,16 @@ c
                ei = ei - erli
                e = ff * e
                ei = ff * ei
-               em = em + e
-               ep = ep + ei
+               em_omp = em_omp + e
+               ep_omp = ep_omp + ei
 c
 c     increment the total intramolecular energy; assumes
 c     intramolecular distances are less than half of cell
 c     length and less than the ewald cutoff
 c
                if (molcule(ii) .eq. molcule(kk)) then
-                  eintrao = eintrao + mscale_omp(kk)*erl*ff
-                  eintrao = eintrao + 0.5d0*pscale_omp(kk)
+                  eintra_omp = eintra_omp + mscale_omp(kk)*erl*ff
+                  eintra_omp = eintra_omp + 0.5d0*pscale_omp(kk)
      &                         * (rr3*(gli(1)+gli(6))*scale3
      &                              + rr5*(gli(2)+gli(7))*scale5
      &                              + rr7*gli(3)*scale7)
@@ -5805,17 +5825,18 @@ c
 c     end OpenMP directives for the major loop structure
 c
 !$OMP END DO
-cc!$OMP END PARALLEL
+c!$OMP END PARALLEL do
 c
 c     add local copies to global variables for OpenMP calculation
 c
 
-c      eintra = eintrao
+      print*, "vir_tmp after",vir_tmp
    
 !$OMP master     
-      em = em + emo
-      ep = ep + epo
-         do i = 1, n
+      em = em_omp + em
+      ep = ep_omp + ep
+      eintra = eintra_omp !+ eintra
+      do i = 1, n
          do j = 1, 3
             dem(j,i) = dem(j,i) + dem1(j,i) + dem2(j,i)
             dep(j,i) = dep(j,i) + dep1(j,i) + dep2(j,i)
@@ -5827,6 +5848,8 @@ c      eintra = eintrao
          end do
       end do
 !$OMP end master
+!$OMP barrier
+!$OMP flush
 c
 c     perform deallocation of some local arrays
 c
@@ -5834,10 +5857,10 @@ c      deallocate (mscale_omp)
 c      deallocate (pscale_omp)
 c      deallocate (dscale_omp)
 c      deallocate (uscale_omp)
-      deallocate (dem1)
-      deallocate (dem2)
-      deallocate (dep1)
-      deallocate (dep2)
+C$$$      deallocate (dem1)
+C$$$      deallocate (dem2)
+C$$$      deallocate (dep1)
+C$$$      deallocate (dep2)
       return
       end
 c
