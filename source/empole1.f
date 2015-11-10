@@ -4921,7 +4921,7 @@ c      ep = 0.0d0
 
       do i = 1, 3
          do j = 1, 3
-            vir_tmp(j,i) = 0.0d0
+            vir_omp(j,i) = 0.0d0
          end do
       end do
 
@@ -4935,9 +4935,6 @@ c      ep = 0.0d0
          end do
       end do
 !$OMP end DO
-
-      print*, "vir", vir
-      print*, "vir_tmp", vir_tmp
 
 
 c
@@ -4960,8 +4957,9 @@ c
 !$OMP& dixqkr,dkxqir,rxqkr,qkrxqir,rxqikr,rxqkir,rxqidk,rxqkdi,
 !$OMP& ddsc3,ddsc5,ddsc7,bn,sc,gl,sci,scip,gli,glip,gf,gfi,
 !$OMP& gfr,gfri,gti,gtri,dorl,dorli)
-!$OMP& firstprivate(mscale_omp,pscale_omp,dscale_omp,uscale_omp,ff)
-!$OMP& reduction(+:em_omp,ep_omp,eintra_omp,dem1,dem2,dep1,dep2,vir_tmp)
+!$OMP& firstprivate(mscale_omp,pscale_omp,dscale_omp,uscale_omp,
+!$OMP& ff) reduction(+:em_omp,ep_omp,eintra_omp,dem1,dem2,dep1,
+!$OMP& dep2, vir_omp)
 !$OMP& schedule(guided)
 c
 c     compute the real space portion of the Ewald summation
@@ -5774,15 +5772,15 @@ c
                vzz = -zr*(ftm2(3)+ftm2i(3)) + zix*frcxi(3)
      &                  + ziy*frcyi(3) + ziz*frczi(3) + zkx*frcxk(3)
      &                  + zky*frcyk(3) + zkz*frczk(3)
-               vir_tmp(1,1) = vir_tmp(1,1) + vxx
-               vir_tmp(2,1) = vir_tmp(2,1) + vyx
-               vir_tmp(3,1) = vir_tmp(3,1) + vzx
-               vir_tmp(1,2) = vir_tmp(1,2) + vyx
-               vir_tmp(2,2) = vir_tmp(2,2) + vyy
-               vir_tmp(3,2) = vir_tmp(3,2) + vzy
-               vir_tmp(1,3) = vir_tmp(1,3) + vzx
-               vir_tmp(2,3) = vir_tmp(2,3) + vzy
-               vir_tmp(3,3) = vir_tmp(3,3) + vzz
+               vir_omp(1,1) = vir_omp(1,1) + vxx
+               vir_omp(2,1) = vir_omp(2,1) + vyx
+               vir_omp(3,1) = vir_omp(3,1) + vzx
+               vir_omp(1,2) = vir_omp(1,2) + vyx
+               vir_omp(2,2) = vir_omp(2,2) + vyy
+               vir_omp(3,2) = vir_omp(3,2) + vzy
+               vir_omp(1,3) = vir_omp(1,3) + vzx
+               vir_omp(2,3) = vir_omp(2,3) + vzy
+               vir_omp(3,3) = vir_omp(3,3) + vzz
             end if
          end do
 c
@@ -5825,12 +5823,10 @@ c
 c     end OpenMP directives for the major loop structure
 c
 !$OMP END DO
-c!$OMP END PARALLEL do
+
 c
 c     add local copies to global variables for OpenMP calculation
 c
-
-      print*, "vir_tmp after",vir_tmp
    
 !$OMP master     
       em = em_omp + em
@@ -5844,7 +5840,7 @@ c
       end do
       do i = 1, 3
          do j = 1, 3
-            vir(j,i) = vir(j,i) + vir_tmp(j,i)
+            vir(j,i) = vir(j,i) + vir_omp(j,i)
          end do
       end do
 !$OMP end master

@@ -255,9 +255,6 @@ c
          if (vdwtyp .eq. 'GAUSSIAN')  call egauss1
       end if
 
-
-      print*, "vir inside gradient", vir
-
       call chkpole
       call rotpole
       call induce
@@ -270,10 +267,8 @@ c
 !$OMP barrier
 !$OMP flush
 
-      print*, "vir inside gradient 2", vir
 
-      call ereal1d(eint)
-     
+      call ereal1d(eint)   
      
 
 !$OMP END PARALLEL
