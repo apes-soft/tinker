@@ -387,13 +387,13 @@ c
             end do
             if (use_ewald) then
 
-!           if(rank.eq.0) then
-!              print *,"BEFORE-ufield0c rank ",rank," field: ",
-!    &                 sum(field)
-!              print *,"BEFORE-ufield0c rank ",rank," fieldp: ",
-!    &                 sum(fieldp)
-!              end if
-
+              if(rank.eq.0) then 
+                 print *,"BEFORE-ufield0c rank ",rank," field: ",
+     &                  sum(sum(field,dim=2),dim=1)
+                 print *,"BEFORE-ufield0c rank ",rank," fieldp: ",
+     &                  sum(sum(fieldp,dim=2),dim=1)
+               end if
+              
                call ufield0c (field,fieldp)
 
                ! synchronize filed and fieldp across all processes
@@ -412,12 +412,12 @@ c
                
                fieldp = fieldtmp
 
-!           if(rank.eq.0) then 
-!              print *,"BEFORE rank ",rank," field: ",
-!    &                 sum(field)
-!              print *,"BEFORE rank ",rank," fieldp: ",
-!    &                 sum(fieldp)
-!           end if
+               if(rank.eq.0) then 
+                  print *,"BEFORE rank ",rank," field: ",
+     &                   sum(sum(field,dim=2),dim=1)
+                  print *,"BEFORE rank ",rank," fieldp: ",
+     &                   sum(sum(fieldp,dim=2),dim=1)
+               end if
                
             else if (use_mlist) then
                call ufield0b (field,fieldp)
@@ -425,9 +425,12 @@ c
                call ufield0a (field,fieldp)
             end if
 
-!           print *,"rank ",rank," field: ",sum(sum(field,dim=2),dim=1)
-!           print *,"rank ",rank," fieldp: ",
-!    &              sum(sum(fieldp,dim=2),dim=1)
+            if(rank.eq.0) then 
+               print *,"rank ",rank," field: ",
+     &                 sum(field)
+               print *,"rank ",rank," fieldp: ",
+     &                 sum(fieldp)
+             end if 
 
             do i = 1, npole
                do j = 1, 3
@@ -503,7 +506,9 @@ c
             if (eps .lt. poleps)  done = .true.
             if (eps .gt. epsold)  done = .true.
             if (iter .ge. politer)  done = .true.
-            !print *,"rank ",rank," eps ",eps," iter ",iter
+
+            print *,"rank ",rank," eps ",eps," iter ",iter
+
          end do
 c
 c     perform deallocation of some local arrays
@@ -2811,6 +2816,11 @@ c
 c
 c     perform dynamic allocation of some local arrays
 c
+        print *,"rank ",rank," Start-umutual1:dipfield1: ",
+     &          sum(sum(dipfield1,dim=2),dim=1)
+        print *,"rank ",rank," Start-umutual1:dipfield2: ",
+     &          sum(sum(dipfield2,dim=2),dim=1)
+
       allocate (fuind(3,npole))
       allocate (fuinp(3,npole))
       allocate (fdip_phi1(10,npole))
@@ -2818,6 +2828,11 @@ c
       allocate (fdip_sum_phi(20,npole))
       allocate (dipfield1(3,npole))
       allocate (dipfield2(3,npole))
+
+      ! initialise
+      fdip_phi1   = 0.0d0
+      fdip_phi2   = 0.0d0
+      fdip_sum_phi = 0.0d0
 c
 c     convert Cartesian dipoles to fractional coordinates
 c
@@ -2899,10 +2914,10 @@ c
          dipfield2 = temp
          deallocate(temp)
 
-!       print *,"rank ",rank," umutual1:dipfield1: ",
-!    &          sum(sum(dipfield1,dim=2),dim=1)
-!       print *,"rank ",rank," umutual1:dipfield2: ",
-!    &          sum(sum(dipfield2,dim=2),dim=1)
+        print *,"rank ",rank," umutual1:dipfield1: ",
+     &          sum(sum(dipfield1,dim=2),dim=1)
+        print *,"rank ",rank," umutual1:dipfield2: ",
+     &          sum(sum(dipfield2,dim=2),dim=1)
 
 c
 c     increment the field at each multipole site

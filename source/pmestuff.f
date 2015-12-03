@@ -755,9 +755,10 @@ c
      &     MPI_DOUBLE_PRECISION,MPI_SUM, MPI_COMM_WORLD, ierror) 
       
       qgrid = qgrid_temp
-      !if(rank.eq.0) then 
-      !   print *,"grid_uind: rank ",rank," qgrid ",sum(qgrid)
-      !end if
+
+      if(rank.eq.0) then 
+         print *,"grid_uind: rank ",rank," qgrid ",sum(qgrid)
+      end if
       
       return
       end
