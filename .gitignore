@@ -13,6 +13,8 @@ thirdparty/
 # TINKER specifics #
 ####################
 *.x
+*.err
+*.err_*
 
 #################
 # Library Files #
@@ -79,4 +81,5 @@ source/TAGS
 Makefile.m
 bench7.sh
 testcode/
-
+test2/
+*.stf
