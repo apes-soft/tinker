@@ -771,8 +771,19 @@ c
       if(allocated(ilocal_omp)) deallocate(ilocal_omp)
       if(allocated(dlocal_omp)) deallocate(dlocal_omp)
 
-       if(allocated(field_omp)) deallocate(field_omp)
-       if(allocated(fieldp_omp)) deallocate(fieldp_omp)
+      if(allocated(field_omp)) deallocate(field_omp)
+      if(allocated(fieldp_omp)) deallocate(fieldp_omp)
+      if(allocated(fieldt_omp)) deallocate(fieldt_omp)
+      if(allocated(fieldtp_omp)) deallocate(fieldtp_omp)
+
+      if(allocated(udir_omp)) deallocate(udir_omp)
+      if(allocated(udirp_omp)) deallocate(udirp_omp)
+
+      if(allocated(dem1)) deallocate(dem1)
+      if(allocated(dem2)) deallocate(dem2)
+      if(allocated(dep1)) deallocate(dep1)
+      if(allocated(dep2)) deallocate(dep2)
+       
 c
 c     free memory used by the APBS Poisson-Boltzmann solver
 c

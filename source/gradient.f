@@ -113,6 +113,9 @@ c         allocate(vscale_th(n))
       field_omp = 0.0d0
       fieldp_omp = 0.0d0
 
+c      if(.not. allocated(uind_omp)) allocate(uind_omp(3,npole))
+c      if(.not. allocated(uind_omp)) allocate(uinp_omp(3,npole))
+
 
       if(.not. allocated(offset_omp)) allocate(offset_omp(0:nthread-1))
       
@@ -120,6 +123,13 @@ c         allocate(vscale_th(n))
       if (poltyp .eq. 'MUTUAL'.and. .not.allocated(ilocal_omp)) then
          allocate (ilocal_omp(nthread,2,maxlocal))
          allocate (dlocal_omp(nthread,6,maxlocal))
+      end if
+
+      if(.not. allocated(dem1)) then
+         allocate (dem1(3,n))
+         allocate (dem2(3,n))
+         allocate (dep1(3,n))
+         allocate (dep2(3,n))
       end if
 
 
@@ -133,6 +143,9 @@ c
       end do
 
       einter = 0.0d0
+      eintra_omp = 0.0d0
+      ep_omp = 0.0d0
+      em_omp = 0.0d0
 
       if (use_bounds .and. .not.use_rigid) call bounds ! no omp - used
      
@@ -195,6 +208,10 @@ c
             dev(j,i) = 0.0d0
             dem(j,i) = 0.0d0
             dep(j,i) = 0.0d0
+            dem1(j,i) = 0.0d0
+            dem2(j,i) = 0.0d0
+            dep1(j,i) = 0.0d0
+            dep2(j,i) = 0.0d0
          end do
          xred_th(i) = 0.0d0
          yred_th(i) = 0.0d0
@@ -243,11 +260,15 @@ c
       call induce
       
   
-c!$OMP master
+!$OMP master
+      call emrecip1
+    
+!$OMP end master
+!$OMP barrier
+!$OMP flush
 
-c!$OMP end master
-c!$OMP barrier
-c!$OMP flush
+
+      call ereal1d(eint)   
      
 
 !$OMP END PARALLEL
@@ -259,10 +280,10 @@ c      call chkpole
 c      call rotpole
      
 c      call induce
-      call emrecip1
-      call ereal1d(eint)
+c      call emrecip1
+c      call ereal1d(eint)
+     
       call empole1d
-      
 
 
 c      if (use_charge)  call echarge1
@@ -280,7 +301,7 @@ c      if (use_extra)  call extra1
 c
 c     sum up to get the total energy and first derivatives
 
-      einter = einter - eint
+      einter = einter - eint !eintra_omp !eint
 
       esum = ea + eba + eub + eopb 
      &          + et  + ett + ev + ept
