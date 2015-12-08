@@ -207,6 +207,8 @@ c
       real*8, allocatable :: conjp(:,:)
       real*8, allocatable :: vec(:,:)
       real*8, allocatable :: vecp(:,:)
+c      real*8, allocatable :: field_tmp(:,:)
+c      real*8, allocatable :: fieldp_tmp(:,:)
       logical done
       character*6 mode
 c
@@ -227,6 +229,9 @@ c
       allocate (fieldp(3,npole))
       allocate (udir(3,npole))
       allocate (udirp(3,npole))
+c      allocate (field_tmp(3,npole))
+c      allocate (fieldp_tmp(3,npole))
+
 c
 c     get the electrostatic field due to permanent multipoles
 c
@@ -256,8 +261,8 @@ c
 
 c      uind = uind_omp
 c      uinp = uinp_omp
-      udir = udir_omp
-      udirp = udirp_omp
+c      udir = udir_omp
+c      udirp = udirp_omp
 
 c
 c     set tolerances for computation of mutual induced dipoles
@@ -274,27 +279,29 @@ c
 c     estimated induced dipoles from polynomial predictor
 c
 
-         if (use_pred .and. nualt.eq.maxualt) then
-!$OMP master
-c            print*, "from master" 
-            call ulspred
-            do i = 1, npole
-               do j = 1, 3
-                  udsum = 0.0d0
-                  upsum = 0.0d0
-                  do k = 1, nualt-1
-                     udsum = udsum + bpred(k)*udalt(k,j,i)
-                     upsum = upsum + bpredp(k)*upalt(k,j,i)
-                  end do
-c                  uind_omp(j,i) = udsum
-c                  uinp_omp(j,i) = upsum
-                  uind(j,i) = udsum
-                  uinp(j,i) = upsum
-               end do
-            end do
-!$OMP end master
-!$OMP barrier
-         end if
+! the below is not used
+
+C$$$         if (use_pred .and. nualt.eq.maxualt) then
+C$$$!$OMP master
+C$$$c            print*, "from master" 
+C$$$            call ulspred
+C$$$            do i = 1, npole
+C$$$               do j = 1, 3
+C$$$                  udsum = 0.0d0
+C$$$                  upsum = 0.0d0
+C$$$                  do k = 1, nualt-1
+C$$$                     udsum = udsum + bpred(k)*udalt(k,j,i)
+C$$$                     upsum = upsum + bpredp(k)*upalt(k,j,i)
+C$$$                  end do
+C$$$c                  uind_omp(j,i) = udsum
+C$$$c                  uinp_omp(j,i) = upsum
+C$$$                  uind(j,i) = udsum
+C$$$                  uinp(j,i) = upsum
+C$$$               end do
+C$$$            end do
+C$$$!$OMP end master
+C$$$!$OMP barrier
+C$$$         end if
 c
 c     perform dynamic allocation of some local arrays
 c
@@ -317,24 +324,49 @@ c
          else
             call ufield0a (field,fieldp)
          end if
-!$OMP master
+c!$OMP master
 
-         uind = uind_omp
-         uinp = uinp_omp
+c         uind = uind_omp
+c         uinp = uinp_omp
 C$$$         udir = udir_omp
 C$$$         udirp = udirp_omp
 c
 c     set initial conjugate gradient residual and conjugate vector
 c
+!$OMP master
+c         field_tmp = field_omp
+c         fieldp_tmp = fieldp_omp
+c         field_omp = field
+c         fieldp_omp = fieldp
+!$OMP end master
+!$OMP barrier
+!$OMP flush
+
+!$OMP DO schedule(guided)
          do i = 1, npole
-            poli(i) = max(polmin,polarity(i))
+            poli_omp(i) = max(polmin,polarity(i))
             do j = 1, 3
-               rsd(j,i) = (udir(j,i)-uind(j,i))/poli(i)
-     &                       + field(j,i)
-               rsdp(j,i) = (udirp(j,i)-uinp(j,i))/poli(i)
-     &                       + fieldp(j,i)
+               rsd_omp(j,i) = (udir_omp(j,i)-uind_omp(j,i))/poli_omp(i)
+     &                       + field_omp(j,i)
+               rsdp_omp(j,i) =(udirp_omp(j,i)-uinp_omp(j,i))/poli_omp(i)
+     &                       + fieldp_omp(j,i)
             end do
          end do
+!$OMP end do
+
+c!$OMP master
+         
+         uind = uind_omp
+         uinp = uinp_omp
+         udir = udir_omp
+         udirp = udirp_omp
+         rsd = rsd_omp
+         poli = poli_omp
+         rsdp = rsdp_omp
+         
+!$OMP master
+c         field_omp = field_tmp
+c         fieldp_omp = fieldp_tmp
          mode = 'BUILD'
 ccc!$OMP master
          if (use_mlist) then
@@ -498,6 +530,8 @@ c     perform deallocation of some local arrays
 c
       deallocate (field)
       deallocate (fieldp)
+c      deallocate (field_tmp)
+c      deallocate (fieldp_tmp)
       deallocate (udir)
       deallocate (udirp)
       return
@@ -1710,6 +1744,8 @@ c
      &           fieldt_omp(j,i)
             fieldp(j,i) = fieldp(j,i) + term*uinp_omp(j,i)+ 
      &           fieldtp_omp(j,i)
+            field_omp(j,i) = field(j,i)
+            fieldp_omp(j,i) = fieldp(j,i)
          end do
       end do
 
