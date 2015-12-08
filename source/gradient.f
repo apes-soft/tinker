@@ -113,8 +113,10 @@ c         allocate(vscale_th(n))
       field_omp = 0.0d0
       fieldp_omp = 0.0d0
 
-c      if(.not. allocated(uind_omp)) allocate(uind_omp(3,npole))
-c      if(.not. allocated(uind_omp)) allocate(uinp_omp(3,npole))
+      if(.not. allocated(uind_omp)) allocate(uind_omp(3,npole))
+      if(.not. allocated(uinp_omp)) allocate(uinp_omp(3,npole))
+      if(.not. allocated(udir_omp)) allocate(udir_omp(3,npole))
+      if(.not. allocated(udirp_omp)) allocate(udirp_omp(3,npole))
 
 
       if(.not. allocated(offset_omp)) allocate(offset_omp(0:nthread-1))
@@ -218,6 +220,10 @@ c
          zred_th(i) = 0.0d0
 c         vscale_th(i) = 1.0d0
          iv14_th(i) = 0
+         uind_omp = 0.0d0
+         uinp_omp = 0.0d0
+         udir_omp = 0.0d0
+         udirp_omp = 0.0d0
       end do
 !$OMP END DO
 
@@ -269,7 +275,7 @@ c
 
 
       call ereal1d(eint)   
-     
+      call empole1d
 
 !$OMP END PARALLEL
 c
@@ -283,7 +289,7 @@ c      call induce
 c      call emrecip1
 c      call ereal1d(eint)
      
-      call empole1d
+c      call empole1d
 
 
 c      if (use_charge)  call echarge1
@@ -301,7 +307,7 @@ c      if (use_extra)  call extra1
 c
 c     sum up to get the total energy and first derivatives
 
-      einter = einter - eint !eintra_omp !eint
+      einter = einter + em + ep - eint !eintra_omp !eint
 
       esum = ea + eba + eub + eopb 
      &          + et  + ett + ev + ept

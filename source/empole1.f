@@ -4610,8 +4610,23 @@ c      call ereal1d (eintra)
 c
 c     compute the Ewald self-energy term over all the atoms
 c
-      term = 2.0d0 * aewald * aewald
+c      term = 2.0d0 * aewald * aewald
       fterm = -f * aewald / sqrtpi
+
+C$$$!$OMP parallel default(none)
+C$$$!$OMP& private(ci,dix,diz,diy,qixx,qixy,qixz,qiyy,qiyz,
+C$$$!$OMP& qizz,uix,uiy,uiz,cii,dii,qii,uii,e,ei,trqi,frcx,
+C$$$!$OMP& frcy,frcz,trq,term)
+C$$$!$OMP& shared(em,ep,npole,rpole,uind,fterm,f,aewald,
+C$$$!$OMP& uinp)
+      
+       term = 2.0d0 * aewald * aewald
+
+!$OMP DO 
+!$OMP& private(ci,dix,diz,diy,qixx,qixy,qixz,qiyy,qiyz,
+!$OMP& qizz,uix,uiy,uiz,cii,dii,qii,uii,e,ei)
+c!$OMP& firstprivate(fterm, f, term)
+!$OMP& reduction(+:em,ep)
       do i = 1, npole
          ci = rpole(1,i)
          dix = rpole(2,i)
@@ -4636,6 +4651,8 @@ c
          em = em + e
          ep = ep + ei
       end do
+!$OMP end do
+
 c
 c     compute the self-energy torque term due to induced dipole
 c
@@ -4643,6 +4660,10 @@ c
       trq(2) = 0.0d0
       trq(3) = 0.0d0
       term = (4.0d0/3.0d0) * f * aewald**3 / sqrtpi
+!$OMP DO 
+!$OMP& private(dix,diz,diy,uix,uiy,uiz,trqi,frcx,
+!$OMP& frcy,frcz)
+c!$OMP& firstprivate(trq, term)
       do i = 1, npole
          dix = rpole(2,i)
          diy = rpole(3,i)
@@ -4655,10 +4676,13 @@ c
          trqi(3) = term * (dix*uiy-diy*uix)
          call torque (i,trq,trqi,frcx,frcy,frcz)
       end do
+!$OMP END DO
+c!$OMP end parallel 
 c
 c     compute the cell dipole boundary correction term
 c
       if (boundary .eq. 'VACUUM') then
+!$OMP master
          xd = 0.0d0
          yd = 0.0d0
          zd = 0.0d0
@@ -4747,11 +4771,12 @@ c
             vir(2,2) = vir(2,2) + vterm
             vir(3,3) = vir(3,3) + vterm
          end if
+!$OMP end master
       end if
 c
 c     intermolecular energy is total minus intramolecular part
 c
-      einter = einter + em + ep !- eintra
+c      einter = einter + em + ep !- eintra
       return
       end
 c

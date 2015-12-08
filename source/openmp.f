@@ -39,8 +39,8 @@ c
       real*8, allocatable :: udirp_omp(:,:)
       real*8 eintra_omp
       real*8 em_omp, ep_omp
-c      real*8, allocatable :: uind_omp(:,:)
-c      real*8, allocatable :: uinp_omp(:,:)
+      real*8, allocatable :: uind_omp(:,:)
+      real*8, allocatable :: uinp_omp(:,:)
       save
 !$OMP threadprivate(th_id)
 !$OMP threadprivate(nlocal)

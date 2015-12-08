@@ -184,6 +184,7 @@ c
       use potent
       use units
       use uprior
+      use openmp
       implicit none
       integer i,j,k,iter
       integer maxiter
@@ -241,18 +242,23 @@ c
 c
 c     set induced dipoles to polarizability times direct field
 c
-!$OMP master
+
+!$OMP DO
       do i = 1, npole
          do j = 1, 3
-            udir(j,i) = polarity(i) * field(j,i)
-            udirp(j,i) = polarity(i) * fieldp(j,i)
-            uind(j,i) = udir(j,i)
-            uinp(j,i) = udirp(j,i)
+            udir_omp(j,i) = polarity(i) * field_omp(j,i)
+            udirp_omp(j,i) = polarity(i) * fieldp_omp(j,i)
+            uind_omp(j,i) = udir_omp(j,i)
+            uinp_omp(j,i) = udirp_omp(j,i)
          end do
       end do
-!$OMP end master
-!$OMP barrier
-!$OMP flush
+!$OMP END DO 
+
+c      uind = uind_omp
+c      uinp = uinp_omp
+      udir = udir_omp
+      udirp = udirp_omp
+
 c
 c     set tolerances for computation of mutual induced dipoles
 c
@@ -270,6 +276,7 @@ c
 
          if (use_pred .and. nualt.eq.maxualt) then
 !$OMP master
+c            print*, "from master" 
             call ulspred
             do i = 1, npole
                do j = 1, 3
@@ -279,6 +286,8 @@ c
                      udsum = udsum + bpred(k)*udalt(k,j,i)
                      upsum = upsum + bpredp(k)*upalt(k,j,i)
                   end do
+c                  uind_omp(j,i) = udsum
+c                  uinp_omp(j,i) = upsum
                   uind(j,i) = udsum
                   uinp(j,i) = upsum
                end do
@@ -309,6 +318,11 @@ c
             call ufield0a (field,fieldp)
          end if
 !$OMP master
+
+         uind = uind_omp
+         uinp = uinp_omp
+C$$$         udir = udir_omp
+C$$$         udirp = udirp_omp
 c
 c     set initial conjugate gradient residual and conjugate vector
 c
@@ -1506,8 +1520,11 @@ c
      &           + fieldt_omp(j,i)
             fieldp(j,i) = fieldp(j,i) + term*rpole(j+1,i)
      &           + fieldtp_omp(j,i)
+            field_omp(j,i) = field(j,i)
+            fieldp_omp(j,i) = fieldp(j,i)
          end do
       end do
+
 !$OMP end master
 !$OMP barrier
 !$OMP flush
@@ -1668,7 +1685,7 @@ c
 c     get the reciprocal space part of the electrostatic field
 c
 !$OMP master
-      call umutual1 (field,fieldp)
+      call umutual11 (field,fieldp)
 c
 c     get the real space portion of the electrostatic field
 c
@@ -1689,8 +1706,10 @@ c
       term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
       do i = 1, npole
          do j = 1, 3
-            field(j,i) = field(j,i) + term*uind(j,i) + fieldt_omp(j,i)
-            fieldp(j,i) = fieldp(j,i) + term*uinp(j,i)+ fieldtp_omp(j,i)
+            field(j,i) = field(j,i) + term*uind_omp(j,i) + 
+     &           fieldt_omp(j,i)
+            fieldp(j,i) = fieldp(j,i) + term*uinp_omp(j,i)+ 
+     &           fieldtp_omp(j,i)
          end do
       end do
 
@@ -1708,8 +1727,8 @@ c
          end do
          do i = 1, npole
             do j = 1, 3
-               ucell(j) = ucell(j) + uind(j,i)
-               ucellp(j) = ucellp(j) + uinp(j,i)
+               ucell(j) = ucell(j) + uind_omp(j,i)
+               ucellp(j) = ucellp(j) + uinp_omp(j,i)
             end do
          end do
          term = (4.0d0/3.0d0) * pi/volbox
@@ -2768,6 +2787,139 @@ c      deallocate (fieldtp)
       return
       end
 c
+
+c     #################################################################
+c     ##                                                             ##
+c     ##  subroutine umutual11  --  Ewald recip mutual induced field  ##
+c     ##                                                             ##
+c     #################################################################
+c
+c
+c     "umutual11" computes the reciprocal space contribution of the
+c     induced atomic dipole moments to the field
+c
+c
+      subroutine umutual11 (field,fieldp)
+      use sizes
+      use boxes
+      use ewald
+      use math
+      use mpole
+      use pme
+      use polar
+      use openmp
+      implicit none
+      integer i,j,k
+      real*8 term
+      real*8 a(3,3)
+      real*8 field(3,*)
+      real*8 fieldp(3,*)
+      real*8, allocatable :: fuind(:,:)
+      real*8, allocatable :: fuinp(:,:)
+      real*8, allocatable :: fdip_phi1(:,:)
+      real*8, allocatable :: fdip_phi2(:,:)
+      real*8, allocatable :: fdip_sum_phi(:,:)
+      real*8, allocatable :: dipfield1(:,:)
+      real*8, allocatable :: dipfield2(:,:)
+c
+c
+c     return if the Ewald coefficient is zero
+c
+      if (aewald .lt. 1.0d-6)  return
+c
+c     perform dynamic allocation of some local arrays
+c
+      allocate (fuind(3,npole))
+      allocate (fuinp(3,npole))
+      allocate (fdip_phi1(10,npole))
+      allocate (fdip_phi2(10,npole))
+      allocate (fdip_sum_phi(20,npole))
+      allocate (dipfield1(3,npole))
+      allocate (dipfield2(3,npole))
+c
+c     convert Cartesian dipoles to fractional coordinates
+c
+      do i = 1, 3
+         a(1,i) = dble(nfft1) * recip(i,1)
+         a(2,i) = dble(nfft2) * recip(i,2)
+         a(3,i) = dble(nfft3) * recip(i,3)
+      end do
+      do i = 1, npole
+         do k = 1, 3
+            fuind(k,i) = a(k,1)*uind_omp(1,i) + a(k,2)*uind_omp(2,i)
+     &                      + a(k,3)*uind_omp(3,i)
+            fuinp(k,i) = a(k,1)*uinp_omp(1,i) + a(k,2)*uinp_omp(2,i)
+     &                      + a(k,3)*uinp_omp(3,i)
+         end do
+      end do
+c
+c     assign PME grid and perform 3-D FFT forward transform
+c
+      call grid_uind (fuind,fuinp)
+      call fftfront
+c
+c     complete the transformation of the PME grid
+c
+      do k = 1, nfft3
+         do j = 1, nfft2
+            do i = 1, nfft1
+               term = qfac(i,j,k)
+               qgrid(1,i,j,k) = term * qgrid(1,i,j,k)
+               qgrid(2,i,j,k) = term * qgrid(2,i,j,k)
+            end do
+         end do
+      end do
+c
+c     perform 3-D FFT backward transform and get field
+c
+      call fftback
+      call fphi_uind (fdip_phi1,fdip_phi2,fdip_sum_phi)
+c
+c     convert the dipole fields from fractional to Cartesian
+c
+      do i = 1, 3
+         a(i,1) = dble(nfft1) * recip(i,1)
+         a(i,2) = dble(nfft2) * recip(i,2)
+         a(i,3) = dble(nfft3) * recip(i,3)
+      end do
+      do i = 1, npole
+         do k = 1, 3
+            dipfield1(k,i) = a(k,1)*fdip_phi1(2,i)
+     &                          + a(k,2)*fdip_phi1(3,i)
+     &                          + a(k,3)*fdip_phi1(4,i)
+            dipfield2(k,i) = a(k,1)*fdip_phi2(2,i)
+     &                          + a(k,2)*fdip_phi2(3,i)
+     &                          + a(k,3)*fdip_phi2(4,i)
+         end do
+      end do
+c
+c     increment the field at each multipole site
+c
+c!$OMP master
+      do i = 1, npole
+         do k = 1, 3
+            field(k,i) = field(k,i) - dipfield1(k,i)
+            fieldp(k,i) = fieldp(k,i) - dipfield2(k,i)
+         end do
+      end do
+c!$OMP end master
+c!$OMP barrier
+c!$OMP flush
+c
+c     perform deallocation of some local arrays
+c
+      deallocate (fuind)
+      deallocate (fuinp)
+      deallocate (fdip_phi1)
+      deallocate (fdip_phi2)
+      deallocate (fdip_sum_phi)
+      deallocate (dipfield1)
+      deallocate (dipfield2)
+      return
+      end
+
+
+
 c
 c     #################################################################
 c     ##                                                             ##
@@ -3288,30 +3440,30 @@ c
       do m = 1, ntpair
          i = tindex(1,m)
          k = tindex(2,m)
-         fimd(1) = tdipdip(1,m)*uind(1,k) + tdipdip(2,m)*uind(2,k)
-     &                + tdipdip(3,m)*uind(3,k)
-         fimd(2) = tdipdip(2,m)*uind(1,k) + tdipdip(4,m)*uind(2,k)
-     &                + tdipdip(5,m)*uind(3,k)
-         fimd(3) = tdipdip(3,m)*uind(1,k) + tdipdip(5,m)*uind(2,k)
-     &                + tdipdip(6,m)*uind(3,k)
-         fkmd(1) = tdipdip(1,m)*uind(1,i) + tdipdip(2,m)*uind(2,i)
-     &                + tdipdip(3,m)*uind(3,i)
-         fkmd(2) = tdipdip(2,m)*uind(1,i) + tdipdip(4,m)*uind(2,i)
-     &                + tdipdip(5,m)*uind(3,i)
-         fkmd(3) = tdipdip(3,m)*uind(1,i) + tdipdip(5,m)*uind(2,i)
-     &                + tdipdip(6,m)*uind(3,i)
-         fimp(1) = tdipdip(1,m)*uinp(1,k) + tdipdip(2,m)*uinp(2,k)
-     &                + tdipdip(3,m)*uinp(3,k)
-         fimp(2) = tdipdip(2,m)*uinp(1,k) + tdipdip(4,m)*uinp(2,k)
-     &                + tdipdip(5,m)*uinp(3,k)
-         fimp(3) = tdipdip(3,m)*uinp(1,k) + tdipdip(5,m)*uinp(2,k)
-     &                + tdipdip(6,m)*uinp(3,k)
-         fkmp(1) = tdipdip(1,m)*uinp(1,i) + tdipdip(2,m)*uinp(2,i)
-     &                + tdipdip(3,m)*uinp(3,i)
-         fkmp(2) = tdipdip(2,m)*uinp(1,i) + tdipdip(4,m)*uinp(2,i)
-     &                + tdipdip(5,m)*uinp(3,i)
-         fkmp(3) = tdipdip(3,m)*uinp(1,i) + tdipdip(5,m)*uinp(2,i)
-     &                + tdipdip(6,m)*uinp(3,i)
+         fimd(1) = tdipdip(1,m)*uind_omp(1,k) + 
+     &        tdipdip(2,m)*uind_omp(2,k) + tdipdip(3,m)*uind_omp(3,k)
+         fimd(2) = tdipdip(2,m)*uind_omp(1,k) + 
+     &        tdipdip(4,m)*uind_omp(2,k) + tdipdip(5,m)*uind_omp(3,k)
+         fimd(3) = tdipdip(3,m)*uind_omp(1,k) + 
+     &        tdipdip(5,m)*uind_omp(2,k) + tdipdip(6,m)*uind_omp(3,k)
+         fkmd(1) = tdipdip(1,m)*uind_omp(1,i) +
+     &        tdipdip(2,m)*uind_omp(2,i) + tdipdip(3,m)*uind_omp(3,i)
+         fkmd(2) = tdipdip(2,m)*uind_omp(1,i) + 
+     &        tdipdip(4,m)*uind_omp(2,i) + tdipdip(5,m)*uind_omp(3,i)
+         fkmd(3) = tdipdip(3,m)*uind_omp(1,i) + 
+     &        tdipdip(5,m)*uind_omp(2,i)  + tdipdip(6,m)*uind_omp(3,i)
+         fimp(1) = tdipdip(1,m)*uinp_omp(1,k) + 
+     &        tdipdip(2,m)*uinp_omp(2,k) + tdipdip(3,m)*uinp_omp(3,k)
+         fimp(2) = tdipdip(2,m)*uinp_omp(1,k) + 
+     &        tdipdip(4,m)*uinp_omp(2,k) + tdipdip(5,m)*uinp_omp(3,k)
+         fimp(3) = tdipdip(3,m)*uinp_omp(1,k) + 
+     &        tdipdip(5,m)*uinp_omp(2,k) + tdipdip(6,m)*uinp_omp(3,k)
+         fkmp(1) = tdipdip(1,m)*uinp_omp(1,i) + 
+     &        tdipdip(2,m)*uinp_omp(2,i) + tdipdip(3,m)*uinp_omp(3,i)
+         fkmp(2) = tdipdip(2,m)*uinp_omp(1,i) + 
+     &        tdipdip(4,m)*uinp_omp(2,i) + tdipdip(5,m)*uinp_omp(3,i)
+         fkmp(3) = tdipdip(3,m)*uinp_omp(1,i) + 
+     &        tdipdip(5,m)*uinp_omp(2,i) + tdipdip(6,m)*uinp_omp(3,i)
 c
 c     increment the field at each site due to this interaction
 c

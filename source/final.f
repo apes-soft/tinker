@@ -779,6 +779,9 @@ c
       if(allocated(udir_omp)) deallocate(udir_omp)
       if(allocated(udirp_omp)) deallocate(udirp_omp)
 
+      if(allocated(uind_omp)) deallocate(uind_omp)
+      if(allocated(uinp_omp)) deallocate(uinp_omp)
+
       if(allocated(dem1)) deallocate(dem1)
       if(allocated(dem2)) deallocate(dem2)
       if(allocated(dep1)) deallocate(dep1)
