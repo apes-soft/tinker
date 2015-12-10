@@ -121,6 +121,11 @@ c         allocate(vscale_th(n))
       if(.not. allocated(rsd_omp)) allocate(rsd_omp(3,npole))
       if(.not. allocated(rsdp_omp)) allocate(rsdp_omp(3,npole))
       if(.not. allocated(poli_omp)) allocate(poli_omp(npole))
+
+      if(.not. allocated(zrsd_omp)) allocate(zrsd_omp(3,npole))
+      if(.not. allocated(zrsdp_omp)) allocate(zrsdp_omp(3,npole))
+      if(.not. allocated(zrsdt_omp)) allocate(zrsdt_omp(3,npole))
+      if(.not. allocated(zrsdtp_omp)) allocate(zrsdtp_omp(3,npole))
       
 
       if(.not. allocated(offset_omp)) allocate(offset_omp(0:nthread-1))
@@ -224,6 +229,10 @@ c
             udirp_omp(j,i) = 0.0d0
             rsd_omp(j,i) = 0.0d0
             rsdp_omp(j,i) = 0.0d0
+            zrsd_omp(j,i) = 0.0d0
+            zrsdp_omp(j,i) = 0.0d0
+            zrsdt_omp(j,i) = 0.0d0
+            zrsdtp_omp(j,i) = 0.0d0
          end do
          xred_th(i) = 0.0d0
          yred_th(i) = 0.0d0

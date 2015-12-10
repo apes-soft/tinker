@@ -782,9 +782,14 @@ c
       if(allocated(uind_omp)) deallocate(uind_omp)
       if(allocated(uinp_omp)) deallocate(uinp_omp)
 
-      if(allocated(uind_omp)) deallocate(poli_omp)
-      if(allocated(uinp_omp)) deallocate(rsdp_omp)
-      if(allocated(uinp_omp)) deallocate(rsd_omp)
+      if(allocated(poli_omp)) deallocate(poli_omp)
+      if(allocated(rsdp_omp)) deallocate(rsdp_omp)
+      if(allocated(rsd_omp)) deallocate(rsd_omp)
+
+      if(allocated(zrsd_omp)) deallocate(zrsd_omp)
+      if(allocated(zrsdp_omp)) deallocate(zrsdp_omp)
+      if(allocated(zrsdtp_omp)) deallocate(zrsdtp_omp)
+      if(allocated(zrsdt_omp)) deallocate(zrsdt_omp)
 
       if(allocated(dem1)) deallocate(dem1)
       if(allocated(dem2)) deallocate(dem2)

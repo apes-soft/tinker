@@ -248,7 +248,7 @@ c
 c     set induced dipoles to polarizability times direct field
 c
 
-!$OMP DO
+!$OMP DO schedule(guided)
       do i = 1, npole
          do j = 1, 3
             udir_omp(j,i) = polarity(i) * field_omp(j,i)
@@ -258,11 +258,6 @@ c
          end do
       end do
 !$OMP END DO 
-
-c      uind = uind_omp
-c      uinp = uinp_omp
-c      udir = udir_omp
-c      udirp = udirp_omp
 
 c
 c     set tolerances for computation of mutual induced dipoles
@@ -324,23 +319,10 @@ c
          else
             call ufield0a (field,fieldp)
          end if
-c!$OMP master
 
-c         uind = uind_omp
-c         uinp = uinp_omp
-C$$$         udir = udir_omp
-C$$$         udirp = udirp_omp
 c
 c     set initial conjugate gradient residual and conjugate vector
 c
-!$OMP master
-c         field_tmp = field_omp
-c         fieldp_tmp = fieldp_omp
-c         field_omp = field
-c         fieldp_omp = fieldp
-!$OMP end master
-!$OMP barrier
-!$OMP flush
 
 !$OMP DO schedule(guided)
          do i = 1, npole
@@ -353,8 +335,18 @@ c         fieldp_omp = fieldp
             end do
          end do
 !$OMP end do
+        
+         mode = 'BUILD'
 
-c!$OMP master
+         if (use_mlist) then
+            call uscale0b1 (mode)!,rsd,rsdp,zrsd,zrsdp)
+            mode = 'APPLY'
+            call uscale0b1 (mode)!,rsd,rsdp,zrsd,zrsdp)
+         else
+            call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
+            mode = 'APPLY'
+            call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
+         end if
          
          uind = uind_omp
          uinp = uinp_omp
@@ -365,22 +357,6 @@ c!$OMP master
          rsdp = rsdp_omp
          
 !$OMP master
-c         field_omp = field_tmp
-c         fieldp_omp = fieldp_tmp
-         mode = 'BUILD'
-ccc!$OMP master
-         if (use_mlist) then
-            call uscale0b (mode,rsd,rsdp,zrsd,zrsdp)
-            mode = 'APPLY'
-            call uscale0b (mode,rsd,rsdp,zrsd,zrsdp)
-         else
-            call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
-            mode = 'APPLY'
-            call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
-         end if
-ccc!$OMP end master
-ccc!$OMP barrier
-ccc!$OMP flush
          do i = 1, npole
             do j = 1, 3
                conj(j,i) = zrsd(j,i)
@@ -6281,6 +6257,269 @@ c
 c     perform deallocation of some local arrays
 c
          deallocate (dscale)
+      end if
+      return
+      end
+
+c     ###############################################################
+c     ##                                                           ##
+c     ##  subroutine uscale0b  --  dipole preconditioner via list  ##
+c     ##                                                           ##
+c     ###############################################################
+c
+c
+c     "uscale0b" builds and applies a preconditioner for the conjugate
+c     gradient induced dipole solver using a neighbor pair list
+c
+c
+      subroutine uscale0b1 (mode)
+      use sizes
+      use atoms
+      use mpole
+      use neigh
+      use polar
+      use polgrp
+      use polpot
+      use usolve
+      use openmp
+      use virial
+      implicit none
+      integer i,j,k,m
+      integer ii,kk,kkk
+      real*8 xi,yi,zi
+      real*8 xr,yr,zr
+      real*8 r,r2,rr3,rr5
+      real*8 pdi,pti
+      real*8 polmin
+      real*8 poli,polik
+      real*8 damp,expdamp
+      real*8 pgamma
+      real*8 scale3,scale5
+      real*8 m1,m2,m3
+      real*8 m4,m5,m6
+      real*8, allocatable :: dscale(:)
+c      real*8 rsd(3,*)
+c      real*8 rsdp(3,*)
+c      real*8 zrsd(3,*)
+c      real*8 zrsdp(3,*)
+c      real*8, allocatable :: zrsdt(:,:)
+c      real*8, allocatable :: zrsdtp(:,:)
+      character*6 mode
+c
+c
+c     apply the preconditioning matrix to the current residual
+c
+      if (mode .eq. 'APPLY') then
+c
+c     perform dynamic allocation of some local arrays
+c
+c         allocate (zrsdt(3,npole))
+c         allocate (zrsdtp(3,npole))
+c
+c     use diagonal preconditioner elements as first approximation
+c
+         polmin = 0.00000001d0
+
+!$OMP DO schedule(guided)
+         do i = 1, npole
+            poli = udiag * max(polmin,polarity(i))
+            do j = 1, 3
+               zrsd_omp(j,i) = 0.0d0
+               zrsdp_omp(j,i) = 0.0d0
+               zrsdt_omp(j,i) = poli * rsd_omp(j,i)
+               zrsdtp_omp(j,i) = poli * rsdp_omp(j,i)
+            end do
+         end do
+!$OMP END DO
+
+c
+c     use the off-diagonal preconditioner elements in second phase
+c
+cc!$OMP PARALLEL default(private) shared(npole,mindex,minv,nulst,ulst,
+cc!$OMP& rsd,rsdp,zrsd,zrsdp,zrsdt,zrsdtp)
+cc!$OMP DO reduction(+:zrsdt,zrsdtp) schedule(guided)
+
+!$OMP DO private(m,k,m1,m2,m3,m4,m5,m6) reduction(+:zrsdt_omp, 
+!$OMP& zrsdtp_omp) schedule(guided)
+         do i = 1, npole
+            m = mindex(i)
+            do kk = 1, nulst(i)
+               k = ulst(kk,i)
+               m1 = minv(m+1)
+               m2 = minv(m+2)
+               m3 = minv(m+3)
+               m4 = minv(m+4)
+               m5 = minv(m+5)
+               m6 = minv(m+6)
+               m = m + 6
+               zrsdt_omp(1,i) = zrsdt_omp(1,i) + m1*rsd_omp(1,k) 
+     &              + m2*rsd_omp(2,k)+ m3*rsd_omp(3,k)
+               zrsdt_omp(2,i) = zrsdt_omp(2,i) + m2*rsd_omp(1,k) 
+     &              + m4*rsd_omp(2,k) + m5*rsd_omp(3,k)
+               zrsdt_omp(3,i) = zrsdt_omp(3,i) + m3*rsd_omp(1,k) 
+     &              + m5*rsd_omp(2,k) + m6*rsd_omp(3,k)
+               zrsdt_omp(1,k) = zrsdt_omp(1,k) + m1*rsd_omp(1,i) 
+     &              + m2*rsd_omp(2,i) + m3*rsd_omp(3,i)
+               zrsdt_omp(2,k) = zrsdt_omp(2,k) + m2*rsd_omp(1,i) 
+     &              + m4*rsd_omp(2,i) + m5*rsd_omp(3,i)
+               zrsdt_omp(3,k) = zrsdt_omp(3,k) + m3*rsd_omp(1,i) 
+     &              + m5*rsd_omp(2,i) + m6*rsd_omp(3,i)
+               zrsdtp_omp(1,i) = zrsdtp_omp(1,i) + m1*rsdp_omp(1,k) 
+     &              + m2*rsdp_omp(2,k) + m3*rsdp_omp(3,k)
+               zrsdtp_omp(2,i) = zrsdtp_omp(2,i) + m2*rsdp_omp(1,k) 
+     &              + m4*rsdp_omp(2,k) + m5*rsdp_omp(3,k)
+               zrsdtp_omp(3,i) = zrsdtp_omp(3,i) + m3*rsdp_omp(1,k) 
+     &              + m5*rsdp_omp(2,k) + m6*rsdp_omp(3,k)
+               zrsdtp_omp(1,k) = zrsdtp_omp(1,k) + m1*rsdp_omp(1,i) 
+     &              + m2*rsdp_omp(2,i) + m3*rsdp_omp(3,i)
+               zrsdtp_omp(2,k) = zrsdtp_omp(2,k) + m2*rsdp_omp(1,i) 
+     &              + m4*rsdp_omp(2,i) + m5*rsdp_omp(3,i)
+               zrsdtp_omp(3,k) = zrsdtp_omp(3,k) + m3*rsdp_omp(1,i) 
+     &              + m5*rsdp_omp(2,i) + m6*rsdp_omp(3,i)
+            end do
+         end do
+!$OMP END DO
+c
+c     transfer the results from local to global arrays
+c
+!$OMP DO
+         do i = 1, npole
+            do j = 1, 3
+               zrsd_omp(j,i) = zrsdt_omp(j,i) + zrsd_omp(j,i)
+               zrsdp_omp(j,i) = zrsdtp_omp(j,i) + zrsdp_omp(j,i)
+            end do
+         end do
+!$OMP END DO
+cc!$OMP END PARALLEL
+c
+c     perform deallocation of some local arrays
+
+c
+c         deallocate (zrsdt)
+c         deallocate (zrsdtp)
+
+c
+c     build the off-diagonal elements of preconditioning matrix
+c
+      else if (mode .eq. 'BUILD') then
+!$OMP master
+         m = 0
+         do i = 1, npole
+            mindex(i) = m
+            m = m + 6*nulst(i)
+         end do
+!$OMP end master
+!$OMP barrier
+!$OMP flush
+
+c
+c     perform dynamic allocation of some local arrays
+c
+
+c         allocate (dscale(n))
+
+c
+c     set array needed to scale connected atom interactions
+c
+
+c         do i = 1, n
+c            dscale(i) = 1.0d0
+c         end do
+         
+         dscale_omp = 1.0d0
+
+c
+c     set OpenMP directives for the major loop structure
+c
+cc!$OMP PARALLEL default(private) shared(n,npole,ipole,x,y,z,pdamp,
+cc!$OMP& thole,polarity,u1scale,u2scale,u3scale,u4scale,np11,ip11,
+cc!$OMP& np12,ip12,np13,ip13,np14,ip14,nulst,ulst,mindex,minv)
+cc!$OMP& firstprivate (dscale)
+c
+c     determine the off-diagonal elements of the preconditioner
+c
+!$OMP DO schedule(guided) private(ii, xi,yi,zi,pdi,pti,poli,m,k,kk,
+!$OMP& xr,yr,zr,r2,r,scale3,scale5,damp,pgamma,polik,rr3,rr5,expdamp)
+!$OMP& firstprivate(dscale_omp) 
+         do i = 1, npole
+            ii = ipole(i)
+            xi = x(ii)
+            yi = y(ii)
+            zi = z(ii)
+            pdi = pdamp(i)
+            pti = thole(i)
+            poli = polarity(i)
+            do j = 1, np11(ii)
+               dscale_omp(ip11(j,ii)) = u1scale
+            end do
+            do j = 1, np12(ii)
+               dscale_omp(ip12(j,ii)) = u2scale
+            end do
+            do j = 1, np13(ii)
+               dscale_omp(ip13(j,ii)) = u3scale
+            end do
+            do j = 1, np14(ii)
+               dscale_omp(ip14(j,ii)) = u4scale
+            end do
+            m = mindex(i)
+            do kkk = 1, nulst(i)
+               k = ulst(kkk,i)
+               kk = ipole(k)
+               xr = x(kk) - xi
+               yr = y(kk) - yi
+               zr = z(kk) - zi
+               call image (xr,yr,zr)
+               r2 = xr*xr + yr* yr + zr*zr
+               r = sqrt(r2)
+               scale3 = dscale_omp(kk)
+               scale5 = dscale_omp(kk)
+               damp = pdi * pdamp(k)
+               if (damp .ne. 0.0d0) then
+                  pgamma = min(pti,thole(k))
+                  damp = -pgamma * (r/damp)**3
+                  if (damp .gt. -50.0d0) then
+                     expdamp = exp(damp)
+                     scale3 = scale3 * (1.0d0-expdamp)
+                     scale5 = scale5 * (1.0d0-expdamp*(1.0d0-damp))
+                  end if
+               end if
+               polik = poli * polarity(k)
+               rr3 = scale3 * polik / (r*r2)
+               rr5 = 3.0d0 * scale5 * polik / (r*r2*r2)
+               minv(m+1) = rr5*xr*xr - rr3
+               minv(m+2) = rr5*xr*yr
+               minv(m+3) = rr5*xr*zr
+               minv(m+4) = rr5*yr*yr - rr3
+               minv(m+5) = rr5*yr*zr
+               minv(m+6) = rr5*zr*zr - rr3
+               m = m + 6
+            end do
+c
+c     reset interaction scaling coefficients for connected atoms
+c
+            do j = 1, np11(ii)
+               dscale_omp(ip11(j,ii)) = 1.0d0
+            end do
+            do j = 1, np12(ii)
+               dscale_omp(ip12(j,ii)) = 1.0d0
+            end do
+            do j = 1, np13(ii)
+               dscale_omp(ip13(j,ii)) = 1.0d0
+            end do
+            do j = 1, np14(ii)
+               dscale_omp(ip14(j,ii)) = 1.0d0
+            end do
+         end do
+!$OMP END DO
+cc!$OMP END PARALLEL
+
+
+
+c
+c     perform deallocation of some local arrays
+c
+c         deallocate (dscale)
+c!$OMP end master
       end if
       return
       end
