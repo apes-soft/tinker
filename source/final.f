@@ -791,6 +791,9 @@ c
       if(allocated(zrsdtp_omp)) deallocate(zrsdtp_omp)
       if(allocated(zrsdt_omp)) deallocate(zrsdt_omp)
 
+      if(allocated(conjp_omp)) deallocate(conjp_omp)
+      if(allocated(conj_omp)) deallocate(conj_omp)
+
       if(allocated(dem1)) deallocate(dem1)
       if(allocated(dem2)) deallocate(dem2)
       if(allocated(dep1)) deallocate(dep1)

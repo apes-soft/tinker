@@ -347,6 +347,17 @@ c
             mode = 'APPLY'
             call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
          end if
+
+
+!$OMP DO schedule(guided)
+         do i = 1, npole
+            do j = 1, 3
+               conj(j,i) = zrsd_omp(j,i)
+               conjp(j,i) = zrsdp_omp(j,i)
+            end do
+         end do
+!$OMP end DO
+
 !$OMP master         
          uind = uind_omp
          uinp = uinp_omp
@@ -357,14 +368,9 @@ c
          rsdp = rsdp_omp
          zrsd = zrsd_omp
          zrsdp = zrsdp_omp
-         
-c!$OMP master
-         do i = 1, npole
-            do j = 1, 3
-               conj(j,i) = zrsd(j,i)
-               conjp(j,i) = zrsdp(j,i)
-            end do
-         end do
+         conj = conj_omp
+         conjp = conjp_omp
+
 c
 c     conjugate gradient iteration of the mutual induced dipoles
 c

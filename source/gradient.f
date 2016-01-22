@@ -127,6 +127,8 @@ c         allocate(vscale_th(n))
       if(.not. allocated(zrsdt_omp)) allocate(zrsdt_omp(3,npole))
       if(.not. allocated(zrsdtp_omp)) allocate(zrsdtp_omp(3,npole))
       
+      if(.not. allocated(conj_omp)) allocate(conj_omp(3,npole))
+      if(.not. allocated(conjp_omp)) allocate(conjp_omp(3,npole))
 
       if(.not. allocated(offset_omp)) allocate(offset_omp(0:nthread-1))
       
@@ -233,6 +235,8 @@ c
             zrsdp_omp(j,i) = 0.0d0
             zrsdt_omp(j,i) = 0.0d0
             zrsdtp_omp(j,i) = 0.0d0
+            conj_omp(j,i) = 0.0d0
+            conjp_omp(j,i) = 0.0d0
          end do
          xred_th(i) = 0.0d0
          yred_th(i) = 0.0d0
