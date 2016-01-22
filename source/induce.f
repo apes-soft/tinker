@@ -347,7 +347,7 @@ c
             mode = 'APPLY'
             call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
          end if
-         
+!$OMP master         
          uind = uind_omp
          uinp = uinp_omp
          udir = udir_omp
@@ -355,8 +355,10 @@ c
          rsd = rsd_omp
          poli = poli_omp
          rsdp = rsdp_omp
+         zrsd = zrsd_omp
+         zrsdp = zrsdp_omp
          
-!$OMP master
+c!$OMP master
          do i = 1, npole
             do j = 1, 3
                conj(j,i) = zrsd(j,i)
@@ -6320,7 +6322,7 @@ c     use diagonal preconditioner elements as first approximation
 c
          polmin = 0.00000001d0
 
-!$OMP DO schedule(guided)
+!$OMP DO schedule(guided) private(poli)
          do i = 1, npole
             poli = udiag * max(polmin,polarity(i))
             do j = 1, 3
