@@ -203,8 +203,8 @@ c      real*8, allocatable :: udirp(:,:)
       real*8, allocatable :: rsdp(:,:)
       real*8, allocatable :: zrsd(:,:)
       real*8, allocatable :: zrsdp(:,:)
-      real*8, allocatable :: conj(:,:)
-      real*8, allocatable :: conjp(:,:)
+c      real*8, allocatable :: conj(:,:)
+c      real*8, allocatable :: conjp(:,:)
       real*8, allocatable :: vec(:,:)
       real*8, allocatable :: vecp(:,:)
 c      real*8, allocatable :: field_tmp(:,:)
@@ -305,8 +305,8 @@ c         allocate (poli(npole))
          allocate (rsdp(3,npole))
          allocate (zrsd(3,npole))
          allocate (zrsdp(3,npole))
-         allocate (conj(3,npole))
-         allocate (conjp(3,npole))
+c         allocate (conj(3,npole))
+c         allocate (conjp(3,npole))
          allocate (vec(3,npole))
          allocate (vecp(3,npole))
 c
@@ -368,8 +368,8 @@ c         poli = poli_omp
          rsdp = rsdp_omp
          zrsd = zrsd_omp
          zrsdp = zrsdp_omp
-         conj = conj_omp
-         conjp = conjp_omp
+c         conj = conj_omp
+c         conjp = conjp_omp
 
 c
 c     conjugate gradient iteration of the mutual induced dipoles
@@ -381,8 +381,8 @@ ccc!$OMP master
                do j = 1, 3
                   vec(j,i) = uind(j,i)
                   vecp(j,i) = uinp(j,i)
-                  uind(j,i) = conj(j,i)
-                  uinp(j,i) = conjp(j,i)
+                  uind(j,i) = conj_omp(j,i)
+                  uinp(j,i) = conjp_omp(j,i)
                end do
             end do
             if (use_ewald) then
@@ -396,8 +396,8 @@ ccc!$OMP master
                do j = 1, 3
                   uind(j,i) = vec(j,i)
                   uinp(j,i) = vecp(j,i)
-                  vec(j,i) = conj(j,i)/poli_omp(i) - field(j,i)
-                  vecp(j,i) = conjp(j,i)/poli_omp(i) - fieldp(j,i)
+                  vec(j,i) = conj_omp(j,i)/poli_omp(i) - field(j,i)
+                  vecp(j,i) = conjp_omp(j,i)/poli_omp(i) - fieldp(j,i)
                end do
             end do
             a = 0.0d0
@@ -406,8 +406,8 @@ ccc!$OMP master
             sump = 0.0d0
             do i = 1, npole
                do j = 1, 3
-                  a = a + conj(j,i)*vec(j,i)
-                  ap = ap + conjp(j,i)*vecp(j,i)
+                  a = a + conj_omp(j,i)*vec(j,i)
+                  ap = ap + conjp_omp(j,i)*vecp(j,i)
                   sum = sum + rsd(j,i)*zrsd(j,i)
                   sump = sump + rsdp(j,i)*zrsdp(j,i)
                end do
@@ -416,8 +416,8 @@ ccc!$OMP master
             if (ap .ne. 0.0d0)  ap = sump / ap
             do i = 1, npole
                do j = 1, 3
-                  uind(j,i) = uind(j,i) + a*conj(j,i)
-                  uinp(j,i) = uinp(j,i) + ap*conjp(j,i)
+                  uind(j,i) = uind(j,i) + a*conj_omp(j,i)
+                  uinp(j,i) = uinp(j,i) + ap*conjp_omp(j,i)
                   rsd(j,i) = rsd(j,i) - a*vec(j,i)
                   rsdp(j,i) = rsdp(j,i) - ap*vecp(j,i)
                end do
@@ -443,8 +443,8 @@ ccc!$OMP master
             epsp = 0.0d0
             do i = 1, npole
                do j = 1, 3
-                  conj(j,i) = zrsd(j,i) + b*conj(j,i)
-                  conjp(j,i) = zrsdp(j,i) + bp*conjp(j,i)
+                  conj_omp(j,i) = zrsd(j,i) + b*conj_omp(j,i)
+                  conjp_omp(j,i) = zrsdp(j,i) + bp*conjp_omp(j,i)
                   epsd = epsd + rsd(j,i)*rsd(j,i)
                   epsp = epsp + rsdp(j,i)*rsdp(j,i)
                end do
@@ -478,8 +478,8 @@ c         deallocate (poli)
          deallocate (rsdp)
          deallocate (zrsd)
          deallocate (zrsdp)
-         deallocate (conj)
-         deallocate (conjp)
+c         deallocate (conj)
+c         deallocate (conjp)
          deallocate (vec)
          deallocate (vecp)
 c
