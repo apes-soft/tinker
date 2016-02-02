@@ -199,10 +199,10 @@ c      real*8, allocatable :: poli(:)
       real*8, allocatable :: fieldp(:,:)
 c      real*8, allocatable :: udir(:,:)
 c      real*8, allocatable :: udirp(:,:)
-      real*8, allocatable :: rsd(:,:)
-      real*8, allocatable :: rsdp(:,:)
-      real*8, allocatable :: zrsd(:,:)
-      real*8, allocatable :: zrsdp(:,:)
+c      real*8, allocatable :: rsd(:,:)
+c      real*8, allocatable :: rsdp(:,:)
+c      real*8, allocatable :: zrsd(:,:)
+c      real*8, allocatable :: zrsdp(:,:)
 c      real*8, allocatable :: conj(:,:)
 c      real*8, allocatable :: conjp(:,:)
       real*8, allocatable :: vec(:,:)
@@ -301,10 +301,10 @@ c
 c     perform dynamic allocation of some local arrays
 c
 c         allocate (poli(npole))
-         allocate (rsd(3,npole))
-         allocate (rsdp(3,npole))
-         allocate (zrsd(3,npole))
-         allocate (zrsdp(3,npole))
+c         allocate (rsd(3,npole))
+c         allocate (rsdp(3,npole))
+c         allocate (zrsd(3,npole))
+c         allocate (zrsdp(3,npole))
 c         allocate (conj(3,npole))
 c         allocate (conjp(3,npole))
          allocate (vec(3,npole))
@@ -343,9 +343,9 @@ c
             mode = 'APPLY'
             call uscale0b1 (mode)!,rsd,rsdp,zrsd,zrsdp)
          else
-            call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
-            mode = 'APPLY'
-            call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
+c            call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
+c            mode = 'APPLY'
+c            call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
          end if
 
 
@@ -363,11 +363,11 @@ c
          uinp = uinp_omp
 c         udir = udir_omp
 c         udirp = udirp_omp
-         rsd = rsd_omp
+c         rsd = rsd_omp
 c         poli = poli_omp
-         rsdp = rsdp_omp
-         zrsd = zrsd_omp
-         zrsdp = zrsdp_omp
+c         rsdp = rsdp_omp
+c         zrsd = zrsd_omp
+c         zrsdp = zrsdp_omp
 c         conj = conj_omp
 c         conjp = conjp_omp
 
@@ -408,8 +408,8 @@ ccc!$OMP master
                do j = 1, 3
                   a = a + conj_omp(j,i)*vec(j,i)
                   ap = ap + conjp_omp(j,i)*vecp(j,i)
-                  sum = sum + rsd(j,i)*zrsd(j,i)
-                  sump = sump + rsdp(j,i)*zrsdp(j,i)
+                  sum = sum + rsd_omp(j,i)*zrsd_omp(j,i)
+                  sump = sump + rsdp_omp(j,i)*zrsdp_omp(j,i)
                end do
             end do
             if (a .ne. 0.0d0)  a = sum / a
@@ -418,23 +418,23 @@ ccc!$OMP master
                do j = 1, 3
                   uind(j,i) = uind(j,i) + a*conj_omp(j,i)
                   uinp(j,i) = uinp(j,i) + ap*conjp_omp(j,i)
-                  rsd(j,i) = rsd(j,i) - a*vec(j,i)
-                  rsdp(j,i) = rsdp(j,i) - ap*vecp(j,i)
+                  rsd_omp(j,i) = rsd_omp(j,i) - a*vec(j,i)
+                  rsdp_omp(j,i) = rsdp_omp(j,i) - ap*vecp(j,i)
                end do
             end do
 ccc!$OMP master
             if (use_mlist) then
-               call uscale0b (mode,rsd,rsdp,zrsd,zrsdp)
+               call uscale0b (mode)!,rsd,rsdp,zrsd,zrsdp)
             else
-               call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
+               call uscale0a (mode)!,rsd,rsdp,zrsd,zrsdp)
             end if
 
             b = 0.0d0
             bp = 0.0d0
             do i = 1, npole
                do j = 1, 3
-                  b = b + rsd(j,i)*zrsd(j,i)
-                  bp = bp + rsdp(j,i)*zrsdp(j,i)
+                  b = b + rsd_omp(j,i)*zrsd_omp(j,i)
+                  bp = bp + rsdp_omp(j,i)*zrsdp_omp(j,i)
                end do
             end do
             if (sum .ne. 0.0d0)  b = b / sum
@@ -443,10 +443,10 @@ ccc!$OMP master
             epsp = 0.0d0
             do i = 1, npole
                do j = 1, 3
-                  conj_omp(j,i) = zrsd(j,i) + b*conj_omp(j,i)
-                  conjp_omp(j,i) = zrsdp(j,i) + bp*conjp_omp(j,i)
-                  epsd = epsd + rsd(j,i)*rsd(j,i)
-                  epsp = epsp + rsdp(j,i)*rsdp(j,i)
+                  conj_omp(j,i) = zrsd_omp(j,i) + b*conj_omp(j,i)
+                  conjp_omp(j,i) = zrsdp_omp(j,i) + bp*conjp_omp(j,i)
+                  epsd = epsd + rsd_omp(j,i)*rsd_omp(j,i)
+                  epsp = epsp + rsdp_omp(j,i)*rsdp_omp(j,i)
                end do
             end do
 c
@@ -474,10 +474,10 @@ c
 c     perform deallocation of some local arrays
 c
 c         deallocate (poli)
-         deallocate (rsd)
-         deallocate (rsdp)
-         deallocate (zrsd)
-         deallocate (zrsdp)
+c         deallocate (rsd)
+c         deallocate (rsdp)
+c         deallocate (zrsd)
+c         deallocate (zrsdp)
 c         deallocate (conj)
 c         deallocate (conjp)
          deallocate (vec)
@@ -6045,7 +6045,7 @@ c     "uscale0b" builds and applies a preconditioner for the conjugate
 c     gradient induced dipole solver using a neighbor pair list
 c
 c
-      subroutine uscale0b (mode,rsd,rsdp,zrsd,zrsdp)
+      subroutine uscale0b (mode)!,rsd,rsdp,zrsd,zrsdp)
       use sizes
       use atoms
       use mpole
@@ -6054,6 +6054,7 @@ c
       use polgrp
       use polpot
       use usolve
+      use openmp
       implicit none
       integer i,j,k,m
       integer ii,kk,kkk
@@ -6069,10 +6070,10 @@ c
       real*8 m1,m2,m3
       real*8 m4,m5,m6
       real*8, allocatable :: dscale(:)
-      real*8 rsd(3,*)
-      real*8 rsdp(3,*)
-      real*8 zrsd(3,*)
-      real*8 zrsdp(3,*)
+c      real*8 rsd(3,*)
+c      real*8 rsdp(3,*)
+c      real*8 zrsd(3,*)
+c      real*8 zrsdp(3,*)
       real*8, allocatable :: zrsdt(:,:)
       real*8, allocatable :: zrsdtp(:,:)
       character*6 mode
@@ -6093,10 +6094,10 @@ c
          do i = 1, npole
             poli = udiag * max(polmin,polarity(i))
             do j = 1, 3
-               zrsd(j,i) = 0.0d0
-               zrsdp(j,i) = 0.0d0
-               zrsdt(j,i) = poli * rsd(j,i)
-               zrsdtp(j,i) = poli * rsdp(j,i)
+               zrsd_omp(j,i) = 0.0d0
+               zrsdp_omp(j,i) = 0.0d0
+               zrsdt(j,i) = poli * rsd_omp(j,i)
+               zrsdtp(j,i) = poli * rsdp_omp(j,i)
             end do
          end do
 c
@@ -6116,30 +6117,30 @@ cc!$OMP DO reduction(+:zrsdt,zrsdtp) schedule(guided)
                m5 = minv(m+5)
                m6 = minv(m+6)
                m = m + 6
-               zrsdt(1,i) = zrsdt(1,i) + m1*rsd(1,k) + m2*rsd(2,k)
-     &                        + m3*rsd(3,k)
-               zrsdt(2,i) = zrsdt(2,i) + m2*rsd(1,k) + m4*rsd(2,k)
-     &                        + m5*rsd(3,k)
-               zrsdt(3,i) = zrsdt(3,i) + m3*rsd(1,k) + m5*rsd(2,k)
-     &                        + m6*rsd(3,k)
-               zrsdt(1,k) = zrsdt(1,k) + m1*rsd(1,i) + m2*rsd(2,i)
-     &                        + m3*rsd(3,i)
-               zrsdt(2,k) = zrsdt(2,k) + m2*rsd(1,i) + m4*rsd(2,i)
-     &                        + m5*rsd(3,i)
-               zrsdt(3,k) = zrsdt(3,k) + m3*rsd(1,i) + m5*rsd(2,i)
-     &                        + m6*rsd(3,i)
-               zrsdtp(1,i) = zrsdtp(1,i) + m1*rsdp(1,k) + m2*rsdp(2,k)
-     &                         + m3*rsdp(3,k)
-               zrsdtp(2,i) = zrsdtp(2,i) + m2*rsdp(1,k) + m4*rsdp(2,k)
-     &                         + m5*rsdp(3,k)
-               zrsdtp(3,i) = zrsdtp(3,i) + m3*rsdp(1,k) + m5*rsdp(2,k)
-     &                         + m6*rsdp(3,k)
-               zrsdtp(1,k) = zrsdtp(1,k) + m1*rsdp(1,i) + m2*rsdp(2,i)
-     &                         + m3*rsdp(3,i)
-               zrsdtp(2,k) = zrsdtp(2,k) + m2*rsdp(1,i) + m4*rsdp(2,i)
-     &                         + m5*rsdp(3,i)
-               zrsdtp(3,k) = zrsdtp(3,k) + m3*rsdp(1,i) + m5*rsdp(2,i)
-     &                         + m6*rsdp(3,i)
+               zrsdt(1,i) = zrsdt(1,i) + m1*rsd_omp(1,k) + 
+     &              m2*rsd_omp(2,k)  + m3*rsd_omp(3,k)
+               zrsdt(2,i) = zrsdt(2,i) + m2*rsd_omp(1,k) 
+     &              + m4*rsd_omp(2,k)  + m5*rsd_omp(3,k)
+               zrsdt(3,i) = zrsdt(3,i) + m3*rsd_omp(1,k) 
+     &              + m5*rsd_omp(2,k)  + m6*rsd_omp(3,k)
+               zrsdt(1,k) = zrsdt(1,k) + m1*rsd_omp(1,i) 
+     &              + m2*rsd_omp(2,i)  + m3*rsd_omp(3,i)
+               zrsdt(2,k) = zrsdt(2,k) + m2*rsd_omp(1,i) 
+     &              + m4*rsd_omp(2,i)  + m5*rsd_omp(3,i)
+               zrsdt(3,k) = zrsdt(3,k) + m3*rsd_omp(1,i) 
+     &              + m5*rsd_omp(2,i)  + m6*rsd_omp(3,i)
+               zrsdtp(1,i) = zrsdtp(1,i) + m1*rsdp_omp(1,k) 
+     &              + m2*rsdp_omp(2,k)   + m3*rsdp_omp(3,k)
+               zrsdtp(2,i) = zrsdtp(2,i) + m2*rsdp_omp(1,k) 
+     &              + m4*rsdp_omp(2,k)   + m5*rsdp_omp(3,k)
+               zrsdtp(3,i) = zrsdtp(3,i) + m3*rsdp_omp(1,k) 
+     &              + m5*rsdp_omp(2,k)   + m6*rsdp_omp(3,k)
+               zrsdtp(1,k) = zrsdtp(1,k) + m1*rsdp_omp(1,i) 
+     &              + m2*rsdp_omp(2,i)   + m3*rsdp_omp(3,i)
+               zrsdtp(2,k) = zrsdtp(2,k) + m2*rsdp_omp(1,i) 
+     &              + m4*rsdp_omp(2,i)   + m5*rsdp_omp(3,i)
+               zrsdtp(3,k) = zrsdtp(3,k) + m3*rsdp_omp(1,i) 
+     &              + m5*rsdp_omp(2,i)   + m6*rsdp_omp(3,i)
             end do
          end do
 cc!$OMP END DO
@@ -6149,8 +6150,8 @@ c
 cc!$OMP DO
          do i = 1, npole
             do j = 1, 3
-               zrsd(j,i) = zrsdt(j,i) + zrsd(j,i)
-               zrsdp(j,i) = zrsdtp(j,i) + zrsdp(j,i)
+               zrsd_omp(j,i) = zrsdt(j,i) + zrsd_omp(j,i)
+               zrsdp_omp(j,i) = zrsdtp(j,i) + zrsdp_omp(j,i)
             end do
          end do
 cc!$OMP END DO
