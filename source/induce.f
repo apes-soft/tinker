@@ -197,8 +197,8 @@ c
       real*8, allocatable :: poli(:)
       real*8, allocatable :: field(:,:)
       real*8, allocatable :: fieldp(:,:)
-      real*8, allocatable :: udir(:,:)
-      real*8, allocatable :: udirp(:,:)
+c      real*8, allocatable :: udir(:,:)
+c      real*8, allocatable :: udirp(:,:)
       real*8, allocatable :: rsd(:,:)
       real*8, allocatable :: rsdp(:,:)
       real*8, allocatable :: zrsd(:,:)
@@ -215,20 +215,20 @@ c
 c
 c     zero out the induced dipoles at each site
 c
-      do i = 1, npole
-         do j = 1, 3
-            uind(j,i) = 0.0d0
-            uinp(j,i) = 0.0d0
-         end do
-      end do
+c      do i = 1, npole
+c         do j = 1, 3
+c            uind(j,i) = 0.0d0
+c            uinp(j,i) = 0.0d0
+c         end do
+c      end do
       if (.not. use_polar)  return
 c
 c     perform dynamic allocation of some local arrays
 c
       allocate (field(3,npole))
       allocate (fieldp(3,npole))
-      allocate (udir(3,npole))
-      allocate (udirp(3,npole))
+c      allocate (udir(3,npole))
+c      allocate (udirp(3,npole))
 c      allocate (field_tmp(3,npole))
 c      allocate (fieldp_tmp(3,npole))
 
@@ -352,8 +352,8 @@ c
 !$OMP DO schedule(guided)
          do i = 1, npole
             do j = 1, 3
-               conj(j,i) = zrsd_omp(j,i)
-               conjp(j,i) = zrsdp_omp(j,i)
+               conj_omp(j,i) = zrsd_omp(j,i)
+               conjp_omp(j,i) = zrsdp_omp(j,i)
             end do
          end do
 !$OMP end DO
@@ -361,8 +361,8 @@ c
 !$OMP master         
          uind = uind_omp
          uinp = uinp_omp
-         udir = udir_omp
-         udirp = udirp_omp
+c         udir = udir_omp
+c         udirp = udirp_omp
          rsd = rsd_omp
          poli = poli_omp
          rsdp = rsdp_omp
@@ -516,8 +516,8 @@ c
       deallocate (fieldp)
 c      deallocate (field_tmp)
 c      deallocate (fieldp_tmp)
-      deallocate (udir)
-      deallocate (udirp)
+c      deallocate (udir)
+c      deallocate (udirp)
       return
       end
 c
