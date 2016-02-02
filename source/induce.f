@@ -194,7 +194,7 @@ c
       real*8 udsum,upsum
       real*8 a,ap,b,bp
       real*8 sum,sump
-      real*8, allocatable :: poli(:)
+c      real*8, allocatable :: poli(:)
       real*8, allocatable :: field(:,:)
       real*8, allocatable :: fieldp(:,:)
 c      real*8, allocatable :: udir(:,:)
@@ -300,7 +300,7 @@ C$$$         end if
 c
 c     perform dynamic allocation of some local arrays
 c
-         allocate (poli(npole))
+c         allocate (poli(npole))
          allocate (rsd(3,npole))
          allocate (rsdp(3,npole))
          allocate (zrsd(3,npole))
@@ -364,7 +364,7 @@ c
 c         udir = udir_omp
 c         udirp = udirp_omp
          rsd = rsd_omp
-         poli = poli_omp
+c         poli = poli_omp
          rsdp = rsdp_omp
          zrsd = zrsd_omp
          zrsdp = zrsdp_omp
@@ -396,8 +396,8 @@ ccc!$OMP master
                do j = 1, 3
                   uind(j,i) = vec(j,i)
                   uinp(j,i) = vecp(j,i)
-                  vec(j,i) = conj(j,i)/poli(i) - field(j,i)
-                  vecp(j,i) = conjp(j,i)/poli(i) - fieldp(j,i)
+                  vec(j,i) = conj(j,i)/poli_omp(i) - field(j,i)
+                  vecp(j,i) = conjp(j,i)/poli_omp(i) - fieldp(j,i)
                end do
             end do
             a = 0.0d0
@@ -473,7 +473,7 @@ c
 c
 c     perform deallocation of some local arrays
 c
-         deallocate (poli)
+c         deallocate (poli)
          deallocate (rsd)
          deallocate (rsdp)
          deallocate (zrsd)
