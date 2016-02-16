@@ -205,12 +205,15 @@ c      real*8, allocatable :: zrsd(:,:)
 c      real*8, allocatable :: zrsdp(:,:)
 c      real*8, allocatable :: conj(:,:)
 c      real*8, allocatable :: conjp(:,:)
-      real*8, allocatable :: vec(:,:)
-      real*8, allocatable :: vecp(:,:)
+c      real*8, allocatable :: vec(:,:)
+c      real*8, allocatable :: vecp(:,:)
 c      real*8, allocatable :: field_tmp(:,:)
 c      real*8, allocatable :: fieldp_tmp(:,:)
+!$    integer omp_get_thread_num
+!$    integer omp_get_num_procs
       logical done
       character*6 mode
+      integer proc
 c
 c
 c     zero out the induced dipoles at each site
@@ -307,8 +310,8 @@ c         allocate (zrsd(3,npole))
 c         allocate (zrsdp(3,npole))
 c         allocate (conj(3,npole))
 c         allocate (conjp(3,npole))
-         allocate (vec(3,npole))
-         allocate (vecp(3,npole))
+c         allocate (vec(3,npole))
+c         allocate (vecp(3,npole))
 c
 c     get the electrostatic field due to induced dipoles
 c
@@ -370,21 +373,32 @@ c         zrsd = zrsd_omp
 c         zrsdp = zrsdp_omp
 c         conj = conj_omp
 c         conjp = conjp_omp
+         done_omp = .false.
+c         proc = omp_get_num_procs ()
+c         print*, "proc", proc
+
+!$OMP end master
+!$OMP barrier
 
 c
 c     conjugate gradient iteration of the mutual induced dipoles
 c
 ccc!$OMP master
-         do while (.not. done)
+         do while (.not. done_omp)
+!$OMP master
             iter = iter + 1
+c            print*, "iter", iter
+
+
             do i = 1, npole
                do j = 1, 3
-                  vec(j,i) = uind(j,i)
-                  vecp(j,i) = uinp(j,i)
+                  vec_omp(j,i) = uind(j,i)
+                  vecp_omp(j,i) = uinp(j,i)
                   uind(j,i) = conj_omp(j,i)
                   uinp(j,i) = conjp_omp(j,i)
                end do
             end do
+
             if (use_ewald) then
                call ufield0c (field,fieldp)
             else if (use_mlist) then
@@ -392,12 +406,13 @@ ccc!$OMP master
             else
                call ufield0a (field,fieldp)
             end if
+
             do i = 1, npole
                do j = 1, 3
-                  uind(j,i) = vec(j,i)
-                  uinp(j,i) = vecp(j,i)
-                  vec(j,i) = conj_omp(j,i)/poli_omp(i) - field(j,i)
-                  vecp(j,i) = conjp_omp(j,i)/poli_omp(i) - fieldp(j,i)
+                  uind(j,i) = vec_omp(j,i)
+                  uinp(j,i) = vecp_omp(j,i)
+                  vec_omp(j,i) = conj_omp(j,i)/poli_omp(i) - field(j,i)
+                  vecp_omp(j,i)=conjp_omp(j,i)/poli_omp(i) - fieldp(j,i)
                end do
             end do
             a = 0.0d0
@@ -406,8 +421,8 @@ ccc!$OMP master
             sump = 0.0d0
             do i = 1, npole
                do j = 1, 3
-                  a = a + conj_omp(j,i)*vec(j,i)
-                  ap = ap + conjp_omp(j,i)*vecp(j,i)
+                  a = a + conj_omp(j,i)*vec_omp(j,i)
+                  ap = ap + conjp_omp(j,i)*vecp_omp(j,i)
                   sum = sum + rsd_omp(j,i)*zrsd_omp(j,i)
                   sump = sump + rsdp_omp(j,i)*zrsdp_omp(j,i)
                end do
@@ -418,16 +433,20 @@ ccc!$OMP master
                do j = 1, 3
                   uind(j,i) = uind(j,i) + a*conj_omp(j,i)
                   uinp(j,i) = uinp(j,i) + ap*conjp_omp(j,i)
-                  rsd_omp(j,i) = rsd_omp(j,i) - a*vec(j,i)
-                  rsdp_omp(j,i) = rsdp_omp(j,i) - ap*vecp(j,i)
+                  rsd_omp(j,i) = rsd_omp(j,i) - a*vec_omp(j,i)
+                  rsdp_omp(j,i) = rsdp_omp(j,i) - ap*vecp_omp(j,i)
                end do
             end do
-ccc!$OMP master
+!$OMP end master
+!$OMP barrier
+
             if (use_mlist) then
-               call uscale0b (mode)!,rsd,rsdp,zrsd,zrsdp)
+               call uscale0b1(mode)!,rsd,rsdp,zrsd,zrsdp)
             else
                call uscale0a (mode)!,rsd,rsdp,zrsd,zrsdp)
             end if
+!$OMP barrier
+!$OMP master
 
             b = 0.0d0
             bp = 0.0d0
@@ -464,11 +483,20 @@ c
                end if
                write (iout,20)  iter,eps
    20          format (i8,7x,f16.10)
-            end if
+            end if 
+
             if (eps .lt. poleps)  done = .true.
             if (eps .gt. epsold)  done = .true.
             if (iter .ge. politer)  done = .true.
+            done_omp = done
+           
+!$OMP end master
+!$OMP barrier
+
          end do
+c!$OMP barrier
+
+c         print*, "I'm here from id", omp_get_thread_num()
 
 c
 c     perform deallocation of some local arrays
@@ -480,11 +508,12 @@ c         deallocate (zrsd)
 c         deallocate (zrsdp)
 c         deallocate (conj)
 c         deallocate (conjp)
-         deallocate (vec)
-         deallocate (vecp)
+c         deallocate (vec)
+c         deallocate (vecp)
 c
 c     print the results from the conjugate gradient iteration
 c
+!$OMP master
          if (debug) then
             write (iout,30)  iter,eps
    30       format (/,' Induced Dipoles :',6x,'Iterations',i5,

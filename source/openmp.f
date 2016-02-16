@@ -50,7 +50,9 @@ c
       real*8, allocatable :: zrsdt_omp(:,:)
       real*8, allocatable :: conjp_omp(:,:)
       real*8, allocatable :: conj_omp(:,:)
-
+      real*8, allocatable :: vec_omp(:,:)
+      real*8, allocatable :: vecp_omp(:,:)
+      logical done_omp
       save
 !$OMP threadprivate(th_id)
 !$OMP threadprivate(nlocal)
