@@ -352,9 +352,6 @@ c
                end do
             end do
 !$OMP end do
-
-
-c!$OMP master
             
             if (use_ewald) then
                call ufield0c1 (field,fieldp)
@@ -363,10 +360,10 @@ c!$OMP master
             else
                call ufield0a (field,fieldp)
             end if
+
 !$OMP master
             field_omp = field
-            fieldp_omp = fieldp
-            
+            fieldp_omp = fieldp            
 !$OMP end master
 !$OMP barrier
 
@@ -481,7 +478,6 @@ c
             if (eps .gt. epsold)  done = .true.
             if (iter .ge. politer)  done = .true.
             done_omp = done
-           
 !$OMP end master
 !$OMP barrier
 
@@ -490,16 +486,17 @@ c
 c
 c     print the results from the conjugate gradient iteration
 c
-!$OMP master
+!$OMP single
          if (debug) then
             write (iout,30)  iter,eps
    30       format (/,' Induced Dipoles :',6x,'Iterations',i5,
      &                 6x,'RMS Change',f15.10)
          end if
+!$OMP end single
 c
 c     terminate the calculation if dipoles failed to converge
 c
-
+!$OMP master
          if (iter.ge.maxiter .or. eps.gt.epsold) then
             write (iout,40)
    40       format (/,' INDUCE  --  Warning, Induced Dipoles',
@@ -507,10 +504,7 @@ c
             call prterr
             call fatal
          end if
-
 !$OMP end master
-!$OMP barrier
-!$OMP flush
       end if
 
 
