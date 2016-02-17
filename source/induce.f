@@ -210,11 +210,9 @@ c      real*8, allocatable :: vec(:,:)
 c      real*8, allocatable :: vecp(:,:)
 c      real*8, allocatable :: field_tmp(:,:)
 c      real*8, allocatable :: fieldp_tmp(:,:)
-c!$    integer omp_get_thread_num
-c!$    integer omp_get_num_procs
       logical done
       character*6 mode
-c      integer proc
+
 c
 c
 c     zero out the induced dipoles at each site
@@ -375,8 +373,6 @@ c         zrsdp = zrsdp_omp
 c         conj = conj_omp
 c         conjp = conjp_omp
          done_omp = .false.
-c         proc = omp_get_num_procs ()
-c         print*, "proc", proc
 
 !$OMP end master
 !$OMP barrier
@@ -469,8 +465,6 @@ c
             else
                call uscale0a (mode)!,rsd,rsdp,zrsd,zrsdp)
             end if
-!$OMP barrier
-c!$OMP master
 
             b_omp = 0.0d0
             bp_omp = 0.0d0
@@ -484,7 +478,7 @@ c!$OMP master
             end do
 !$OMP end DO
 
-!$OMP barrier
+
 !$OMP single
 
             if (sum_omp .ne. 0.0d0)  b_omp = b_omp / sum_omp
@@ -494,7 +488,8 @@ c!$OMP master
 
             epsd_omp = 0.0d0
             epsp_omp = 0.0d0
-!$OMP DO reduction(+:epsd_omp,epsp_omp)
+
+!$OMP DO schedule(guided) reduction(+:epsd_omp,epsp_omp)
             do i = 1, npole
                do j = 1, 3
                   conj_omp(j,i) = zrsd_omp(j,i) + b_omp*conj_omp(j,i)
@@ -534,9 +529,7 @@ c
 !$OMP barrier
 
          end do
-c!$OMP barrier
 
-c         print*, "I'm here from id", omp_get_thread_num()
 
 c
 c     perform deallocation of some local arrays
@@ -562,7 +555,7 @@ c
 c
 c     terminate the calculation if dipoles failed to converge
 c
-ccc!$OMP master
+
          if (iter.ge.maxiter .or. eps.gt.epsold) then
             write (iout,40)
    40       format (/,' INDUCE  --  Warning, Induced Dipoles',
@@ -570,10 +563,6 @@ ccc!$OMP master
             call prterr
             call fatal
          end if
-ccc!$OMP end master
-
-c         uind = uind_omp
-c         uinp = uinp_omp   
 
 !$OMP end master
 !$OMP barrier
