@@ -1,5 +1,6 @@
 c
 c
+c
 c     #############################################################
 c     ##  COPYRIGHT (C) 1999 by Pengyu Ren & Jay William Ponder  ##
 c     ##                   All Rights Reserved                   ##
@@ -209,11 +210,11 @@ c      real*8, allocatable :: vec(:,:)
 c      real*8, allocatable :: vecp(:,:)
 c      real*8, allocatable :: field_tmp(:,:)
 c      real*8, allocatable :: fieldp_tmp(:,:)
-!$    integer omp_get_thread_num
-!$    integer omp_get_num_procs
+c!$    integer omp_get_thread_num
+c!$    integer omp_get_num_procs
       logical done
       character*6 mode
-      integer proc
+c      integer proc
 c
 c
 c     zero out the induced dipoles at each site
@@ -383,22 +384,29 @@ c         print*, "proc", proc
 c
 c     conjugate gradient iteration of the mutual induced dipoles
 c
-ccc!$OMP master
+
          do while (.not. done_omp)
-!$OMP master
+c!$OMP master
+!$OMP single
             iter = iter + 1
 c            print*, "iter", iter
+c!$OMP end master
+!$OMP end single nowait
 
-
+!$OMP DO schedule(guided)
             do i = 1, npole
                do j = 1, 3
                   vec_omp(j,i) = uind(j,i)
-                  vecp_omp(j,i) = uinp(j,i)
+                  vecp_omp(j,i) = uinp(j,i)  
                   uind(j,i) = conj_omp(j,i)
                   uinp(j,i) = conjp_omp(j,i)
                end do
             end do
+!$OMP end do
 
+
+!$OMP master
+            
             if (use_ewald) then
                call ufield0c (field,fieldp)
             else if (use_mlist) then
@@ -437,6 +445,10 @@ c            print*, "iter", iter
                   rsdp_omp(j,i) = rsdp_omp(j,i) - ap*vecp_omp(j,i)
                end do
             end do
+
+c            uind = uind_omp
+c            uinp = uinp_omp
+
 !$OMP end master
 !$OMP barrier
 
@@ -450,12 +462,17 @@ c            print*, "iter", iter
 
             b = 0.0d0
             bp = 0.0d0
+c!$OMP DO 
             do i = 1, npole
                do j = 1, 3
                   b = b + rsd_omp(j,i)*zrsd_omp(j,i)
                   bp = bp + rsdp_omp(j,i)*zrsdp_omp(j,i)
                end do
             end do
+c!$OMP end DO
+c!$OMP barrier
+c!$OMP master
+
             if (sum .ne. 0.0d0)  b = b / sum
             if (sump .ne. 0.0d0)  bp = bp / sump
             epsd = 0.0d0
@@ -531,6 +548,9 @@ ccc!$OMP master
             call fatal
          end if
 ccc!$OMP end master
+
+c         uind = uind_omp
+c         uinp = uinp_omp   
 
 !$OMP end master
 !$OMP barrier
