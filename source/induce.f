@@ -386,11 +386,8 @@ c     conjugate gradient iteration of the mutual induced dipoles
 c
 
          do while (.not. done_omp)
-c!$OMP master
 !$OMP single
             iter = iter + 1
-c            print*, "iter", iter
-c!$OMP end master
 !$OMP end single nowait
 
 !$OMP DO schedule(guided)
@@ -414,15 +411,26 @@ c!$OMP end master
             else
                call ufield0a (field,fieldp)
             end if
+            field_omp = field
+            fieldp_omp = fieldp
+            
+!$OMP end master
+!$OMP barrier
 
+!$OMP DO schedule(guided)
             do i = 1, npole
                do j = 1, 3
                   uind(j,i) = vec_omp(j,i)
                   uinp(j,i) = vecp_omp(j,i)
-                  vec_omp(j,i) = conj_omp(j,i)/poli_omp(i) - field(j,i)
-                  vecp_omp(j,i)=conjp_omp(j,i)/poli_omp(i) - fieldp(j,i)
+                  vec_omp(j,i) = conj_omp(j,i)/poli_omp(i) 
+     &                 - field_omp(j,i)
+                  vecp_omp(j,i)=conjp_omp(j,i)/poli_omp(i) 
+     &                 - fieldp_omp(j,i)
                end do
             end do
+!$OMP end do
+
+!$OMP master
             a = 0.0d0
             ap = 0.0d0
             sum = 0.0d0
@@ -437,6 +445,7 @@ c!$OMP end master
             end do
             if (a .ne. 0.0d0)  a = sum / a
             if (ap .ne. 0.0d0)  ap = sump / ap
+
             do i = 1, npole
                do j = 1, 3
                   uind(j,i) = uind(j,i) + a*conj_omp(j,i)
@@ -445,9 +454,6 @@ c!$OMP end master
                   rsdp_omp(j,i) = rsdp_omp(j,i) - ap*vecp_omp(j,i)
                end do
             end do
-
-c            uind = uind_omp
-c            uinp = uinp_omp
 
 !$OMP end master
 !$OMP barrier
