@@ -255,8 +255,8 @@ c
          do j = 1, 3
             udir_omp(j,i) = polarity(i) * field_omp(j,i)
             udirp_omp(j,i) = polarity(i) * fieldp_omp(j,i)
-            uind_omp(j,i) = udir_omp(j,i)
-            uinp_omp(j,i) = udirp_omp(j,i)
+            uind(j,i) = udir_omp(j,i)
+            uinp(j,i) = udirp_omp(j,i)
          end do
       end do
 !$OMP END DO 
@@ -290,8 +290,8 @@ C$$$                  do k = 1, nualt-1
 C$$$                     udsum = udsum + bpred(k)*udalt(k,j,i)
 C$$$                     upsum = upsum + bpredp(k)*upalt(k,j,i)
 C$$$                  end do
-C$$$c                  uind_omp(j,i) = udsum
-C$$$c                  uinp_omp(j,i) = upsum
+C$$$c                  uind(j,i) = udsum
+C$$$c                  uinp(j,i) = upsum
 C$$$                  uind(j,i) = udsum
 C$$$                  uinp(j,i) = upsum
 C$$$               end do
@@ -330,9 +330,9 @@ c
          do i = 1, npole
             poli_omp(i) = max(polmin,polarity(i))
             do j = 1, 3
-               rsd_omp(j,i) = (udir_omp(j,i)-uind_omp(j,i))/poli_omp(i)
+               rsd_omp(j,i) = (udir_omp(j,i)-uind(j,i))/poli_omp(i)
      &                       + field_omp(j,i)
-               rsdp_omp(j,i) =(udirp_omp(j,i)-uinp_omp(j,i))/poli_omp(i)
+               rsdp_omp(j,i) =(udirp_omp(j,i)-uinp(j,i))/poli_omp(i)
      &                       + fieldp_omp(j,i)
             end do
          end do
@@ -360,9 +360,9 @@ c            call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
          end do
 !$OMP end DO
 
-!$OMP master         
-         uind = uind_omp
-         uinp = uinp_omp
+c!$OMP master         
+c         uind = uind_omp
+c         uinp = uinp_omp
 c         udir = udir_omp
 c         udirp = udirp_omp
 c         rsd = rsd_omp
@@ -374,8 +374,8 @@ c         conj = conj_omp
 c         conjp = conjp_omp
          done_omp = .false.
 
-!$OMP end master
-!$OMP barrier
+c!$OMP end master
+c!$OMP barrier
 
 c
 c     conjugate gradient iteration of the mutual induced dipoles
@@ -1785,9 +1785,9 @@ c
       term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
       do i = 1, npole
          do j = 1, 3
-            field(j,i) = field(j,i) + term*uind_omp(j,i) + 
+            field(j,i) = field(j,i) + term*uind(j,i) + 
      &           fieldt_omp(j,i)
-            fieldp(j,i) = fieldp(j,i) + term*uinp_omp(j,i)+ 
+            fieldp(j,i) = fieldp(j,i) + term*uinp(j,i)+ 
      &           fieldtp_omp(j,i)
             field_omp(j,i) = field(j,i)
             fieldp_omp(j,i) = fieldp(j,i)
@@ -1808,8 +1808,8 @@ c
          end do
          do i = 1, npole
             do j = 1, 3
-               ucell(j) = ucell(j) + uind_omp(j,i)
-               ucellp(j) = ucellp(j) + uinp_omp(j,i)
+               ucell(j) = ucell(j) + uind(j,i)
+               ucellp(j) = ucellp(j) + uinp(j,i)
             end do
          end do
          term = (4.0d0/3.0d0) * pi/volbox
@@ -2927,10 +2927,10 @@ c
       end do
       do i = 1, npole
          do k = 1, 3
-            fuind(k,i) = a(k,1)*uind_omp(1,i) + a(k,2)*uind_omp(2,i)
-     &                      + a(k,3)*uind_omp(3,i)
-            fuinp(k,i) = a(k,1)*uinp_omp(1,i) + a(k,2)*uinp_omp(2,i)
-     &                      + a(k,3)*uinp_omp(3,i)
+            fuind(k,i) = a(k,1)*uind(1,i) + a(k,2)*uind(2,i)
+     &                      + a(k,3)*uind(3,i)
+            fuinp(k,i) = a(k,1)*uinp(1,i) + a(k,2)*uinp(2,i)
+     &                      + a(k,3)*uinp(3,i)
          end do
       end do
 c
@@ -3521,30 +3521,30 @@ c
       do m = 1, ntpair
          i = tindex(1,m)
          k = tindex(2,m)
-         fimd(1) = tdipdip(1,m)*uind_omp(1,k) + 
-     &        tdipdip(2,m)*uind_omp(2,k) + tdipdip(3,m)*uind_omp(3,k)
-         fimd(2) = tdipdip(2,m)*uind_omp(1,k) + 
-     &        tdipdip(4,m)*uind_omp(2,k) + tdipdip(5,m)*uind_omp(3,k)
-         fimd(3) = tdipdip(3,m)*uind_omp(1,k) + 
-     &        tdipdip(5,m)*uind_omp(2,k) + tdipdip(6,m)*uind_omp(3,k)
-         fkmd(1) = tdipdip(1,m)*uind_omp(1,i) +
-     &        tdipdip(2,m)*uind_omp(2,i) + tdipdip(3,m)*uind_omp(3,i)
-         fkmd(2) = tdipdip(2,m)*uind_omp(1,i) + 
-     &        tdipdip(4,m)*uind_omp(2,i) + tdipdip(5,m)*uind_omp(3,i)
-         fkmd(3) = tdipdip(3,m)*uind_omp(1,i) + 
-     &        tdipdip(5,m)*uind_omp(2,i)  + tdipdip(6,m)*uind_omp(3,i)
-         fimp(1) = tdipdip(1,m)*uinp_omp(1,k) + 
-     &        tdipdip(2,m)*uinp_omp(2,k) + tdipdip(3,m)*uinp_omp(3,k)
-         fimp(2) = tdipdip(2,m)*uinp_omp(1,k) + 
-     &        tdipdip(4,m)*uinp_omp(2,k) + tdipdip(5,m)*uinp_omp(3,k)
-         fimp(3) = tdipdip(3,m)*uinp_omp(1,k) + 
-     &        tdipdip(5,m)*uinp_omp(2,k) + tdipdip(6,m)*uinp_omp(3,k)
-         fkmp(1) = tdipdip(1,m)*uinp_omp(1,i) + 
-     &        tdipdip(2,m)*uinp_omp(2,i) + tdipdip(3,m)*uinp_omp(3,i)
-         fkmp(2) = tdipdip(2,m)*uinp_omp(1,i) + 
-     &        tdipdip(4,m)*uinp_omp(2,i) + tdipdip(5,m)*uinp_omp(3,i)
-         fkmp(3) = tdipdip(3,m)*uinp_omp(1,i) + 
-     &        tdipdip(5,m)*uinp_omp(2,i) + tdipdip(6,m)*uinp_omp(3,i)
+         fimd(1) = tdipdip(1,m)*uind(1,k) + 
+     &        tdipdip(2,m)*uind(2,k) + tdipdip(3,m)*uind(3,k)
+         fimd(2) = tdipdip(2,m)*uind(1,k) + 
+     &        tdipdip(4,m)*uind(2,k) + tdipdip(5,m)*uind(3,k)
+         fimd(3) = tdipdip(3,m)*uind(1,k) + 
+     &        tdipdip(5,m)*uind(2,k) + tdipdip(6,m)*uind(3,k)
+         fkmd(1) = tdipdip(1,m)*uind(1,i) +
+     &        tdipdip(2,m)*uind(2,i) + tdipdip(3,m)*uind(3,i)
+         fkmd(2) = tdipdip(2,m)*uind(1,i) + 
+     &        tdipdip(4,m)*uind(2,i) + tdipdip(5,m)*uind(3,i)
+         fkmd(3) = tdipdip(3,m)*uind(1,i) + 
+     &        tdipdip(5,m)*uind(2,i)  + tdipdip(6,m)*uind(3,i)
+         fimp(1) = tdipdip(1,m)*uinp(1,k) + 
+     &        tdipdip(2,m)*uinp(2,k) + tdipdip(3,m)*uinp(3,k)
+         fimp(2) = tdipdip(2,m)*uinp(1,k) + 
+     &        tdipdip(4,m)*uinp(2,k) + tdipdip(5,m)*uinp(3,k)
+         fimp(3) = tdipdip(3,m)*uinp(1,k) + 
+     &        tdipdip(5,m)*uinp(2,k) + tdipdip(6,m)*uinp(3,k)
+         fkmp(1) = tdipdip(1,m)*uinp(1,i) + 
+     &        tdipdip(2,m)*uinp(2,i) + tdipdip(3,m)*uinp(3,i)
+         fkmp(2) = tdipdip(2,m)*uinp(1,i) + 
+     &        tdipdip(4,m)*uinp(2,i) + tdipdip(5,m)*uinp(3,i)
+         fkmp(3) = tdipdip(3,m)*uinp(1,i) + 
+     &        tdipdip(5,m)*uinp(2,i) + tdipdip(6,m)*uinp(3,i)
 c
 c     increment the field at each site due to this interaction
 c
