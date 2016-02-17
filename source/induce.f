@@ -193,8 +193,8 @@ c
       real*8 eps,epsold
       real*8 epsd,epsp
       real*8 udsum,upsum
-      real*8 a,ap,b,bp
-      real*8 sum,sump
+c      real*8 b,bp !,a,ap
+c      real*8 sum,sump
 c      real*8, allocatable :: poli(:)
       real*8, allocatable :: field(:,:)
       real*8, allocatable :: fieldp(:,:)
@@ -430,7 +430,6 @@ c
             end do
 !$OMP end do
 
-c!$OMP master
             a_omp= 0.0d0
             ap_omp= 0.0d0
             sum_omp = 0.0d0
@@ -446,12 +445,14 @@ c!$OMP master
                end do
             end do
 !$OMP end DO
+
 !$OMP single
 
             if (a_omp.ne. 0.0d0)  a_omp= sum_omp / a_omp
             if (ap_omp.ne. 0.0d0)  ap_omp= sump_omp / ap_omp
 !$OMP end single 
 !$OMP barrier
+
 !$OMP DO schedule(guided)
             do i = 1, npole
                do j = 1, 3
@@ -462,12 +463,6 @@ c!$OMP master
                end do
             end do
 !$OMP end do
-!$OMP master
-            sum = sum_omp
-            sump = sump_omp
-
-!$OMP end master
-!$OMP barrier
 
             if (use_mlist) then
                call uscale0b1(mode)!,rsd,rsdp,zrsd,zrsdp)
@@ -475,33 +470,44 @@ c!$OMP master
                call uscale0a (mode)!,rsd,rsdp,zrsd,zrsdp)
             end if
 !$OMP barrier
-!$OMP master
-
-            b = 0.0d0
-            bp = 0.0d0
-c!$OMP DO 
-            do i = 1, npole
-               do j = 1, 3
-                  b = b + rsd_omp(j,i)*zrsd_omp(j,i)
-                  bp = bp + rsdp_omp(j,i)*zrsdp_omp(j,i)
-               end do
-            end do
-c!$OMP end DO
-c!$OMP barrier
 c!$OMP master
 
-            if (sum .ne. 0.0d0)  b = b / sum
-            if (sump .ne. 0.0d0)  bp = bp / sump
-            epsd = 0.0d0
-            epsp = 0.0d0
+            b_omp = 0.0d0
+            bp_omp = 0.0d0
+
+!$OMP DO schedule(guided) reduction(+:b_omp,bp_omp)
             do i = 1, npole
                do j = 1, 3
-                  conj_omp(j,i) = zrsd_omp(j,i) + b*conj_omp(j,i)
-                  conjp_omp(j,i) = zrsdp_omp(j,i) + bp*conjp_omp(j,i)
-                  epsd = epsd + rsd_omp(j,i)*rsd_omp(j,i)
-                  epsp = epsp + rsdp_omp(j,i)*rsdp_omp(j,i)
+                  b_omp = b_omp + rsd_omp(j,i)*zrsd_omp(j,i)
+                  bp_omp = bp_omp + rsdp_omp(j,i)*zrsdp_omp(j,i)
                end do
             end do
+!$OMP end DO
+
+!$OMP barrier
+!$OMP single
+
+            if (sum_omp .ne. 0.0d0)  b_omp = b_omp / sum_omp
+            if (sump_omp .ne. 0.0d0)  bp_omp = bp_omp / sump_omp
+!$OMP end single
+!$OMP barrier
+
+            epsd_omp = 0.0d0
+            epsp_omp = 0.0d0
+!$OMP DO reduction(+:epsd_omp,epsp_omp)
+            do i = 1, npole
+               do j = 1, 3
+                  conj_omp(j,i) = zrsd_omp(j,i) + b_omp*conj_omp(j,i)
+                  conjp_omp(j,i) = zrsdp_omp(j,i) +bp_omp*conjp_omp(j,i)
+                  epsd_omp = epsd_omp + rsd_omp(j,i)*rsd_omp(j,i)
+                  epsp_omp = epsp_omp + rsdp_omp(j,i)*rsdp_omp(j,i)
+               end do
+            end do
+!$OMP end do
+
+!$OMP master
+            epsd = epsd_omp
+            epsp = epsp_omp
 c
 c     check the convergence of the mutual induced dipoles
 c

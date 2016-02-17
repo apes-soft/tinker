@@ -53,7 +53,8 @@ c
       real*8, allocatable :: vec_omp(:,:)
       real*8, allocatable :: vecp_omp(:,:)
       logical done_omp
-      real*8 a_omp,ap_omp,sum_omp,sump_omp      
+      real*8 a_omp,ap_omp,sum_omp,sump_omp,b_omp,bp_omp
+      real*8 epsd_omp,epsp_omp
       save
 !$OMP threadprivate(th_id)
 !$OMP threadprivate(nlocal)
