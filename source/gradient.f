@@ -113,8 +113,6 @@ c         allocate(vscale_th(n))
       field_omp = 0.0d0
       fieldp_omp = 0.0d0
 
-      if(.not. allocated(uind_omp)) allocate(uind_omp(3,npole))
-      if(.not. allocated(uinp_omp)) allocate(uinp_omp(3,npole))
       if(.not. allocated(udir_omp)) allocate(udir_omp(3,npole))
       if(.not. allocated(udirp_omp)) allocate(udirp_omp(3,npole))
       
@@ -228,8 +226,6 @@ c
             dem2(j,i) = 0.0d0
             dep1(j,i) = 0.0d0
             dep2(j,i) = 0.0d0
-            uind_omp(j,i) = 0.0d0
-            uinp_omp(j,i) = 0.0d0
             udir_omp(j,i) = 0.0d0
             udirp_omp(j,i) = 0.0d0
             rsd_omp(j,i) = 0.0d0
