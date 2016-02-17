@@ -193,23 +193,8 @@ c
       real*8 eps,epsold
       real*8 epsd,epsp
       real*8 udsum,upsum
-c      real*8 b,bp !,a,ap
-c      real*8 sum,sump
-c      real*8, allocatable :: poli(:)
       real*8, allocatable :: field(:,:)
       real*8, allocatable :: fieldp(:,:)
-c      real*8, allocatable :: udir(:,:)
-c      real*8, allocatable :: udirp(:,:)
-c      real*8, allocatable :: rsd(:,:)
-c      real*8, allocatable :: rsdp(:,:)
-c      real*8, allocatable :: zrsd(:,:)
-c      real*8, allocatable :: zrsdp(:,:)
-c      real*8, allocatable :: conj(:,:)
-c      real*8, allocatable :: conjp(:,:)
-c      real*8, allocatable :: vec(:,:)
-c      real*8, allocatable :: vecp(:,:)
-c      real*8, allocatable :: field_tmp(:,:)
-c      real*8, allocatable :: fieldp_tmp(:,:)
       logical done
       character*6 mode
 
@@ -229,10 +214,6 @@ c     perform dynamic allocation of some local arrays
 c
       allocate (field(3,npole))
       allocate (fieldp(3,npole))
-c      allocate (udir(3,npole))
-c      allocate (udirp(3,npole))
-c      allocate (field_tmp(3,npole))
-c      allocate (fieldp_tmp(3,npole))
 
 c
 c     get the electrostatic field due to permanent multipoles
@@ -299,18 +280,8 @@ C$$$            end do
 C$$$!$OMP end master
 C$$$!$OMP barrier
 C$$$         end if
-c
-c     perform dynamic allocation of some local arrays
-c
-c         allocate (poli(npole))
-c         allocate (rsd(3,npole))
-c         allocate (rsdp(3,npole))
-c         allocate (zrsd(3,npole))
-c         allocate (zrsdp(3,npole))
-c         allocate (conj(3,npole))
-c         allocate (conjp(3,npole))
-c         allocate (vec(3,npole))
-c         allocate (vecp(3,npole))
+
+
 c
 c     get the electrostatic field due to induced dipoles
 c
@@ -360,22 +331,7 @@ c            call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
          end do
 !$OMP end DO
 
-c!$OMP master         
-c         uind = uind_omp
-c         uinp = uinp_omp
-c         udir = udir_omp
-c         udirp = udirp_omp
-c         rsd = rsd_omp
-c         poli = poli_omp
-c         rsdp = rsdp_omp
-c         zrsd = zrsd_omp
-c         zrsdp = zrsdp_omp
-c         conj = conj_omp
-c         conjp = conjp_omp
          done_omp = .false.
-
-c!$OMP end master
-c!$OMP barrier
 
 c
 c     conjugate gradient iteration of the mutual induced dipoles
@@ -530,19 +486,6 @@ c
 
          end do
 
-
-c
-c     perform deallocation of some local arrays
-c
-c         deallocate (poli)
-c         deallocate (rsd)
-c         deallocate (rsdp)
-c         deallocate (zrsd)
-c         deallocate (zrsdp)
-c         deallocate (conj)
-c         deallocate (conjp)
-c         deallocate (vec)
-c         deallocate (vecp)
 c
 c     print the results from the conjugate gradient iteration
 c
@@ -575,10 +518,6 @@ c     perform deallocation of some local arrays
 c
       deallocate (field)
       deallocate (fieldp)
-c      deallocate (field_tmp)
-c      deallocate (fieldp_tmp)
-c      deallocate (udir)
-c      deallocate (udirp)
       return
       end
 c
