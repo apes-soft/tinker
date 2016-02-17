@@ -354,15 +354,16 @@ c
 !$OMP end do
 
 
-!$OMP master
+c!$OMP master
             
             if (use_ewald) then
-               call ufield0c (field,fieldp)
+               call ufield0c1 (field,fieldp)
             else if (use_mlist) then
                call ufield0b (field,fieldp)
             else
                call ufield0a (field,fieldp)
             end if
+!$OMP master
             field_omp = field
             fieldp_omp = fieldp
             
