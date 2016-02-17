@@ -430,30 +430,41 @@ c
             end do
 !$OMP end do
 
-!$OMP master
-            a = 0.0d0
-            ap = 0.0d0
-            sum = 0.0d0
-            sump = 0.0d0
-            do i = 1, npole
-               do j = 1, 3
-                  a = a + conj_omp(j,i)*vec_omp(j,i)
-                  ap = ap + conjp_omp(j,i)*vecp_omp(j,i)
-                  sum = sum + rsd_omp(j,i)*zrsd_omp(j,i)
-                  sump = sump + rsdp_omp(j,i)*zrsdp_omp(j,i)
-               end do
-            end do
-            if (a .ne. 0.0d0)  a = sum / a
-            if (ap .ne. 0.0d0)  ap = sump / ap
+c!$OMP master
+            a_omp= 0.0d0
+            ap_omp= 0.0d0
+            sum_omp = 0.0d0
+            sump_omp = 0.0d0
 
+!$OMP DO schedule(guided) reduction(+:a_omp,ap_omp,sum_omp,sump_omp)
             do i = 1, npole
                do j = 1, 3
-                  uind(j,i) = uind(j,i) + a*conj_omp(j,i)
-                  uinp(j,i) = uinp(j,i) + ap*conjp_omp(j,i)
-                  rsd_omp(j,i) = rsd_omp(j,i) - a*vec_omp(j,i)
-                  rsdp_omp(j,i) = rsdp_omp(j,i) - ap*vecp_omp(j,i)
+                  a_omp= a_omp+ conj_omp(j,i)*vec_omp(j,i)
+                  ap_omp= ap_omp+ conjp_omp(j,i)*vecp_omp(j,i)
+                  sum_omp = sum_omp + rsd_omp(j,i)*zrsd_omp(j,i)
+                  sump_omp = sump_omp + rsdp_omp(j,i)*zrsdp_omp(j,i)
                end do
             end do
+!$OMP end DO
+!$OMP single
+
+            if (a_omp.ne. 0.0d0)  a_omp= sum_omp / a_omp
+            if (ap_omp.ne. 0.0d0)  ap_omp= sump_omp / ap_omp
+!$OMP end single 
+!$OMP barrier
+!$OMP DO schedule(guided)
+            do i = 1, npole
+               do j = 1, 3
+                  uind(j,i) = uind(j,i) + a_omp*conj_omp(j,i)
+                  uinp(j,i) = uinp(j,i) + ap_omp*conjp_omp(j,i)
+                  rsd_omp(j,i) = rsd_omp(j,i) - a_omp*vec_omp(j,i)
+                  rsdp_omp(j,i) = rsdp_omp(j,i) - ap_omp*vecp_omp(j,i)
+               end do
+            end do
+!$OMP end do
+!$OMP master
+            sum = sum_omp
+            sump = sump_omp
 
 !$OMP end master
 !$OMP barrier
