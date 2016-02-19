@@ -2845,49 +2845,51 @@ c
 c     perform dynamic allocation of some local arrays
 c
 !$OMP master
-      allocate (fuind(3,npole))
-      allocate (fuinp(3,npole))
+c      allocate (fuind(3,npole))
+c      allocate (fuinp(3,npole))
       allocate (fdip_phi1(10,npole))
       allocate (fdip_phi2(10,npole))
       allocate (fdip_sum_phi(20,npole))
       allocate (dipfield1(3,npole))
       allocate (dipfield2(3,npole))
+!$OMP end master
 c
 c     convert Cartesian dipoles to fractional coordinates
 c
 
-c!$OMP master
       do i = 1, 3
          a(1,i) = dble(nfft1) * recip(i,1)
          a(2,i) = dble(nfft2) * recip(i,2)
          a(3,i) = dble(nfft3) * recip(i,3)
       end do
+
+!$OMP DO 
       do i = 1, npole
          do k = 1, 3
-            fuind(k,i) = a(k,1)*uind(1,i) + a(k,2)*uind(2,i)
+            fuind_omp(k,i) = a(k,1)*uind(1,i) + a(k,2)*uind(2,i)
      &                      + a(k,3)*uind(3,i)
-            fuinp(k,i) = a(k,1)*uinp(1,i) + a(k,2)*uinp(2,i)
+            fuinp_omp(k,i) = a(k,1)*uinp(1,i) + a(k,2)*uinp(2,i)
      &                      + a(k,3)*uinp(3,i)
          end do
       end do
+!$OMP end DO 
 c
 c     assign PME grid and perform 3-D FFT forward transform
 c
-      fuinp_omp = fuinp
-      fuind_omp = fuind
+      call grid_uind1 !(fuind,fuinp)
+
+!$OMP master 
+!single
+      call fftfront
 !$OMP end master
 !$OMP barrier
 
-
-      call grid_uind1 !(fuind,fuinp)
-
-!$OMP master
-      fuind = fuind_omp
-      fuinp = fuinp_omp
-      call fftfront
+c!$OMP end single
 c
 c     complete the transformation of the PME grid
 c
+
+!$OMP DO collapse(3)
       do k = 1, nfft3
          do j = 1, nfft2
             do i = 1, nfft1
@@ -2897,6 +2899,9 @@ c
             end do
          end do
       end do
+!$OMP end DO
+
+!$OMP master
 c
 c     perform 3-D FFT backward transform and get field
 c
@@ -2934,8 +2939,8 @@ c!$OMP master
 c
 c     perform deallocation of some local arrays
 c
-      deallocate (fuind)
-      deallocate (fuinp)
+c      deallocate (fuind)
+c      deallocate (fuinp)
       deallocate (fdip_phi1)
       deallocate (fdip_phi2)
       deallocate (fdip_sum_phi)
