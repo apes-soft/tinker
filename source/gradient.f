@@ -131,6 +131,9 @@ c         allocate(vscale_th(n))
       if(.not. allocated(conj_omp)) allocate(conj_omp(3,npole))
       if(.not. allocated(conjp_omp)) allocate(conjp_omp(3,npole))
 
+      if(.not. allocated(fuind_omp)) allocate(fuind_omp(3,npole))
+      if(.not. allocated(fuinp_omp)) allocate(fuinp_omp(3,npole))
+
       if(.not. allocated(offset_omp)) allocate(offset_omp(0:nthread-1))
       
 
@@ -238,6 +241,8 @@ c
             conjp_omp(j,i) = 0.0d0
             vec_omp(j,i) = 0.0d0
             vecp_omp(j,i) = 0.0d0
+            fuind_omp(j,i) = 0.0d0
+            fuinp_omp(j,i) = 0.0d0
          end do
          xred_th(i) = 0.0d0
          yred_th(i) = 0.0d0

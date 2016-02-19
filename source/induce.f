@@ -1697,14 +1697,14 @@ c
 c
 c     get the reciprocal space part of the electrostatic field
 c
-!$OMP master
+c!$OMP master
       call umutual11 (field,fieldp)
 c
 c     get the real space portion of the electrostatic field
 c
-!$OMP end master
-!$OMP barrier
-!$OMP flush
+c!$OMP end master
+c!$OMP barrier
+c!$OMP flush
       if (use_mlist) then
          call umutual2b1 
 c(field,fieldp)
@@ -2844,6 +2844,7 @@ c
 c
 c     perform dynamic allocation of some local arrays
 c
+!$OMP master
       allocate (fuind(3,npole))
       allocate (fuinp(3,npole))
       allocate (fdip_phi1(10,npole))
@@ -2854,6 +2855,8 @@ c
 c
 c     convert Cartesian dipoles to fractional coordinates
 c
+
+c!$OMP master
       do i = 1, 3
          a(1,i) = dble(nfft1) * recip(i,1)
          a(2,i) = dble(nfft2) * recip(i,2)
@@ -2870,7 +2873,17 @@ c
 c
 c     assign PME grid and perform 3-D FFT forward transform
 c
-      call grid_uind (fuind,fuinp)
+      fuinp_omp = fuinp
+      fuind_omp = fuind
+!$OMP end master
+!$OMP barrier
+
+
+      call grid_uind1 !(fuind,fuinp)
+
+!$OMP master
+      fuind = fuind_omp
+      fuinp = fuinp_omp
       call fftfront
 c
 c     complete the transformation of the PME grid
@@ -2917,9 +2930,7 @@ c!$OMP master
             fieldp(k,i) = fieldp(k,i) - dipfield2(k,i)
          end do
       end do
-c!$OMP end master
-c!$OMP barrier
-c!$OMP flush
+
 c
 c     perform deallocation of some local arrays
 c
@@ -2930,6 +2941,10 @@ c
       deallocate (fdip_sum_phi)
       deallocate (dipfield1)
       deallocate (dipfield2)
+!$OMP end master
+!$OMP barrier
+!$OMP flush
+
       return
       end
 

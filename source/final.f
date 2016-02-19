@@ -794,6 +794,9 @@ c
       if(allocated(vec_omp)) deallocate(vec_omp)
       if(allocated(vecp_omp)) deallocate(vecp_omp)
 
+      if(allocated(fuind_omp)) deallocate(fuind_omp)
+      if(allocated(fuinp_omp)) deallocate(fuinp_omp)
+
       if(allocated(dem1)) deallocate(dem1)
       if(allocated(dem2)) deallocate(dem2)
       if(allocated(dep1)) deallocate(dep1)

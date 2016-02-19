@@ -53,6 +53,8 @@ c
       logical done_omp
       real*8 a_omp,ap_omp,sum_omp,sump_omp,b_omp,bp_omp
       real*8 epsd_omp,epsp_omp
+      real*8, allocatable :: fuind_omp(:,:)
+      real*8, allocatable :: fuinp_omp(:,:)
       save
 !$OMP threadprivate(th_id)
 !$OMP threadprivate(nlocal)
