@@ -133,6 +133,16 @@ c         allocate(vscale_th(n))
 
       if(.not. allocated(fuind_omp)) allocate(fuind_omp(3,npole))
       if(.not. allocated(fuinp_omp)) allocate(fuinp_omp(3,npole))
+      if(.not. allocated(fdip_phi1_omp)) 
+     &     allocate(fdip_phi1_omp(10,npole))
+      if(.not. allocated(fdip_phi2_omp)) 
+     &     allocate(fdip_phi2_omp(10,npole))
+      if(.not. allocated(fdip_sum_phi_omp))
+     &     allocate(fdip_sum_phi_omp(20,npole))
+      if(.not. allocated(dipfield1_omp)) 
+     &     allocate(dipfield1_omp(3,npole))
+      if(.not. allocated(dipfield2_omp))
+     &     allocate(dipfield2_omp(3,npole))
 
       if(.not. allocated(offset_omp)) allocate(offset_omp(0:nthread-1))
       
@@ -219,7 +229,7 @@ c     zero out each of the first derivative components
 c
 
       
-!$OMP DO schedule(guided)
+!$OMP DO schedule(static,128)
       do i = 1, n
          do j = 1, 3
             dev(j,i) = 0.0d0
@@ -243,6 +253,8 @@ c
             vecp_omp(j,i) = 0.0d0
             fuind_omp(j,i) = 0.0d0
             fuinp_omp(j,i) = 0.0d0
+            dipfield1_omp(j,i) = 0.0d0
+            dipfield2_omp(j,i) = 0.0d0
          end do
          xred_th(i) = 0.0d0
          yred_th(i) = 0.0d0

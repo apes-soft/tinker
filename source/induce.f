@@ -2829,8 +2829,8 @@ c
       real*8 a(3,3)
       real*8 field(3,*)
       real*8 fieldp(3,*)
-      real*8, allocatable :: fuind(:,:)
-      real*8, allocatable :: fuinp(:,:)
+c      real*8, allocatable :: fuind(:,:)
+c      real*8, allocatable :: fuinp(:,:)
       real*8, allocatable :: fdip_phi1(:,:)
       real*8, allocatable :: fdip_phi2(:,:)
       real*8, allocatable :: fdip_sum_phi(:,:)
@@ -2906,7 +2906,14 @@ c
 c     perform 3-D FFT backward transform and get field
 c
       call fftback
-      call fphi_uind (fdip_phi1,fdip_phi2,fdip_sum_phi)
+!$OMP end master
+!$OMP barrier
+
+      call fphi_uind1 !(fdip_phi1,fdip_phi2,fdip_sum_phi)
+!$OMP master
+
+      fdip_phi1 = fdip_phi1_omp
+      fdip_phi2 = fdip_phi2_omp
 c
 c     convert the dipole fields from fractional to Cartesian
 c
@@ -2915,20 +2922,25 @@ c
          a(i,2) = dble(nfft2) * recip(i,2)
          a(i,3) = dble(nfft3) * recip(i,3)
       end do
+
       do i = 1, npole
          do k = 1, 3
-            dipfield1(k,i) = a(k,1)*fdip_phi1(2,i)
-     &                          + a(k,2)*fdip_phi1(3,i)
-     &                          + a(k,3)*fdip_phi1(4,i)
-            dipfield2(k,i) = a(k,1)*fdip_phi2(2,i)
-     &                          + a(k,2)*fdip_phi2(3,i)
-     &                          + a(k,3)*fdip_phi2(4,i)
+            dipfield1_omp(k,i) = a(k,1)*fdip_phi1_omp(2,i)
+     &                          + a(k,2)*fdip_phi1_omp(3,i)
+     &                          + a(k,3)*fdip_phi1_omp(4,i)
+            dipfield2_omp(k,i) = a(k,1)*fdip_phi2_omp(2,i)
+     &                          + a(k,2)*fdip_phi2_omp(3,i)
+     &                          + a(k,3)*fdip_phi2_omp(4,i)
          end do
       end do
 c
 c     increment the field at each multipole site
 c
 c!$OMP master
+      
+      dipfield1 = dipfield1_omp
+      dipfield2 = dipfield2_omp
+
       do i = 1, npole
          do k = 1, 3
             field(k,i) = field(k,i) - dipfield1(k,i)

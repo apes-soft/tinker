@@ -55,6 +55,12 @@ c
       real*8 epsd_omp,epsp_omp
       real*8, allocatable :: fuind_omp(:,:)
       real*8, allocatable :: fuinp_omp(:,:)
+      real*8, allocatable :: fdip_phi1_omp(:,:)
+      real*8, allocatable :: fdip_phi2_omp(:,:)
+      real*8, allocatable :: fdip_sum_phi_omp(:,:)
+      real*8, allocatable :: dipfield1_omp(:,:)
+      real*8, allocatable :: dipfield2_omp(:,:) 
+
       save
 !$OMP threadprivate(th_id)
 !$OMP threadprivate(nlocal)

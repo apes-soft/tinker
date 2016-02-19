@@ -1086,10 +1086,11 @@ c     "fphi_uind" extracts the induced dipole potential from
 c     the particle mesh Ewald grid
 c
 c
-      subroutine fphi_uind1 (fdip_phi1,fdip_phi2,fdip_sum_phi)
+      subroutine fphi_uind1 !(fdip_phi1,fdip_phi2,fdip_sum_phi)
       use sizes
       use mpole
       use pme
+      use openmp
       implicit none
       integer i,j,k
       integer isite,iatm
@@ -1118,9 +1119,9 @@ c
       real*8 tuv101,tuv011,tuv300,tuv030
       real*8 tuv003,tuv210,tuv201,tuv120
       real*8 tuv021,tuv102,tuv012,tuv111
-      real*8 fdip_phi1(10,*)
-      real*8 fdip_phi2(10,*)
-      real*8 fdip_sum_phi(20,*)
+c      real*8 fdip_phi1(10,*)
+c      real*8 fdip_phi2(10,*)
+c      real*8 fdip_sum_phi(20,*)
 c
 c
 c     set OpenMP directives for the major loop structure
@@ -1128,7 +1129,8 @@ c
 c!$OMP PARALLEL default(private) shared(npole,ipole,
 c!$OMP& igrid,bsorder,nfft3,thetai3,nfft2,thetai2,nfft1,
 c!$OMP& thetai1,qgrid,fdip_phi1,fdip_phi2,fdip_sum_phi)
-c!$OMP DO
+
+!$OMP DO
 c
 c     extract the induced dipole field at each site
 c
@@ -1299,49 +1301,49 @@ c
             tuv012 = tuv012 + tu01*v2
             tuv111 = tuv111 + tu11*v1
          end do
-         fdip_phi1(2,isite) = tuv100_1
-         fdip_phi1(3,isite) = tuv010_1
-         fdip_phi1(4,isite) = tuv001_1
-         fdip_phi1(5,isite) = tuv200_1
-         fdip_phi1(6,isite) = tuv020_1
-         fdip_phi1(7,isite) = tuv002_1
-         fdip_phi1(8,isite) = tuv110_1
-         fdip_phi1(9,isite) = tuv101_1
-         fdip_phi1(10,isite) = tuv011_1
-         fdip_phi2(2,isite) = tuv100_2
-         fdip_phi2(3,isite) = tuv010_2
-         fdip_phi2(4,isite) = tuv001_2
-         fdip_phi2(5,isite) = tuv200_2
-         fdip_phi2(6,isite) = tuv020_2
-         fdip_phi2(7,isite) = tuv002_2
-         fdip_phi2(8,isite) = tuv110_2
-         fdip_phi2(9,isite) = tuv101_2
-         fdip_phi2(10,isite) = tuv011_2
-         fdip_sum_phi(1,isite) = tuv000
-         fdip_sum_phi(2,isite) = tuv100
-         fdip_sum_phi(3,isite) = tuv010
-         fdip_sum_phi(4,isite) = tuv001
-         fdip_sum_phi(5,isite) = tuv200
-         fdip_sum_phi(6,isite) = tuv020
-         fdip_sum_phi(7,isite) = tuv002
-         fdip_sum_phi(8,isite) = tuv110
-         fdip_sum_phi(9,isite) = tuv101
-         fdip_sum_phi(10,isite) = tuv011
-         fdip_sum_phi(11,isite) = tuv300
-         fdip_sum_phi(12,isite) = tuv030
-         fdip_sum_phi(13,isite) = tuv003
-         fdip_sum_phi(14,isite) = tuv210
-         fdip_sum_phi(15,isite) = tuv201
-         fdip_sum_phi(16,isite) = tuv120
-         fdip_sum_phi(17,isite) = tuv021
-         fdip_sum_phi(18,isite) = tuv102
-         fdip_sum_phi(19,isite) = tuv012
-         fdip_sum_phi(20,isite) = tuv111
+         fdip_phi1_omp(2,isite) = tuv100_1
+         fdip_phi1_omp(3,isite) = tuv010_1
+         fdip_phi1_omp(4,isite) = tuv001_1
+         fdip_phi1_omp(5,isite) = tuv200_1
+         fdip_phi1_omp(6,isite) = tuv020_1
+         fdip_phi1_omp(7,isite) = tuv002_1
+         fdip_phi1_omp(8,isite) = tuv110_1
+         fdip_phi1_omp(9,isite) = tuv101_1
+         fdip_phi1_omp(10,isite) = tuv011_1
+         fdip_phi2_omp(2,isite) = tuv100_2
+         fdip_phi2_omp(3,isite) = tuv010_2
+         fdip_phi2_omp(4,isite) = tuv001_2
+         fdip_phi2_omp(5,isite) = tuv200_2
+         fdip_phi2_omp(6,isite) = tuv020_2
+         fdip_phi2_omp(7,isite) = tuv002_2
+         fdip_phi2_omp(8,isite) = tuv110_2
+         fdip_phi2_omp(9,isite) = tuv101_2
+         fdip_phi2_omp(10,isite) = tuv011_2
+C$$$         fdip_sum_phi(1,isite) = tuv000
+C$$$         fdip_sum_phi(2,isite) = tuv100
+C$$$         fdip_sum_phi(3,isite) = tuv010
+C$$$         fdip_sum_phi(4,isite) = tuv001
+C$$$         fdip_sum_phi(5,isite) = tuv200
+C$$$         fdip_sum_phi(6,isite) = tuv020
+C$$$         fdip_sum_phi(7,isite) = tuv002
+C$$$         fdip_sum_phi(8,isite) = tuv110
+C$$$         fdip_sum_phi(9,isite) = tuv101
+C$$$         fdip_sum_phi(10,isite) = tuv011
+C$$$         fdip_sum_phi(11,isite) = tuv300
+C$$$         fdip_sum_phi(12,isite) = tuv030
+C$$$         fdip_sum_phi(13,isite) = tuv003
+C$$$         fdip_sum_phi(14,isite) = tuv210
+C$$$         fdip_sum_phi(15,isite) = tuv201
+C$$$         fdip_sum_phi(16,isite) = tuv120
+C$$$         fdip_sum_phi(17,isite) = tuv021
+C$$$         fdip_sum_phi(18,isite) = tuv102
+C$$$         fdip_sum_phi(19,isite) = tuv012
+C$$$         fdip_sum_phi(20,isite) = tuv111
       end do
 c
 c     end OpenMP directive for the major loop structure
 c
-c!$OMP END DO
+!$OMP END DO
 c!$OMP END PARALLEL
       return
       end
