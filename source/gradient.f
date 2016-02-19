@@ -262,6 +262,10 @@ c
 c         vscale_th(i) = 1.0d0
          iv14_th(i) = 0
          poli_omp(i) = 0
+         do j=1,10
+            fdip_phi1_omp(j,i) = 0.0d0
+            fdip_phi2_omp(j,i) = 0.0d0
+         end do
       end do
 !$OMP END DO
 

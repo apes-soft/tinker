@@ -1126,11 +1126,36 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-c!$OMP PARALLEL default(private) shared(npole,ipole,
-c!$OMP& igrid,bsorder,nfft3,thetai3,nfft2,thetai2,nfft1,
-c!$OMP& thetai1,qgrid,fdip_phi1,fdip_phi2,fdip_sum_phi)
+C$$$!$OMP PARALLEL default(none) shared(npole,ipole,
+C$$$!$OMP& igrid,bsorder,nfft3,thetai3,nfft2,thetai2,nfft1,
+C$$$!$OMP& thetai1,qgrid) private(iatm,igrd0,jgrd0,kgrd0,
+C$$$!$OMP& tuv100_1,tuv010_1,tuv001_1,tuv200_1,tuv020_1,
+C$$$!$OMP& tuv002_1,tuv110_1,tuv101_1,tuv011_1, tuv100_2,
+C$$$!$OMP& tuv010_2,tuv001_2,tuv200_2,tuv020_2,tuv002_2,
+C$$$!$OMP& tuv110_2,tuv101_2,tuv011_2,tuv000,tuv001,tuv010,
+C$$$!$OMP& tuv100,tuv200,tuv020,tuv002,tuv110,tuv101,
+C$$$!$OMP& tuv011,tuv300,tuv030,tuv003,tuv210,tuv120,
+C$$$!$OMP& tuv021,tuv102,tuv012,tuv111,k0,k,v0,v1,v2,v3,
+C$$$!$OMP& tu00_1,tuv201,tu01_1,tu10_1,tu20_1,tu11_1,
+C$$$!$OMP& tu02_1,tu00_2,tu01_2,tu10_2,tu20_2,tu11_2,
+C$$$!$OMP& tu00,tu10,tu01,tu20,tu11,tu02,tu03,tu30,tu21,
+C$$$!$OMP& tu12,j0,j,u0,u1,u2,u3,t0_1,t1_1,tu02_2,t2_1,
+C$$$!$OMP& t0_2,t1_2,t2_2,t3,i0,i,tq_1,tq_2,t0,t1,t2)
+C$$$!$OMP& shared(fdip_phi1_omp,fdip_phi2_omp)
 
-!$OMP DO
+!$OMP DO schedule(guided) private(iatm,igrd0,jgrd0,kgrd0,
+!$OMP& tuv100_1,tuv010_1,tuv001_1,tuv200_1,tuv020_1,
+!$OMP& tuv002_1,tuv110_1,tuv101_1,tuv011_1, tuv100_2,
+!$OMP& tuv010_2,tuv001_2,tuv200_2,tuv020_2,tuv002_2,
+!$OMP& tuv110_2,tuv101_2,tuv011_2,tuv000,tuv001,tuv010,
+!$OMP& tuv100,tuv200,tuv020,tuv002,tuv110,tuv101,
+!$OMP& tuv011,tuv300,tuv030,tuv003,tuv210,tuv120,
+!$OMP& tuv021,tuv102,tuv012,tuv111,k0,k,v0,v1,v2,v3,
+!$OMP& tu00_1,tuv201,tu01_1,tu10_1,tu20_1,tu11_1,
+!$OMP& tu02_1,tu00_2,tu01_2,tu10_2,tu20_2,tu11_2,
+!$OMP& tu00,tu10,tu01,tu20,tu11,tu02,tu03,tu30,tu21,
+!$OMP& tu12,j0,j,u0,u1,u2,u3,t0_1,t1_1,tu02_2,t2_1,
+!$OMP& t0_2,t1_2,t2_2,t3,i0,i,tq_1,tq_2,t0,t1,t2)
 c
 c     extract the induced dipole field at each site
 c
