@@ -648,7 +648,8 @@ c
 c     set OpenMP directives for the major loop structure
 c
 
-!$OMP DO reduction(+:qgrid) private(i,j,k,m,ii,jj,kk,ichk,
+!$OMP DO schedule(dynamic,128)
+!$OMP& reduction(+:qgrid) private(i,j,k,m,ii,jj,kk,ichk,
 !$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
 !$OMP& offsetz,v0,v1,u0,u1,term01,term11,term02,term12,t0,t1)
 c

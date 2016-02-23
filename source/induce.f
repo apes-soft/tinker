@@ -1697,14 +1697,11 @@ c
 c
 c     get the reciprocal space part of the electrostatic field
 c
-c!$OMP master
+
       call umutual11 (field,fieldp)
 c
 c     get the real space portion of the electrostatic field
 c
-c!$OMP end master
-c!$OMP barrier
-c!$OMP flush
       if (use_mlist) then
          call umutual2b1 
 c(field,fieldp)
@@ -2879,7 +2876,7 @@ c
       call grid_uind1 !(fuind,fuinp)
 
 !$OMP master 
-!single
+c!single
       call fftfront
 !$OMP end master
 !$OMP barrier
