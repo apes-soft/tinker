@@ -648,14 +648,14 @@ c
 c     set OpenMP directives for the major loop structure
 c
 
-!$OMP DO private(i,j,k,m,ii,jj,kk,ichk,
+!$OMP DO reduction(+:qgrid) private(i,j,k,m,ii,jj,kk,ichk,
 !$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
 !$OMP& offsetz,v0,v1,u0,u1,term01,term11,term02,term12,t0,t1)
 c
 c     put the induced dipole moments onto the grid
 c
 c      do ichk = 1, nchunk
-      do new_iter = 1,nchunk*npole
+      do new_iter = 0,nchunk*npole
 
          isite = mod(new_iter,npole)+ 1
          ichk = new_iter/npole + 1
