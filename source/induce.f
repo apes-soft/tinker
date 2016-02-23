@@ -361,11 +361,11 @@ c
                call ufield0a (field,fieldp)
             end if
 
-!$OMP master
-            field_omp = field
-            fieldp_omp = fieldp            
-!$OMP end master
-!$OMP barrier
+C$$$!$OMP master
+C$$$            field_omp = field
+C$$$            fieldp_omp = fieldp            
+C$$$!$OMP end master
+C$$$!$OMP barrier
 
 !$OMP DO schedule(guided)
             do i = 1, npole
@@ -1728,16 +1728,16 @@ c            fieldp_omp(j,i) = fieldp(j,i)
       end do
 !$OMP end DO
 
-!$OMP master
-      do i = 1, npole
-         do j = 1, 3
-            field(j,i) = field_omp(j,i)
-            fieldp(j,i) = fieldp_omp(j,i)
-         end do
-      end do
-!$OMP end master 
-!$OMP barrier
-!$OMP flush
+C$$$!$OMP master
+C$$$      do i = 1, npole
+C$$$         do j = 1, 3
+C$$$            field(j,i) = field_omp(j,i)
+C$$$            fieldp(j,i) = fieldp_omp(j,i)
+C$$$         end do
+C$$$      end do
+C$$$!$OMP end master 
+C$$$!$OMP barrier
+C$$$!$OMP flush
 c
 c     compute the cell dipole boundary correction to the field
 c
