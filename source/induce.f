@@ -1688,7 +1688,7 @@ c
 c
 c     zero out the electrostatic field at each site
 c
-!$OMP DO 
+!$OMP DO collapse(2)
       do i = 1, npole
          do j = 1, 3
             field_omp(j,i) = 0.0d0
@@ -1697,31 +1697,10 @@ c
       end do
 !$OMP end DO 
 
-!$OMP master
-      do i = 1, npole
-         do j = 1, 3
-            field(j,i) = 0.0d0
-            fieldp(j,i) = 0.0d0
-         end do
-      end do
-!$OMP end master
-!$OMP barrier
 c
 c     get the reciprocal space part of the electrostatic field
 c
-
       call umutual11 !(field,fieldp)
-
-!$OMP master
-      do i = 1, npole
-         do j = 1, 3
-            field(j,i) = field_omp(j,i)
-            fieldp(j,i) = fieldp_omp(j,i)
-         end do
-      end do
-!$OMP end master
-!$OMP barrier     
-
 c
 c     get the real space portion of the electrostatic field
 c
@@ -1732,30 +1711,30 @@ c(field,fieldp)
          call umutual2a (field,fieldp)
       end if
 
-!$OMP master
-
-C$$$      do i = 1, npole
-C$$$         do j = 1, 3
-C$$$            field(j,i) = 0.0d0
-C$$$            fieldp(j,i) = 0.0d0
-C$$$         end do
-C$$$      end do
-
 c
 c     get the self-energy portion of the electrostatic field
 c
       term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
+!$OMP DO schedule(static,128)
       do i = 1, npole
          do j = 1, 3
-            field(j,i) = field(j,i) + term*uind(j,i) + 
+            field_omp(j,i) = field_omp(j,i) + term*uind(j,i) + 
      &           fieldt_omp(j,i)
-            fieldp(j,i) = fieldp(j,i) + term*uinp(j,i)+ 
+            fieldp_omp(j,i) = fieldp_omp(j,i) + term*uinp(j,i)+ 
      &           fieldtp_omp(j,i)
-            field_omp(j,i) = field(j,i)
-            fieldp_omp(j,i) = fieldp(j,i)
+c            field_omp(j,i) = field(j,i)
+c            fieldp_omp(j,i) = fieldp(j,i)
          end do
       end do
+!$OMP end DO
 
+!$OMP master
+      do i = 1, npole
+         do j = 1, 3
+            field(j,i) = field_omp(j,i)
+            fieldp(j,i) = fieldp_omp(j,i)
+         end do
+      end do
 !$OMP end master 
 !$OMP barrier
 !$OMP flush
