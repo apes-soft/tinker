@@ -1694,6 +1694,9 @@ c
             fieldp(j,i) = 0.0d0
          end do
       end do
+
+c      print*, "field_omp",field_omp(1,2)
+
 c
 c     get the reciprocal space part of the electrostatic field
 c
@@ -2828,11 +2831,11 @@ c
       real*8 fieldp(3,*)
 c      real*8, allocatable :: fuind(:,:)
 c      real*8, allocatable :: fuinp(:,:)
-      real*8, allocatable :: fdip_phi1(:,:)
-      real*8, allocatable :: fdip_phi2(:,:)
-      real*8, allocatable :: fdip_sum_phi(:,:)
-      real*8, allocatable :: dipfield1(:,:)
-      real*8, allocatable :: dipfield2(:,:)
+c      real*8, allocatable :: fdip_phi1(:,:)
+c      real*8, allocatable :: fdip_phi2(:,:)
+c      real*8, allocatable :: fdip_sum_phi(:,:)
+c      real*8, allocatable :: dipfield1(:,:)
+c      real*8, allocatable :: dipfield2(:,:)
 c
 c
 c     return if the Ewald coefficient is zero
@@ -2844,11 +2847,11 @@ c
 !$OMP master
 c      allocate (fuind(3,npole))
 c      allocate (fuinp(3,npole))
-      allocate (fdip_phi1(10,npole))
-      allocate (fdip_phi2(10,npole))
-      allocate (fdip_sum_phi(20,npole))
-      allocate (dipfield1(3,npole))
-      allocate (dipfield2(3,npole))
+c      allocate (fdip_phi1(10,npole))
+c      allocate (fdip_phi2(10,npole))
+c      allocate (fdip_sum_phi(20,npole))
+c      allocate (dipfield1(3,npole))
+c      allocate (dipfield2(3,npole))
 !$OMP end master
 c
 c     convert Cartesian dipoles to fractional coordinates
@@ -2907,10 +2910,10 @@ c
 !$OMP barrier
 
       call fphi_uind1 !(fdip_phi1,fdip_phi2,fdip_sum_phi)
-!$OMP master
+c!$OMP master
 
-      fdip_phi1 = fdip_phi1_omp
-      fdip_phi2 = fdip_phi2_omp
+c      fdip_phi1 = fdip_phi1_omp
+c      fdip_phi2 = fdip_phi2_omp
 c
 c     convert the dipole fields from fractional to Cartesian
 c
@@ -2920,6 +2923,7 @@ c
          a(i,3) = dble(nfft3) * recip(i,3)
       end do
 
+!$OMP DO
       do i = 1, npole
          do k = 1, 3
             dipfield1_omp(k,i) = a(k,1)*fdip_phi1_omp(2,i)
@@ -2930,18 +2934,19 @@ c
      &                          + a(k,3)*fdip_phi2_omp(4,i)
          end do
       end do
+!$OMP end DO
 c
 c     increment the field at each multipole site
 c
-c!$OMP master
+!$OMP master
       
-      dipfield1 = dipfield1_omp
-      dipfield2 = dipfield2_omp
+c      dipfield1 = dipfield1_omp
+c      dipfield2 = dipfield2_omp
 
       do i = 1, npole
          do k = 1, 3
-            field(k,i) = field(k,i) - dipfield1(k,i)
-            fieldp(k,i) = fieldp(k,i) - dipfield2(k,i)
+            field(k,i) = field(k,i) - dipfield1_omp(k,i)
+            fieldp(k,i) = fieldp(k,i) - dipfield2_omp(k,i)
          end do
       end do
 
@@ -2950,11 +2955,11 @@ c     perform deallocation of some local arrays
 c
 c      deallocate (fuind)
 c      deallocate (fuinp)
-      deallocate (fdip_phi1)
-      deallocate (fdip_phi2)
-      deallocate (fdip_sum_phi)
-      deallocate (dipfield1)
-      deallocate (dipfield2)
+c      deallocate (fdip_phi1)
+c      deallocate (fdip_phi2)
+c      deallocate (fdip_sum_phi)
+c      deallocate (dipfield1)
+c      deallocate (dipfield2)
 !$OMP end master
 !$OMP barrier
 !$OMP flush
