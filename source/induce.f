@@ -231,7 +231,7 @@ c
 c     set induced dipoles to polarizability times direct field
 c
 
-!$OMP DO schedule(guided)
+!$OMP DO schedule(static,128)
       do i = 1, npole
          do j = 1, 3
             udir_omp(j,i) = polarity(i) * field_omp(j,i)
@@ -286,7 +286,7 @@ c
 c     get the electrostatic field due to induced dipoles
 c
          if (use_ewald) then
-            call ufield0c1 (field,fieldp)
+            call ufield0c1 ! (field,fieldp)
          else if (use_mlist) then
             call ufield0b (field,fieldp)
          else
@@ -342,7 +342,7 @@ c
             iter = iter + 1
 !$OMP end single nowait
 
-!$OMP DO schedule(guided)
+!$OMP DO schedule(static,128)
             do i = 1, npole
                do j = 1, 3
                   vec_omp(j,i) = uind(j,i)
@@ -354,20 +354,14 @@ c
 !$OMP end do
             
             if (use_ewald) then
-               call ufield0c1 (field,fieldp)
+               call ufield0c1 !(field,fieldp)
             else if (use_mlist) then
                call ufield0b (field,fieldp)
             else
                call ufield0a (field,fieldp)
             end if
 
-C$$$!$OMP master
-C$$$            field_omp = field
-C$$$            fieldp_omp = fieldp            
-C$$$!$OMP end master
-C$$$!$OMP barrier
-
-!$OMP DO schedule(guided)
+!$OMP DO schedule(static,128)
             do i = 1, npole
                do j = 1, 3
                   uind(j,i) = vec_omp(j,i)
@@ -385,7 +379,7 @@ C$$$!$OMP barrier
             sum_omp = 0.0d0
             sump_omp = 0.0d0
 
-!$OMP DO schedule(guided) reduction(+:a_omp,ap_omp,sum_omp,sump_omp)
+!$OMP DO schedule(static,128) reduction(+:a_omp,ap_omp,sum_omp,sump_omp)
             do i = 1, npole
                do j = 1, 3
                   a_omp= a_omp+ conj_omp(j,i)*vec_omp(j,i)
@@ -403,7 +397,7 @@ C$$$!$OMP barrier
 !$OMP end single 
 !$OMP barrier
 
-!$OMP DO schedule(guided)
+!$OMP DO schedule(static,128)
             do i = 1, npole
                do j = 1, 3
                   uind(j,i) = uind(j,i) + a_omp*conj_omp(j,i)
@@ -423,7 +417,7 @@ C$$$!$OMP barrier
             b_omp = 0.0d0
             bp_omp = 0.0d0
 
-!$OMP DO schedule(guided) reduction(+:b_omp,bp_omp)
+!$OMP DO schedule(static,128) reduction(+:b_omp,bp_omp)
             do i = 1, npole
                do j = 1, 3
                   b_omp = b_omp + rsd_omp(j,i)*zrsd_omp(j,i)
@@ -443,7 +437,7 @@ C$$$!$OMP barrier
             epsd_omp = 0.0d0
             epsp_omp = 0.0d0
 
-!$OMP DO schedule(guided) reduction(+:epsd_omp,epsp_omp)
+!$OMP DO schedule(static,128) reduction(+:epsd_omp,epsp_omp)
             do i = 1, npole
                do j = 1, 3
                   conj_omp(j,i) = zrsd_omp(j,i) + b_omp*conj_omp(j,i)
@@ -1667,7 +1661,7 @@ c     "ufield0c" computes the mutual electrostatic field due to
 c     induced dipole moments via Ewald summation
 c
 c
-      subroutine ufield0c1 (field,fieldp)
+      subroutine ufield0c1 !(field,fieldp)
       use sizes
       use atoms
       use boxes
@@ -1682,8 +1676,8 @@ c
       real*8 term
       real*8 ucell(3)
       real*8 ucellp(3)
-      real*8 field(3,*)
-      real*8 fieldp(3,*)
+c      real*8 field(3,*)
+c      real*8 fieldp(3,*)
 c
 c
 c     zero out the electrostatic field at each site
@@ -1708,7 +1702,7 @@ c
          call umutual2b1 
 c(field,fieldp)
       else
-         call umutual2a (field,fieldp)
+c         call umutual2a (field,fieldp)
       end if
 
 c
@@ -1722,22 +1716,10 @@ c
      &           fieldt_omp(j,i)
             fieldp_omp(j,i) = fieldp_omp(j,i) + term*uinp(j,i)+ 
      &           fieldtp_omp(j,i)
-c            field_omp(j,i) = field(j,i)
-c            fieldp_omp(j,i) = fieldp(j,i)
          end do
       end do
 !$OMP end DO
 
-C$$$!$OMP master
-C$$$      do i = 1, npole
-C$$$         do j = 1, 3
-C$$$            field(j,i) = field_omp(j,i)
-C$$$            fieldp(j,i) = fieldp_omp(j,i)
-C$$$         end do
-C$$$      end do
-C$$$!$OMP end master 
-C$$$!$OMP barrier
-C$$$!$OMP flush
 c
 c     compute the cell dipole boundary correction to the field
 c
@@ -1756,8 +1738,8 @@ c
          term = (4.0d0/3.0d0) * pi/volbox
          do i = 1, npole
             do j = 1, 3
-               field(j,i) = field(j,i) - term*ucell(j)
-               fieldp(j,i) = fieldp(j,i) - term*ucellp(j)
+               field_omp(j,i) = field_omp(j,i) - term*ucell(j)
+               fieldp_omp(j,i) = fieldp_omp(j,i) - term*ucellp(j)
             end do
          end do
 !$OMP end master
