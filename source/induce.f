@@ -1496,8 +1496,9 @@ c
 c
 c     get the reciprocal space part of the electrostatic field
 c
-!$OMP master
+c!$OMP master
       call udirect1 (field)
+!$OMP master
       do i = 1, npole
          do j = 1, 3
             fieldp(j,i) = field(j,i)
@@ -1769,6 +1770,7 @@ c
       use math
       use mpole
       use pme
+      use openmp
       implicit none
       integer i,j,k,ntot
       integer k1,k2,k3
@@ -1784,6 +1786,8 @@ c
       real*8, allocatable :: fmp(:,:)
       real*8, allocatable :: cphi(:,:)
       real*8, allocatable :: fphi(:,:)
+
+!$OMP master
 c
 c
 c     return if the Ewald coefficient is zero
@@ -1820,10 +1824,17 @@ c
 c     convert Cartesian multipoles to fractional coordinates
 c
       call cmp_to_fmp (cmp,fmp)
+      
+      fmp_omp = fmp
+
+!$OMP end master
+!$OMP barrier
 c
 c     assign PME grid and perform 3-D FFT forward transform
 c
-      call grid_mpole (fmp)
+
+      call grid_mpole1 !(fmp)
+!$OMP master
       call fftfront
 c
 c     make the scalar summation over reciprocal lattice
@@ -1911,6 +1922,8 @@ c
       deallocate (fmp)
       deallocate (cphi)
       deallocate (fphi)
+!$OMP end master
+!$OMP barrier
       return
       end
 c

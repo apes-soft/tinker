@@ -159,6 +159,7 @@ c         allocate(vscale_th(n))
          allocate (dep2(3,n))
       end if
 
+      if(.not. allocated(fmp_omp)) allocate(fmp_omp(10,npole))
 
 c
 c     zero out the virial and the intermolecular energy
@@ -305,7 +306,7 @@ c
 
       call chkpole
       call rotpole
-      call induce
+      call induce ! not everything is parallel
       
   
 !$OMP master

@@ -802,13 +802,13 @@ c
       if(allocated(dep1)) deallocate(dep1)
       if(allocated(dep2)) deallocate(dep2)
 
-
       if(allocated(fdip_phi1_omp)) deallocate(fdip_phi1_omp)
       if(allocated(fdip_phi2_omp)) deallocate (fdip_phi2_omp)
       if(allocated(fdip_sum_phi_omp)) deallocate (fdip_sum_phi_omp)
-      if(allocated(dipfield1_omp)) de allocate(dipfield1_omp)
+      if(allocated(dipfield1_omp)) deallocate(dipfield1_omp)
       if(allocated(dipfield2_omp)) deallocate (dipfield2_omp)
 
+      if(allocated(fmp_omp)) deallocate(fmp_omp)
        
 c
 c     free memory used by the APBS Poisson-Boltzmann solver

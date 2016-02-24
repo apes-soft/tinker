@@ -466,6 +466,146 @@ c!$OMP END DO
 c!$OMP END PARALLEL
       return
       end
+
+c     #############################################################
+c     ##                                                         ##
+c     ##  subroutine grid_mpole1  --  put multipoles on PME grid  ##
+c     ##                                                         ##
+c     #############################################################
+c
+c
+c     "grid_mpole" places the fractional atomic multipoles onto
+c     the particle mesh Ewald grid
+c
+c
+      subroutine grid_mpole1 !(fmp)
+      use sizes
+      use atoms
+      use chunks
+      use mpole
+      use pme
+      use openmp
+      implicit none
+      integer i,j,k,m
+      integer ii,jj,kk
+      integer ichk,isite,iatm
+      integer offsetx,offsety
+      integer offsetz
+      integer cid(3)
+      integer nearpt(3)
+      integer abound(6)
+      integer cbound(6)
+      real*8 v0,u0,t0
+      real*8 v1,u1,t1
+      real*8 v2,u2,t2
+      real*8 term0,term1,term2
+      integer new_iter
+c      real*8 fmp(10,*)
+c
+c
+c     zero out the particle mesh Ewald charge grid
+c
+!$OMP DO collapse(3)
+      do k = 1, nfft3
+         do j = 1, nfft2
+            do i = 1, nfft1
+               qgrid(1,i,j,k) = 0.0d0
+               qgrid(2,i,j,k) = 0.0d0
+            end do
+         end do
+      end do
+!$OMP end DO
+c
+c     set OpenMP directives for the major loop structure
+c
+
+!$OMP DO reduction(+:qgrid)  private(i,j,k,m,ii,jj,kk,ichk,
+!$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
+!$OMP& offsetz,v0,v1,v2,u0,u1,u2,term0,term1,term2,t0,t1,t2)
+!$OMP& schedule(dynamic,128)
+c
+c     put the permanent multipole moments onto the grid
+c
+c      do ichk = 1, nchunk
+      do new_iter = 0, nchunk*npole
+
+         isite = mod(new_iter,npole)+ 1
+         ichk = new_iter/npole + 1
+
+         cid(1) = mod(ichk-1,nchk1)
+         cid(2) = mod(((ichk-1-cid(1))/nchk1),nchk2)
+         cid(3) = mod((ichk-1)/(nchk1*nchk2),nchk3)
+         cbound(1) = cid(1)*ngrd1 + 1
+         cbound(2) = cbound(1) + ngrd1 - 1
+         cbound(3) = cid(2)*ngrd2 + 1
+         cbound(4) = cbound(3) + ngrd2 - 1
+         cbound(5) = cid(3)*ngrd3 + 1
+         cbound(6) = cbound(5) + ngrd3 - 1
+c         do isite = 1, npole
+            iatm = ipole(isite)
+            if (pmetable(iatm,ichk) .eq. 1) then
+               nearpt(1) = igrid(1,iatm) + grdoff
+               nearpt(2) = igrid(2,iatm) + grdoff
+               nearpt(3) = igrid(3,iatm) + grdoff
+               abound(1) = nearpt(1) - nlpts
+               abound(2) = nearpt(1) + nrpts
+               abound(3) = nearpt(2) - nlpts
+               abound(4) = nearpt(2) + nrpts
+               abound(5) = nearpt(3) - nlpts
+               abound(6) = nearpt(3) + nrpts
+               call adjust (offsetx,nfft1,nchk1,abound(1),
+     &                        abound(2),cbound(1),cbound(2))
+               call adjust (offsety,nfft2,nchk2,abound(3),
+     &                        abound(4),cbound(3),cbound(4))
+               call adjust (offsetz,nfft3,nchk3,abound(5),
+     &                        abound(6),cbound(5),cbound(6))
+               do kk = abound(5), abound(6)
+                  k = kk
+                  m = k + offsetz
+                  if (k .lt. 1)  k = k + nfft3
+                  v0 = thetai3(1,m,iatm)
+                  v1 = thetai3(2,m,iatm)
+                  v2 = thetai3(3,m,iatm)
+                  do jj = abound(3), abound(4)
+                     j = jj
+                     m = j + offsety
+                     if (j .lt. 1)  j = j + nfft2
+                     u0 = thetai2(1,m,iatm)
+                     u1 = thetai2(2,m,iatm)
+                     u2 = thetai2(3,m,iatm)
+                     term0 = fmp_omp(1,isite)*u0*v0 + 
+     &                    fmp_omp(3,isite)*u1*v0
+     &                     + fmp_omp(4,isite)*u0*v1 + 
+     &                    fmp_omp(6,isite)*u2*v0
+     &                     + fmp_omp(7,isite)*u0*v2 
+     &                    + fmp_omp(10,isite)*u1*v1
+                     term1 = fmp_omp(2,isite)*u0*v0 
+     &                    + fmp_omp(8,isite)*u1*v0
+     &                          + fmp_omp(9,isite)*u0*v1
+                     term2 = fmp_omp(5,isite) * u0 * v0
+                     do ii = abound(1), abound(2)
+                        i = ii
+                        m = i + offsetx
+                        if (i .lt. 1)  i = i + nfft1
+                        t0 = thetai1(1,m,iatm)
+                        t1 = thetai1(2,m,iatm)
+                        t2 = thetai1(3,m,iatm)
+                        qgrid(1,i,j,k) = qgrid(1,i,j,k) + term0*t0
+     &                                      + term1*t1 + term2*t2
+                     end do
+                  end do
+               end do
+            end if
+         end do
+c      end do
+c
+c     end OpenMP directive for the major loop structure
+c
+!$OMP END DO
+      return
+      end
+
+
 c
 c
 c     #############################################################
@@ -518,7 +658,8 @@ c
 c!$OMP PARALLEL default(shared) private(i,j,k,m,ii,jj,kk,ichk,
 c!$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
 c!$OMP& offsetz,v0,v1,v2,u0,u1,u2,term0,term1,term2,t0,t1,t2)
-c!$OMP DO
+c!OMP DO
+
 c
 c     put the permanent multipole moments onto the grid
 c

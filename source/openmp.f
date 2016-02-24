@@ -60,6 +60,7 @@ c
       real*8, allocatable :: fdip_sum_phi_omp(:,:)
       real*8, allocatable :: dipfield1_omp(:,:)
       real*8, allocatable :: dipfield2_omp(:,:) 
+      real*8, allocatable :: fmp_omp(:,:)
 
       save
 !$OMP threadprivate(th_id)
