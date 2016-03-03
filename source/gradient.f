@@ -309,12 +309,12 @@ c
       call induce ! not everything is parallel
       
   
-!$OMP master
+c!$OMP master
       call emrecip1
     
-!$OMP end master
-!$OMP barrier
-!$OMP flush
+c!$OMP end master
+c!$OMP barrier
+c!$OMP flush
 
 
       call ereal1d(eint)   

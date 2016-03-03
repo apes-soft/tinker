@@ -4918,12 +4918,18 @@ c
 c     set arrays needed to scale connected atom interactions
 c
 
-!$OMP DO
+!$OMP DO schedule(dynamic,128)
       do i = 1, n
          mscale_omp(i) = 1.0d0
          pscale_omp(i) = 1.0d0
          dscale_omp(i) = 1.0d0
          uscale_omp(i) = 1.0d0
+         do j = 1, 3
+            dem1(j,i) = 0.0d0
+            dem2(j,i) = 0.0d0
+            dep1(j,i) = 0.0d0
+            dep2(j,i) = 0.0d0
+         end do
       end do
 !$OMP END DO
 c
@@ -4950,16 +4956,16 @@ c      ep = 0.0d0
          end do
       end do
 
-!$OMP DO 
-      do i = 1, n
-         do j = 1, 3
-            dem1(j,i) = 0.0d0
-            dem2(j,i) = 0.0d0
-            dep1(j,i) = 0.0d0
-            dep2(j,i) = 0.0d0
-         end do
-      end do
-!$OMP end DO
+C$$$!$OMP DO 
+C$$$      do i = 1, n
+C$$$         do j = 1, 3
+C$$$            dem1(j,i) = 0.0d0
+C$$$            dem2(j,i) = 0.0d0
+C$$$            dep1(j,i) = 0.0d0
+C$$$            dep2(j,i) = 0.0d0
+C$$$         end do
+C$$$      end do
+C$$$!$OMP end DO
 
 
 c
@@ -4985,7 +4991,7 @@ c
 !$OMP& firstprivate(mscale_omp,pscale_omp,dscale_omp,uscale_omp,
 !$OMP& ff) reduction(+:em_omp,ep_omp,eintra_omp,dem1,dem2,dep1,
 !$OMP& dep2, vir_omp)
-!$OMP& schedule(guided)
+!$OMP& schedule(dynamic,128)
 c
 c     compute the real space portion of the Ewald summation
 c
@@ -5925,6 +5931,7 @@ c
       use polpot
       use potent
       use virial
+      use openmp
       implicit none
       integer i,j,k,ii
       integer j1,j2,j3
@@ -5966,6 +5973,8 @@ c
       data deriv1  / 2, 5,  8,  9, 11, 16, 18, 14, 15, 20 /
       data deriv2  / 3, 8,  6, 10, 14, 12, 19, 16, 20, 17 /
       data deriv3  / 4, 9, 10,  7, 15, 17, 13, 20, 18, 19 /
+
+c!$OMP master
 c
 c
 c     return if the Ewald coefficient is zero
@@ -6016,14 +6025,19 @@ c
 c
 c     compute the arrays of B-spline coefficients
 c
+!$OMP master
       if (.not. use_polar) then
          call bspline_fill
          call table_fill
       end if
+
 c
 c     perform dynamic allocation of some local arrays
 c
       allocate (qgrip(2,nfft1,nfft2,nfft3))
+
+!$OMP end master
+!$OMP barrier
 c
 c     assign permanent and induced multipoles to PME grid
 c     and perform the 3-D FFT forward transformation
@@ -6034,9 +6048,14 @@ c
                cmp(j,i) = cmp(j,i) + uinp(j-1,i)
             end do
          end do
+
          call cmp_to_fmp (cmp,fmp)
-         call grid_mpole (fmp)
+         fmp_omp = fmp
+         call grid_mpole1 !(fmp)
+
+!$OMP master     
          call fftfront
+         fmp = fmp_omp
          do k = 1, nfft3
             do j = 1, nfft2
                do i = 1, nfft1
@@ -6045,20 +6064,31 @@ c
                end do
             end do
          end do
+!$OMP end master
+!$OMP barrier
+!$OMP flush
          do i = 1, npole
             do j = 2, 4
                cmp(j,i) = cmp(j,i) + uind(j-1,i) - uinp(j-1,i)
             end do
          end do
+
          call cmp_to_fmp (cmp,fmp)
-         call grid_mpole (fmp)
+         fmp_omp = fmp
+         call grid_mpole1 !(fmp)
+
+!$OMP master
+         fmp = fmp_omp
          call fftfront
          do i = 1, npole
             do j = 2, 4
                cmp(j,i) = cmp(j,i) - uind(j-1,i)
             end do
          end do
+!$OMP end master
+!$OMP barrier
       else
+!$OMP master
          call cmp_to_fmp (cmp,fmp)
          call grid_mpole (fmp)
          call fftfront
@@ -6070,10 +6100,13 @@ c
                end do
             end do
          end do
+!$OMP end master
+!$OMP barrier
       end if
 c
 c     make the scalar summation over reciprocal lattice
 c
+!$OMP master
       ntot = nfft1 * nfft2 * nfft3
       pterm = (pi/aewald)**2
       volterm = pi * volbox
@@ -6126,6 +6159,7 @@ c
 c     assign just the induced multipoles to PME grid
 c     and perform the 3-D FFT forward transformation
 c
+! the below if condition is not met by dhrf bench
       if (use_polar .and. poltyp.eq.'DIRECT') then
          do i = 1, npole
             do j = 1, 10
@@ -6214,17 +6248,26 @@ c
 c     perform deallocation of some local arrays
 c
       deallocate (qgrip)
+c!$OMP end master
 c
 c     transform permanent multipoles without induced dipoles
 c
       if (use_polar) then
          call cmp_to_fmp (cmp,fmp)
+c         fmp_omp = fmp
+c         call grid_mpole1 !(fmp)
          call grid_mpole (fmp)
+c!$OMP master
+c         print*, "samlle test"
+c         fmp = fmp_omp
          call fftfront
+c!$OMP end master
+c!$OMP barrier
       end if
 c
 c     account for the zeroth grid point for a finite system
 c
+c!$OMP master
       qfac(1,1,1) = 0.0d0
       if (.not. use_bounds) then
          expterm = 0.5d0 * pi / xbox
@@ -6560,6 +6603,10 @@ c
 c
 c     perform deallocation of some local arrays
 c
+!$OMP end master
+!$OMP barrier
+!$OMP flush
+
       deallocate (frc)
       deallocate (trq)
       deallocate (fuind)
@@ -6571,5 +6618,8 @@ c
       deallocate (fphip)
       deallocate (fphidp)
       deallocate (cphi)
+c!$OMP end master
+c!$OMP barrier
+c!$OMP flush
       return
       end
