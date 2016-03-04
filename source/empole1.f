@@ -6264,24 +6264,24 @@ C$$$!$OMP end master
 c
 c     transform permanent multipoles without induced dipoles
 c
-!$OMP master
+c!$OMP master
       if (use_polar) then
          call cmp_to_fmp (cmp,fmp)
-c         fmp_omp = fmp
-c         call grid_mpole1 !(fmp)
-         call grid_mpole (fmp)
-c!$OMP master
-c         fmp = fmp_omp
+         fmp_omp = fmp
+         call grid_mpole1 !(fmp)
+c         call grid_mpole (fmp)
+!$OMP master
+         fmp = fmp_omp
          call fftfront
-c!$OMP end master
-c!$OMP barrier
+!$OMP end master
+!$OMP barrier
       end if
 c
 c     account for the zeroth grid point for a finite system
 c
-
+!$OMP master
       qfac(1,1,1) = 0.0d0
-c!$OMP master
+
       if (.not. use_bounds) then
          expterm = 0.5d0 * pi / xbox
          struc2 = qgrid(1,1,1,1)**2 + qgrid(2,1,1,1)**2
