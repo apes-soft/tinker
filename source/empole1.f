@@ -6030,14 +6030,15 @@ c
          call bspline_fill
          call table_fill
       end if
+!$OMP end master
+!$OMP barrier
 
 c
 c     perform dynamic allocation of some local arrays
 c
+
       allocate (qgrip(2,nfft1,nfft2,nfft3))
 
-!$OMP end master
-!$OMP barrier
 c
 c     assign permanent and induced multipoles to PME grid
 c     and perform the 3-D FFT forward transformation
@@ -6056,6 +6057,10 @@ c
 !$OMP master     
          call fftfront
          fmp = fmp_omp
+!$OMP end master
+!$OMP barrier
+!$OMP flush
+
          do k = 1, nfft3
             do j = 1, nfft2
                do i = 1, nfft1
@@ -6064,9 +6069,6 @@ c
                end do
             end do
          end do
-!$OMP end master
-!$OMP barrier
-!$OMP flush
          do i = 1, npole
             do j = 2, 4
                cmp(j,i) = cmp(j,i) + uind(j-1,i) - uinp(j-1,i)
@@ -6080,13 +6082,14 @@ c
 !$OMP master
          fmp = fmp_omp
          call fftfront
+!$OMP end master
+!$OMP barrier
+!$OMP flush
          do i = 1, npole
             do j = 2, 4
                cmp(j,i) = cmp(j,i) - uind(j-1,i)
             end do
          end do
-!$OMP end master
-!$OMP barrier
       else
 !$OMP master
          call cmp_to_fmp (cmp,fmp)
@@ -6106,7 +6109,7 @@ c
 c
 c     make the scalar summation over reciprocal lattice
 c
-!$OMP master
+c!$OMP master
       ntot = nfft1 * nfft2 * nfft3
       pterm = (pi/aewald)**2
       volterm = pi * volbox
@@ -6114,6 +6117,7 @@ c
       nf1 = (nfft1+1) / 2
       nf2 = (nfft2+1) / 2
       nf3 = (nfft3+1) / 2
+c!$OMP master
       do i = 1, ntot-1
          k3 = i/nff + 1
          j = i - (k3-1)*nff
@@ -6146,119 +6150,127 @@ c
      &                  + qgrid(2,k1,k2,k3)*qgrip(2,k1,k2,k3)
             eterm = 0.5d0 * electric * expterm * struc2
             vterm = (2.0d0/hsq) * (1.0d0-term) * eterm
+!$OMP master
             vxx = vxx + h1*h1*vterm - eterm
             vyx = vyx + h2*h1*vterm
             vzx = vzx + h3*h1*vterm
             vyy = vyy + h2*h2*vterm - eterm
             vzy = vzy + h3*h2*vterm
             vzz = vzz + h3*h3*vterm - eterm
+!$OMP end master
          end if
+!$OMP master
          qfac(k1,k2,k3) = expterm
+!$OMP end master
       end do
+!$OMP barrier
+c!$OMP end master
 c
 c     assign just the induced multipoles to PME grid
 c     and perform the 3-D FFT forward transformation
 c
-! the below if condition is not met by dhrf bench
-      if (use_polar .and. poltyp.eq.'DIRECT') then
-         do i = 1, npole
-            do j = 1, 10
-               cmp(j,i) = 0.0d0
-            end do
-            do j = 2, 4
-               cmp(j,i) = uinp(j-1,i)
-            end do
-         end do
-         call cmp_to_fmp (cmp,fmp)
-         call grid_mpole (fmp)
-         call fftfront
-         do k = 1, nfft3
-            do j = 1, nfft2
-               do i = 1, nfft1
-                  qgrip(1,i,j,k) = qgrid(1,i,j,k)
-                  qgrip(2,i,j,k) = qgrid(2,i,j,k)
-               end do
-            end do
-         end do
-         do i = 1, npole
-            do j = 2, 4
-               cmp(j,i) = uind(j-1,i)
-            end do
-         end do
-         call cmp_to_fmp (cmp,fmp)
-         call grid_mpole (fmp)
-         call fftfront
-         do i = 1, npole
-            cmp(1,i) = rpole(1,i)
-            cmp(2,i) = rpole(2,i)
-            cmp(3,i) = rpole(3,i)
-            cmp(4,i) = rpole(4,i)
-            cmp(5,i) = rpole(5,i)
-            cmp(6,i) = rpole(9,i)
-            cmp(7,i) = rpole(13,i)
-            cmp(8,i) = 2.0d0 * rpole(6,i)
-            cmp(9,i) = 2.0d0 * rpole(7,i)
-            cmp(10,i) = 2.0d0 * rpole(10,i)
-         end do
-c
-c     make the scalar summation over reciprocal lattice
-c
-         do i = 1, ntot-1
-            k3 = i/nff + 1
-            j = i - (k3-1)*nff
-            k2 = j/nfft1 + 1
-            k1 = j - (k2-1)*nfft1 + 1
-            m1 = k1 - 1
-            m2 = k2 - 1
-            m3 = k3 - 1
-            if (k1 .gt. nf1)  m1 = m1 - nfft1
-            if (k2 .gt. nf2)  m2 = m2 - nfft2
-            if (k3 .gt. nf3)  m3 = m3 - nfft3
-            r1 = dble(m1)
-            r2 = dble(m2)
-            r3 = dble(m3)
-            h1 = recip(1,1)*r1 + recip(1,2)*r2 + recip(1,3)*r3
-            h2 = recip(2,1)*r1 + recip(2,2)*r2 + recip(2,3)*r3
-            h3 = recip(3,1)*r1 + recip(3,2)*r2 + recip(3,3)*r3
-            hsq = h1*h1 + h2*h2 + h3*h3
-            term = -pterm * hsq
-            expterm = 0.0d0
-            if (term .gt. -50.0d0) then
-               denom = volterm*hsq*bsmod1(k1)*bsmod2(k2)*bsmod3(k3)
-               expterm = exp(term) / denom
-               if (.not. use_bounds) then
-                  expterm = expterm * (1.0d0-cos(pi*xbox*sqrt(hsq)))
-               else if (octahedron) then
-                  if (mod(m1+m2+m3,2) .ne. 0)  expterm = 0.0d0
-               end if
-               struc2 = qgrid(1,k1,k2,k3)*qgrip(1,k1,k2,k3)
-     &                     + qgrid(2,k1,k2,k3)*qgrip(2,k1,k2,k3)
-               eterm = 0.5d0 * electric * expterm * struc2
-               vterm = (2.0d0/hsq) * (1.0d0-term) * eterm
-               vxx = vxx - h1*h1*vterm + eterm
-               vyx = vyx - h2*h1*vterm
-               vzx = vzx - h3*h1*vterm
-               vyy = vyy - h2*h2*vterm + eterm
-               vzy = vzy - h3*h2*vterm
-               vzz = vzz - h3*h3*vterm + eterm
-            end if
-         end do
-      end if
-c
-c     perform deallocation of some local arrays
-c
+C$$$!$OMP master
+C$$$! the below if condition is not met by dhrf bench
+C$$$      if (use_polar .and. poltyp.eq.'DIRECT') then
+C$$$         do i = 1, npole
+C$$$            do j = 1, 10
+C$$$               cmp(j,i) = 0.0d0
+C$$$            end do
+C$$$            do j = 2, 4
+C$$$               cmp(j,i) = uinp(j-1,i)
+C$$$            end do
+C$$$         end do
+C$$$         call cmp_to_fmp (cmp,fmp)
+C$$$         call grid_mpole (fmp)
+C$$$         call fftfront
+C$$$         do k = 1, nfft3
+C$$$            do j = 1, nfft2
+C$$$               do i = 1, nfft1
+C$$$                  qgrip(1,i,j,k) = qgrid(1,i,j,k)
+C$$$                  qgrip(2,i,j,k) = qgrid(2,i,j,k)
+C$$$               end do
+C$$$            end do
+C$$$         end do
+C$$$         do i = 1, npole
+C$$$            do j = 2, 4
+C$$$               cmp(j,i) = uind(j-1,i)
+C$$$            end do
+C$$$         end do
+C$$$         call cmp_to_fmp (cmp,fmp)
+C$$$         call grid_mpole (fmp)
+C$$$         call fftfront
+C$$$         do i = 1, npole
+C$$$            cmp(1,i) = rpole(1,i)
+C$$$            cmp(2,i) = rpole(2,i)
+C$$$            cmp(3,i) = rpole(3,i)
+C$$$            cmp(4,i) = rpole(4,i)
+C$$$            cmp(5,i) = rpole(5,i)
+C$$$            cmp(6,i) = rpole(9,i)
+C$$$            cmp(7,i) = rpole(13,i)
+C$$$            cmp(8,i) = 2.0d0 * rpole(6,i)
+C$$$            cmp(9,i) = 2.0d0 * rpole(7,i)
+C$$$            cmp(10,i) = 2.0d0 * rpole(10,i)
+C$$$         end do
+C$$$c
+C$$$c     make the scalar summation over reciprocal lattice
+C$$$c
+C$$$         do i = 1, ntot-1
+C$$$            k3 = i/nff + 1
+C$$$            j = i - (k3-1)*nff
+C$$$            k2 = j/nfft1 + 1
+C$$$            k1 = j - (k2-1)*nfft1 + 1
+C$$$            m1 = k1 - 1
+C$$$            m2 = k2 - 1
+C$$$            m3 = k3 - 1
+C$$$            if (k1 .gt. nf1)  m1 = m1 - nfft1
+C$$$            if (k2 .gt. nf2)  m2 = m2 - nfft2
+C$$$            if (k3 .gt. nf3)  m3 = m3 - nfft3
+C$$$            r1 = dble(m1)
+C$$$            r2 = dble(m2)
+C$$$            r3 = dble(m3)
+C$$$            h1 = recip(1,1)*r1 + recip(1,2)*r2 + recip(1,3)*r3
+C$$$            h2 = recip(2,1)*r1 + recip(2,2)*r2 + recip(2,3)*r3
+C$$$            h3 = recip(3,1)*r1 + recip(3,2)*r2 + recip(3,3)*r3
+C$$$            hsq = h1*h1 + h2*h2 + h3*h3
+C$$$            term = -pterm * hsq
+C$$$            expterm = 0.0d0
+C$$$            if (term .gt. -50.0d0) then
+C$$$               denom = volterm*hsq*bsmod1(k1)*bsmod2(k2)*bsmod3(k3)
+C$$$               expterm = exp(term) / denom
+C$$$               if (.not. use_bounds) then
+C$$$                  expterm = expterm * (1.0d0-cos(pi*xbox*sqrt(hsq)))
+C$$$               else if (octahedron) then
+C$$$                  if (mod(m1+m2+m3,2) .ne. 0)  expterm = 0.0d0
+C$$$               end if
+C$$$               struc2 = qgrid(1,k1,k2,k3)*qgrip(1,k1,k2,k3)
+C$$$     &                     + qgrid(2,k1,k2,k3)*qgrip(2,k1,k2,k3)
+C$$$               eterm = 0.5d0 * electric * expterm * struc2
+C$$$               vterm = (2.0d0/hsq) * (1.0d0-term) * eterm
+C$$$               vxx = vxx - h1*h1*vterm + eterm
+C$$$               vyx = vyx - h2*h1*vterm
+C$$$               vzx = vzx - h3*h1*vterm
+C$$$               vyy = vyy - h2*h2*vterm + eterm
+C$$$               vzy = vzy - h3*h2*vterm
+C$$$               vzz = vzz - h3*h3*vterm + eterm
+C$$$            end if
+C$$$         end do
+C$$$      end if
+C$$$c
+C$$$c     perform deallocation of some local arrays
+C$$$c
+C$$$!$OMP end master
       deallocate (qgrip)
-c!$OMP end master
+
 c
 c     transform permanent multipoles without induced dipoles
 c
+!$OMP master
       if (use_polar) then
          call cmp_to_fmp (cmp,fmp)
 c         fmp_omp = fmp
 c         call grid_mpole1 !(fmp)
          call grid_mpole (fmp)
 c!$OMP master
-c         print*, "samlle test"
 c         fmp = fmp_omp
          call fftfront
 c!$OMP end master
@@ -6267,8 +6279,9 @@ c!$OMP barrier
 c
 c     account for the zeroth grid point for a finite system
 c
-c!$OMP master
+
       qfac(1,1,1) = 0.0d0
+c!$OMP master
       if (.not. use_bounds) then
          expterm = 0.5d0 * pi / xbox
          struc2 = qgrid(1,1,1,1)**2 + qgrid(2,1,1,1)**2
