@@ -6109,7 +6109,6 @@ c
 c
 c     make the scalar summation over reciprocal lattice
 c
-c!$OMP master
       ntot = nfft1 * nfft2 * nfft3
       pterm = (pi/aewald)**2
       volterm = pi * volbox
@@ -6117,7 +6116,6 @@ c!$OMP master
       nf1 = (nfft1+1) / 2
       nf2 = (nfft2+1) / 2
       nf3 = (nfft3+1) / 2
-c!$OMP master
       do i = 1, ntot-1
          k3 = i/nff + 1
          j = i - (k3-1)*nff
@@ -6164,13 +6162,13 @@ c!$OMP master
 !$OMP end master
       end do
 !$OMP barrier
-c!$OMP end master
+
 c
 c     assign just the induced multipoles to PME grid
 c     and perform the 3-D FFT forward transformation
 c
-C$$$!$OMP master
 C$$$! the below if condition is not met by dhrf bench
+
 C$$$      if (use_polar .and. poltyp.eq.'DIRECT') then
 C$$$         do i = 1, npole
 C$$$            do j = 1, 10
@@ -6258,13 +6256,12 @@ C$$$      end if
 C$$$c
 C$$$c     perform deallocation of some local arrays
 C$$$c
-C$$$!$OMP end master
       deallocate (qgrip)
 
 c
 c     transform permanent multipoles without induced dipoles
 c
-c!$OMP master
+
       if (use_polar) then
          call cmp_to_fmp (cmp,fmp)
          fmp_omp = fmp
@@ -6279,9 +6276,7 @@ c         call grid_mpole (fmp)
 c
 c     account for the zeroth grid point for a finite system
 c
-!$OMP master
       qfac(1,1,1) = 0.0d0
-
       if (.not. use_bounds) then
          expterm = 0.5d0 * pi / xbox
          struc2 = qgrid(1,1,1,1)**2 + qgrid(2,1,1,1)**2
@@ -6291,6 +6286,7 @@ c
 c
 c     complete the transformation of the PME grid
 c
+!$OMP DO collapse(3)
       do k = 1, nfft3
          do j = 1, nfft2
             do i = 1, nfft1
@@ -6300,6 +6296,8 @@ c
             end do
          end do
       end do
+!$OMP end do 
+!$OMP master
 c
 c     perform 3-D FFT backward transform and get potential
 c
