@@ -6423,6 +6423,8 @@ c         call grid_uind (fuind,fuinp)
          fuind = fuind_omp
          fuinp = fuinp_omp
          call fftfront
+!$OMP end master
+!$OMP barrier
 c
 c     account for the zeroth grid point for a finite system
 c
@@ -6434,6 +6436,7 @@ c
 c
 c     complete the transformation of the PME grid
 c
+!$OMP DO collapse(3)
          do k = 1, nfft3
             do j = 1, nfft2
                do i = 1, nfft1
@@ -6443,11 +6446,19 @@ c
                end do
             end do
          end do
+!$OMP end do 
 c
 c     perform 3-D FFT backward transform and get potential
 c
+!$OMP master
          call fftback
-         call fphi_uind (fphid,fphip,fphidp)
+!$OMP end master
+!$OMP barrier
+         call fphi_uind2 !(fphid,fphip,fphidp)
+!$OMP master
+         fphid = fdip_phi1_omp
+         fphip = fdip_phi2_omp
+         fphidp = fdip_sum_phi_omp
          do i = 1, npole
             do j = 1, 10
                fphid(j,i) = electric * fphid(j,i)
