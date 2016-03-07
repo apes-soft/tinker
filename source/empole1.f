@@ -6389,6 +6389,9 @@ c
          vzz = vzz - cmp(4,i)*cphi(4,i) - 2.0d0*cmp(7,i)*cphi(7,i)
      &             - cmp(9,i)*cphi(9,i) - cmp(10,i)*cphi(10,i)
       end do
+!$OMP end master
+!$OMP barrier
+
 c
 c     convert Cartesian induced dipoles to fractional coordinates
 c
@@ -6398,18 +6401,27 @@ c
             a(2,i) = dble(nfft2) * recip(i,2)
             a(3,i) = dble(nfft3) * recip(i,3)
          end do
+
+!$OMP DO schedule(dynamic,128)
          do i = 1, npole
             do j = 1, 3
-               fuind(j,i) = a(j,1)*uind(1,i) + a(j,2)*uind(2,i)
+               fuind_omp(j,i) = a(j,1)*uind(1,i) + a(j,2)*uind(2,i)
      &                          + a(j,3)*uind(3,i)
-               fuinp(j,i) = a(j,1)*uinp(1,i) + a(j,2)*uinp(2,i)
+               fuinp_omp(j,i) = a(j,1)*uinp(1,i) + a(j,2)*uinp(2,i)
      &                          + a(j,3)*uinp(3,i)
             end do
          end do
+!$OMP end DO
+
 c
 c     assign PME grid and perform 3-D FFT forward transform
 c
-         call grid_uind (fuind,fuinp)
+       
+c         call grid_uind (fuind,fuinp)
+         call grid_uind1 
+!$OMP master
+         fuind = fuind_omp
+         fuinp = fuinp_omp
          call fftfront
 c
 c     account for the zeroth grid point for a finite system
@@ -6598,10 +6610,12 @@ c
                vzz = vzz + 0.5d0*(cphid(4)*uinp(3,i)+cphip(4)*uind(3,i))
             end if
          end do
+!$OMP end master
       end if
 c
 c     increment the internal virial tensor components
 c
+!$OMP master
       vir(1,1) = vir(1,1) + vxx
       vir(2,1) = vir(2,1) + vyx
       vir(3,1) = vir(3,1) + vzx
