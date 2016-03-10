@@ -6277,7 +6277,7 @@ c         call grid_mpole (fmp)
 c
 c     account for the zeroth grid point for a finite system
 c
-!$OMP master
+
       qfac(1,1,1) = 0.0d0
       if (.not. use_bounds) then
          expterm = 0.5d0 * pi / xbox
@@ -6285,8 +6285,7 @@ c
          e = 0.5d0 * expterm * struc2
          qfac(1,1,1) = expterm
       end if
-!$OMP end master
-!$OMP barrier
+
 c
 c     complete the transformation of the PME grid
 c
@@ -6318,10 +6317,11 @@ c      call fphi_mpole (fphi)
          end do
       end do
 !$OMP end DO
-
-!$OMP master
       fphi = fdip_sum_phi_omp
       call fphi_to_cphi (fphi,cphi)
+!$OMP master
+c      fphi = fdip_sum_phi_omp
+c      call fphi_to_cphi (fphi,cphi)
 c
 c     increment the permanent multipole energy and gradient
 c
@@ -6432,9 +6432,11 @@ c
        
 c         call grid_uind (fuind,fuinp)
          call grid_uind1 
-!$OMP master
          fuind = fuind_omp
          fuinp = fuinp_omp
+!$OMP master
+c         fuind = fuind_omp
+c         fuinp = fuinp_omp
          call fftfront
 !$OMP end master
 !$OMP barrier
@@ -6485,11 +6487,15 @@ c               fphip(j,i) = electric * fphip(j,i)
             end do
          end do
 !$OMP end DO
-
-!$OMP master
+         
          fphid = fdip_phi1_omp
          fphip = fdip_phi2_omp
          fphidp = fdip_sum_phi_omp
+
+!$OMP master
+c         fphid = fdip_phi1_omp
+c         fphip = fdip_phi2_omp
+c         fphidp = fdip_sum_phi_omp
 
 c
 c     increment the induced dipole energy and gradient
@@ -6550,7 +6556,10 @@ c
                fphidp(k,i) = 0.5d0 * fphidp(k,i)
             end do
          end do
+!$OMP end master
+!$OMP barrier
          call fphi_to_cphi (fphidp,cphi)
+c!$OMP master
 c
 c     distribute torques into the induced dipole gradient
 c
@@ -6573,7 +6582,10 @@ c
             frc(2,i) = 0.0d0
             frc(3,i) = 0.0d0
          end do
+c!$OMP end master
+c!$OMP barrier
          call torque2 (trq,frc)
+!$OMP master
          do i = 1, n
             dep(1,i) = dep(1,i) + frc(1,i)
             dep(2,i) = dep(2,i) + frc(2,i)
@@ -6582,6 +6594,20 @@ c
 c
 c     induced dipole contribution to the internal virial
 c
+
+         vxx_omp = 0.0d0
+         vyx_omp = 0.0d0
+         vzx_omp = 0.0d0
+         vzy_omp = 0.0d0
+         vyy_omp = 0.0d0
+         vzz_omp = 0.0d0
+
+!$OMP end master
+!$OMP barrier
+
+!$OMP DO schedule(dynamic,128) reduction(+:vxx_omp,vyx_omp,
+!$OMP& vzx_omp,vzy_omp,vyy_omp,vzz_omp)private(cphim,cphid,
+!$OMP& cphip)
          do i = 1, npole
             do j = 2, 4
                cphim(j) = 0.0d0
@@ -6593,58 +6619,67 @@ c
                   cphip(j) = cphip(j) + ftc(j,k)*fphip(k,i)
                end do
             end do
-            vxx = vxx - cphi(2,i)*cmp(2,i)
+            vxx_omp = vxx_omp - cphi(2,i)*cmp(2,i)
      &                - 0.5d0*(cphim(2)*(uind(1,i)+uinp(1,i))
      &                        +cphid(2)*uinp(1,i)+cphip(2)*uind(1,i))
-            vyx = vyx - 0.5d0*(cphi(2,i)*cmp(3,i)+cphi(3,i)*cmp(2,i))
-     &                - 0.25d0*(cphim(2)*(uind(2,i)+uinp(2,i))
-     &                         +cphim(3)*(uind(1,i)+uinp(1,i))
+            vyx_omp = vyx_omp - 0.5d0*(cphi(2,i)*cmp(3,i)+
+     &           cphi(3,i)*cmp(2,i)) - 0.25d0*(cphim(2)*(uind(2,i) 
+     &           + uinp(2,i)) + cphim(3)*(uind(1,i)+uinp(1,i))
      &                         +cphid(2)*uinp(2,i)+cphip(2)*uind(2,i)
      &                         +cphid(3)*uinp(1,i)+cphip(3)*uind(1,i))
-            vzx = vzx - 0.5d0*(cphi(2,i)*cmp(4,i)+cphi(4,i)*cmp(2,i))
-     &                - 0.25d0*(cphim(2)*(uind(3,i)+uinp(3,i))
+            vzx_omp = vzx_omp - 0.5d0*(cphi(2,i)*cmp(4,i)
+     &           + cphi(4,i)*cmp(2,i))  
+     &           - 0.25d0*(cphim(2)*(uind(3,i)+uinp(3,i))
      &                         +cphim(4)*(uind(1,i)+uinp(1,i))
      &                         +cphid(2)*uinp(3,i)+cphip(2)*uind(3,i)
      &                         +cphid(4)*uinp(1,i)+cphip(4)*uind(1,i))
-            vyy = vyy - cphi(3,i)*cmp(3,i)
+            vyy_omp = vyy_omp - cphi(3,i)*cmp(3,i)
      &                - 0.5d0*(cphim(3)*(uind(2,i)+uinp(2,i))
      &                        +cphid(3)*uinp(2,i)+cphip(3)*uind(2,i))
-            vzy = vzy - 0.5d0*(cphi(3,i)*cmp(4,i)+cphi(4,i)*cmp(3,i))
-     &                - 0.25d0*(cphim(3)*(uind(3,i)+uinp(3,i))
+            vzy_omp = vzy_omp - 0.5d0*(cphi(3,i)*cmp(4,i)+ 
+     &           cphi(4,i)*cmp(3,i)) 
+     &           - 0.25d0*(cphim(3)*(uind(3,i)+uinp(3,i))
      &                         +cphim(4)*(uind(2,i)+uinp(2,i))
      &                         +cphid(3)*uinp(3,i)+cphip(3)*uind(3,i)
      &                         +cphid(4)*uinp(2,i)+cphip(4)*uind(2,i))
-            vzz = vzz - cphi(4,i)*cmp(4,i)
+            vzz_omp = vzz_omp - cphi(4,i)*cmp(4,i)
      &                - 0.5d0*(cphim(4)*(uind(3,i)+uinp(3,i))
      &                        +cphid(4)*uinp(3,i)+cphip(4)*uind(3,i))
-            vxx = vxx - 2.0d0*cmp(5,i)*cphi(5,i) - cmp(8,i)*cphi(8,i)
-     &                - cmp(9,i)*cphi(9,i)
-            vyx = vyx - (cmp(5,i)+cmp(6,i))*cphi(8,i)
+            vxx_omp = vxx_omp - 2.0d0*cmp(5,i)*cphi(5,i) 
+     &           - cmp(8,i)*cphi(8,i) - cmp(9,i)*cphi(9,i)
+            vyx_omp = vyx_omp - (cmp(5,i)+cmp(6,i))*cphi(8,i)
      &                - 0.5d0*(cmp(8,i)*(cphi(6,i)+cphi(5,i))
      &                     +cmp(9,i)*cphi(10,i)+cmp(10,i)*cphi(9,i))
-            vzx = vzx - (cmp(5,i)+cmp(7,i))*cphi(9,i)
+            vzx_omp = vzx_omp - (cmp(5,i)+cmp(7,i))*cphi(9,i)
      &                - 0.5d0*(cmp(9,i)*(cphi(5,i)+cphi(7,i))
      &                     +cmp(8,i)*cphi(10,i)+cmp(10,i)*cphi(8,i))
-            vyy = vyy - 2.0d0*cmp(6,i)*cphi(6,i) - cmp(8,i)*cphi(8,i)
-     &                - cmp(10,i)*cphi(10,i)
-            vzy = vzy - (cmp(6,i)+cmp(7,i))*cphi(10,i)
+            vyy_omp = vyy_omp - 2.0d0*cmp(6,i)*cphi(6,i) - 
+     &           cmp(8,i)*cphi(8,i) - cmp(10,i)*cphi(10,i)
+            vzy_omp = vzy_omp - (cmp(6,i)+cmp(7,i))*cphi(10,i)
      &                - 0.5d0*(cmp(10,i)*(cphi(6,i)+cphi(7,i))
      &                     +cmp(8,i)*cphi(9,i)+cmp(9,i)*cphi(8,i))
-            vzz = vzz - 2.0d0*cmp(7,i)*cphi(7,i) - cmp(9,i)*cphi(9,i)
-     &                - cmp(10,i)*cphi(10,i)
+            vzz_omp = vzz_omp - 2.0d0*cmp(7,i)*cphi(7,i) - 
+     &           cmp(9,i)*cphi(9,i) - cmp(10,i)*cphi(10,i)
             if (poltyp .eq. 'DIRECT') then
-               vxx = vxx + 0.5d0*(cphid(2)*uinp(1,i)+cphip(2)*uind(1,i))
-               vyx = vyx + 0.25d0*(cphid(2)*uinp(2,i)+cphip(2)*uind(2,i)
+               vxx_omp = vxx_omp + 0.5d0*(cphid(2)*uinp(1,i)
+     &              + cphip(2)*uind(1,i))
+               vyx_omp = vyx_omp + 0.25d0*(cphid(2)*uinp(2,i)+
+     &              cphip(2)*uind(2,i)
      &                           +cphid(3)*uinp(1,i)+cphip(3)*uind(1,i))
-               vzx = vzx + 0.25d0*(cphid(2)*uinp(3,i)+cphip(2)*uind(3,i)
+               vzx_omp = vzx_omp + 0.25d0*(cphid(2)*uinp(3,i)+
+     &              cphip(2)*uind(3,i)
      &                           +cphid(4)*uinp(1,i)+cphip(4)*uind(1,i))
-               vyy = vyy + 0.5d0*(cphid(3)*uinp(2,i)+cphip(3)*uind(2,i))
-               vzy = vzy + 0.25d0*(cphid(3)*uinp(3,i)+cphip(3)*uind(3,i)
+               vyy_omp = vyy_omp + 0.5d0*(cphid(3)*uinp(2,i) 
+     &              + cphip(3)*uind(2,i))
+               vzy_omp = vzy_omp + 0.25d0*(cphid(3)*uinp(3,i) + 
+     &              cphip(3)*uind(3,i)
      &                           +cphid(4)*uinp(2,i)+cphip(4)*uind(2,i))
-               vzz = vzz + 0.5d0*(cphid(4)*uinp(3,i)+cphip(4)*uind(3,i))
+               vzz_omp = vzz_omp + 0.5d0*(cphid(4)*uinp(3,i) 
+     &              + cphip(4)*uind(3,i))
             end if
          end do
-!$OMP end master
+!$OMP end DO
+c!$OMP end master
       end if
 c
 c     increment the internal virial tensor components

@@ -61,6 +61,8 @@ c
       real*8, allocatable :: dipfield1_omp(:,:)
       real*8, allocatable :: dipfield2_omp(:,:) 
       real*8, allocatable :: fmp_omp(:,:)
+      real*8 vxx_omp,vyx_omp,vzx_omp
+      real*8 vyy_omp,vzy_omp,vzz_omp
 
       save
 !$OMP threadprivate(th_id)
