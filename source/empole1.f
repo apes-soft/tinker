@@ -6030,14 +6030,16 @@ c
          call bspline_fill
          call table_fill
       end if
-!$OMP end master
-!$OMP barrier
 
 c
 c     perform dynamic allocation of some local arrays
 c
 
       allocate (qgrip(2,nfft1,nfft2,nfft3))
+
+!$OMP end master
+!$OMP barrier
+
 
 c
 c     assign permanent and induced multipoles to PME grid
@@ -6057,10 +6059,6 @@ c
 !$OMP master     
          call fftfront
          fmp = fmp_omp
-!$OMP end master
-!$OMP barrier
-!$OMP flush
-
          do k = 1, nfft3
             do j = 1, nfft2
                do i = 1, nfft1
@@ -6069,6 +6067,11 @@ c
                end do
             end do
          end do
+!$OMP end master
+!$OMP barrier
+!$OMP flush
+
+
          do i = 1, npole
             do j = 2, 4
                cmp(j,i) = cmp(j,i) + uind(j-1,i) - uinp(j-1,i)
@@ -6109,6 +6112,7 @@ c
 c
 c     make the scalar summation over reciprocal lattice
 c
+!$OMP master
       ntot = nfft1 * nfft2 * nfft3
       pterm = (pi/aewald)**2
       volterm = pi * volbox
@@ -6148,20 +6152,20 @@ c
      &                  + qgrid(2,k1,k2,k3)*qgrip(2,k1,k2,k3)
             eterm = 0.5d0 * electric * expterm * struc2
             vterm = (2.0d0/hsq) * (1.0d0-term) * eterm
-!$OMP master
+c!$OMP master
             vxx = vxx + h1*h1*vterm - eterm
             vyx = vyx + h2*h1*vterm
             vzx = vzx + h3*h1*vterm
             vyy = vyy + h2*h2*vterm - eterm
             vzy = vzy + h3*h2*vterm
             vzz = vzz + h3*h3*vterm - eterm
-!$OMP end master
+c!$OMP end master
          end if
-!$OMP master
+c!$OMP master
          qfac(k1,k2,k3) = expterm
-!$OMP end master
+c!$OMP end master
       end do
-!$OMP barrier
+c!$OMP barrier
 
 c
 c     assign just the induced multipoles to PME grid
@@ -6257,7 +6261,8 @@ C$$$c
 C$$$c     perform deallocation of some local arrays
 C$$$c
       deallocate (qgrip)
-
+!$OMP end master
+!$OMP barrier
 c
 c     transform permanent multipoles without induced dipoles
 c
@@ -6276,6 +6281,7 @@ c         call grid_mpole (fmp)
 c
 c     account for the zeroth grid point for a finite system
 c
+!$OMP master
       qfac(1,1,1) = 0.0d0
       if (.not. use_bounds) then
          expterm = 0.5d0 * pi / xbox
@@ -6283,6 +6289,8 @@ c
          e = 0.5d0 * expterm * struc2
          qfac(1,1,1) = expterm
       end if
+!$OMP end master
+!$OMP barrier
 c
 c     complete the transformation of the PME grid
 c
