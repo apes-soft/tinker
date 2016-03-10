@@ -6595,19 +6595,19 @@ c
 c     induced dipole contribution to the internal virial
 c
 
-         vxx_omp = 0.0d0
-         vyx_omp = 0.0d0
-         vzx_omp = 0.0d0
-         vzy_omp = 0.0d0
-         vyy_omp = 0.0d0
-         vzz_omp = 0.0d0
+         vxx_omp = vxx !0.0d0
+         vyx_omp = vyx !0.0d0
+         vzx_omp = vzx !0.0d0
+         vzy_omp = vzy !0.0d0
+         vyy_omp = vyy !0.0d0
+         vzz_omp = vzz !0.0d0
 
-!$OMP end master
-!$OMP barrier
+c!$OMP end master
+c!$OMP barrier
 
-!$OMP DO schedule(dynamic,128) reduction(+:vxx_omp,vyx_omp,
-!$OMP& vzx_omp,vzy_omp,vyy_omp,vzz_omp)private(cphim,cphid,
-!$OMP& cphip)
+c!$OMP DO schedule(dynamic,128) reduction(+:vxx_omp,vyx_omp,
+c!$OMP& vzx_omp,vzy_omp,vyy_omp,vzz_omp)private(cphim,cphid,
+c!$OMP& cphip)
          do i = 1, npole
             do j = 2, 4
                cphim(j) = 0.0d0
@@ -6678,22 +6678,22 @@ c
      &              + cphip(4)*uind(3,i))
             end if
          end do
-!$OMP end DO
-c!$OMP end master
+c!$OMP end DO
+!$OMP end master
       end if
 c
 c     increment the internal virial tensor components
 c
 !$OMP master
-      vir(1,1) = vir(1,1) + vxx
-      vir(2,1) = vir(2,1) + vyx
-      vir(3,1) = vir(3,1) + vzx
-      vir(1,2) = vir(1,2) + vyx
-      vir(2,2) = vir(2,2) + vyy
-      vir(3,2) = vir(3,2) + vzy
-      vir(1,3) = vir(1,3) + vzx
-      vir(2,3) = vir(2,3) + vzy
-      vir(3,3) = vir(3,3) + vzz
+      vir(1,1) = vir(1,1) + vxx_omp
+      vir(2,1) = vir(2,1) + vyx_omp
+      vir(3,1) = vir(3,1) + vzx_omp
+      vir(1,2) = vir(1,2) + vyx_omp
+      vir(2,2) = vir(2,2) + vyy_omp
+      vir(3,2) = vir(3,2) + vzy_omp
+      vir(1,3) = vir(1,3) + vzx_omp
+      vir(2,3) = vir(2,3) + vzy_omp
+      vir(3,3) = vir(3,3) + vzz_omp
 c
 c     perform deallocation of some local arrays
 c
