@@ -6152,20 +6152,16 @@ c
      &                  + qgrid(2,k1,k2,k3)*qgrip(2,k1,k2,k3)
             eterm = 0.5d0 * electric * expterm * struc2
             vterm = (2.0d0/hsq) * (1.0d0-term) * eterm
-c!$OMP master
             vxx = vxx + h1*h1*vterm - eterm
             vyx = vyx + h2*h1*vterm
             vzx = vzx + h3*h1*vterm
             vyy = vyy + h2*h2*vterm - eterm
             vzy = vzy + h3*h2*vterm
             vzz = vzz + h3*h3*vterm - eterm
-c!$OMP end master
          end if
-c!$OMP master
          qfac(k1,k2,k3) = expterm
-c!$OMP end master
       end do
-c!$OMP barrier
+
 
 c
 c     assign just the induced multipoles to PME grid
@@ -6305,17 +6301,26 @@ c
          end do
       end do
 !$OMP end do 
+
 !$OMP master
 c
 c     perform 3-D FFT backward transform and get potential
 c
       call fftback
-      call fphi_mpole (fphi)
+!$OMP end master
+!$OMP barrier
+c      call fphi_mpole (fphi)
+      call fphi_mpole1 !(fphi)
+!$OMP do schedule(dynamic,128)
       do i = 1, npole
          do j = 1, 20
-            fphi(j,i) = electric * fphi(j,i)
+            fdip_sum_phi_omp(j,i) = electric * fdip_sum_phi_omp(j,i)
          end do
       end do
+!$OMP end DO
+
+!$OMP master
+      fphi = fdip_sum_phi_omp
       call fphi_to_cphi (fphi,cphi)
 c
 c     increment the permanent multipole energy and gradient
@@ -6463,19 +6468,29 @@ c
 !$OMP end master
 !$OMP barrier
          call fphi_uind2 !(fphid,fphip,fphidp)
+C$$$!$OMP master
+C$$$         fphid = fdip_phi1_omp
+C$$$         fphip = fdip_phi2_omp
+C$$$         fphidp = fdip_sum_phi_omp
+!$OMP DO schedule(dynamic,128)
+         do i = 1, npole
+            do j = 1, 10
+c               fphid(j,i) = electric * fphid(j,i)
+c               fphip(j,i) = electric * fphip(j,i)
+               fdip_phi1_omp(j,i) = electric * fdip_phi1_omp(j,i)
+               fdip_phi2_omp(j,i) = electric * fdip_phi2_omp(j,i)
+            end do
+            do j = 1, 20
+               fdip_sum_phi_omp(j,i) = electric * fdip_sum_phi_omp(j,i)
+            end do
+         end do
+!$OMP end DO
+
 !$OMP master
          fphid = fdip_phi1_omp
          fphip = fdip_phi2_omp
          fphidp = fdip_sum_phi_omp
-         do i = 1, npole
-            do j = 1, 10
-               fphid(j,i) = electric * fphid(j,i)
-               fphip(j,i) = electric * fphip(j,i)
-            end do
-            do j = 1, 20
-               fphidp(j,i) = electric * fphidp(j,i)
-            end do
-         end do
+
 c
 c     increment the induced dipole energy and gradient
 c

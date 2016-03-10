@@ -1059,10 +1059,11 @@ c     "fphi_mpole1" extracts the permanent multipole potential from
 c     the particle mesh Ewald grid
 c
 c
-      subroutine fphi_mpole1 (fphi)
+      subroutine fphi_mpole1 !(fphi)
       use sizes
       use mpole
       use pme
+      use openmp
       implicit none
       integer i,j,k
       integer isite,iatm
@@ -1079,7 +1080,7 @@ c
       real*8 tuv101,tuv011,tuv300,tuv030
       real*8 tuv003,tuv210,tuv201,tuv120
       real*8 tuv021,tuv102,tuv012,tuv111
-      real*8 fphi(20,*)
+c      real*8 fphi(20,*)
 c
 c
 c     set OpenMP directives for the major loop structure
@@ -1089,6 +1090,7 @@ c
 !$OMP& tuv030,tuv003,tuv210,tuv201,tuv120,tuv021,tuv102,tuv012,
 !$OMP& tuv111,k0,k,v0,v1,v2,v3,tu00,tu10,tu20,tu11,tu02,tu30,
 !$OMP& tu21,tu12,tu01,tu03,j0,j,u0,u1,u2,u3,t0,t1,t2,t3,i0,i,tq)
+!$OMP& schedule(dynamic,128)
 c
 c     extract the permanent multipole field at each site
 c
@@ -1189,26 +1191,26 @@ c
             tuv012 = tuv012 + tu01*v2
             tuv111 = tuv111 + tu11*v1
          end do
-         fphi(1,isite) = tuv000
-         fphi(2,isite) = tuv100
-         fphi(3,isite) = tuv010
-         fphi(4,isite) = tuv001
-         fphi(5,isite) = tuv200
-         fphi(6,isite) = tuv020
-         fphi(7,isite) = tuv002
-         fphi(8,isite) = tuv110
-         fphi(9,isite) = tuv101
-         fphi(10,isite) = tuv011
-         fphi(11,isite) = tuv300
-         fphi(12,isite) = tuv030
-         fphi(13,isite) = tuv003
-         fphi(14,isite) = tuv210
-         fphi(15,isite) = tuv201
-         fphi(16,isite) = tuv120
-         fphi(17,isite) = tuv021
-         fphi(18,isite) = tuv102
-         fphi(19,isite) = tuv012
-         fphi(20,isite) = tuv111
+         fdip_sum_phi_omp(1,isite) = tuv000
+         fdip_sum_phi_omp(2,isite) = tuv100
+         fdip_sum_phi_omp(3,isite) = tuv010
+         fdip_sum_phi_omp(4,isite) = tuv001
+         fdip_sum_phi_omp(5,isite) = tuv200
+         fdip_sum_phi_omp(6,isite) = tuv020
+         fdip_sum_phi_omp(7,isite) = tuv002
+         fdip_sum_phi_omp(8,isite) = tuv110
+         fdip_sum_phi_omp(9,isite) = tuv101
+         fdip_sum_phi_omp(10,isite) = tuv011
+         fdip_sum_phi_omp(11,isite) = tuv300
+         fdip_sum_phi_omp(12,isite) = tuv030
+         fdip_sum_phi_omp(13,isite) = tuv003
+         fdip_sum_phi_omp(14,isite) = tuv210
+         fdip_sum_phi_omp(15,isite) = tuv201
+         fdip_sum_phi_omp(16,isite) = tuv120
+         fdip_sum_phi_omp(17,isite) = tuv021
+         fdip_sum_phi_omp(18,isite) = tuv102
+         fdip_sum_phi_omp(19,isite) = tuv012
+         fdip_sum_phi_omp(20,isite) = tuv111
       end do
 c
 c     end OpenMP directive for the major loop structure
