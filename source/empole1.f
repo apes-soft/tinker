@@ -6615,9 +6615,13 @@ c
             dep(2,i) = dep(2,i) + frc_omp(2,i)
             dep(3,i) = dep(3,i) + frc_omp(3,i)
          end do
+!$OMP end master
+!$OMP barrier
 c
 c     induced dipole contribution to the internal virial
 c
+!$OMP DO schedule(dynamic,128)  reduction(+:vxx_omp,vyx_omp,
+!$OMP& vzx_omp, vyy_omp,vzy_omp,vzz_omp)
          do i = 1, npole
             do j = 2, 4
                cphim(j) = 0.0d0
@@ -6701,7 +6705,8 @@ c
      &              + cphip(4)*uind(3,i))
             end if
          end do
-!$OMP end master
+!$OMP end DO 
+c!$OMP end master
       end if
 c
 c     increment the internal virial tensor components
