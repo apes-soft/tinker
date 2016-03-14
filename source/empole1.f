@@ -5974,8 +5974,6 @@ c
       data deriv2  / 3, 8,  6, 10, 14, 12, 19, 16, 20, 17 /
       data deriv3  / 4, 9, 10,  7, 15, 17, 13, 20, 18, 19 /
 
-c!$OMP master
-c
 c
 c     return if the Ewald coefficient is zero
 c
@@ -6021,8 +6019,6 @@ c
       end do
 !$OMP end do 
 
-c      cmp = cmp_omp
-
 c
 c     get the fractional to Cartesian transformation matrix
 c
@@ -6060,13 +6056,9 @@ c
          end do
 !$OMP end DO 
 
-         cmp = cmp_omp
+         call cmp_to_fmp1 
+         call grid_mpole1 
 
-         call cmp_to_fmp1 !  (cmp,fmp)
-c         fmp_omp = fmp
-         call grid_mpole1 !(fmp)
-c         cmp_omp = cmp
-         fmp = fmp_omp
 !$OMP master     
          call fftfront
          fmp = fmp_omp
@@ -6090,14 +6082,11 @@ c         cmp_omp = cmp
          end do
 !$OMP end DO 
 
-         cmp = cmp_omp
-         call cmp_to_fmp (cmp,fmp)
-         fmp_omp = fmp
-         call grid_mpole1 !(fmp)
-         
+
+         call cmp_to_fmp1 
+         call grid_mpole1          
+
 !$OMP master
-         fmp = fmp_omp
-c         cmp_omp = cmp
          call fftfront
 !$OMP end master
 !$OMP barrier
@@ -6111,7 +6100,7 @@ c         cmp_omp = cmp
             end do
          end do
 !$OMP end DO 
-         cmp = cmp_omp
+
       else
 !$OMP master
          call cmp_to_fmp (cmp,fmp)
@@ -6283,16 +6272,17 @@ c     transform permanent multipoles without induced dipoles
 c
 
       if (use_polar) then
-         call cmp_to_fmp (cmp,fmp)
-         fmp_omp = fmp
-         call grid_mpole1 !(fmp)
-c         call grid_mpole (fmp)
+         call cmp_to_fmp1 
+         call grid_mpole1 
 !$OMP master
-         fmp = fmp_omp
          call fftfront
 !$OMP end master
 !$OMP barrier
       end if
+
+      cmp = cmp_omp
+      fmp = fmp_omp
+
 c
 c     account for the zeroth grid point for a finite system
 c
