@@ -809,7 +809,7 @@ c
       if(allocated(dipfield2_omp)) deallocate (dipfield2_omp)
 
       if(allocated(fmp_omp)) deallocate(fmp_omp)
-       
+      if(allocated(cmp_omp)) deallocate(cmp_omp)
 c
 c     free memory used by the APBS Poisson-Boltzmann solver
 c
