@@ -5961,8 +5961,8 @@ c      real*8, allocatable :: fuind(:,:)
 c      real*8, allocatable :: fuinp(:,:)
       real*8, allocatable :: fphi(:,:)
 c      real*8, allocatable :: fphid(:,:)
-      real*8, allocatable :: fphip(:,:)
-      real*8, allocatable :: fphidp(:,:)
+c      real*8, allocatable :: fphip(:,:)
+c      real*8, allocatable :: fphidp(:,:)
 c      real*8, allocatable :: cphi(:,:)
       real*8, allocatable :: qgrip(:,:,:,:)
 c
@@ -5985,8 +5985,8 @@ c      allocate (fuind(3,npole))
 c      allocate (fuinp(3,npole))
       allocate (fphi(20,npole))
 c      allocate (fphid(10,npole))
-      allocate (fphip(10,npole))
-      allocate (fphidp(20,npole))
+c      allocate (fphip(10,npole))
+c      allocate (fphidp(20,npole))
 c      allocate (cphi(10,npole))
 c
 c     zero out the temporary virial accumulation variables
@@ -6540,8 +6540,8 @@ c
 
 !$OMP master
 c         fphid = fdip_phi1_omp
-         fphip = fdip_phi2_omp
-         fphidp = fdip_sum_phi_omp
+c         fphip = fdip_phi2_omp
+c         fphidp = fdip_sum_phi_omp
 
 c
 c     increment the induced dipole energy and gradient
@@ -6557,27 +6557,27 @@ c
                j3 = deriv3(k+1)
                e = e + fuind_omp(k,i)*fphi(k+1,i)
                f1 = f1 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi(j1,i)
-     &                 + fuind_omp(k,i)*fphip(j1,i)
+     &                 + fuind_omp(k,i)*fdip_phi2_omp(j1,i)
      &                 + fuinp_omp(k,i)*fdip_phi1_omp(j1,i)
                f2 = f2 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi(j2,i)
-     &                 + fuind_omp(k,i)*fphip(j2,i)
+     &                 + fuind_omp(k,i)*fdip_phi2_omp(j2,i)
      &                 + fuinp_omp(k,i)*fdip_phi1_omp(j2,i)
                f3 = f3 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi(j3,i)
-     &                 + fuind_omp(k,i)*fphip(j3,i)
+     &                 + fuind_omp(k,i)*fdip_phi2_omp(j3,i)
      &                 + fuinp_omp(k,i)*fdip_phi1_omp(j3,i)
                if (poltyp .eq. 'DIRECT') then
-                  f1 = f1 - fuind_omp(k,i)*fphip(j1,i)
+                  f1 = f1 - fuind_omp(k,i)*fdip_phi2_omp(j1,i)
      &                    - fuinp_omp(k,i)*fdip_phi1_omp(j1,i)
-                  f2 = f2 - fuind_omp(k,i)*fphip(j2,i)
+                  f2 = f2 - fuind_omp(k,i)*fdip_phi2_omp(j2,i)
      &                    - fuinp_omp(k,i)*fdip_phi1_omp(j2,i)
-                  f3 = f3 - fuind_omp(k,i)*fphip(j3,i)
+                  f3 = f3 - fuind_omp(k,i)*fdip_phi2_omp(j3,i)
      &                    - fuinp_omp(k,i)*fdip_phi1_omp(j3,i)
                end if
             end do
             do k = 1, 10
-               f1 = f1 + fmp_omp(k,i)*fphidp(deriv1(k),i)
-               f2 = f2 + fmp_omp(k,i)*fphidp(deriv2(k),i)
-               f3 = f3 + fmp_omp(k,i)*fphidp(deriv3(k),i)
+               f1 = f1 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv1(k),i)
+               f2 = f2 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv2(k),i)
+               f3 = f3 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv3(k),i)
             end do
             f1 = 0.5d0 * dble(nfft1) * f1
             f2 = 0.5d0 * dble(nfft2) * f2
@@ -6599,10 +6599,10 @@ c     set the potential to be the induced dipole average
 c
          do i = 1, npole
             do k = 1, 10
-               fphidp(k,i) = 0.5d0 * fphidp(k,i)
+               fdip_sum_phi_omp(k,i) = 0.5d0 * fdip_sum_phi_omp(k,i)
             end do
          end do
-         call fphi_to_cphi (fphidp,cphi_omp)
+         call fphi_to_cphi (fdip_sum_phi_omp,cphi_omp)
 c
 c     distribute torques into the induced dipole gradient
 c
@@ -6654,7 +6654,7 @@ c
                do k = 2, 4
                   cphim(j) = cphim(j) + ftc(j,k)*fphi(k,i)
                   cphid(j) = cphid(j) + ftc(j,k)*fdip_phi1_omp(k,i)
-                  cphip(j) = cphip(j) + ftc(j,k)*fphip(k,i)
+                  cphip(j) = cphip(j) + ftc(j,k)*fdip_phi2_omp(k,i)
                end do
             end do
             vxx_omp = vxx_omp - cphi_omp(2,i)*cmp_omp(2,i)
@@ -6757,8 +6757,8 @@ c      deallocate (fuind)
 c      deallocate (fuinp)
       deallocate (fphi)
 c      deallocate (fphid)
-      deallocate (fphip)
-      deallocate (fphidp)
+c      deallocate (fphip)
+c      deallocate (fphidp)
 c      deallocate (cphi)
       return
       end
