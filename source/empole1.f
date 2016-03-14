@@ -6355,8 +6355,11 @@ c
 c
 c     distribute torques into the permanent multipole gradient
 c
+!$OMP end master
+!$OMP barrier
+!$OMP DO schedule(dynamic,128)
       do i = 1, npole
-         trq(1,i) = cmp_omp(4,i)*cphi_omp(3,i) 
+         trq_omp(1,i) = cmp_omp(4,i)*cphi_omp(3,i) 
      &        - cmp_omp(3,i)*cphi_omp(4,i)
      &                 + 2.0d0*(cmp_omp(7,i)-
      &        cmp_omp(6,i))*cphi_omp(10,i)
@@ -6364,14 +6367,14 @@ c
      &        + cmp_omp(10,i)*cphi_omp(6,i)
      &                 - cmp_omp(8,i)*cphi_omp(9,i) 
      &        - cmp_omp(10,i)*cphi_omp(7,i)
-         trq(2,i) = cmp_omp(2,i)*cphi_omp(4,i) 
+         trq_omp(2,i) = cmp_omp(2,i)*cphi_omp(4,i) 
      &        - cmp_omp(4,i)*cphi_omp(2,i)
      &                 + 2.0d0*(cmp_omp(5,i)-cmp_omp(7,i))*cphi_omp(9,i)
      &                 + cmp_omp(8,i)*cphi_omp(10,i) 
      &        + cmp_omp(9,i)*cphi_omp(7,i)
      &                 - cmp_omp(9,i)*cphi_omp(5,i) 
      &        - cmp_omp(10,i)*cphi_omp(8,i)
-         trq(3,i) = cmp_omp(3,i)*cphi_omp(2,i) 
+         trq_omp(3,i) = cmp_omp(3,i)*cphi_omp(2,i) 
      &        - cmp_omp(2,i)*cphi_omp(3,i)
      &                 + 2.0d0*(cmp_omp(6,i)-cmp_omp(5,i))*cphi_omp(8,i)
      &                 + cmp_omp(8,i)*cphi_omp(5,i) 
@@ -6379,6 +6382,10 @@ c
      &                 - cmp_omp(8,i)*cphi_omp(6,i) 
      &        - cmp_omp(9,i)*cphi_omp(10,i)
       end do
+!$OMP end do
+
+!$OMP master
+      trq = trq_omp
       do i = 1, n
          frc(1,i) = 0.0d0
          frc(2,i) = 0.0d0
