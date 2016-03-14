@@ -6021,7 +6021,7 @@ c
       end do
 !$OMP end do 
 
-      cmp = cmp_omp
+c      cmp = cmp_omp
 
 c
 c     get the fractional to Cartesian transformation matrix
@@ -6051,15 +6051,21 @@ c     assign permanent and induced multipoles to PME grid
 c     and perform the 3-D FFT forward transformation
 c
       if (use_polar) then
+
+!$OMP DO schedule(static,128)
          do i = 1, npole
             do j = 2, 4
-               cmp(j,i) = cmp(j,i) + uinp(j-1,i)
+               cmp_omp(j,i) = cmp_omp(j,i) + uinp(j-1,i)
             end do
          end do
+!$OMP end DO 
+
+         cmp = cmp_omp
 
          call cmp_to_fmp (cmp,fmp)
          fmp_omp = fmp
          call grid_mpole1 !(fmp)
+         cmp_omp = cmp
 
 !$OMP master     
          call fftfront
@@ -6076,28 +6082,36 @@ c
 !$OMP barrier
 !$OMP flush
 
-
+!$OMP DO schedule(static,128)
          do i = 1, npole
             do j = 2, 4
-               cmp(j,i) = cmp(j,i) + uind(j-1,i) - uinp(j-1,i)
+               cmp_omp(j,i) = cmp_omp(j,i) + uind(j-1,i) - uinp(j-1,i)
             end do
          end do
+!$OMP end DO 
 
+         cmp = cmp_omp
          call cmp_to_fmp (cmp,fmp)
          fmp_omp = fmp
          call grid_mpole1 !(fmp)
-
+         
 !$OMP master
          fmp = fmp_omp
+         cmp_omp = cmp
          call fftfront
 !$OMP end master
 !$OMP barrier
 !$OMP flush
+
+
+!$OMP DO schedule(static,128)
          do i = 1, npole
             do j = 2, 4
-               cmp(j,i) = cmp(j,i) - uind(j-1,i)
+               cmp_omp(j,i) = cmp_omp(j,i) - uind(j-1,i)
             end do
          end do
+!$OMP end DO 
+         cmp = cmp_omp
       else
 !$OMP master
          call cmp_to_fmp (cmp,fmp)
