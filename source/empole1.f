@@ -6351,11 +6351,12 @@ c
       end do
 !$OMP end DO 
 
-!$OMP master
-      frc = frc_omp
-      e = 0.5d0 * e_omp
-      em = em + e
-!$OMP end master
+C$$$!$OMP master
+C$$$c      frc = frc_omp
+C$$$      e = 0.5d0 * e_omp
+C$$$      em = em + e
+c!$OMP end master
+
 !$OMP DO schedule(dynamic,128) 
       do i = 1, npole
          ii = ipole(i)
@@ -6367,8 +6368,6 @@ c
 c
 c     distribute torques into the permanent multipole gradient
 c
-c!$OMP end master
-c!$OMP barrier
 
 !$OMP DO schedule(dynamic,128)
       do i = 1, npole
@@ -6397,14 +6396,25 @@ c!$OMP barrier
       end do
 !$OMP end do
 
-      trq = trq_omp
+!$OMP DO schedule(dynamic,128)
       do i = 1, n
-         frc(1,i) = 0.0d0
-         frc(2,i) = 0.0d0
-         frc(3,i) = 0.0d0
+         frc_omp(1,i) = 0.0d0
+         frc_omp(2,i) = 0.0d0
+         frc_omp(3,i) = 0.0d0
       end do
-      call torque2 (trq,frc)
-      frc_omp = frc
+!$OMP end DO 
+
+!$OMP master
+      e = 0.5d0 * e_omp
+      em = em + e
+      call torque2 (trq_omp,frc_omp)
+!$OMP end master
+!$OMP barrier
+
+c      trq = trq_omp
+
+c      call torque2 (trq,frc)
+c      frc_omp = frc
 
 !$OMP DO schedule(dynamic,128)
       do i = 1, n
