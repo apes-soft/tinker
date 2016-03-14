@@ -5955,10 +5955,10 @@ C$$$      real*8 vyy,vzy,vzz
       real*8 cphim(4),cphid(4)
       real*8 cphip(4)
       real*8 a(3,3),ftc(10,10)
-      real*8, allocatable :: frc(:,:)
+c      real*8, allocatable :: frc(:,:)
       real*8, allocatable :: trq(:,:)
 c      real*8, allocatable :: fuind(:,:)
-      real*8, allocatable :: fuinp(:,:)
+c      real*8, allocatable :: fuinp(:,:)
       real*8, allocatable :: fphi(:,:)
       real*8, allocatable :: fphid(:,:)
       real*8, allocatable :: fphip(:,:)
@@ -5979,10 +5979,10 @@ c
 c
 c     perform dynamic allocation of some local arrays
 c
-      allocate (frc(3,n))
+c      allocate (frc(3,n))
       allocate (trq(3,npole))
 c      allocate (fuind(3,npole))
-      allocate (fuinp(3,npole))
+c      allocate (fuinp(3,npole))
       allocate (fphi(20,npole))
       allocate (fphid(10,npole))
       allocate (fphip(10,npole))
@@ -6482,7 +6482,7 @@ c
          cphi = cphi_omp
          fphi = fdip_sum_phi_omp
 c         fuind = fuind_omp
-         fuinp = fuinp_omp
+c         fuinp = fuinp_omp
 c
 c     assign PME grid and perform 3-D FFT forward transform
 c
@@ -6555,22 +6555,22 @@ c
                j2 = deriv2(k+1)
                j3 = deriv3(k+1)
                e = e + fuind_omp(k,i)*fphi(k+1,i)
-               f1 = f1 + (fuind_omp(k,i)+fuinp(k,i))*fphi(j1,i)
+               f1 = f1 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi(j1,i)
      &                 + fuind_omp(k,i)*fphip(j1,i)
-     &                 + fuinp(k,i)*fphid(j1,i)
-               f2 = f2 + (fuind_omp(k,i)+fuinp(k,i))*fphi(j2,i)
+     &                 + fuinp_omp(k,i)*fphid(j1,i)
+               f2 = f2 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi(j2,i)
      &                 + fuind_omp(k,i)*fphip(j2,i)
-     &                 + fuinp(k,i)*fphid(j2,i)
-               f3 = f3 + (fuind_omp(k,i)+fuinp(k,i))*fphi(j3,i)
+     &                 + fuinp_omp(k,i)*fphid(j2,i)
+               f3 = f3 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi(j3,i)
      &                 + fuind_omp(k,i)*fphip(j3,i)
-     &                 + fuinp(k,i)*fphid(j3,i)
+     &                 + fuinp_omp(k,i)*fphid(j3,i)
                if (poltyp .eq. 'DIRECT') then
                   f1 = f1 - fuind_omp(k,i)*fphip(j1,i)
-     &                    - fuinp(k,i)*fphid(j1,i)
+     &                    - fuinp_omp(k,i)*fphid(j1,i)
                   f2 = f2 - fuind_omp(k,i)*fphip(j2,i)
-     &                    - fuinp(k,i)*fphid(j2,i)
+     &                    - fuinp_omp(k,i)*fphid(j2,i)
                   f3 = f3 - fuind_omp(k,i)*fphip(j3,i)
-     &                    - fuinp(k,i)*fphid(j3,i)
+     &                    - fuinp_omp(k,i)*fphid(j3,i)
                end if
             end do
             do k = 1, 10
@@ -6581,17 +6581,17 @@ c
             f1 = 0.5d0 * dble(nfft1) * f1
             f2 = 0.5d0 * dble(nfft2) * f2
             f3 = 0.5d0 * dble(nfft3) * f3
-            frc(1,i) = recip(1,1)*f1 + recip(1,2)*f2 + recip(1,3)*f3
-            frc(2,i) = recip(2,1)*f1 + recip(2,2)*f2 + recip(2,3)*f3
-            frc(3,i) = recip(3,1)*f1 + recip(3,2)*f2 + recip(3,3)*f3
+            frc_omp(1,i) = recip(1,1)*f1 + recip(1,2)*f2 + recip(1,3)*f3
+            frc_omp(2,i) = recip(2,1)*f1 + recip(2,2)*f2 + recip(2,3)*f3
+            frc_omp(3,i) = recip(3,1)*f1 + recip(3,2)*f2 + recip(3,3)*f3
          end do
          e = 0.5d0 * e
          ep = ep + e
          do i = 1, npole
             ii = ipole(i)
-            dep(1,ii) = dep(1,ii) + frc(1,i)
-            dep(2,ii) = dep(2,ii) + frc(2,i)
-            dep(3,ii) = dep(3,ii) + frc(3,i)
+            dep(1,ii) = dep(1,ii) + frc_omp(1,i)
+            dep(2,ii) = dep(2,ii) + frc_omp(2,i)
+            dep(3,ii) = dep(3,ii) + frc_omp(3,i)
          end do
 c
 c     set the potential to be the induced dipole average
@@ -6626,15 +6626,15 @@ c
      &           - cmp_omp(9,i)*cphi(10,i)
          end do
          do i = 1, n
-            frc(1,i) = 0.0d0
-            frc(2,i) = 0.0d0
-            frc(3,i) = 0.0d0
+            frc_omp(1,i) = 0.0d0
+            frc_omp(2,i) = 0.0d0
+            frc_omp(3,i) = 0.0d0
          end do
-         call torque2 (trq,frc)
+         call torque2 (trq,frc_omp)
          do i = 1, n
-            dep(1,i) = dep(1,i) + frc(1,i)
-            dep(2,i) = dep(2,i) + frc(2,i)
-            dep(3,i) = dep(3,i) + frc(3,i)
+            dep(1,i) = dep(1,i) + frc_omp(1,i)
+            dep(2,i) = dep(2,i) + frc_omp(2,i)
+            dep(3,i) = dep(3,i) + frc_omp(3,i)
          end do
 c
 c     induced dipole contribution to the internal virial
@@ -6738,10 +6738,10 @@ c
 !$OMP barrier
 !$OMP flush
 
-      deallocate (frc)
+c      deallocate (frc)
       deallocate (trq)
 c      deallocate (fuind)
-      deallocate (fuinp)
+c      deallocate (fuinp)
       deallocate (fphi)
       deallocate (fphid)
       deallocate (fphip)
