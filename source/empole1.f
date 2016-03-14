@@ -6357,6 +6357,7 @@ c     distribute torques into the permanent multipole gradient
 c
 !$OMP end master
 !$OMP barrier
+
 !$OMP DO schedule(dynamic,128)
       do i = 1, npole
          trq_omp(1,i) = cmp_omp(4,i)*cphi_omp(3,i) 
@@ -6384,7 +6385,6 @@ c
       end do
 !$OMP end do
 
-!$OMP master
       trq = trq_omp
       do i = 1, n
          frc(1,i) = 0.0d0
@@ -6392,14 +6392,16 @@ c
          frc(3,i) = 0.0d0
       end do
       call torque2 (trq,frc)
-      do i = 1, n
-         dem(1,i) = dem(1,i) + frc(1,i)
-         dem(2,i) = dem(2,i) + frc(2,i)
-         dem(3,i) = dem(3,i) + frc(3,i)
-      end do
+      frc_omp = frc
 
-!$OMP end master
-!$OMP barrier
+!$OMP DO schedule(dynamic,128)
+      do i = 1, n
+         dem(1,i) = dem(1,i) + frc_omp(1,i)
+         dem(2,i) = dem(2,i) + frc_omp(2,i)
+         dem(3,i) = dem(3,i) + frc_omp(3,i)
+      end do
+!$OMP end DO 
+
 
 c
 c     permanent multipole contribution to the internal virial
@@ -6439,12 +6441,6 @@ c
      &        - cmp_omp(10,i)*cphi_omp(10,i)
       end do
 !$OMP end DO 
-
-      
-      
-
-c!$OMP end master
-c!$OMP barrier
 
 c
 c     convert Cartesian induced dipoles to fractional coordinates
