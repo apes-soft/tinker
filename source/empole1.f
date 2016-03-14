@@ -5959,7 +5959,7 @@ c
       real*8, allocatable :: trq(:,:)
       real*8, allocatable :: fuind(:,:)
       real*8, allocatable :: fuinp(:,:)
-      real*8, allocatable :: cmp(:,:)
+c      real*8, allocatable :: cmp(:,:)
       real*8, allocatable :: fmp(:,:)
       real*8, allocatable :: fphi(:,:)
       real*8, allocatable :: fphid(:,:)
@@ -5985,7 +5985,7 @@ c
       allocate (trq(3,npole))
       allocate (fuind(3,npole))
       allocate (fuinp(3,npole))
-      allocate (cmp(10,npole))
+c      allocate (cmp(10,npole))
       allocate (fmp(10,npole))
       allocate (fphi(20,npole))
       allocate (fphid(10,npole))
@@ -6103,8 +6103,8 @@ c
 
       else
 !$OMP master
-         call cmp_to_fmp (cmp,fmp)
-         call grid_mpole (fmp)
+         call cmp_to_fmp1 ! (cmp,fmp)
+         call grid_mpole1 !(fmp)
          call fftfront
          do k = 1, nfft3
             do j = 1, nfft2
@@ -6280,13 +6280,12 @@ c
 !$OMP barrier
       end if
 
-      cmp = cmp_omp
+c      cmp = cmp_omp
       fmp = fmp_omp
 
 c
 c     account for the zeroth grid point for a finite system
 c
-c!$OMP master
       qfac(1,1,1) = 0.0d0
       if (.not. use_bounds) then
          expterm = 0.5d0 * pi / xbox
@@ -6294,8 +6293,7 @@ c!$OMP master
          e = 0.5d0 * expterm * struc2
          qfac(1,1,1) = expterm
       end if
-c!$OMP end master
-c!$OMP barrier
+
 c
 c     complete the transformation of the PME grid
 c
@@ -6364,18 +6362,24 @@ c
 c     distribute torques into the permanent multipole gradient
 c
       do i = 1, npole
-         trq(1,i) = cmp(4,i)*cphi(3,i) - cmp(3,i)*cphi(4,i)
-     &                 + 2.0d0*(cmp(7,i)-cmp(6,i))*cphi(10,i)
-     &                 + cmp(9,i)*cphi(8,i) + cmp(10,i)*cphi(6,i)
-     &                 - cmp(8,i)*cphi(9,i) - cmp(10,i)*cphi(7,i)
-         trq(2,i) = cmp(2,i)*cphi(4,i) - cmp(4,i)*cphi(2,i)
-     &                 + 2.0d0*(cmp(5,i)-cmp(7,i))*cphi(9,i)
-     &                 + cmp(8,i)*cphi(10,i) + cmp(9,i)*cphi(7,i)
-     &                 - cmp(9,i)*cphi(5,i) - cmp(10,i)*cphi(8,i)
-         trq(3,i) = cmp(3,i)*cphi(2,i) - cmp(2,i)*cphi(3,i)
-     &                 + 2.0d0*(cmp(6,i)-cmp(5,i))*cphi(8,i)
-     &                 + cmp(8,i)*cphi(5,i) + cmp(10,i)*cphi(9,i)
-     &                 - cmp(8,i)*cphi(6,i) - cmp(9,i)*cphi(10,i)
+         trq(1,i) = cmp_omp(4,i)*cphi(3,i) - cmp_omp(3,i)*cphi(4,i)
+     &                 + 2.0d0*(cmp_omp(7,i)-cmp_omp(6,i))*cphi(10,i)
+     &                 + cmp_omp(9,i)*cphi(8,i) 
+     &        + cmp_omp(10,i)*cphi(6,i)
+     &                 - cmp_omp(8,i)*cphi(9,i) 
+     &        - cmp_omp(10,i)*cphi(7,i)
+         trq(2,i) = cmp_omp(2,i)*cphi(4,i) - cmp_omp(4,i)*cphi(2,i)
+     &                 + 2.0d0*(cmp_omp(5,i)-cmp_omp(7,i))*cphi(9,i)
+     &                 + cmp_omp(8,i)*cphi(10,i) 
+     &        + cmp_omp(9,i)*cphi(7,i)
+     &                 - cmp_omp(9,i)*cphi(5,i) 
+     &        - cmp_omp(10,i)*cphi(8,i)
+         trq(3,i) = cmp_omp(3,i)*cphi(2,i) - cmp_omp(2,i)*cphi(3,i)
+     &                 + 2.0d0*(cmp_omp(6,i)-cmp_omp(5,i))*cphi(8,i)
+     &                 + cmp_omp(8,i)*cphi(5,i) 
+     &        + cmp_omp(10,i)*cphi(9,i)
+     &                 - cmp_omp(8,i)*cphi(6,i) 
+     &        - cmp_omp(9,i)*cphi(10,i)
       end do
       do i = 1, n
          frc(1,i) = 0.0d0
@@ -6392,24 +6396,33 @@ c
 c     permanent multipole contribution to the internal virial
 c
       do i = 1, npole
-         vxx = vxx - cmp(2,i)*cphi(2,i) - 2.0d0*cmp(5,i)*cphi(5,i)
-     &             - cmp(8,i)*cphi(8,i) - cmp(9,i)*cphi(9,i)
-         vyx = vyx - 0.5d0*(cmp(3,i)*cphi(2,i)+cmp(2,i)*cphi(3,i))
-     &             - (cmp(5,i)+cmp(6,i))*cphi(8,i)
-     &             - 0.5d0*cmp(8,i)*(cphi(5,i)+cphi(6,i))
-     &             - 0.5d0*(cmp(9,i)*cphi(10,i)+cmp(10,i)*cphi(9,i))
-         vzx = vzx - 0.5d0*(cmp(4,i)*cphi(2,i)+cmp(2,i)*cphi(4,i))
-     &             - (cmp(5,i)+cmp(7,i))*cphi(9,i)
-     &             - 0.5d0*cmp(9,i)*(cphi(5,i)+cphi(7,i))
-     &             - 0.5d0*(cmp(8,i)*cphi(10,i)+cmp(10,i)*cphi(8,i))
-         vyy = vyy - cmp(3,i)*cphi(3,i) - 2.0d0*cmp(6,i)*cphi(6,i)
-     &             - cmp(8,i)*cphi(8,i) - cmp(10,i)*cphi(10,i)
-         vzy = vzy - 0.5d0*(cmp(4,i)*cphi(3,i)+cmp(3,i)*cphi(4,i))
-     &             - (cmp(6,i)+cmp(7,i))*cphi(10,i)
-     &             - 0.5d0*cmp(10,i)*(cphi(6,i)+cphi(7,i))
-     &             - 0.5d0*(cmp(8,i)*cphi(9,i)+cmp(9,i)*cphi(8,i))
-         vzz = vzz - cmp(4,i)*cphi(4,i) - 2.0d0*cmp(7,i)*cphi(7,i)
-     &             - cmp(9,i)*cphi(9,i) - cmp(10,i)*cphi(10,i)
+         vxx = vxx - cmp_omp(2,i)*cphi(2,i) 
+     &        - 2.0d0*cmp_omp(5,i)*cphi(5,i)
+     &             - cmp_omp(8,i)*cphi(8,i) - cmp_omp(9,i)*cphi(9,i)
+         vyx = vyx - 0.5d0*(cmp_omp(3,i)*cphi(2,i)
+     &        + cmp_omp(2,i)*cphi(3,i))
+     &             - (cmp_omp(5,i)+cmp_omp(6,i))*cphi(8,i)
+     &             - 0.5d0*cmp_omp(8,i)*(cphi(5,i)+cphi(6,i))
+     &             - 0.5d0*(cmp_omp(9,i)*cphi(10,i)
+     &        + cmp_omp(10,i)*cphi(9,i))
+         vzx = vzx - 0.5d0*(cmp_omp(4,i)*cphi(2,i)
+     &        + cmp_omp(2,i)*cphi(4,i))
+     &             - (cmp_omp(5,i)+cmp_omp(7,i))*cphi(9,i)
+     &             - 0.5d0*cmp_omp(9,i)*(cphi(5,i)+cphi(7,i))
+     &             - 0.5d0*(cmp_omp(8,i)*cphi(10,i)
+     &        + cmp_omp(10,i)*cphi(8,i))
+         vyy = vyy - cmp_omp(3,i)*cphi(3,i) 
+     &        - 2.0d0*cmp_omp(6,i)*cphi(6,i)
+     &             - cmp_omp(8,i)*cphi(8,i) - cmp_omp(10,i)*cphi(10,i)
+         vzy = vzy - 0.5d0*(cmp_omp(4,i)*cphi(3,i)
+     &        +cmp_omp(3,i)*cphi(4,i))
+     &             - (cmp_omp(6,i)+cmp_omp(7,i))*cphi(10,i)
+     &             - 0.5d0*cmp_omp(10,i)*(cphi(6,i)+cphi(7,i))
+     &             - 0.5d0*(cmp_omp(8,i)*cphi(9,i)
+     &        +cmp_omp(9,i)*cphi(8,i))
+         vzz = vzz - cmp_omp(4,i)*cphi(4,i) 
+     &        - 2.0d0*cmp_omp(7,i)*cphi(7,i)
+     &             - cmp_omp(9,i)*cphi(9,i) - cmp_omp(10,i)*cphi(10,i)
       end do
 !$OMP end master
 !$OMP barrier
@@ -6564,18 +6577,24 @@ c
 c     distribute torques into the induced dipole gradient
 c
          do i = 1, npole
-            trq(1,i) = cmp(4,i)*cphi(3,i) - cmp(3,i)*cphi(4,i)
-     &                    + 2.0d0*(cmp(7,i)-cmp(6,i))*cphi(10,i)
-     &                    + cmp(9,i)*cphi(8,i) + cmp(10,i)*cphi(6,i)
-     &                    - cmp(8,i)*cphi(9,i) - cmp(10,i)*cphi(7,i)
-            trq(2,i) = cmp(2,i)*cphi(4,i) - cmp(4,i)*cphi(2,i)
-     &                    + 2.0d0*(cmp(5,i)-cmp(7,i))*cphi(9,i)
-     &                    + cmp(8,i)*cphi(10,i) + cmp(9,i)*cphi(7,i)
-     &                    - cmp(9,i)*cphi(5,i) - cmp(10,i)*cphi(8,i)
-            trq(3,i) = cmp(3,i)*cphi(2,i) - cmp(2,i)*cphi(3,i)
-     &                    + 2.0d0*(cmp(6,i)-cmp(5,i))*cphi(8,i)
-     &                    + cmp(8,i)*cphi(5,i) + cmp(10,i)*cphi(9,i)
-     &                    - cmp(8,i)*cphi(6,i) - cmp(9,i)*cphi(10,i)
+            trq(1,i) = cmp_omp(4,i)*cphi(3,i) - cmp_omp(3,i)*cphi(4,i)
+     &                    + 2.0d0*(cmp_omp(7,i)-cmp_omp(6,i))*cphi(10,i)
+     &                    + cmp_omp(9,i)*cphi(8,i) 
+     &           + cmp_omp(10,i)*cphi(6,i)
+     &                    - cmp_omp(8,i)*cphi(9,i) 
+     &           - cmp_omp(10,i)*cphi(7,i)
+            trq(2,i) = cmp_omp(2,i)*cphi(4,i) - cmp_omp(4,i)*cphi(2,i)
+     &                    + 2.0d0*(cmp_omp(5,i)-cmp_omp(7,i))*cphi(9,i)
+     &                    + cmp_omp(8,i)*cphi(10,i) 
+     &           + cmp_omp(9,i)*cphi(7,i)
+     &                    - cmp_omp(9,i)*cphi(5,i) 
+     &           - cmp_omp(10,i)*cphi(8,i)
+            trq(3,i) = cmp_omp(3,i)*cphi(2,i) - cmp_omp(2,i)*cphi(3,i)
+     &                    + 2.0d0*(cmp_omp(6,i)-cmp_omp(5,i))*cphi(8,i)
+     &                    + cmp_omp(8,i)*cphi(5,i) 
+     &           + cmp_omp(10,i)*cphi(9,i)
+     &                    - cmp_omp(8,i)*cphi(6,i) 
+     &           - cmp_omp(9,i)*cphi(10,i)
          end do
          do i = 1, n
             frc(1,i) = 0.0d0
@@ -6602,45 +6621,54 @@ c
                   cphip(j) = cphip(j) + ftc(j,k)*fphip(k,i)
                end do
             end do
-            vxx = vxx - cphi(2,i)*cmp(2,i)
+            vxx = vxx - cphi(2,i)*cmp_omp(2,i)
      &                - 0.5d0*(cphim(2)*(uind(1,i)+uinp(1,i))
      &                        +cphid(2)*uinp(1,i)+cphip(2)*uind(1,i))
-            vyx = vyx - 0.5d0*(cphi(2,i)*cmp(3,i)+cphi(3,i)*cmp(2,i))
+            vyx = vyx - 0.5d0*(cphi(2,i)*cmp_omp(3,i)
+     &           + cphi(3,i)*cmp_omp(2,i))
      &                - 0.25d0*(cphim(2)*(uind(2,i)+uinp(2,i))
      &                         +cphim(3)*(uind(1,i)+uinp(1,i))
      &                         +cphid(2)*uinp(2,i)+cphip(2)*uind(2,i)
      &                         +cphid(3)*uinp(1,i)+cphip(3)*uind(1,i))
-            vzx = vzx - 0.5d0*(cphi(2,i)*cmp(4,i)+cphi(4,i)*cmp(2,i))
+            vzx = vzx - 0.5d0*(cphi(2,i)*cmp_omp(4,i)
+     &           + cphi(4,i)*cmp_omp(2,i))
      &                - 0.25d0*(cphim(2)*(uind(3,i)+uinp(3,i))
      &                         +cphim(4)*(uind(1,i)+uinp(1,i))
      &                         +cphid(2)*uinp(3,i)+cphip(2)*uind(3,i)
      &                         +cphid(4)*uinp(1,i)+cphip(4)*uind(1,i))
-            vyy = vyy - cphi(3,i)*cmp(3,i)
+            vyy = vyy - cphi(3,i)*cmp_omp(3,i)
      &                - 0.5d0*(cphim(3)*(uind(2,i)+uinp(2,i))
      &                        +cphid(3)*uinp(2,i)+cphip(3)*uind(2,i))
-            vzy = vzy - 0.5d0*(cphi(3,i)*cmp(4,i)+cphi(4,i)*cmp(3,i))
+            vzy = vzy - 0.5d0*(cphi(3,i)*cmp_omp(4,i)
+     &           + cphi(4,i)*cmp_omp(3,i))
      &                - 0.25d0*(cphim(3)*(uind(3,i)+uinp(3,i))
      &                         +cphim(4)*(uind(2,i)+uinp(2,i))
      &                         +cphid(3)*uinp(3,i)+cphip(3)*uind(3,i)
      &                         +cphid(4)*uinp(2,i)+cphip(4)*uind(2,i))
-            vzz = vzz - cphi(4,i)*cmp(4,i)
+            vzz = vzz - cphi(4,i)*cmp_omp(4,i)
      &                - 0.5d0*(cphim(4)*(uind(3,i)+uinp(3,i))
      &                        +cphid(4)*uinp(3,i)+cphip(4)*uind(3,i))
-            vxx = vxx - 2.0d0*cmp(5,i)*cphi(5,i) - cmp(8,i)*cphi(8,i)
-     &                - cmp(9,i)*cphi(9,i)
-            vyx = vyx - (cmp(5,i)+cmp(6,i))*cphi(8,i)
-     &                - 0.5d0*(cmp(8,i)*(cphi(6,i)+cphi(5,i))
-     &                     +cmp(9,i)*cphi(10,i)+cmp(10,i)*cphi(9,i))
-            vzx = vzx - (cmp(5,i)+cmp(7,i))*cphi(9,i)
-     &                - 0.5d0*(cmp(9,i)*(cphi(5,i)+cphi(7,i))
-     &                     +cmp(8,i)*cphi(10,i)+cmp(10,i)*cphi(8,i))
-            vyy = vyy - 2.0d0*cmp(6,i)*cphi(6,i) - cmp(8,i)*cphi(8,i)
-     &                - cmp(10,i)*cphi(10,i)
-            vzy = vzy - (cmp(6,i)+cmp(7,i))*cphi(10,i)
-     &                - 0.5d0*(cmp(10,i)*(cphi(6,i)+cphi(7,i))
-     &                     +cmp(8,i)*cphi(9,i)+cmp(9,i)*cphi(8,i))
-            vzz = vzz - 2.0d0*cmp(7,i)*cphi(7,i) - cmp(9,i)*cphi(9,i)
-     &                - cmp(10,i)*cphi(10,i)
+            vxx = vxx - 2.0d0*cmp_omp(5,i)*cphi(5,i) 
+     &           - cmp_omp(8,i)*cphi(8,i)
+     &                - cmp_omp(9,i)*cphi(9,i)
+            vyx = vyx - (cmp_omp(5,i)+cmp_omp(6,i))*cphi(8,i)
+     &                - 0.5d0*(cmp_omp(8,i)*(cphi(6,i)+cphi(5,i))
+     &                     +cmp_omp(9,i)*cphi(10,i)
+     &           + cmp_omp(10,i)*cphi(9,i))
+            vzx = vzx - (cmp_omp(5,i)+cmp_omp(7,i))*cphi(9,i)
+     &                - 0.5d0*(cmp_omp(9,i)*(cphi(5,i)+cphi(7,i))
+     &                     +cmp_omp(8,i)*cphi(10,i)
+     &           + cmp_omp(10,i)*cphi(8,i))
+            vyy = vyy - 2.0d0*cmp_omp(6,i)*cphi(6,i) 
+     &           - cmp_omp(8,i)*cphi(8,i)
+     &                - cmp_omp(10,i)*cphi(10,i)
+            vzy = vzy - (cmp_omp(6,i)+cmp_omp(7,i))*cphi(10,i)
+     &                - 0.5d0*(cmp_omp(10,i)*(cphi(6,i)+cphi(7,i))
+     &                     +cmp_omp(8,i)*cphi(9,i)
+     &           + cmp_omp(9,i)*cphi(8,i))
+            vzz = vzz - 2.0d0*cmp_omp(7,i)*cphi(7,i) 
+     &           - cmp_omp(9,i)*cphi(9,i)
+     &                - cmp_omp(10,i)*cphi(10,i)
             if (poltyp .eq. 'DIRECT') then
                vxx = vxx + 0.5d0*(cphid(2)*uinp(1,i)+cphip(2)*uind(1,i))
                vyx = vyx + 0.25d0*(cphid(2)*uinp(2,i)+cphip(2)*uind(2,i)
@@ -6679,7 +6707,7 @@ c
       deallocate (trq)
       deallocate (fuind)
       deallocate (fuinp)
-      deallocate (cmp)
+c      deallocate (cmp)
       deallocate (fmp)
       deallocate (fphi)
       deallocate (fphid)
