@@ -6317,12 +6317,13 @@ c
       end do
 !$OMP end DO
 
-      fphi = fdip_sum_phi_omp
-      call fphi_to_cphi (fphi,cphi)
+c      fphi = fdip_sum_phi_omp
+      call fphi_to_cphi1 ! (fphi,cphi)
       
+
 !$OMP master
       
-      cphi_omp = cphi
+c      cphi_omp = cphi
 c
 c     increment the permanent multipole energy and gradient
 c
@@ -6332,10 +6333,10 @@ c
          f2 = 0.0d0
          f3 = 0.0d0
          do k = 1, 10
-            e = e + fmp_omp(k,i)*fphi(k,i)
-            f1 = f1 + fmp_omp(k,i)*fphi(deriv1(k),i)
-            f2 = f2 + fmp_omp(k,i)*fphi(deriv2(k),i)
-            f3 = f3 + fmp_omp(k,i)*fphi(deriv3(k),i)
+            e = e + fmp_omp(k,i)*fdip_sum_phi_omp(k,i)
+            f1 = f1 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv1(k),i)
+            f2 = f2 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv2(k),i)
+            f3 = f3 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv3(k),i)
          end do
          f1 = dble(nfft1) * f1
          f2 = dble(nfft2) * f2
@@ -6402,7 +6403,6 @@ c
       end do
 !$OMP end DO 
 
-
 c
 c     permanent multipole contribution to the internal virial
 c
@@ -6462,6 +6462,9 @@ c
             end do
          end do
 !$OMP end DO
+
+         cphi = cphi_omp
+         fphi = fdip_sum_phi_omp
 
 c
 c     assign PME grid and perform 3-D FFT forward transform

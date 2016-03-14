@@ -2262,19 +2262,17 @@ c
       use openmp
       implicit none
       integer i,j,k
-c      real*8 ctf(10,10)
+      real*8 ctf(10,10)
 c      real*8 cmp(10,*)
 c      real*8 fmp(10,*)
 c
 c
 c     find the matrix to convert Cartesian to fractional
 c
-!$OMP single
-      call cart_to_frac (ctf_omp)
-!$OMP end single
-!$OMP barrier
 
-c      ctf_omp = ctf
+      call cart_to_frac (ctf)
+
+      ctf_omp = ctf
 
 c
 c     apply the transformation to get the fractional multipoles
@@ -2416,6 +2414,57 @@ c
       return
       end
 c
+c
+c
+c     ################################################################
+c     ##                                                            ##
+c     ##  subroutine fphi_to_cphi1  --  transformation of potential  ##
+c     ##                                                            ##
+c     ################################################################
+c
+c
+c     "fphi_to_cphi" transforms the reciprocal space potential from
+c     fractional to Cartesian coordinates
+c
+c
+      subroutine fphi_to_cphi1 !(fphi,cphi)
+      use sizes
+      use mpole
+      use openmp
+      implicit none
+      integer i,j,k
+      real*8 ftc(10,10)
+c      real*8 cphi(10,*)
+c      real*8 fphi(20,*)
+c
+c
+c     find the matrix to convert fractional to Cartesian
+c
+      call frac_to_cart (ftc)
+      
+      ctf_omp = ftc
+c
+c     apply the transformation to get the Cartesian potential
+c
+      do i = 1, npole
+         cphi_omp(1,i) = ctf_omp(1,1) * fdip_sum_phi_omp(1,i)
+         do j = 2, 4
+            cphi_omp(j,i) = 0.0d0
+            do k = 2, 4
+               cphi_omp(j,i) = cphi_omp(j,i) + 
+     &              ctf_omp(j,k)*fdip_sum_phi_omp(k,i)
+            end do
+         end do
+         do j = 5, 10
+            cphi_omp(j,i) = 0.0d0
+            do k = 5, 10
+               cphi_omp(j,i) = cphi_omp(j,i) + 
+     &              ctf_omp(j,k)*fdip_sum_phi_omp(k,i)
+            end do
+         end do
+      end do
+      return
+      end
 c
 c     ################################################################
 c     ##                                                            ##
