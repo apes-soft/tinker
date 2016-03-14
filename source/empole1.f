@@ -6062,11 +6062,11 @@ c
 
          cmp = cmp_omp
 
-         call cmp_to_fmp (cmp,fmp)
-         fmp_omp = fmp
+         call cmp_to_fmp1 !  (cmp,fmp)
+c         fmp_omp = fmp
          call grid_mpole1 !(fmp)
-         cmp_omp = cmp
-
+c         cmp_omp = cmp
+         fmp = fmp_omp
 !$OMP master     
          call fftfront
          fmp = fmp_omp
@@ -6097,7 +6097,7 @@ c
          
 !$OMP master
          fmp = fmp_omp
-         cmp_omp = cmp
+c         cmp_omp = cmp
          call fftfront
 !$OMP end master
 !$OMP barrier

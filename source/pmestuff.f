@@ -2242,6 +2242,62 @@ c!$OMP END PARALLEL
       return
       end
 
+
+c
+c
+c     ###############################################################
+c     ##                                                           ##
+c     ##  subroutine cmp_to_fmp1  --  transformation of multipoles  ##
+c     ##                                                           ##
+c     ###############################################################
+c
+c
+c     "cmp_to_fmp1" transforms the atomic multipoles from Cartesian
+c     to fractional coordinates
+c
+c
+      subroutine cmp_to_fmp1 ! (cmp,fmp)
+      use sizes
+      use mpole
+      use openmp
+      implicit none
+      integer i,j,k
+c      real*8 ctf(10,10)
+c      real*8 cmp(10,*)
+c      real*8 fmp(10,*)
+c
+c
+c     find the matrix to convert Cartesian to fractional
+c
+!$OMP single
+      call cart_to_frac (ctf_omp)
+!$OMP end single
+!$OMP barrier
+
+c      ctf_omp = ctf
+
+c
+c     apply the transformation to get the fractional multipoles
+c
+!$OMP DO schedule(static,128)
+      do i = 1, npole
+         fmp_omp(1,i) = ctf_omp(1,1) * cmp_omp(1,i)
+         do j = 2, 4
+            fmp_omp(j,i) = 0.0d0
+            do k = 2, 4
+               fmp_omp(j,i) = fmp_omp(j,i) + ctf_omp(j,k)*cmp_omp(k,i)
+            end do
+         end do
+         do j = 5, 10
+            fmp_omp(j,i) = 0.0d0
+            do k = 5, 10
+               fmp_omp(j,i) = fmp_omp(j,i) + ctf_omp(j,k)*cmp_omp(k,i)
+            end do
+         end do
+      end do
+!$OMP end DO 
+      return
+      end
 c
 c
 c     ###############################################################

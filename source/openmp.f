@@ -64,7 +64,7 @@ c
       real*8, allocatable :: cmp_omp(:,:)
       real*8 vxx_omp,vyx_omp,vzx_omp
       real*8 vyy_omp,vzy_omp,vzz_omp
-
+      real*8 ctf_omp(10,10)
       save
 !$OMP threadprivate(th_id)
 !$OMP threadprivate(nlocal)
