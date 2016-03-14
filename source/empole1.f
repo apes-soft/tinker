@@ -5979,24 +5979,8 @@ c
 c
 c     perform dynamic allocation of some local arrays
 c
-c      allocate (frc(3,n))
-c      allocate (trq(3,npole))
-c      allocate (fuind(3,npole))
-c      allocate (fuinp(3,npole))
       allocate (fphi(20,npole))
-c      allocate (fphid(10,npole))
-c      allocate (fphip(10,npole))
-c      allocate (fphidp(20,npole))
-c      allocate (cphi(10,npole))
-c
-c     zero out the temporary virial accumulation variables
-c
-C$$$      vxx = 0.0d0
-C$$$      vyx = 0.0d0
-C$$$      vzx = 0.0d0
-C$$$      vyy = 0.0d0
-C$$$      vzy = 0.0d0
-C$$$      vzz = 0.0d0
+
 c
 c     copy multipole moments and coordinates to local storage
 c
@@ -6320,7 +6304,7 @@ c
 !$OMP end DO
 
 c      fphi = fdip_sum_phi_omp
-      call fphi_to_cphi1 ! (fphi,cphi)
+      call fphi_to_cphi1 
       
 
 c!$OMP master
@@ -6350,12 +6334,6 @@ c
          frc_omp(3,i) = recip(3,1)*f1 + recip(3,2)*f2 + recip(3,3)*f3
       end do
 !$OMP end DO 
-
-C$$$!$OMP master
-C$$$c      frc = frc_omp
-C$$$      e = 0.5d0 * e_omp
-C$$$      em = em + e
-c!$OMP end master
 
 !$OMP DO schedule(dynamic,128) 
       do i = 1, npole
@@ -6479,15 +6457,12 @@ c
          end do
 !$OMP end DO
 
-c         cphi = cphi_omp
          fphi = fdip_sum_phi_omp
-c         fuind = fuind_omp
-c         fuinp = fuinp_omp
 c
 c     assign PME grid and perform 3-D FFT forward transform
 c
        
-c         call grid_uind (fuind,fuinp)
+
          call grid_uind1 
 !$OMP master
          call fftfront
@@ -6524,7 +6499,7 @@ c
 !$OMP barrier
 
 
-         call fphi_uind2 !(fphid,fphip,fphidp)
+         call fphi_uind2 
 
 !$OMP DO schedule(dynamic,128)
          do i = 1, npole
@@ -6539,9 +6514,6 @@ c
 !$OMP end DO
 
 !$OMP master
-c         fphid = fdip_phi1_omp
-c         fphip = fdip_phi2_omp
-c         fphidp = fdip_sum_phi_omp
 
 c
 c     increment the induced dipole energy and gradient
@@ -6751,14 +6723,6 @@ c
 !$OMP barrier
 !$OMP flush
 
-c      deallocate (frc)
-c      deallocate (trq)
-c      deallocate (fuind)
-c      deallocate (fuinp)
       deallocate (fphi)
-c      deallocate (fphid)
-c      deallocate (fphip)
-c      deallocate (fphidp)
-c      deallocate (cphi)
       return
       end
