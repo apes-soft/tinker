@@ -5960,7 +5960,7 @@ c      real*8, allocatable :: trq(:,:)
 c      real*8, allocatable :: fuind(:,:)
 c      real*8, allocatable :: fuinp(:,:)
       real*8, allocatable :: fphi(:,:)
-      real*8, allocatable :: fphid(:,:)
+c      real*8, allocatable :: fphid(:,:)
       real*8, allocatable :: fphip(:,:)
       real*8, allocatable :: fphidp(:,:)
 c      real*8, allocatable :: cphi(:,:)
@@ -5984,7 +5984,7 @@ c      allocate (trq(3,npole))
 c      allocate (fuind(3,npole))
 c      allocate (fuinp(3,npole))
       allocate (fphi(20,npole))
-      allocate (fphid(10,npole))
+c      allocate (fphid(10,npole))
       allocate (fphip(10,npole))
       allocate (fphidp(20,npole))
 c      allocate (cphi(10,npole))
@@ -6523,6 +6523,7 @@ c
 !$OMP end master
 !$OMP barrier
 
+
          call fphi_uind2 !(fphid,fphip,fphidp)
 
 !$OMP DO schedule(dynamic,128)
@@ -6538,7 +6539,7 @@ c
 !$OMP end DO
 
 !$OMP master
-         fphid = fdip_phi1_omp
+c         fphid = fdip_phi1_omp
          fphip = fdip_phi2_omp
          fphidp = fdip_sum_phi_omp
 
@@ -6557,20 +6558,20 @@ c
                e = e + fuind_omp(k,i)*fphi(k+1,i)
                f1 = f1 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi(j1,i)
      &                 + fuind_omp(k,i)*fphip(j1,i)
-     &                 + fuinp_omp(k,i)*fphid(j1,i)
+     &                 + fuinp_omp(k,i)*fdip_phi1_omp(j1,i)
                f2 = f2 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi(j2,i)
      &                 + fuind_omp(k,i)*fphip(j2,i)
-     &                 + fuinp_omp(k,i)*fphid(j2,i)
+     &                 + fuinp_omp(k,i)*fdip_phi1_omp(j2,i)
                f3 = f3 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi(j3,i)
      &                 + fuind_omp(k,i)*fphip(j3,i)
-     &                 + fuinp_omp(k,i)*fphid(j3,i)
+     &                 + fuinp_omp(k,i)*fdip_phi1_omp(j3,i)
                if (poltyp .eq. 'DIRECT') then
                   f1 = f1 - fuind_omp(k,i)*fphip(j1,i)
-     &                    - fuinp_omp(k,i)*fphid(j1,i)
+     &                    - fuinp_omp(k,i)*fdip_phi1_omp(j1,i)
                   f2 = f2 - fuind_omp(k,i)*fphip(j2,i)
-     &                    - fuinp_omp(k,i)*fphid(j2,i)
+     &                    - fuinp_omp(k,i)*fdip_phi1_omp(j2,i)
                   f3 = f3 - fuind_omp(k,i)*fphip(j3,i)
-     &                    - fuinp_omp(k,i)*fphid(j3,i)
+     &                    - fuinp_omp(k,i)*fdip_phi1_omp(j3,i)
                end if
             end do
             do k = 1, 10
@@ -6652,7 +6653,7 @@ c
                cphip(j) = 0.0d0
                do k = 2, 4
                   cphim(j) = cphim(j) + ftc(j,k)*fphi(k,i)
-                  cphid(j) = cphid(j) + ftc(j,k)*fphid(k,i)
+                  cphid(j) = cphid(j) + ftc(j,k)*fdip_phi1_omp(k,i)
                   cphip(j) = cphip(j) + ftc(j,k)*fphip(k,i)
                end do
             end do
@@ -6755,7 +6756,7 @@ c      deallocate (trq)
 c      deallocate (fuind)
 c      deallocate (fuinp)
       deallocate (fphi)
-      deallocate (fphid)
+c      deallocate (fphid)
       deallocate (fphip)
       deallocate (fphidp)
 c      deallocate (cphi)
