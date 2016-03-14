@@ -5959,8 +5959,6 @@ c
       real*8, allocatable :: trq(:,:)
       real*8, allocatable :: fuind(:,:)
       real*8, allocatable :: fuinp(:,:)
-c      real*8, allocatable :: cmp(:,:)
-c      real*8, allocatable :: fmp(:,:)
       real*8, allocatable :: fphi(:,:)
       real*8, allocatable :: fphid(:,:)
       real*8, allocatable :: fphip(:,:)
@@ -5985,8 +5983,6 @@ c
       allocate (trq(3,npole))
       allocate (fuind(3,npole))
       allocate (fuinp(3,npole))
-c      allocate (cmp(10,npole))
-c      allocate (fmp(10,npole))
       allocate (fphi(20,npole))
       allocate (fphid(10,npole))
       allocate (fphip(10,npole))
@@ -6041,7 +6037,6 @@ c
 !$OMP end master
 !$OMP barrier
 
-
 c
 c     assign permanent and induced multipoles to PME grid
 c     and perform the 3-D FFT forward transformation
@@ -6061,7 +6056,6 @@ c
 
 !$OMP master     
          call fftfront
-         fmp = fmp_omp
          do k = 1, nfft3
             do j = 1, nfft2
                do i = 1, nfft1
@@ -6082,15 +6076,13 @@ c
          end do
 !$OMP end DO 
 
-
          call cmp_to_fmp1 
          call grid_mpole1          
 
 !$OMP master
          call fftfront
 !$OMP end master
-!$OMP barrier
-!$OMP flush
+
 
 
 !$OMP DO schedule(static,128)
@@ -6103,8 +6095,8 @@ c
 
       else
 !$OMP master
-         call cmp_to_fmp1 ! (cmp,fmp)
-         call grid_mpole1 !(fmp)
+         call cmp_to_fmp1 
+         call grid_mpole1 
          call fftfront
          do k = 1, nfft3
             do j = 1, nfft2
@@ -6274,14 +6266,12 @@ c
       if (use_polar) then
          call cmp_to_fmp1 
          call grid_mpole1 
+
 !$OMP master
          call fftfront
 !$OMP end master
 !$OMP barrier
       end if
-
-c      cmp = cmp_omp
-c      fmp = fmp_omp
 
 c
 c     account for the zeroth grid point for a finite system
@@ -6316,8 +6306,9 @@ c
       call fftback
 !$OMP end master
 !$OMP barrier
-c      call fphi_mpole (fphi)
-      call fphi_mpole1 !(fphi)
+
+      call fphi_mpole1 
+
 !$OMP do schedule(dynamic,128)
       do i = 1, npole
          do j = 1, 20
@@ -6489,16 +6480,12 @@ c
          call fftback
 !$OMP end master
 !$OMP barrier
+
          call fphi_uind2 !(fphid,fphip,fphidp)
-C$$$!$OMP master
-C$$$         fphid = fdip_phi1_omp
-C$$$         fphip = fdip_phi2_omp
-C$$$         fphidp = fdip_sum_phi_omp
+
 !$OMP DO schedule(dynamic,128)
          do i = 1, npole
             do j = 1, 10
-c               fphid(j,i) = electric * fphid(j,i)
-c               fphip(j,i) = electric * fphip(j,i)
                fdip_phi1_omp(j,i) = electric * fdip_phi1_omp(j,i)
                fdip_phi2_omp(j,i) = electric * fdip_phi2_omp(j,i)
             end do
@@ -6707,15 +6694,10 @@ c
       deallocate (trq)
       deallocate (fuind)
       deallocate (fuinp)
-c      deallocate (cmp)
-c      deallocate (fmp)
       deallocate (fphi)
       deallocate (fphid)
       deallocate (fphip)
       deallocate (fphidp)
       deallocate (cphi)
-c!$OMP end master
-c!$OMP barrier
-c!$OMP flush
       return
       end
