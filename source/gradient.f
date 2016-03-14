@@ -168,6 +168,8 @@ c         allocate(vscale_th(n))
       if(.not. allocated(fmp_omp)) allocate(fmp_omp(10,npole))
       if(.not. allocated(cmp_omp)) allocate(cmp_omp(10,npole))
       if(.not. allocated(cphi_omp)) allocate(cphi_omp(10,npole))
+      if(.not. allocated(frc_omp)) allocate (frc_omp(3,n))
+      if(.not. allocated(trq_omp)) allocate (trq_omp(3,npole))
 c
 c     zero out the virial and the intermolecular energy
 c

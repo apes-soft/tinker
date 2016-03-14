@@ -811,6 +811,8 @@ c
       if(allocated(fmp_omp)) deallocate(fmp_omp)
       if(allocated(cmp_omp)) deallocate(cmp_omp)
       if(allocated(cphi_omp)) deallocate(cphi_omp)
+      if(allocated(frc_omp)) deallocate (frc_omp)
+      if(allocated(trq_omp)) deallocate (trq_omp)
 c
 c     free memory used by the APBS Poisson-Boltzmann solver
 c
