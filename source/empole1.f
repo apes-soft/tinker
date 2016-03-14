@@ -6304,6 +6304,8 @@ c
 c     perform 3-D FFT backward transform and get potential
 c
       call fftback
+      e = 0.0d0
+      e_omp = 0.0d0
 !$OMP end master
 !$OMP barrier
 
@@ -6321,19 +6323,21 @@ c      fphi = fdip_sum_phi_omp
       call fphi_to_cphi1 ! (fphi,cphi)
       
 
-!$OMP master
+c!$OMP master
       
 c      cphi_omp = cphi
 c
 c     increment the permanent multipole energy and gradient
 c
-      e = 0.0d0
+
+!$OMP DO schedule(static,128)
       do i = 1, npole
          f1 = 0.0d0
          f2 = 0.0d0
          f3 = 0.0d0
          do k = 1, 10
-            e = e + fmp_omp(k,i)*fdip_sum_phi_omp(k,i)
+!$OMP atomic
+            e_omp = e_omp + fmp_omp(k,i)*fdip_sum_phi_omp(k,i)
             f1 = f1 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv1(k),i)
             f2 = f2 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv2(k),i)
             f3 = f3 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv3(k),i)
@@ -6341,23 +6345,30 @@ c
          f1 = dble(nfft1) * f1
          f2 = dble(nfft2) * f2
          f3 = dble(nfft3) * f3
-         frc(1,i) = recip(1,1)*f1 + recip(1,2)*f2 + recip(1,3)*f3
-         frc(2,i) = recip(2,1)*f1 + recip(2,2)*f2 + recip(2,3)*f3
-         frc(3,i) = recip(3,1)*f1 + recip(3,2)*f2 + recip(3,3)*f3
+         frc_omp(1,i) = recip(1,1)*f1 + recip(1,2)*f2 + recip(1,3)*f3
+         frc_omp(2,i) = recip(2,1)*f1 + recip(2,2)*f2 + recip(2,3)*f3
+         frc_omp(3,i) = recip(3,1)*f1 + recip(3,2)*f2 + recip(3,3)*f3
       end do
-      e = 0.5d0 * e
+!$OMP end DO 
+
+!$OMP master
+      frc = frc_omp
+      e = 0.5d0 * e_omp
       em = em + e
+!$OMP end master
+!$OMP DO schedule(dynamic,128) 
       do i = 1, npole
          ii = ipole(i)
-         dem(1,ii) = dem(1,ii) + frc(1,i)
-         dem(2,ii) = dem(2,ii) + frc(2,i)
-         dem(3,ii) = dem(3,ii) + frc(3,i)
+         dem(1,ii) = dem(1,ii) + frc_omp(1,i)
+         dem(2,ii) = dem(2,ii) + frc_omp(2,i)
+         dem(3,ii) = dem(3,ii) + frc_omp(3,i)
       end do
+!$OMP end DO 
 c
 c     distribute torques into the permanent multipole gradient
 c
-!$OMP end master
-!$OMP barrier
+c!$OMP end master
+c!$OMP barrier
 
 !$OMP DO schedule(dynamic,128)
       do i = 1, npole
