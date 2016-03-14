@@ -65,6 +65,12 @@ c
       ev = 0.0d0
       em = 0.0d0
       ep = 0.0d0
+      vxx_omp = 0.0d0
+      vyx_omp = 0.0d0
+      vzx_omp = 0.0d0
+      vyy_omp = 0.0d0
+      vzy_omp = 0.0d0
+      vzz_omp = 0.0d0
 
 c
 c     perform dynamic allocation of some global arrays

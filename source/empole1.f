@@ -6317,9 +6317,12 @@ c
       end do
 !$OMP end DO
 
-!$OMP master
       fphi = fdip_sum_phi_omp
       call fphi_to_cphi (fphi,cphi)
+      
+!$OMP master
+      
+      cphi_omp = cphi
 c
 c     increment the permanent multipole energy and gradient
 c
@@ -6353,24 +6356,28 @@ c
 c     distribute torques into the permanent multipole gradient
 c
       do i = 1, npole
-         trq(1,i) = cmp_omp(4,i)*cphi(3,i) - cmp_omp(3,i)*cphi(4,i)
-     &                 + 2.0d0*(cmp_omp(7,i)-cmp_omp(6,i))*cphi(10,i)
-     &                 + cmp_omp(9,i)*cphi(8,i) 
-     &        + cmp_omp(10,i)*cphi(6,i)
-     &                 - cmp_omp(8,i)*cphi(9,i) 
-     &        - cmp_omp(10,i)*cphi(7,i)
-         trq(2,i) = cmp_omp(2,i)*cphi(4,i) - cmp_omp(4,i)*cphi(2,i)
-     &                 + 2.0d0*(cmp_omp(5,i)-cmp_omp(7,i))*cphi(9,i)
-     &                 + cmp_omp(8,i)*cphi(10,i) 
-     &        + cmp_omp(9,i)*cphi(7,i)
-     &                 - cmp_omp(9,i)*cphi(5,i) 
-     &        - cmp_omp(10,i)*cphi(8,i)
-         trq(3,i) = cmp_omp(3,i)*cphi(2,i) - cmp_omp(2,i)*cphi(3,i)
-     &                 + 2.0d0*(cmp_omp(6,i)-cmp_omp(5,i))*cphi(8,i)
-     &                 + cmp_omp(8,i)*cphi(5,i) 
-     &        + cmp_omp(10,i)*cphi(9,i)
-     &                 - cmp_omp(8,i)*cphi(6,i) 
-     &        - cmp_omp(9,i)*cphi(10,i)
+         trq(1,i) = cmp_omp(4,i)*cphi_omp(3,i) 
+     &        - cmp_omp(3,i)*cphi_omp(4,i)
+     &                 + 2.0d0*(cmp_omp(7,i)-
+     &        cmp_omp(6,i))*cphi_omp(10,i)
+     &                 + cmp_omp(9,i)*cphi_omp(8,i) 
+     &        + cmp_omp(10,i)*cphi_omp(6,i)
+     &                 - cmp_omp(8,i)*cphi_omp(9,i) 
+     &        - cmp_omp(10,i)*cphi_omp(7,i)
+         trq(2,i) = cmp_omp(2,i)*cphi_omp(4,i) 
+     &        - cmp_omp(4,i)*cphi_omp(2,i)
+     &                 + 2.0d0*(cmp_omp(5,i)-cmp_omp(7,i))*cphi_omp(9,i)
+     &                 + cmp_omp(8,i)*cphi_omp(10,i) 
+     &        + cmp_omp(9,i)*cphi_omp(7,i)
+     &                 - cmp_omp(9,i)*cphi_omp(5,i) 
+     &        - cmp_omp(10,i)*cphi_omp(8,i)
+         trq(3,i) = cmp_omp(3,i)*cphi_omp(2,i) 
+     &        - cmp_omp(2,i)*cphi_omp(3,i)
+     &                 + 2.0d0*(cmp_omp(6,i)-cmp_omp(5,i))*cphi_omp(8,i)
+     &                 + cmp_omp(8,i)*cphi_omp(5,i) 
+     &        + cmp_omp(10,i)*cphi_omp(9,i)
+     &                 - cmp_omp(8,i)*cphi_omp(6,i) 
+     &        - cmp_omp(9,i)*cphi_omp(10,i)
       end do
       do i = 1, n
          frc(1,i) = 0.0d0
@@ -6383,40 +6390,54 @@ c
          dem(2,i) = dem(2,i) + frc(2,i)
          dem(3,i) = dem(3,i) + frc(3,i)
       end do
+
+!$OMP end master
+!$OMP barrier
+
 c
 c     permanent multipole contribution to the internal virial
 c
+!$OMP DO schedule(static,128) reduction(+:vxx_omp,vyx_omp,
+!$OMP& vzx_omp, vyy_omp,vzy_omp,vzz_omp)
       do i = 1, npole
-         vxx = vxx - cmp_omp(2,i)*cphi(2,i) 
-     &        - 2.0d0*cmp_omp(5,i)*cphi(5,i)
-     &             - cmp_omp(8,i)*cphi(8,i) - cmp_omp(9,i)*cphi(9,i)
-         vyx = vyx - 0.5d0*(cmp_omp(3,i)*cphi(2,i)
-     &        + cmp_omp(2,i)*cphi(3,i))
-     &             - (cmp_omp(5,i)+cmp_omp(6,i))*cphi(8,i)
-     &             - 0.5d0*cmp_omp(8,i)*(cphi(5,i)+cphi(6,i))
-     &             - 0.5d0*(cmp_omp(9,i)*cphi(10,i)
-     &        + cmp_omp(10,i)*cphi(9,i))
-         vzx = vzx - 0.5d0*(cmp_omp(4,i)*cphi(2,i)
-     &        + cmp_omp(2,i)*cphi(4,i))
-     &             - (cmp_omp(5,i)+cmp_omp(7,i))*cphi(9,i)
-     &             - 0.5d0*cmp_omp(9,i)*(cphi(5,i)+cphi(7,i))
-     &             - 0.5d0*(cmp_omp(8,i)*cphi(10,i)
-     &        + cmp_omp(10,i)*cphi(8,i))
-         vyy = vyy - cmp_omp(3,i)*cphi(3,i) 
-     &        - 2.0d0*cmp_omp(6,i)*cphi(6,i)
-     &             - cmp_omp(8,i)*cphi(8,i) - cmp_omp(10,i)*cphi(10,i)
-         vzy = vzy - 0.5d0*(cmp_omp(4,i)*cphi(3,i)
-     &        +cmp_omp(3,i)*cphi(4,i))
-     &             - (cmp_omp(6,i)+cmp_omp(7,i))*cphi(10,i)
-     &             - 0.5d0*cmp_omp(10,i)*(cphi(6,i)+cphi(7,i))
-     &             - 0.5d0*(cmp_omp(8,i)*cphi(9,i)
-     &        +cmp_omp(9,i)*cphi(8,i))
-         vzz = vzz - cmp_omp(4,i)*cphi(4,i) 
-     &        - 2.0d0*cmp_omp(7,i)*cphi(7,i)
-     &             - cmp_omp(9,i)*cphi(9,i) - cmp_omp(10,i)*cphi(10,i)
+         vxx_omp = vxx_omp - cmp_omp(2,i)*cphi_omp(2,i) 
+     &        - 2.0d0*cmp_omp(5,i)*cphi_omp(5,i)
+     &             - cmp_omp(8,i)*cphi_omp(8,i) 
+     &        - cmp_omp(9,i)*cphi_omp(9,i)
+         vyx_omp = vyx_omp - 0.5d0*(cmp_omp(3,i)*cphi_omp(2,i)
+     &        + cmp_omp(2,i)*cphi_omp(3,i))
+     &             - (cmp_omp(5,i)+cmp_omp(6,i))*cphi_omp(8,i)
+     &             - 0.5d0*cmp_omp(8,i)*(cphi_omp(5,i)+cphi_omp(6,i))
+     &             - 0.5d0*(cmp_omp(9,i)*cphi_omp(10,i)
+     &        + cmp_omp(10,i)*cphi_omp(9,i))
+         vzx_omp = vzx_omp - 0.5d0*(cmp_omp(4,i)*cphi_omp(2,i)
+     &        + cmp_omp(2,i)*cphi_omp(4,i))
+     &             - (cmp_omp(5,i)+cmp_omp(7,i))*cphi_omp(9,i)
+     &             - 0.5d0*cmp_omp(9,i)*(cphi_omp(5,i)+cphi_omp(7,i))
+     &             - 0.5d0*(cmp_omp(8,i)*cphi_omp(10,i)
+     &        + cmp_omp(10,i)*cphi_omp(8,i))
+         vyy_omp = vyy_omp - cmp_omp(3,i)*cphi_omp(3,i) 
+     &        - 2.0d0*cmp_omp(6,i)*cphi_omp(6,i)
+     &             - cmp_omp(8,i)*cphi_omp(8,i) 
+     &        - cmp_omp(10,i)*cphi_omp(10,i)
+         vzy_omp = vzy_omp - 0.5d0*(cmp_omp(4,i)*cphi_omp(3,i)
+     &        +cmp_omp(3,i)*cphi_omp(4,i))
+     &             - (cmp_omp(6,i)+cmp_omp(7,i))*cphi_omp(10,i)
+     &             - 0.5d0*cmp_omp(10,i)*(cphi_omp(6,i)+cphi_omp(7,i))
+     &             - 0.5d0*(cmp_omp(8,i)*cphi_omp(9,i)
+     &        +cmp_omp(9,i)*cphi_omp(8,i))
+         vzz_omp = vzz_omp - cmp_omp(4,i)*cphi_omp(4,i) 
+     &        - 2.0d0*cmp_omp(7,i)*cphi_omp(7,i)
+     &             - cmp_omp(9,i)*cphi_omp(9,i) 
+     &        - cmp_omp(10,i)*cphi_omp(10,i)
       end do
-!$OMP end master
-!$OMP barrier
+!$OMP end DO 
+
+      
+      
+
+c!$OMP end master
+c!$OMP barrier
 
 c
 c     convert Cartesian induced dipoles to fractional coordinates
@@ -6449,6 +6470,14 @@ c         call grid_uind (fuind,fuinp)
          fuind = fuind_omp
          fuinp = fuinp_omp
          call fftfront
+
+         vxx = vxx + vxx_omp
+         vyx = vyx + vyx_omp
+         vzx = vzx + vzx_omp
+         vyy = vyy + vyy_omp
+         vzy = vzy + vzy_omp
+         vzz = vzz + vzz_omp
+
 !$OMP end master
 !$OMP barrier
 c
