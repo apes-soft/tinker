@@ -6386,6 +6386,7 @@ c
       e = 0.5d0 * e_omp
       em = em + e
       call torque2 (trq_omp,frc_omp)
+      e_omp = 0.0d0
 !$OMP end master
 !$OMP barrier
 
@@ -6513,12 +6514,14 @@ c
          end do
 !$OMP end DO
 
-!$OMP master
+c!$OMP master
 
 c
 c     increment the induced dipole energy and gradient
 c
-         e = 0.0d0
+c         e = 0.0d0
+
+!$OMP DO schedule(dynamic,128)
          do i = 1, npole
             f1 = 0.0d0
             f2 = 0.0d0
@@ -6527,7 +6530,8 @@ c
                j1 = deriv1(k+1)
                j2 = deriv2(k+1)
                j3 = deriv3(k+1)
-               e = e + fuind_omp(k,i)*fphi(k+1,i)
+!$OMP atomic               
+               e_omp = e_omp + fuind_omp(k,i)*fphi(k+1,i)
                f1 = f1 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi(j1,i)
      &                 + fuind_omp(k,i)*fdip_phi2_omp(j1,i)
      &                 + fuinp_omp(k,i)*fdip_phi1_omp(j1,i)
@@ -6558,7 +6562,10 @@ c
             frc_omp(2,i) = recip(2,1)*f1 + recip(2,2)*f2 + recip(2,3)*f3
             frc_omp(3,i) = recip(3,1)*f1 + recip(3,2)*f2 + recip(3,3)*f3
          end do
-         e = 0.5d0 * e
+!$OMP end DO 
+
+!$OMP master
+         e = 0.5d0 * e_omp
          ep = ep + e
          do i = 1, npole
             ii = ipole(i)
