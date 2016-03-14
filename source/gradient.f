@@ -161,6 +161,7 @@ c         allocate(vscale_th(n))
 
       if(.not. allocated(fmp_omp)) allocate(fmp_omp(10,npole))
       if(.not. allocated(cmp_omp)) allocate(cmp_omp(10,npole))
+      if(.not. allocated(cphi_omp)) allocate(cphi_omp(10,npole))
 c
 c     zero out the virial and the intermolecular energy
 c
@@ -268,6 +269,7 @@ c         vscale_th(i) = 1.0d0
             fdip_phi2_omp(j,i) = 0.0d0
             cmp_omp(j,i) = 0.0d0
             fmp_omp(j,i) = 0.0d0
+            cphi_omp(j,i) = 0.0d0
          end do
       end do
 !$OMP END DO
