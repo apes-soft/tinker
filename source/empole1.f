@@ -5946,8 +5946,8 @@ c
       real*8 r1,r2,r3
       real*8 h1,h2,h3
       real*8 f1,f2,f3
-      real*8 vxx,vyx,vzx
-      real*8 vyy,vzy,vzz
+C$$$      real*8 vxx,vyx,vzx
+C$$$      real*8 vyy,vzy,vzz
       real*8 volterm,denom
       real*8 hsq,expterm
       real*8 term,pterm
@@ -5991,12 +5991,12 @@ c
 c
 c     zero out the temporary virial accumulation variables
 c
-      vxx = 0.0d0
-      vyx = 0.0d0
-      vzx = 0.0d0
-      vyy = 0.0d0
-      vzy = 0.0d0
-      vzz = 0.0d0
+C$$$      vxx = 0.0d0
+C$$$      vyx = 0.0d0
+C$$$      vzx = 0.0d0
+C$$$      vyy = 0.0d0
+C$$$      vzy = 0.0d0
+C$$$      vzz = 0.0d0
 c
 c     copy multipole moments and coordinates to local storage
 c
@@ -6152,12 +6152,12 @@ c
      &                  + qgrid(2,k1,k2,k3)*qgrip(2,k1,k2,k3)
             eterm = 0.5d0 * electric * expterm * struc2
             vterm = (2.0d0/hsq) * (1.0d0-term) * eterm
-            vxx = vxx + h1*h1*vterm - eterm
-            vyx = vyx + h2*h1*vterm
-            vzx = vzx + h3*h1*vterm
-            vyy = vyy + h2*h2*vterm - eterm
-            vzy = vzy + h3*h2*vterm
-            vzz = vzz + h3*h3*vterm - eterm
+            vxx_omp = vxx_omp + h1*h1*vterm - eterm
+            vyx_omp = vyx_omp + h2*h1*vterm
+            vzx_omp = vzx_omp + h3*h1*vterm
+            vyy_omp = vyy_omp + h2*h2*vterm - eterm
+            vzy_omp = vzy_omp + h3*h2*vterm
+            vzz_omp = vzz_omp + h3*h3*vterm - eterm
          end if
          qfac(k1,k2,k3) = expterm
       end do
@@ -6167,7 +6167,7 @@ c
 c     assign just the induced multipoles to PME grid
 c     and perform the 3-D FFT forward transformation
 c
-C$$$! the below if condition is not met by dhrf bench
+C$$$! the below is not used by the dhrf bench
 
 C$$$      if (use_polar .and. poltyp.eq.'DIRECT') then
 C$$$         do i = 1, npole
@@ -6471,12 +6471,12 @@ c         call grid_uind (fuind,fuinp)
          fuinp = fuinp_omp
          call fftfront
 
-         vxx = vxx + vxx_omp
-         vyx = vyx + vyx_omp
-         vzx = vzx + vzx_omp
-         vyy = vyy + vyy_omp
-         vzy = vzy + vzy_omp
-         vzz = vzz + vzz_omp
+C$$$         vxx = vxx + vxx_omp
+C$$$         vyx = vyx + vyx_omp
+C$$$         vzx = vzx + vzx_omp
+C$$$         vyy = vyy + vyy_omp
+C$$$         vzy = vzy + vzy_omp
+C$$$         vzz = vzz + vzz_omp
 
 !$OMP end master
 !$OMP barrier
@@ -6637,64 +6637,70 @@ c
                   cphip(j) = cphip(j) + ftc(j,k)*fphip(k,i)
                end do
             end do
-            vxx = vxx - cphi(2,i)*cmp_omp(2,i)
+            vxx_omp = vxx_omp - cphi(2,i)*cmp_omp(2,i)
      &                - 0.5d0*(cphim(2)*(uind(1,i)+uinp(1,i))
      &                        +cphid(2)*uinp(1,i)+cphip(2)*uind(1,i))
-            vyx = vyx - 0.5d0*(cphi(2,i)*cmp_omp(3,i)
+            vyx_omp = vyx_omp - 0.5d0*(cphi(2,i)*cmp_omp(3,i)
      &           + cphi(3,i)*cmp_omp(2,i))
      &                - 0.25d0*(cphim(2)*(uind(2,i)+uinp(2,i))
      &                         +cphim(3)*(uind(1,i)+uinp(1,i))
      &                         +cphid(2)*uinp(2,i)+cphip(2)*uind(2,i)
      &                         +cphid(3)*uinp(1,i)+cphip(3)*uind(1,i))
-            vzx = vzx - 0.5d0*(cphi(2,i)*cmp_omp(4,i)
+            vzx_omp = vzx_omp - 0.5d0*(cphi(2,i)*cmp_omp(4,i)
      &           + cphi(4,i)*cmp_omp(2,i))
      &                - 0.25d0*(cphim(2)*(uind(3,i)+uinp(3,i))
      &                         +cphim(4)*(uind(1,i)+uinp(1,i))
      &                         +cphid(2)*uinp(3,i)+cphip(2)*uind(3,i)
      &                         +cphid(4)*uinp(1,i)+cphip(4)*uind(1,i))
-            vyy = vyy - cphi(3,i)*cmp_omp(3,i)
+            vyy_omp = vyy_omp - cphi(3,i)*cmp_omp(3,i)
      &                - 0.5d0*(cphim(3)*(uind(2,i)+uinp(2,i))
      &                        +cphid(3)*uinp(2,i)+cphip(3)*uind(2,i))
-            vzy = vzy - 0.5d0*(cphi(3,i)*cmp_omp(4,i)
+            vzy_omp = vzy_omp - 0.5d0*(cphi(3,i)*cmp_omp(4,i)
      &           + cphi(4,i)*cmp_omp(3,i))
      &                - 0.25d0*(cphim(3)*(uind(3,i)+uinp(3,i))
      &                         +cphim(4)*(uind(2,i)+uinp(2,i))
      &                         +cphid(3)*uinp(3,i)+cphip(3)*uind(3,i)
      &                         +cphid(4)*uinp(2,i)+cphip(4)*uind(2,i))
-            vzz = vzz - cphi(4,i)*cmp_omp(4,i)
+            vzz_omp = vzz_omp - cphi(4,i)*cmp_omp(4,i)
      &                - 0.5d0*(cphim(4)*(uind(3,i)+uinp(3,i))
      &                        +cphid(4)*uinp(3,i)+cphip(4)*uind(3,i))
-            vxx = vxx - 2.0d0*cmp_omp(5,i)*cphi(5,i) 
+            vxx_omp = vxx_omp - 2.0d0*cmp_omp(5,i)*cphi(5,i) 
      &           - cmp_omp(8,i)*cphi(8,i)
      &                - cmp_omp(9,i)*cphi(9,i)
-            vyx = vyx - (cmp_omp(5,i)+cmp_omp(6,i))*cphi(8,i)
+            vyx_omp = vyx_omp - (cmp_omp(5,i)+cmp_omp(6,i))*cphi(8,i)
      &                - 0.5d0*(cmp_omp(8,i)*(cphi(6,i)+cphi(5,i))
      &                     +cmp_omp(9,i)*cphi(10,i)
      &           + cmp_omp(10,i)*cphi(9,i))
-            vzx = vzx - (cmp_omp(5,i)+cmp_omp(7,i))*cphi(9,i)
+            vzx_omp = vzx_omp - (cmp_omp(5,i)+cmp_omp(7,i))*cphi(9,i)
      &                - 0.5d0*(cmp_omp(9,i)*(cphi(5,i)+cphi(7,i))
      &                     +cmp_omp(8,i)*cphi(10,i)
      &           + cmp_omp(10,i)*cphi(8,i))
-            vyy = vyy - 2.0d0*cmp_omp(6,i)*cphi(6,i) 
+            vyy_omp = vyy_omp - 2.0d0*cmp_omp(6,i)*cphi(6,i) 
      &           - cmp_omp(8,i)*cphi(8,i)
      &                - cmp_omp(10,i)*cphi(10,i)
-            vzy = vzy - (cmp_omp(6,i)+cmp_omp(7,i))*cphi(10,i)
+            vzy_omp = vzy_omp - (cmp_omp(6,i)+cmp_omp(7,i))*cphi(10,i)
      &                - 0.5d0*(cmp_omp(10,i)*(cphi(6,i)+cphi(7,i))
      &                     +cmp_omp(8,i)*cphi(9,i)
      &           + cmp_omp(9,i)*cphi(8,i))
-            vzz = vzz - 2.0d0*cmp_omp(7,i)*cphi(7,i) 
+            vzz_omp = vzz_omp - 2.0d0*cmp_omp(7,i)*cphi(7,i) 
      &           - cmp_omp(9,i)*cphi(9,i)
      &                - cmp_omp(10,i)*cphi(10,i)
             if (poltyp .eq. 'DIRECT') then
-               vxx = vxx + 0.5d0*(cphid(2)*uinp(1,i)+cphip(2)*uind(1,i))
-               vyx = vyx + 0.25d0*(cphid(2)*uinp(2,i)+cphip(2)*uind(2,i)
+               vxx_omp = vxx_omp + 0.5d0*(cphid(2)*uinp(1,i)
+     &              + cphip(2)*uind(1,i))
+               vyx_omp = vyx_omp + 0.25d0*(cphid(2)*uinp(2,i)
+     &              + cphip(2)*uind(2,i)
      &                           +cphid(3)*uinp(1,i)+cphip(3)*uind(1,i))
-               vzx = vzx + 0.25d0*(cphid(2)*uinp(3,i)+cphip(2)*uind(3,i)
+               vzx_omp = vzx_omp + 0.25d0*(cphid(2)*uinp(3,i)
+     &              + cphip(2)*uind(3,i)
      &                           +cphid(4)*uinp(1,i)+cphip(4)*uind(1,i))
-               vyy = vyy + 0.5d0*(cphid(3)*uinp(2,i)+cphip(3)*uind(2,i))
-               vzy = vzy + 0.25d0*(cphid(3)*uinp(3,i)+cphip(3)*uind(3,i)
+               vyy_omp = vyy_omp + 0.5d0*(cphid(3)*uinp(2,i)
+     &              + cphip(3)*uind(2,i))
+               vzy_omp = vzy_omp + 0.25d0*(cphid(3)*uinp(3,i)
+     &              + cphip(3)*uind(3,i)
      &                           +cphid(4)*uinp(2,i)+cphip(4)*uind(2,i))
-               vzz = vzz + 0.5d0*(cphid(4)*uinp(3,i)+cphip(4)*uind(3,i))
+               vzz_omp = vzz_omp + 0.5d0*(cphid(4)*uinp(3,i)
+     &              + cphip(4)*uind(3,i))
             end if
          end do
 !$OMP end master
@@ -6703,15 +6709,15 @@ c
 c     increment the internal virial tensor components
 c
 !$OMP master
-      vir(1,1) = vir(1,1) + vxx
-      vir(2,1) = vir(2,1) + vyx
-      vir(3,1) = vir(3,1) + vzx
-      vir(1,2) = vir(1,2) + vyx
-      vir(2,2) = vir(2,2) + vyy
-      vir(3,2) = vir(3,2) + vzy
-      vir(1,3) = vir(1,3) + vzx
-      vir(2,3) = vir(2,3) + vzy
-      vir(3,3) = vir(3,3) + vzz
+      vir(1,1) = vir(1,1) + vxx_omp
+      vir(2,1) = vir(2,1) + vyx_omp
+      vir(3,1) = vir(3,1) + vzx_omp
+      vir(1,2) = vir(1,2) + vyx_omp
+      vir(2,2) = vir(2,2) + vyy_omp
+      vir(3,2) = vir(3,2) + vzy_omp
+      vir(1,3) = vir(1,3) + vzx_omp
+      vir(2,3) = vir(2,3) + vzy_omp
+      vir(3,3) = vir(3,3) + vzz_omp
 c
 c     perform deallocation of some local arrays
 c

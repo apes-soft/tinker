@@ -265,6 +265,8 @@ c
             fuinp_omp(j,i) = 0.0d0
             dipfield1_omp(j,i) = 0.0d0
             dipfield2_omp(j,i) = 0.0d0
+            frc_omp(j,i) = 0.0d0
+            trq_omp(j,i) = 0.0d0
          end do
          xred_th(i) = 0.0d0
          yred_th(i) = 0.0d0
