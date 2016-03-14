@@ -5960,7 +5960,7 @@ c
       real*8, allocatable :: fuind(:,:)
       real*8, allocatable :: fuinp(:,:)
 c      real*8, allocatable :: cmp(:,:)
-      real*8, allocatable :: fmp(:,:)
+c      real*8, allocatable :: fmp(:,:)
       real*8, allocatable :: fphi(:,:)
       real*8, allocatable :: fphid(:,:)
       real*8, allocatable :: fphip(:,:)
@@ -5986,7 +5986,7 @@ c
       allocate (fuind(3,npole))
       allocate (fuinp(3,npole))
 c      allocate (cmp(10,npole))
-      allocate (fmp(10,npole))
+c      allocate (fmp(10,npole))
       allocate (fphi(20,npole))
       allocate (fphid(10,npole))
       allocate (fphip(10,npole))
@@ -6281,7 +6281,7 @@ c
       end if
 
 c      cmp = cmp_omp
-      fmp = fmp_omp
+c      fmp = fmp_omp
 
 c
 c     account for the zeroth grid point for a finite system
@@ -6338,10 +6338,10 @@ c
          f2 = 0.0d0
          f3 = 0.0d0
          do k = 1, 10
-            e = e + fmp(k,i)*fphi(k,i)
-            f1 = f1 + fmp(k,i)*fphi(deriv1(k),i)
-            f2 = f2 + fmp(k,i)*fphi(deriv2(k),i)
-            f3 = f3 + fmp(k,i)*fphi(deriv3(k),i)
+            e = e + fmp_omp(k,i)*fphi(k,i)
+            f1 = f1 + fmp_omp(k,i)*fphi(deriv1(k),i)
+            f2 = f2 + fmp_omp(k,i)*fphi(deriv2(k),i)
+            f3 = f3 + fmp_omp(k,i)*fphi(deriv3(k),i)
          end do
          f1 = dble(nfft1) * f1
          f2 = dble(nfft2) * f2
@@ -6545,9 +6545,9 @@ c
                end if
             end do
             do k = 1, 10
-               f1 = f1 + fmp(k,i)*fphidp(deriv1(k),i)
-               f2 = f2 + fmp(k,i)*fphidp(deriv2(k),i)
-               f3 = f3 + fmp(k,i)*fphidp(deriv3(k),i)
+               f1 = f1 + fmp_omp(k,i)*fphidp(deriv1(k),i)
+               f2 = f2 + fmp_omp(k,i)*fphidp(deriv2(k),i)
+               f3 = f3 + fmp_omp(k,i)*fphidp(deriv3(k),i)
             end do
             f1 = 0.5d0 * dble(nfft1) * f1
             f2 = 0.5d0 * dble(nfft2) * f2
@@ -6708,7 +6708,7 @@ c
       deallocate (fuind)
       deallocate (fuinp)
 c      deallocate (cmp)
-      deallocate (fmp)
+c      deallocate (fmp)
       deallocate (fphi)
       deallocate (fphid)
       deallocate (fphip)
