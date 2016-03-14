@@ -5957,7 +5957,7 @@ C$$$      real*8 vyy,vzy,vzz
       real*8 a(3,3),ftc(10,10)
       real*8, allocatable :: frc(:,:)
       real*8, allocatable :: trq(:,:)
-      real*8, allocatable :: fuind(:,:)
+c      real*8, allocatable :: fuind(:,:)
       real*8, allocatable :: fuinp(:,:)
       real*8, allocatable :: fphi(:,:)
       real*8, allocatable :: fphid(:,:)
@@ -5981,7 +5981,7 @@ c     perform dynamic allocation of some local arrays
 c
       allocate (frc(3,n))
       allocate (trq(3,npole))
-      allocate (fuind(3,npole))
+c      allocate (fuind(3,npole))
       allocate (fuinp(3,npole))
       allocate (fphi(20,npole))
       allocate (fphid(10,npole))
@@ -6411,11 +6411,6 @@ c
 !$OMP end master
 !$OMP barrier
 
-c      trq = trq_omp
-
-c      call torque2 (trq,frc)
-c      frc_omp = frc
-
 !$OMP DO schedule(dynamic,128)
       do i = 1, n
          dem(1,i) = dem(1,i) + frc_omp(1,i)
@@ -6486,7 +6481,8 @@ c
 
          cphi = cphi_omp
          fphi = fdip_sum_phi_omp
-
+c         fuind = fuind_omp
+         fuinp = fuinp_omp
 c
 c     assign PME grid and perform 3-D FFT forward transform
 c
@@ -6494,17 +6490,7 @@ c
 c         call grid_uind (fuind,fuinp)
          call grid_uind1 
 !$OMP master
-         fuind = fuind_omp
-         fuinp = fuinp_omp
          call fftfront
-
-C$$$         vxx = vxx + vxx_omp
-C$$$         vyx = vyx + vyx_omp
-C$$$         vzx = vzx + vzx_omp
-C$$$         vyy = vyy + vyy_omp
-C$$$         vzy = vzy + vzy_omp
-C$$$         vzz = vzz + vzz_omp
-
 !$OMP end master
 !$OMP barrier
 c
@@ -6568,22 +6554,22 @@ c
                j1 = deriv1(k+1)
                j2 = deriv2(k+1)
                j3 = deriv3(k+1)
-               e = e + fuind(k,i)*fphi(k+1,i)
-               f1 = f1 + (fuind(k,i)+fuinp(k,i))*fphi(j1,i)
-     &                 + fuind(k,i)*fphip(j1,i)
+               e = e + fuind_omp(k,i)*fphi(k+1,i)
+               f1 = f1 + (fuind_omp(k,i)+fuinp(k,i))*fphi(j1,i)
+     &                 + fuind_omp(k,i)*fphip(j1,i)
      &                 + fuinp(k,i)*fphid(j1,i)
-               f2 = f2 + (fuind(k,i)+fuinp(k,i))*fphi(j2,i)
-     &                 + fuind(k,i)*fphip(j2,i)
+               f2 = f2 + (fuind_omp(k,i)+fuinp(k,i))*fphi(j2,i)
+     &                 + fuind_omp(k,i)*fphip(j2,i)
      &                 + fuinp(k,i)*fphid(j2,i)
-               f3 = f3 + (fuind(k,i)+fuinp(k,i))*fphi(j3,i)
-     &                 + fuind(k,i)*fphip(j3,i)
+               f3 = f3 + (fuind_omp(k,i)+fuinp(k,i))*fphi(j3,i)
+     &                 + fuind_omp(k,i)*fphip(j3,i)
      &                 + fuinp(k,i)*fphid(j3,i)
                if (poltyp .eq. 'DIRECT') then
-                  f1 = f1 - fuind(k,i)*fphip(j1,i)
+                  f1 = f1 - fuind_omp(k,i)*fphip(j1,i)
      &                    - fuinp(k,i)*fphid(j1,i)
-                  f2 = f2 - fuind(k,i)*fphip(j2,i)
+                  f2 = f2 - fuind_omp(k,i)*fphip(j2,i)
      &                    - fuinp(k,i)*fphid(j2,i)
-                  f3 = f3 - fuind(k,i)*fphip(j3,i)
+                  f3 = f3 - fuind_omp(k,i)*fphip(j3,i)
      &                    - fuinp(k,i)*fphid(j3,i)
                end if
             end do
@@ -6754,7 +6740,7 @@ c
 
       deallocate (frc)
       deallocate (trq)
-      deallocate (fuind)
+c      deallocate (fuind)
       deallocate (fuinp)
       deallocate (fphi)
       deallocate (fphid)
