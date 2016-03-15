@@ -1782,24 +1782,13 @@ c
       real*8 hsq,expterm
       real*8 term,pterm
       real*8 field(3,*)
-c      real*8, allocatable :: cmp(:,:)
-c      real*8, allocatable :: fmp(:,:)
-c      real*8, allocatable :: cphi(:,:)
-c      real*8, allocatable :: fphi(:,:)
 
-c!$OMP master
 c
 c
 c     return if the Ewald coefficient is zero
 c
       if (aewald .lt. 1.0d-6)  return
-c
-c     perform dynamic allocation of some local arrays
-c
-c      allocate (cmp(10,npole))
-c      allocate (fmp(10,npole))
-c      allocate (cphi(10,npole))
-c      allocate (fphi(20,npole))
+
 c
 c     copy multipole moments and coordinates to local storage
 c
@@ -1824,29 +1813,22 @@ c
 !$OMP master
       call bspline_fill
       call table_fill
-
 !$OMP end master
 !$OMP barrier
 
 c
 c     convert Cartesian multipoles to fractional coordinates
 c
-c      cmp = cmp_omp
-      call cmp_to_fmp1 !(cmp,fmp)
-      
-c      fmp_omp = fmp
+      call cmp_to_fmp1 
 
-c!$OMP end master
-c!$OMP barrier
 c
 c     assign PME grid and perform 3-D FFT forward transform
 c
 
-      call grid_mpole1 !(fmp)
+      call grid_mpole1 
+
 !$OMP master
 
-c      fmp = fmp_omp
-c      cmp = cmp_omp
       call fftfront
 c
 c     make the scalar summation over reciprocal lattice
@@ -1915,44 +1897,28 @@ c     perform 3-D FFT backward transform and get field
 c
       call fftback
      
-c      fphi_omp = fphi 
 !$OMP end master
 !$OMP barrier
 
       call fphi_mpole1
       
-
 c
 c     convert the field from fractional to Cartesian
 c
-      call fphi_to_cphi1 !(fphi,cphi)
+      call fphi_to_cphi1 
 
 !$OMP master
      
 c
 c     increment the field at each multipole site
 c
-
-c      cphi = cphi_omp
       do i = 1, npole
          field(1,i) = field(1,i) - cphi_omp(2,i)
          field(2,i) = field(2,i) - cphi_omp(3,i)
          field(3,i) = field(3,i) - cphi_omp(4,i)
       end do
-      
-c      cphi_omp = 0.0d0
-c      fphi_omp = 0.0d0
-
-c
-c     perform deallocation of some local arrays
-c
 !$OMP end master
 !$OMP barrier
-c      deallocate (cmp)
-c      deallocate (fmp)
-c      deallocate (cphi)
-c      deallocate (fphi)
-
       return
       end
 c
