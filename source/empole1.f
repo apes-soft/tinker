@@ -6006,20 +6006,17 @@ c
 c
 c     compute the arrays of B-spline coefficients
 c
-c!$OMP master
       if (.not. use_polar) then
          call bspline_fill
          call table_fill
       end if
-
 c
 c     perform dynamic allocation of some local arrays
 c
 !$OMP master
       allocate (qgrip(2,nfft1,nfft2,nfft3))
-
 !$OMP end master
-!$OMP barrier
+c!$OMP barrier
 
 c
 c     assign permanent and induced multipoles to PME grid
@@ -6066,7 +6063,6 @@ c
 !$OMP master
          call fftfront
 !$OMP end master
-
 
 
 !$OMP DO schedule(static,128)
@@ -6327,6 +6323,7 @@ c!$OMP atomic
          frc_omp(1,i) = recip(1,1)*f1 + recip(1,2)*f2 + recip(1,3)*f3
          frc_omp(2,i) = recip(2,1)*f1 + recip(2,2)*f2 + recip(2,3)*f3
          frc_omp(3,i) = recip(3,1)*f1 + recip(3,2)*f2 + recip(3,3)*f3
+c merged dem calculation
          ii = ipole(i)
          dem(1,ii) = dem(1,ii) + frc_omp(1,i)
          dem(2,ii) = dem(2,ii) + frc_omp(2,i)
@@ -6370,6 +6367,8 @@ c
      &        + cmp_omp(10,i)*cphi_omp(9,i)
      &                 - cmp_omp(8,i)*cphi_omp(6,i) 
      &        - cmp_omp(9,i)*cphi_omp(10,i)
+
+c merged frc_omp calculation
          frc_omp(1,i) = 0.0d0
          frc_omp(2,i) = 0.0d0
          frc_omp(3,i) = 0.0d0
@@ -6403,19 +6402,20 @@ C$$$!$OMP end DO
 c
 c     convert Cartesian induced dipoles to fractional coordinates
 c
+c moved up calculation of 'a' to be able to merge fuind calc  
       if (use_polar) then
          do i = 1, 3
             a(1,i) = dble(nfft1) * recip(i,1)
             a(2,i) = dble(nfft2) * recip(i,2)
             a(3,i) = dble(nfft3) * recip(i,3)
          end do
-
 c
 c     permanent multipole contribution to the internal virial
 c
 !$OMP DO schedule(static,128) reduction(+:vxx_omp,vyx_omp,
 !$OMP& vzx_omp, vyy_omp,vzy_omp,vzz_omp)
       do i = 1, npole
+
 c merged dem calculation
          dem(1,i) = dem(1,i) + frc_omp(1,i)
          dem(2,i) = dem(2,i) + frc_omp(2,i)
@@ -6459,7 +6459,6 @@ c merged fuind_omp calculation
             fuinp_omp(j,i) = a(j,1)*uinp(1,i) + a(j,2)*uinp(2,i)
      &                          + a(j,3)*uinp(3,i)
          end do
-
       end do
 !$OMP end DO 
 
@@ -6668,12 +6667,13 @@ C$$$            frc_omp(3,i) = 0.0d0
 C$$$         end do
 C$$$!$OMP end DO 
 
-!$OMP master
-         e = 0.5d0 * e_omp
-         ep = ep + e
-         call torque2 (trq_omp,frc_omp)
-!$OMP end master
+C$$$!$OMP master
+C$$$         e = 0.5d0 * e_omp
+C$$$         ep = ep + e
+C$$$c         call torque2 (trq_omp,frc_omp)
+C$$$!$OMP end master
 !$OMP barrier
+         call torque2a !(trq_omp,frc_omp)
 
 C$$$!$OMP DO schedule(dynamic,128)
 C$$$         do i = 1, n
@@ -6686,7 +6686,7 @@ C$$$!$OMP end DO
 c
 c     induced dipole contribution to the internal virial
 c
-!$OMP DO schedule(dynamic,128)  reduction(+:vxx_omp,vyx_omp,
+!$OMP DO schedule(dynamic,128) reduction(+:vxx_omp,vyx_omp,
 !$OMP& vzx_omp, vyy_omp,vzy_omp,vzz_omp)
          do i = 1, npole
 c merged dep calculation
@@ -6781,6 +6781,8 @@ c
 c     increment the internal virial tensor components
 c
 !$OMP master
+      e = 0.5d0 * e_omp
+      ep = ep + e
       vir(1,1) = vir(1,1) + vxx_omp
       vir(2,1) = vir(2,1) + vyx_omp
       vir(3,1) = vir(3,1) + vzx_omp
