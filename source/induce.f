@@ -1782,12 +1782,12 @@ c
       real*8 hsq,expterm
       real*8 term,pterm
       real*8 field(3,*)
-      real*8, allocatable :: cmp(:,:)
-      real*8, allocatable :: fmp(:,:)
+c      real*8, allocatable :: cmp(:,:)
+c      real*8, allocatable :: fmp(:,:)
       real*8, allocatable :: cphi(:,:)
       real*8, allocatable :: fphi(:,:)
 
-!$OMP master
+c!$OMP master
 c
 c
 c     return if the Ewald coefficient is zero
@@ -1796,45 +1796,56 @@ c
 c
 c     perform dynamic allocation of some local arrays
 c
-      allocate (cmp(10,npole))
-      allocate (fmp(10,npole))
+c      allocate (cmp(10,npole))
+c      allocate (fmp(10,npole))
       allocate (cphi(10,npole))
       allocate (fphi(20,npole))
 c
 c     copy multipole moments and coordinates to local storage
 c
+
+!$OMP DO schedule(static,128)
       do i = 1, npole
-         cmp(1,i) = rpole(1,i)
-         cmp(2,i) = rpole(2,i)
-         cmp(3,i) = rpole(3,i)
-         cmp(4,i) = rpole(4,i)
-         cmp(5,i) = rpole(5,i)
-         cmp(6,i) = rpole(9,i)
-         cmp(7,i) = rpole(13,i)
-         cmp(8,i) = 2.0d0 * rpole(6,i)
-         cmp(9,i) = 2.0d0 * rpole(7,i)
-         cmp(10,i) = 2.0d0 * rpole(10,i)
+         cmp_omp(1,i) = rpole(1,i)
+         cmp_omp(2,i) = rpole(2,i)
+         cmp_omp(3,i) = rpole(3,i)
+         cmp_omp(4,i) = rpole(4,i)
+         cmp_omp(5,i) = rpole(5,i)
+         cmp_omp(6,i) = rpole(9,i)
+         cmp_omp(7,i) = rpole(13,i)
+         cmp_omp(8,i) = 2.0d0 * rpole(6,i)
+         cmp_omp(9,i) = 2.0d0 * rpole(7,i)
+         cmp_omp(10,i) = 2.0d0 * rpole(10,i)
       end do
+!$OMP end DO 
 c
 c     compute B-spline coefficients and spatial decomposition
 c
+!$OMP master
       call bspline_fill
       call table_fill
+!$OMP end master
+!$OMP barrier
+
 c
 c     convert Cartesian multipoles to fractional coordinates
 c
-      call cmp_to_fmp (cmp,fmp)
+c      cmp = cmp_omp
+      call cmp_to_fmp1 !(cmp,fmp)
       
-      fmp_omp = fmp
+c      fmp_omp = fmp
 
-!$OMP end master
-!$OMP barrier
+c!$OMP end master
+c!$OMP barrier
 c
 c     assign PME grid and perform 3-D FFT forward transform
 c
 
       call grid_mpole1 !(fmp)
 !$OMP master
+
+c      fmp = fmp_omp
+c      cmp = cmp_omp
       call fftfront
 c
 c     make the scalar summation over reciprocal lattice
@@ -1918,12 +1929,13 @@ c
 c
 c     perform deallocation of some local arrays
 c
-      deallocate (cmp)
-      deallocate (fmp)
-      deallocate (cphi)
-      deallocate (fphi)
 !$OMP end master
 !$OMP barrier
+c      deallocate (cmp)
+c      deallocate (fmp)
+      deallocate (cphi)
+      deallocate (fphi)
+
       return
       end
 c
