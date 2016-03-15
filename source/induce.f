@@ -1501,6 +1501,7 @@ c!$OMP master
 !$OMP master
       do i = 1, npole
          do j = 1, 3
+            field(j,i) = field_omp(j,i)
             fieldp(j,i) = field(j,i)
          end do
       end do
@@ -1907,18 +1908,20 @@ c     convert the field from fractional to Cartesian
 c
       call fphi_to_cphi1 
 
-!$OMP master
-     
+c!$OMP master
+    
 c
 c     increment the field at each multipole site
 c
+!$OMP DO schedule(static,128)
       do i = 1, npole
-         field(1,i) = field(1,i) - cphi_omp(2,i)
-         field(2,i) = field(2,i) - cphi_omp(3,i)
-         field(3,i) = field(3,i) - cphi_omp(4,i)
+         field_omp(1,i) = field_omp(1,i) - cphi_omp(2,i)
+         field_omp(2,i) = field_omp(2,i) - cphi_omp(3,i)
+         field_omp(3,i) = field_omp(3,i) - cphi_omp(4,i)
       end do
-!$OMP end master
-!$OMP barrier
+!$OMP end DO 
+c!$OMP end master
+c!$OMP barrier
       return
       end
 c
