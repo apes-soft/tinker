@@ -1914,15 +1914,19 @@ c
 c     perform 3-D FFT backward transform and get field
 c
       call fftback
-      call fphi_mpole(fphi)
-      fphi_omp = fphi 
+     
+c      fphi_omp = fphi 
 !$OMP end master
 !$OMP barrier
 
-      call fphi_to_cphi1 !(fphi,cphi)
+      call fphi_mpole1
+      
 
+c
 c     convert the field from fractional to Cartesian
 c
+      call fphi_to_cphi1 !(fphi,cphi)
+
 !$OMP master
      
 c
