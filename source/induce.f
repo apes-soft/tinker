@@ -1481,18 +1481,18 @@ c
       integer i,j,ii
       real*8 term
       real*8 ucell(3)
-      real*8 field(3,*)
-      real*8 fieldp(3,*)
+c      real*8 field(3,*)
+c      real*8 fieldp(3,*)
 c
 c
 c     zero out the value of the field at each site
 c
-      do i = 1, npole
-         do j = 1, 3
-            field(j,i) = 0.0d0
-            fieldp(j,i) = 0.0d0
-         end do
-      end do
+C$$$      do i = 1, npole
+C$$$         do j = 1, 3
+C$$$            field(j,i) = 0.0d0
+C$$$            fieldp(j,i) = 0.0d0
+C$$$         end do
+C$$$      end do
 c
 c     get the reciprocal space part of the electrostatic field
 c
@@ -1515,7 +1515,7 @@ c
       if (use_mlist) then
          call udirect2b !(field,fieldp)
       else
-         call udirect2a (field,fieldp)
+c         call udirect2a (field,fieldp)
       end if
 
 !$OMP master
@@ -1542,6 +1542,7 @@ c
 c     compute the cell dipole boundary correction to field
 c
       if (boundary .eq. 'VACUUM') then
+!$OMP master
          do i = 1, 3
             ucell(i) = 0.0d0
          end do
@@ -1554,10 +1555,11 @@ c
          term = (4.0d0/3.0d0) * pi/volbox
          do i = 1, npole
             do j = 1, 3
-               field(j,i) = field(j,i) - term*ucell(j)
-               fieldp(j,i) = fieldp(j,i) - term*ucell(j)
+               field_omp(j,i) = field_omp(j,i) - term*ucell(j)
+               fieldp_omp(j,i) = fieldp_omp(j,i) - term*ucell(j)
             end do
          end do
+!$OMP end master
       end if
       return
       end
