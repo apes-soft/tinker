@@ -1481,8 +1481,8 @@ c
       integer i,j,ii
       real*8 term
       real*8 ucell(3)
-c      real*8 field(3,*)
-c      real*8 fieldp(3,*)
+      real*8 field(3,*)
+      real*8 fieldp(3,*)
 c
 c
 c     zero out the value of the field at each site
@@ -1522,14 +1522,16 @@ c         call udirect2a (field,fieldp)
 c
 c     get the self-energy portion of the electrostatic field
 c
-      fieldp_omp = field_omp
+c      fieldp_omp = field_omp
       term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
       do i = 1, npole
          do j = 1, 3
+            fieldp_omp(j,i) = field_omp(j,i) + term*rpole(j+1,i)
+     &           + fieldtp_omp(j,i)
             field_omp(j,i) = field_omp(j,i) + term*rpole(j+1,i)
      &           + fieldt_omp(j,i)
-            fieldp_omp(j,i) = fieldp_omp(j,i) + term*rpole(j+1,i)
-     &           + fieldtp_omp(j,i)
+c            fieldp_omp(j,i) = fieldp_omp(j,i) + term*rpole(j+1,i)
+c     &           + fieldtp_omp(j,i)
 c            field_omp(j,i) = field(j,i)
 c            fieldp_omp(j,i) = fieldp(j,i)
          end do
