@@ -1498,22 +1498,22 @@ c     get the reciprocal space part of the electrostatic field
 c
 c!$OMP master
       call udirect1 !(field)
-!$OMP master
-      do i = 1, npole
-         do j = 1, 3
-            field(j,i) = field_omp(j,i)
-            fieldp(j,i) = field(j,i)
-         end do
-      end do
-!$OMP end master
-!$OMP barrier
-!$OMP flush
+C$$$!$OMP master
+C$$$      do i = 1, npole
+C$$$         do j = 1, 3
+C$$$            field(j,i) = field_omp(j,i)
+C$$$            fieldp(j,i) = field(j,i)
+C$$$         end do
+C$$$      end do
+C$$$!$OMP end master
+C$$$!$OMP barrier
+C$$$!$OMP flush
 c
 c     get the real space portion of the electrostatic field
 c
 
       if (use_mlist) then
-         call udirect2b (field,fieldp)
+         call udirect2b !(field,fieldp)
       else
          call udirect2a (field,fieldp)
       end if
@@ -1522,15 +1522,16 @@ c
 c
 c     get the self-energy portion of the electrostatic field
 c
+      fieldp_omp = field_omp
       term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
       do i = 1, npole
          do j = 1, 3
-            field(j,i) = field(j,i) + term*rpole(j+1,i)
+            field_omp(j,i) = field_omp(j,i) + term*rpole(j+1,i)
      &           + fieldt_omp(j,i)
-            fieldp(j,i) = fieldp(j,i) + term*rpole(j+1,i)
+            fieldp_omp(j,i) = fieldp_omp(j,i) + term*rpole(j+1,i)
      &           + fieldtp_omp(j,i)
-            field_omp(j,i) = field(j,i)
-            fieldp_omp(j,i) = fieldp(j,i)
+c            field_omp(j,i) = field(j,i)
+c            fieldp_omp(j,i) = fieldp(j,i)
          end do
       end do
 
@@ -2403,7 +2404,7 @@ c     "udirect2b" computes the real space contribution of the permanent
 c     atomic multipole moments to the field via a neighbor list
 c
 c
-      subroutine udirect2b (field,fieldp)
+      subroutine udirect2b !(field,fieldp)
       use sizes
       use atoms
       use boxes
@@ -2454,8 +2455,8 @@ c      integer, allocatable :: ilocal(:,:)
       real*8, allocatable :: pscale(:)
       real*8, allocatable :: dscale(:)
       real*8, allocatable :: uscale(:)
-      real*8 field(3,*)
-      real*8 fieldp(3,*)
+c      real*8 field(3,*)
+c      real*8 fieldp(3,*)
       real*8, allocatable :: fieldt(:,:)
       real*8, allocatable :: fieldtp(:,:)
 c      real*8, allocatable :: dlocal(:,:)
