@@ -1785,7 +1785,7 @@ c
 c      real*8, allocatable :: cmp(:,:)
 c      real*8, allocatable :: fmp(:,:)
 c      real*8, allocatable :: cphi(:,:)
-      real*8, allocatable :: fphi(:,:)
+c      real*8, allocatable :: fphi(:,:)
 
 c!$OMP master
 c
@@ -1799,7 +1799,7 @@ c
 c      allocate (cmp(10,npole))
 c      allocate (fmp(10,npole))
 c      allocate (cphi(10,npole))
-      allocate (fphi(20,npole))
+c      allocate (fphi(20,npole))
 c
 c     copy multipole moments and coordinates to local storage
 c
@@ -1951,7 +1951,7 @@ c
 c      deallocate (cmp)
 c      deallocate (fmp)
 c      deallocate (cphi)
-      deallocate (fphi)
+c      deallocate (fphi)
 
       return
       end
