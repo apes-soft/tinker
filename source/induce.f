@@ -1784,7 +1784,7 @@ c
       real*8 field(3,*)
 c      real*8, allocatable :: cmp(:,:)
 c      real*8, allocatable :: fmp(:,:)
-      real*8, allocatable :: cphi(:,:)
+c      real*8, allocatable :: cphi(:,:)
       real*8, allocatable :: fphi(:,:)
 
 c!$OMP master
@@ -1798,7 +1798,7 @@ c     perform dynamic allocation of some local arrays
 c
 c      allocate (cmp(10,npole))
 c      allocate (fmp(10,npole))
-      allocate (cphi(10,npole))
+c      allocate (cphi(10,npole))
       allocate (fphi(20,npole))
 c
 c     copy multipole moments and coordinates to local storage
@@ -1929,11 +1929,11 @@ c
 c     increment the field at each multipole site
 c
 
-      cphi = cphi_omp
+c      cphi = cphi_omp
       do i = 1, npole
-         field(1,i) = field(1,i) - cphi(2,i)
-         field(2,i) = field(2,i) - cphi(3,i)
-         field(3,i) = field(3,i) - cphi(4,i)
+         field(1,i) = field(1,i) - cphi_omp(2,i)
+         field(2,i) = field(2,i) - cphi_omp(3,i)
+         field(3,i) = field(3,i) - cphi_omp(4,i)
       end do
       
 c      cphi_omp = 0.0d0
@@ -1946,7 +1946,7 @@ c
 !$OMP barrier
 c      deallocate (cmp)
 c      deallocate (fmp)
-      deallocate (cphi)
+c      deallocate (cphi)
       deallocate (fphi)
 
       return
