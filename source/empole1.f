@@ -6280,7 +6280,7 @@ c
 
       call fphi_mpole1 
 
-!$OMP do schedule(dynamic,128)
+!$OMP do schedule(static,128)
       do i = 1, npole
          do j = 1, 20
             fdip_sum_phi_omp(j,i) = electric * fdip_sum_phi_omp(j,i)
@@ -6324,7 +6324,7 @@ c
 c     distribute torques into the permanent multipole gradient
 c
 
-!$OMP DO schedule(dynamic,128)
+!$OMP DO schedule(static,128)
       do i = 1, npole
          trq_omp(1,i) = cmp_omp(4,i)*cphi_omp(3,i) 
      &        - cmp_omp(3,i)*cphi_omp(4,i)
@@ -6469,7 +6469,7 @@ c
 c     increment the induced dipole energy and gradient
 c
 
-!$OMP DO schedule(dynamic,128)reduction(+:e_omp)
+!$OMP DO schedule(static,128)reduction(+:e_omp)
          do i = 1, npole
 c merged fdip_phi calculation 
             do j = 1, 10
@@ -6537,7 +6537,7 @@ c
 c
 c     distribute torques into the induced dipole gradient
 c
-!$OMP DO schedule(dynamic,128)
+!$OMP DO schedule(static,128)
          do i = 1, npole
             trq_omp(1,i) = cmp_omp(4,i)*cphi_omp(3,i) 
      &           - cmp_omp(3,i)*cphi_omp(4,i)
@@ -6574,7 +6574,7 @@ c
 c
 c     induced dipole contribution to the internal virial
 c
-!$OMP DO schedule(dynamic,128) reduction(+:vxx_omp,vyx_omp,
+!$OMP DO schedule(static,128) reduction(+:vxx_omp,vyx_omp,
 !$OMP& vzx_omp, vyy_omp,vzy_omp,vzz_omp)
          do i = 1, npole
 c merged dep calculation
