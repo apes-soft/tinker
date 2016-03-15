@@ -1497,7 +1497,7 @@ c
 c     get the reciprocal space part of the electrostatic field
 c
 c!$OMP master
-      call udirect1 (field)
+      call udirect1 !(field)
 !$OMP master
       do i = 1, npole
          do j = 1, 3
@@ -1763,7 +1763,7 @@ c     "udirect1" computes the reciprocal space contribution of the
 c     permanent atomic multipole moments to the field
 c
 c
-      subroutine udirect1 (field)
+      subroutine udirect1 !(field)
       use sizes
       use bound
       use boxes
@@ -1782,7 +1782,7 @@ c
       real*8 volterm,denom
       real*8 hsq,expterm
       real*8 term,pterm
-      real*8 field(3,*)
+c      real*8 field(3,*)
 
 c
 c
@@ -1908,8 +1908,6 @@ c     convert the field from fractional to Cartesian
 c
       call fphi_to_cphi1 
 
-c!$OMP master
-    
 c
 c     increment the field at each multipole site
 c
@@ -1920,8 +1918,6 @@ c
          field_omp(3,i) = field_omp(3,i) - cphi_omp(4,i)
       end do
 !$OMP end DO 
-c!$OMP end master
-c!$OMP barrier
       return
       end
 c
