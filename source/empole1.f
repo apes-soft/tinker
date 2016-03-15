@@ -5946,8 +5946,6 @@ c
       real*8 r1,r2,r3
       real*8 h1,h2,h3
       real*8 f1,f2,f3
-C$$$      real*8 vxx,vyx,vzx
-C$$$      real*8 vyy,vzy,vzz
       real*8 volterm,denom
       real*8 hsq,expterm
       real*8 term,pterm
@@ -5955,15 +5953,7 @@ C$$$      real*8 vyy,vzy,vzz
       real*8 cphim(4),cphid(4)
       real*8 cphip(4)
       real*8 a(3,3),ftc(10,10)
-c      real*8, allocatable :: frc(:,:)
-c      real*8, allocatable :: trq(:,:)
-c      real*8, allocatable :: fuind(:,:)
-c      real*8, allocatable :: fuinp(:,:)
       real*8, allocatable :: fphi(:,:)
-c      real*8, allocatable :: fphid(:,:)
-c      real*8, allocatable :: fphip(:,:)
-c      real*8, allocatable :: fphidp(:,:)
-c      real*8, allocatable :: cphi(:,:)
       real*8, allocatable :: qgrip(:,:,:,:)
 c
 c     derivative indices into the fphi and fphidp arrays
@@ -6016,7 +6006,6 @@ c
 !$OMP master
       allocate (qgrip(2,nfft1,nfft2,nfft3))
 !$OMP end master
-c!$OMP barrier
 
 c
 c     assign permanent and induced multipoles to PME grid
@@ -6331,14 +6320,6 @@ c merged dem calculation
       end do
 !$OMP end DO 
 
-C$$$!$OMP DO schedule(dynamic,128) 
-C$$$      do i = 1, npole
-C$$$         ii = ipole(i)
-C$$$         dem(1,ii) = dem(1,ii) + frc_omp(1,i)
-C$$$         dem(2,ii) = dem(2,ii) + frc_omp(2,i)
-C$$$         dem(3,ii) = dem(3,ii) + frc_omp(3,i)
-C$$$      end do
-C$$$!$OMP end DO 
 c
 c     distribute torques into the permanent multipole gradient
 c
@@ -6375,30 +6356,7 @@ c merged frc_omp calculation
       end do
 !$OMP end do
 
-C$$$!$OMP DO schedule(dynamic,128)
-C$$$      do i = 1, n
-C$$$         frc_omp(1,i) = 0.0d0
-C$$$         frc_omp(2,i) = 0.0d0
-C$$$         frc_omp(3,i) = 0.0d0
-C$$$      end do
-C$$$!$OMP end DO 
-
-!$OMP master
-      e = 0.5d0 * e_omp
-      em = em + e
-      call torque2 (trq_omp,frc_omp)
-      e_omp = 0.0d0
-!$OMP end master
-!$OMP barrier
-
-C$$$!$OMP DO schedule(dynamic,128)
-C$$$      do i = 1, n
-C$$$         dem(1,i) = dem(1,i) + frc_omp(1,i)
-C$$$         dem(2,i) = dem(2,i) + frc_omp(2,i)
-C$$$         dem(3,i) = dem(3,i) + frc_omp(3,i)
-C$$$      end do
-C$$$!$OMP end DO 
-
+      call torque2a
 c
 c     convert Cartesian induced dipoles to fractional coordinates
 c
@@ -6462,19 +6420,6 @@ c merged fuind_omp calculation
       end do
 !$OMP end DO 
 
-
-
-C$$$!$OMP DO schedule(dynamic,128)
-C$$$         do i = 1, npole
-C$$$            do j = 1, 3
-C$$$               fuind_omp(j,i) = a(j,1)*uind(1,i) + a(j,2)*uind(2,i)
-C$$$     &                          + a(j,3)*uind(3,i)
-C$$$               fuinp_omp(j,i) = a(j,1)*uinp(1,i) + a(j,2)*uinp(2,i)
-C$$$     &                          + a(j,3)*uinp(3,i)
-C$$$            end do
-C$$$         end do
-C$$$!$OMP end DO
-
          fphi = fdip_sum_phi_omp
 c
 c     assign PME grid and perform 3-D FFT forward transform
@@ -6483,6 +6428,9 @@ c
          call grid_uind1 
 !$OMP master
          call fftfront
+         e = 0.5d0 * e_omp
+         em = em + e
+         e_omp = 0.0d0
 !$OMP end master
 !$OMP barrier
 c
@@ -6517,19 +6465,6 @@ c
 
 
          call fphi_uind2 
-
-C$$$!$OMP DO schedule(dynamic,128)
-C$$$         do i = 1, npole
-C$$$            do j = 1, 10
-C$$$               fdip_phi1_omp(j,i) = electric * fdip_phi1_omp(j,i)
-C$$$               fdip_phi2_omp(j,i) = electric * fdip_phi2_omp(j,i)
-C$$$            end do
-C$$$            do j = 1, 20
-C$$$               fdip_sum_phi_omp(j,i) = electric * fdip_sum_phi_omp(j,i)
-C$$$            end do
-C$$$         end do
-C$$$!$OMP end DO
-
 c
 c     increment the induced dipole energy and gradient
 c
@@ -6598,30 +6533,6 @@ c
          end do
 !$OMP end DO 
 
-C$$$!$OMP DO schedule(dynamic,128)
-C$$$         do i = 1, npole
-C$$$            ii = ipole(i)
-C$$$            dep(1,ii) = dep(1,ii) + frc_omp(1,i)
-C$$$            dep(2,ii) = dep(2,ii) + frc_omp(2,i)
-C$$$            dep(3,ii) = dep(3,ii) + frc_omp(3,i)
-C$$$c
-C$$$c     set the potential to be the induced dipole average
-C$$$c
-C$$$            do k = 1, 10
-C$$$               fdip_sum_phi_omp(k,i) = 0.5d0 * fdip_sum_phi_omp(k,i)
-C$$$            end do
-C$$$         end do
-C$$$!$OMP end DO
-
-
-C$$$!$OMP DO schedule(dynamic,128) collapse(2)
-C$$$         do i = 1, npole
-C$$$            do k = 1, 10
-C$$$               fdip_sum_phi_omp(k,i) = 0.5d0 * fdip_sum_phi_omp(k,i)
-C$$$            end do
-C$$$         end do
-C$$$!$OMP end DO 
-
          call fphi_to_cphi1 
 c
 c     distribute torques into the induced dipole gradient
@@ -6659,30 +6570,7 @@ c
          end do
 !$OMP end DO
 
-C$$$!$OMP DO schedule(dynamic,128)
-C$$$         do i = 1, n
-C$$$            frc_omp(1,i) = 0.0d0
-C$$$            frc_omp(2,i) = 0.0d0
-C$$$            frc_omp(3,i) = 0.0d0
-C$$$         end do
-C$$$!$OMP end DO 
-
-C$$$!$OMP master
-C$$$         e = 0.5d0 * e_omp
-C$$$         ep = ep + e
-C$$$c         call torque2 (trq_omp,frc_omp)
-C$$$!$OMP end master
-!$OMP barrier
-         call torque2a !(trq_omp,frc_omp)
-
-C$$$!$OMP DO schedule(dynamic,128)
-C$$$         do i = 1, n
-C$$$            dep(1,i) = dep(1,i) + frc_omp(1,i)
-C$$$            dep(2,i) = dep(2,i) + frc_omp(2,i)
-C$$$            dep(3,i) = dep(3,i) + frc_omp(3,i)
-C$$$         end do
-C$$$!$OMP end DO 
-
+         call torque2a 
 c
 c     induced dipole contribution to the internal virial
 c
