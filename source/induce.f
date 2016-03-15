@@ -1824,6 +1824,7 @@ c
 !$OMP master
       call bspline_fill
       call table_fill
+
 !$OMP end master
 !$OMP barrier
 
@@ -1913,19 +1914,31 @@ c
 c     perform 3-D FFT backward transform and get field
 c
       call fftback
-      call fphi_mpole (fphi)
-c
+      call fphi_mpole(fphi)
+      fphi_omp = fphi 
+!$OMP end master
+!$OMP barrier
+
+      call fphi_to_cphi1 !(fphi,cphi)
+
 c     convert the field from fractional to Cartesian
 c
-      call fphi_to_cphi (fphi,cphi)
+!$OMP master
+     
 c
 c     increment the field at each multipole site
 c
+
+      cphi = cphi_omp
       do i = 1, npole
          field(1,i) = field(1,i) - cphi(2,i)
          field(2,i) = field(2,i) - cphi(3,i)
          field(3,i) = field(3,i) - cphi(4,i)
       end do
+      
+c      cphi_omp = 0.0d0
+c      fphi_omp = 0.0d0
+
 c
 c     perform deallocation of some local arrays
 c
