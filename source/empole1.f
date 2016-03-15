@@ -6006,7 +6006,7 @@ c
 c
 c     compute the arrays of B-spline coefficients
 c
-!$OMP master
+c!$OMP master
       if (.not. use_polar) then
          call bspline_fill
          call table_fill
@@ -6015,7 +6015,7 @@ c
 c
 c     perform dynamic allocation of some local arrays
 c
-
+!$OMP master
       allocate (qgrip(2,nfft1,nfft2,nfft3))
 
 !$OMP end master
@@ -6250,7 +6250,6 @@ c
       if (use_polar) then
          call cmp_to_fmp1 
          call grid_mpole1 
-
 !$OMP master
          call fftfront
 !$OMP end master
@@ -6283,10 +6282,11 @@ c
       end do
 !$OMP end do 
 
-!$OMP master
+
 c
 c     perform 3-D FFT backward transform and get potential
 c
+!$OMP master
       call fftback
       e = 0.0d0
       e_omp = 0.0d0
@@ -6303,24 +6303,19 @@ c
       end do
 !$OMP end DO
 
-c      fphi = fdip_sum_phi_omp
       call fphi_to_cphi1 
-      
-
-c!$OMP master
-      
-c      cphi_omp = cphi
+     
 c
 c     increment the permanent multipole energy and gradient
 c
 
-!$OMP DO schedule(static,128)
+!$OMP DO schedule(static,128) reduction(+:e_omp)
       do i = 1, npole
          f1 = 0.0d0
          f2 = 0.0d0
          f3 = 0.0d0
          do k = 1, 10
-!$OMP atomic
+c!$OMP atomic
             e_omp = e_omp + fmp_omp(k,i)*fdip_sum_phi_omp(k,i)
             f1 = f1 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv1(k),i)
             f2 = f2 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv2(k),i)
@@ -6514,14 +6509,11 @@ c
          end do
 !$OMP end DO
 
-c!$OMP master
-
 c
 c     increment the induced dipole energy and gradient
 c
-c         e = 0.0d0
 
-!$OMP DO schedule(dynamic,128)
+!$OMP DO schedule(dynamic,128)reduction(+:e_omp)
          do i = 1, npole
             f1 = 0.0d0
             f2 = 0.0d0
@@ -6530,7 +6522,7 @@ c         e = 0.0d0
                j1 = deriv1(k+1)
                j2 = deriv2(k+1)
                j3 = deriv3(k+1)
-!$OMP atomic               
+c!$OMP atomic               
                e_omp = e_omp + fuind_omp(k,i)*fphi(k+1,i)
                f1 = f1 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi(j1,i)
      &                 + fuind_omp(k,i)*fdip_phi2_omp(j1,i)
@@ -6564,10 +6556,6 @@ c         e = 0.0d0
          end do
 !$OMP end DO 
 
-c!$OMP master
-
-c!$OMP end master
-
 !$OMP DO schedule(dynamic,128)
          do i = 1, npole
             ii = ipole(i)
@@ -6576,6 +6564,7 @@ c!$OMP end master
             dep(3,ii) = dep(3,ii) + frc_omp(3,i)
          end do
 !$OMP end DO
+
 c
 c     set the potential to be the induced dipole average
 c
@@ -6587,7 +6576,7 @@ c
          end do
 !$OMP end DO 
 
-         call fphi_to_cphi1 ! (fdip_sum_phi_omp,cphi_omp)
+         call fphi_to_cphi1 
 c
 c     distribute torques into the induced dipole gradient
 c
@@ -6627,6 +6616,7 @@ c
             frc_omp(3,i) = 0.0d0
          end do
 !$OMP end DO 
+
 !$OMP master
          e = 0.5d0 * e_omp
          ep = ep + e
@@ -6641,8 +6631,7 @@ c
             dep(3,i) = dep(3,i) + frc_omp(3,i)
          end do
 !$OMP end DO 
-c!$OMP end master
-c!$OMP barrier
+
 c
 c     induced dipole contribution to the internal virial
 c
@@ -6732,7 +6721,6 @@ c
             end if
          end do
 !$OMP end DO 
-c!$OMP end master
       end if
 c
 c     increment the internal virial tensor components
@@ -6747,13 +6735,13 @@ c
       vir(1,3) = vir(1,3) + vzx_omp
       vir(2,3) = vir(2,3) + vzy_omp
       vir(3,3) = vir(3,3) + vzz_omp
-c
-c     perform deallocation of some local arrays
-c
 !$OMP end master
 !$OMP barrier
 !$OMP flush
 
+c
+c     perform deallocation of some local arrays
+c
       deallocate (fphi)
       return
       end
