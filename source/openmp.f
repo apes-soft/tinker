@@ -66,6 +66,7 @@ c
       real*8 vyy_omp,vzy_omp,vzz_omp
       real*8 ctf_omp(10,10)
       real*8, allocatable :: cphi_omp(:,:)
+      real*8, allocatable :: fphi_omp(:,:)
       real*8, allocatable :: frc_omp(:,:)
       real*8, allocatable :: trq_omp(:,:)
       real*8 e_omp

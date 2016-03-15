@@ -170,6 +170,7 @@ c         allocate(vscale_th(n))
       if(.not. allocated(cphi_omp)) allocate(cphi_omp(10,npole))
       if(.not. allocated(frc_omp)) allocate (frc_omp(3,n))
       if(.not. allocated(trq_omp)) allocate (trq_omp(3,npole))
+      if(.not. allocated(fphi_omp)) allocate(fphi_omp(20,npole))
 c
 c     zero out the virial and the intermolecular energy
 c
@@ -321,15 +322,8 @@ c
       call chkpole
       call rotpole
       call induce ! not everything is parallel
-      
-  
-c!$OMP master
+   
       call emrecip1
-    
-c!$OMP end master
-c!$OMP barrier
-c!$OMP flush
-
 
       call ereal1d(eint)   
       call empole1d
@@ -348,7 +342,7 @@ c      call ereal1d(eint)
      
 c      call empole1d
 
-
+! the below are not used by bench7
 c      if (use_charge)  call echarge1
 c      if (use_chgdpl)  call echgdpl1
 c      if (use_dipole)  call edipole1
