@@ -6327,17 +6327,21 @@ c!$OMP atomic
          frc_omp(1,i) = recip(1,1)*f1 + recip(1,2)*f2 + recip(1,3)*f3
          frc_omp(2,i) = recip(2,1)*f1 + recip(2,2)*f2 + recip(2,3)*f3
          frc_omp(3,i) = recip(3,1)*f1 + recip(3,2)*f2 + recip(3,3)*f3
-      end do
-!$OMP end DO 
-
-!$OMP DO schedule(dynamic,128) 
-      do i = 1, npole
          ii = ipole(i)
          dem(1,ii) = dem(1,ii) + frc_omp(1,i)
          dem(2,ii) = dem(2,ii) + frc_omp(2,i)
          dem(3,ii) = dem(3,ii) + frc_omp(3,i)
       end do
 !$OMP end DO 
+
+C$$$!$OMP DO schedule(dynamic,128) 
+C$$$      do i = 1, npole
+C$$$         ii = ipole(i)
+C$$$         dem(1,ii) = dem(1,ii) + frc_omp(1,i)
+C$$$         dem(2,ii) = dem(2,ii) + frc_omp(2,i)
+C$$$         dem(3,ii) = dem(3,ii) + frc_omp(3,i)
+C$$$      end do
+C$$$!$OMP end DO 
 c
 c     distribute torques into the permanent multipole gradient
 c
@@ -6366,16 +6370,19 @@ c
      &        + cmp_omp(10,i)*cphi_omp(9,i)
      &                 - cmp_omp(8,i)*cphi_omp(6,i) 
      &        - cmp_omp(9,i)*cphi_omp(10,i)
-      end do
-!$OMP end do
-
-!$OMP DO schedule(dynamic,128)
-      do i = 1, n
          frc_omp(1,i) = 0.0d0
          frc_omp(2,i) = 0.0d0
          frc_omp(3,i) = 0.0d0
       end do
-!$OMP end DO 
+!$OMP end do
+
+C$$$!$OMP DO schedule(dynamic,128)
+C$$$      do i = 1, n
+C$$$         frc_omp(1,i) = 0.0d0
+C$$$         frc_omp(2,i) = 0.0d0
+C$$$         frc_omp(3,i) = 0.0d0
+C$$$      end do
+C$$$!$OMP end DO 
 
 !$OMP master
       e = 0.5d0 * e_omp
@@ -6385,13 +6392,23 @@ c
 !$OMP end master
 !$OMP barrier
 
-!$OMP DO schedule(dynamic,128)
-      do i = 1, n
-         dem(1,i) = dem(1,i) + frc_omp(1,i)
-         dem(2,i) = dem(2,i) + frc_omp(2,i)
-         dem(3,i) = dem(3,i) + frc_omp(3,i)
-      end do
-!$OMP end DO 
+C$$$!$OMP DO schedule(dynamic,128)
+C$$$      do i = 1, n
+C$$$         dem(1,i) = dem(1,i) + frc_omp(1,i)
+C$$$         dem(2,i) = dem(2,i) + frc_omp(2,i)
+C$$$         dem(3,i) = dem(3,i) + frc_omp(3,i)
+C$$$      end do
+C$$$!$OMP end DO 
+
+c
+c     convert Cartesian induced dipoles to fractional coordinates
+c
+      if (use_polar) then
+         do i = 1, 3
+            a(1,i) = dble(nfft1) * recip(i,1)
+            a(2,i) = dble(nfft2) * recip(i,2)
+            a(3,i) = dble(nfft3) * recip(i,3)
+         end do
 
 c
 c     permanent multipole contribution to the internal virial
@@ -6399,6 +6416,11 @@ c
 !$OMP DO schedule(static,128) reduction(+:vxx_omp,vyx_omp,
 !$OMP& vzx_omp, vyy_omp,vzy_omp,vzz_omp)
       do i = 1, npole
+c merged dem calculation
+         dem(1,i) = dem(1,i) + frc_omp(1,i)
+         dem(2,i) = dem(2,i) + frc_omp(2,i)
+         dem(3,i) = dem(3,i) + frc_omp(3,i)
+
          vxx_omp = vxx_omp - cmp_omp(2,i)*cphi_omp(2,i) 
      &        - 2.0d0*cmp_omp(5,i)*cphi_omp(5,i)
      &             - cmp_omp(8,i)*cphi_omp(8,i) 
@@ -6429,36 +6451,36 @@ c
      &        - 2.0d0*cmp_omp(7,i)*cphi_omp(7,i)
      &             - cmp_omp(9,i)*cphi_omp(9,i) 
      &        - cmp_omp(10,i)*cphi_omp(10,i)
+
+c merged fuind_omp calculation         
+         do j = 1, 3
+            fuind_omp(j,i) = a(j,1)*uind(1,i) + a(j,2)*uind(2,i)
+     &                          + a(j,3)*uind(3,i)
+            fuinp_omp(j,i) = a(j,1)*uinp(1,i) + a(j,2)*uinp(2,i)
+     &                          + a(j,3)*uinp(3,i)
+         end do
+
       end do
 !$OMP end DO 
 
-c
-c     convert Cartesian induced dipoles to fractional coordinates
-c
-      if (use_polar) then
-         do i = 1, 3
-            a(1,i) = dble(nfft1) * recip(i,1)
-            a(2,i) = dble(nfft2) * recip(i,2)
-            a(3,i) = dble(nfft3) * recip(i,3)
-         end do
 
-!$OMP DO schedule(dynamic,128)
-         do i = 1, npole
-            do j = 1, 3
-               fuind_omp(j,i) = a(j,1)*uind(1,i) + a(j,2)*uind(2,i)
-     &                          + a(j,3)*uind(3,i)
-               fuinp_omp(j,i) = a(j,1)*uinp(1,i) + a(j,2)*uinp(2,i)
-     &                          + a(j,3)*uinp(3,i)
-            end do
-         end do
-!$OMP end DO
+
+C$$$!$OMP DO schedule(dynamic,128)
+C$$$         do i = 1, npole
+C$$$            do j = 1, 3
+C$$$               fuind_omp(j,i) = a(j,1)*uind(1,i) + a(j,2)*uind(2,i)
+C$$$     &                          + a(j,3)*uind(3,i)
+C$$$               fuinp_omp(j,i) = a(j,1)*uinp(1,i) + a(j,2)*uinp(2,i)
+C$$$     &                          + a(j,3)*uinp(3,i)
+C$$$            end do
+C$$$         end do
+C$$$!$OMP end DO
 
          fphi = fdip_sum_phi_omp
 c
 c     assign PME grid and perform 3-D FFT forward transform
 c
        
-
          call grid_uind1 
 !$OMP master
          call fftfront
@@ -6497,17 +6519,17 @@ c
 
          call fphi_uind2 
 
-!$OMP DO schedule(dynamic,128)
-         do i = 1, npole
-            do j = 1, 10
-               fdip_phi1_omp(j,i) = electric * fdip_phi1_omp(j,i)
-               fdip_phi2_omp(j,i) = electric * fdip_phi2_omp(j,i)
-            end do
-            do j = 1, 20
-               fdip_sum_phi_omp(j,i) = electric * fdip_sum_phi_omp(j,i)
-            end do
-         end do
-!$OMP end DO
+C$$$!$OMP DO schedule(dynamic,128)
+C$$$         do i = 1, npole
+C$$$            do j = 1, 10
+C$$$               fdip_phi1_omp(j,i) = electric * fdip_phi1_omp(j,i)
+C$$$               fdip_phi2_omp(j,i) = electric * fdip_phi2_omp(j,i)
+C$$$            end do
+C$$$            do j = 1, 20
+C$$$               fdip_sum_phi_omp(j,i) = electric * fdip_sum_phi_omp(j,i)
+C$$$            end do
+C$$$         end do
+C$$$!$OMP end DO
 
 c
 c     increment the induced dipole energy and gradient
@@ -6515,6 +6537,15 @@ c
 
 !$OMP DO schedule(dynamic,128)reduction(+:e_omp)
          do i = 1, npole
+c merged fdip_phi calculation 
+            do j = 1, 10
+               fdip_phi1_omp(j,i) = electric * fdip_phi1_omp(j,i)
+               fdip_phi2_omp(j,i) = electric * fdip_phi2_omp(j,i)
+            end do
+            do j = 1, 20
+               fdip_sum_phi_omp(j,i) = electric * fdip_sum_phi_omp(j,i)
+            end do
+
             f1 = 0.0d0
             f2 = 0.0d0
             f3 = 0.0d0
@@ -6553,28 +6584,44 @@ c!$OMP atomic
             frc_omp(1,i) = recip(1,1)*f1 + recip(1,2)*f2 + recip(1,3)*f3
             frc_omp(2,i) = recip(2,1)*f1 + recip(2,2)*f2 + recip(2,3)*f3
             frc_omp(3,i) = recip(3,1)*f1 + recip(3,2)*f2 + recip(3,3)*f3
-         end do
-!$OMP end DO 
 
-!$OMP DO schedule(dynamic,128)
-         do i = 1, npole
+c marged two loops             
             ii = ipole(i)
             dep(1,ii) = dep(1,ii) + frc_omp(1,i)
             dep(2,ii) = dep(2,ii) + frc_omp(2,i)
             dep(3,ii) = dep(3,ii) + frc_omp(3,i)
-         end do
-!$OMP end DO
-
 c
 c     set the potential to be the induced dipole average
 c
-!$OMP DO schedule(dynamic,128) collapse(2)
-         do i = 1, npole
             do k = 1, 10
                fdip_sum_phi_omp(k,i) = 0.5d0 * fdip_sum_phi_omp(k,i)
             end do
          end do
 !$OMP end DO 
+
+C$$$!$OMP DO schedule(dynamic,128)
+C$$$         do i = 1, npole
+C$$$            ii = ipole(i)
+C$$$            dep(1,ii) = dep(1,ii) + frc_omp(1,i)
+C$$$            dep(2,ii) = dep(2,ii) + frc_omp(2,i)
+C$$$            dep(3,ii) = dep(3,ii) + frc_omp(3,i)
+C$$$c
+C$$$c     set the potential to be the induced dipole average
+C$$$c
+C$$$            do k = 1, 10
+C$$$               fdip_sum_phi_omp(k,i) = 0.5d0 * fdip_sum_phi_omp(k,i)
+C$$$            end do
+C$$$         end do
+C$$$!$OMP end DO
+
+
+C$$$!$OMP DO schedule(dynamic,128) collapse(2)
+C$$$         do i = 1, npole
+C$$$            do k = 1, 10
+C$$$               fdip_sum_phi_omp(k,i) = 0.5d0 * fdip_sum_phi_omp(k,i)
+C$$$            end do
+C$$$         end do
+C$$$!$OMP end DO 
 
          call fphi_to_cphi1 
 c
@@ -6606,16 +6653,20 @@ c
      &           + cmp_omp(10,i)*cphi_omp(9,i)
      &                    - cmp_omp(8,i)*cphi_omp(6,i) 
      &           - cmp_omp(9,i)*cphi_omp(10,i)
-         end do
-!$OMP end DO
-
-!$OMP DO schedule(dynamic,128)
-         do i = 1, n
+                   
             frc_omp(1,i) = 0.0d0
             frc_omp(2,i) = 0.0d0
             frc_omp(3,i) = 0.0d0
          end do
-!$OMP end DO 
+!$OMP end DO
+
+C$$$!$OMP DO schedule(dynamic,128)
+C$$$         do i = 1, n
+C$$$            frc_omp(1,i) = 0.0d0
+C$$$            frc_omp(2,i) = 0.0d0
+C$$$            frc_omp(3,i) = 0.0d0
+C$$$         end do
+C$$$!$OMP end DO 
 
 !$OMP master
          e = 0.5d0 * e_omp
@@ -6624,13 +6675,13 @@ c
 !$OMP end master
 !$OMP barrier
 
-!$OMP DO schedule(dynamic,128)
-         do i = 1, n
-            dep(1,i) = dep(1,i) + frc_omp(1,i)
-            dep(2,i) = dep(2,i) + frc_omp(2,i)
-            dep(3,i) = dep(3,i) + frc_omp(3,i)
-         end do
-!$OMP end DO 
+C$$$!$OMP DO schedule(dynamic,128)
+C$$$         do i = 1, n
+C$$$            dep(1,i) = dep(1,i) + frc_omp(1,i)
+C$$$            dep(2,i) = dep(2,i) + frc_omp(2,i)
+C$$$            dep(3,i) = dep(3,i) + frc_omp(3,i)
+C$$$         end do
+C$$$!$OMP end DO 
 
 c
 c     induced dipole contribution to the internal virial
@@ -6638,6 +6689,10 @@ c
 !$OMP DO schedule(dynamic,128)  reduction(+:vxx_omp,vyx_omp,
 !$OMP& vzx_omp, vyy_omp,vzy_omp,vzz_omp)
          do i = 1, npole
+c merged dep calculation
+            dep(1,i) = dep(1,i) + frc_omp(1,i)
+            dep(2,i) = dep(2,i) + frc_omp(2,i)
+            dep(3,i) = dep(3,i) + frc_omp(3,i)
             do j = 2, 4
                cphim(j) = 0.0d0
                cphid(j) = 0.0d0
