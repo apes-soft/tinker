@@ -5953,7 +5953,7 @@ c
       real*8 cphim(4),cphid(4)
       real*8 cphip(4)
       real*8 a(3,3),ftc(10,10)
-      real*8, allocatable :: fphi(:,:)
+c      real*8, allocatable :: fphi(:,:)
       real*8, allocatable :: qgrip(:,:,:,:)
 c
 c     derivative indices into the fphi and fphidp arrays
@@ -5969,7 +5969,7 @@ c
 c
 c     perform dynamic allocation of some local arrays
 c
-      allocate (fphi(20,npole))
+c      allocate (fphi(20,npole))
 
 c
 c     copy multipole moments and coordinates to local storage
@@ -6283,7 +6283,7 @@ c
 !$OMP do schedule(static,128)
       do i = 1, npole
          do j = 1, 20
-            fdip_sum_phi_omp(j,i) = electric * fdip_sum_phi_omp(j,i)
+            fphi_omp(j,i) = electric * fphi_omp(j,i)
          end do
       end do
 !$OMP end DO
@@ -6301,10 +6301,10 @@ c
          f3 = 0.0d0
          do k = 1, 10
 c!$OMP atomic
-            e_omp = e_omp + fmp_omp(k,i)*fdip_sum_phi_omp(k,i)
-            f1 = f1 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv1(k),i)
-            f2 = f2 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv2(k),i)
-            f3 = f3 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv3(k),i)
+            e_omp = e_omp + fmp_omp(k,i)*fphi_omp(k,i)
+            f1 = f1 + fmp_omp(k,i)*fphi_omp(deriv1(k),i)
+            f2 = f2 + fmp_omp(k,i)*fphi_omp(deriv2(k),i)
+            f3 = f3 + fmp_omp(k,i)*fphi_omp(deriv3(k),i)
          end do
          f1 = dble(nfft1) * f1
          f2 = dble(nfft2) * f2
@@ -6420,7 +6420,7 @@ c merged fuind_omp calculation
       end do
 !$OMP end DO 
 
-         fphi = fdip_sum_phi_omp
+c         fphi = fdip_sum_phi_omp
 c
 c     assign PME grid and perform 3-D FFT forward transform
 c
@@ -6488,14 +6488,14 @@ c merged fdip_phi calculation
                j2 = deriv2(k+1)
                j3 = deriv3(k+1)
 c!$OMP atomic               
-               e_omp = e_omp + fuind_omp(k,i)*fphi(k+1,i)
-               f1 = f1 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi(j1,i)
+               e_omp = e_omp + fuind_omp(k,i)*fphi_omp(k+1,i)
+               f1 = f1 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi_omp(j1,i)
      &                 + fuind_omp(k,i)*fdip_phi2_omp(j1,i)
      &                 + fuinp_omp(k,i)*fdip_phi1_omp(j1,i)
-               f2 = f2 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi(j2,i)
+               f2 = f2 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi_omp(j2,i)
      &                 + fuind_omp(k,i)*fdip_phi2_omp(j2,i)
      &                 + fuinp_omp(k,i)*fdip_phi1_omp(j2,i)
-               f3 = f3 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi(j3,i)
+               f3 = f3 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi_omp(j3,i)
      &                 + fuind_omp(k,i)*fdip_phi2_omp(j3,i)
      &                 + fuinp_omp(k,i)*fdip_phi1_omp(j3,i)
                if (poltyp .eq. 'DIRECT') then
@@ -6533,7 +6533,7 @@ c
          end do
 !$OMP end DO 
 
-         call fphi_to_cphi1 
+         call fphi_to_cphi2 
 c
 c     distribute torques into the induced dipole gradient
 c
@@ -6586,7 +6586,7 @@ c merged dep calculation
                cphid(j) = 0.0d0
                cphip(j) = 0.0d0
                do k = 2, 4
-                  cphim(j) = cphim(j) + ftc(j,k)*fphi(k,i)
+                  cphim(j) = cphim(j) + ftc(j,k)*fphi_omp(k,i)
                   cphid(j) = cphid(j) + ftc(j,k)*fdip_phi1_omp(k,i)
                   cphip(j) = cphip(j) + ftc(j,k)*fdip_phi2_omp(k,i)
                end do
@@ -6687,6 +6687,6 @@ c
 c
 c     perform deallocation of some local arrays
 c
-      deallocate (fphi)
+c      deallocate (fphi)
       return
       end

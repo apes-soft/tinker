@@ -1080,6 +1080,7 @@ c
       real*8 tuv101,tuv011,tuv300,tuv030
       real*8 tuv003,tuv210,tuv201,tuv120
       real*8 tuv021,tuv102,tuv012,tuv111
+
 c      real*8 fphi(20,*)
 c
 c
@@ -1191,26 +1192,26 @@ c
             tuv012 = tuv012 + tu01*v2
             tuv111 = tuv111 + tu11*v1
          end do
-         fdip_sum_phi_omp(1,isite) = tuv000
-         fdip_sum_phi_omp(2,isite) = tuv100
-         fdip_sum_phi_omp(3,isite) = tuv010
-         fdip_sum_phi_omp(4,isite) = tuv001
-         fdip_sum_phi_omp(5,isite) = tuv200
-         fdip_sum_phi_omp(6,isite) = tuv020
-         fdip_sum_phi_omp(7,isite) = tuv002
-         fdip_sum_phi_omp(8,isite) = tuv110
-         fdip_sum_phi_omp(9,isite) = tuv101
-         fdip_sum_phi_omp(10,isite) = tuv011
-         fdip_sum_phi_omp(11,isite) = tuv300
-         fdip_sum_phi_omp(12,isite) = tuv030
-         fdip_sum_phi_omp(13,isite) = tuv003
-         fdip_sum_phi_omp(14,isite) = tuv210
-         fdip_sum_phi_omp(15,isite) = tuv201
-         fdip_sum_phi_omp(16,isite) = tuv120
-         fdip_sum_phi_omp(17,isite) = tuv021
-         fdip_sum_phi_omp(18,isite) = tuv102
-         fdip_sum_phi_omp(19,isite) = tuv012
-         fdip_sum_phi_omp(20,isite) = tuv111
+         fphi_omp(1,isite) = tuv000
+         fphi_omp(2,isite) = tuv100
+         fphi_omp(3,isite) = tuv010
+         fphi_omp(4,isite) = tuv001
+         fphi_omp(5,isite) = tuv200
+         fphi_omp(6,isite) = tuv020
+         fphi_omp(7,isite) = tuv002
+         fphi_omp(8,isite) = tuv110
+         fphi_omp(9,isite) = tuv101
+         fphi_omp(10,isite) = tuv011
+         fphi_omp(11,isite) = tuv300
+         fphi_omp(12,isite) = tuv030
+         fphi_omp(13,isite) = tuv003
+         fphi_omp(14,isite) = tuv210
+         fphi_omp(15,isite) = tuv201
+         fphi_omp(16,isite) = tuv120
+         fphi_omp(17,isite) = tuv021
+         fphi_omp(18,isite) = tuv102
+         fphi_omp(19,isite) = tuv012
+         fphi_omp(20,isite) = tuv111
       end do
 c
 c     end OpenMP directive for the major loop structure
@@ -2418,16 +2419,16 @@ c
 c
 c     ################################################################
 c     ##                                                            ##
-c     ##  subroutine fphi_to_cphi1  --  transformation of potential  ##
+c     ##  subroutine fphi_to_cphi2  --  transformation of potential  ##
 c     ##                                                            ##
 c     ################################################################
 c
 c
-c     "fphi_to_cphi" transforms the reciprocal space potential from
+c     "fphi_to_cphi2" transforms the reciprocal space potential from
 c     fractional to Cartesian coordinates
 c
 c
-      subroutine fphi_to_cphi1 !(fphi,cphi)
+      subroutine fphi_to_cphi2 !(fphi,cphi)
       use sizes
       use mpole
       use openmp
@@ -2460,6 +2461,56 @@ c
             do k = 5, 10
                cphi_omp(j,i) = cphi_omp(j,i) + 
      &              ctf_omp(j,k)*fdip_sum_phi_omp(k,i)
+            end do
+         end do
+      end do
+      return
+      end
+
+c     ################################################################
+c     ##                                                            ##
+c     ##  subroutine fphi_to_cphi1  --  transformation of potential  ##
+c     ##                                                            ##
+c     ################################################################
+c
+c
+c     "fphi_to_cphi" transforms the reciprocal space potential from
+c     fractional to Cartesian coordinates
+c
+c
+      subroutine fphi_to_cphi1 !(fphi,cphi)
+      use sizes
+      use mpole
+      use openmp
+      implicit none
+      integer i,j,k
+      real*8 ftc(10,10)
+c      real*8 cphi(10,*)
+c      real*8 fphi(20,*)
+c
+c
+c     find the matrix to convert fractional to Cartesian
+c
+      call frac_to_cart (ftc)
+      
+      ctf_omp = ftc
+c
+c     apply the transformation to get the Cartesian potential
+c
+      do i = 1, npole
+         cphi_omp(1,i) = ctf_omp(1,1) * fphi_omp(1,i)
+         do j = 2, 4
+            cphi_omp(j,i) = 0.0d0
+            do k = 2, 4
+               cphi_omp(j,i) = cphi_omp(j,i) + 
+     &              ctf_omp(j,k)*fphi_omp(k,i)
+            end do
+         end do
+         do j = 5, 10
+            cphi_omp(j,i) = 0.0d0
+            do k = 5, 10
+               cphi_omp(j,i) = cphi_omp(j,i) + 
+     &              ctf_omp(j,k)*fphi_omp(k,i)
             end do
          end do
       end do
