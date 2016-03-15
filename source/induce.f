@@ -1485,37 +1485,42 @@ c
 c
 c     get the reciprocal space part of the electrostatic field
 c
-
       call udirect1 !(field)
 
 c
 c     get the real space portion of the electrostatic field
 c
-
       if (use_mlist) then
          call udirect2b !(field,fieldp)
       else
 c         call udirect2a (field,fieldp)
       end if
 
-!$OMP master
 c
 c     get the self-energy portion of the electrostatic field
 c
 
       term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
+!$OMP DO schedule(static,128)
       do i = 1, npole
-         do j = 1, 3
-            fieldp_omp(j,i) = field_omp(j,i) + term*rpole(j+1,i)
-     &           + fieldtp_omp(j,i)
-            field_omp(j,i) = field_omp(j,i) + term*rpole(j+1,i)
-     &           + fieldt_omp(j,i)
+c         do j = 1, 3
+            fieldp_omp(1,i) = field_omp(1,i) + term*rpole(2,i)
+     &           + fieldtp_omp(1,i)
+            field_omp(1,i) = field_omp(1,i) + term*rpole(2,i)
+     &           + fieldt_omp(1,i)
+            fieldp_omp(2,i) = field_omp(2,i) + term*rpole(3,i)
+     &           + fieldtp_omp(2,i)
+            field_omp(2,i) = field_omp(2,i) + term*rpole(3,i)
+     &           + fieldt_omp(2,i)
+            fieldp_omp(3,i) = field_omp(3,i) + term*rpole(4,i)
+     &           + fieldtp_omp(3,i)
+            field_omp(3,i) = field_omp(3,i) + term*rpole(4,i)
+     &           + fieldt_omp(3,i)
 
-         end do
+c         end do
       end do
-!$OMP end master
-!$OMP barrier
-!$OMP flush
+!$OMP end do
+
 c
 c     compute the cell dipole boundary correction to field
 c
