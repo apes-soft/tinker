@@ -6564,27 +6564,34 @@ c         e = 0.0d0
          end do
 !$OMP end DO 
 
-!$OMP master
-         e = 0.5d0 * e_omp
-         ep = ep + e
+c!$OMP master
+
+c!$OMP end master
+
+!$OMP DO schedule(dynamic,128)
          do i = 1, npole
             ii = ipole(i)
             dep(1,ii) = dep(1,ii) + frc_omp(1,i)
             dep(2,ii) = dep(2,ii) + frc_omp(2,i)
             dep(3,ii) = dep(3,ii) + frc_omp(3,i)
          end do
+!$OMP end DO
 c
 c     set the potential to be the induced dipole average
 c
+!$OMP DO schedule(dynamic,128) collapse(2)
          do i = 1, npole
             do k = 1, 10
                fdip_sum_phi_omp(k,i) = 0.5d0 * fdip_sum_phi_omp(k,i)
             end do
          end do
-         call fphi_to_cphi (fdip_sum_phi_omp,cphi_omp)
+!$OMP end DO 
+
+         call fphi_to_cphi1 ! (fdip_sum_phi_omp,cphi_omp)
 c
 c     distribute torques into the induced dipole gradient
 c
+!$OMP DO schedule(dynamic,128)
          do i = 1, npole
             trq_omp(1,i) = cmp_omp(4,i)*cphi_omp(3,i) 
      &           - cmp_omp(3,i)*cphi_omp(4,i)
@@ -6611,19 +6618,31 @@ c
      &                    - cmp_omp(8,i)*cphi_omp(6,i) 
      &           - cmp_omp(9,i)*cphi_omp(10,i)
          end do
+!$OMP end DO
+
+!$OMP DO schedule(dynamic,128)
          do i = 1, n
             frc_omp(1,i) = 0.0d0
             frc_omp(2,i) = 0.0d0
             frc_omp(3,i) = 0.0d0
          end do
+!$OMP end DO 
+!$OMP master
+         e = 0.5d0 * e_omp
+         ep = ep + e
          call torque2 (trq_omp,frc_omp)
+!$OMP end master
+!$OMP barrier
+
+!$OMP DO schedule(dynamic,128)
          do i = 1, n
             dep(1,i) = dep(1,i) + frc_omp(1,i)
             dep(2,i) = dep(2,i) + frc_omp(2,i)
             dep(3,i) = dep(3,i) + frc_omp(3,i)
          end do
-!$OMP end master
-!$OMP barrier
+!$OMP end DO 
+c!$OMP end master
+c!$OMP barrier
 c
 c     induced dipole contribution to the internal virial
 c
