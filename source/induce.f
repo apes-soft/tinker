@@ -220,7 +220,7 @@ c     get the electrostatic field due to permanent multipoles
 c
 
       if (use_ewald) then
-         call dfield0c (field,fieldp)
+         call dfield0c !(field,fieldp)
       else if (use_mlist) then
          call dfield0b (field,fieldp)
       else
@@ -1467,7 +1467,7 @@ c     "dfield0c" computes the mutual electrostatic field due to
 c     permanent multipole moments via Ewald summation
 c
 c
-      subroutine dfield0c (field,fieldp)
+      subroutine dfield0c !(field,fieldp)
       use sizes
       use atoms
       use boxes
@@ -1481,33 +1481,13 @@ c
       integer i,j,ii
       real*8 term
       real*8 ucell(3)
-      real*8 field(3,*)
-      real*8 fieldp(3,*)
-c
-c
-c     zero out the value of the field at each site
-c
-C$$$      do i = 1, npole
-C$$$         do j = 1, 3
-C$$$            field(j,i) = 0.0d0
-C$$$            fieldp(j,i) = 0.0d0
-C$$$         end do
-C$$$      end do
+
 c
 c     get the reciprocal space part of the electrostatic field
 c
-c!$OMP master
+
       call udirect1 !(field)
-C$$$!$OMP master
-C$$$      do i = 1, npole
-C$$$         do j = 1, 3
-C$$$            field(j,i) = field_omp(j,i)
-C$$$            fieldp(j,i) = field(j,i)
-C$$$         end do
-C$$$      end do
-C$$$!$OMP end master
-C$$$!$OMP barrier
-C$$$!$OMP flush
+
 c
 c     get the real space portion of the electrostatic field
 c
@@ -1522,7 +1502,7 @@ c         call udirect2a (field,fieldp)
 c
 c     get the self-energy portion of the electrostatic field
 c
-c      fieldp_omp = field_omp
+
       term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
       do i = 1, npole
          do j = 1, 3
@@ -1530,13 +1510,9 @@ c      fieldp_omp = field_omp
      &           + fieldtp_omp(j,i)
             field_omp(j,i) = field_omp(j,i) + term*rpole(j+1,i)
      &           + fieldt_omp(j,i)
-c            fieldp_omp(j,i) = fieldp_omp(j,i) + term*rpole(j+1,i)
-c     &           + fieldtp_omp(j,i)
-c            field_omp(j,i) = field(j,i)
-c            fieldp_omp(j,i) = fieldp(j,i)
+
          end do
       end do
-
 !$OMP end master
 !$OMP barrier
 !$OMP flush
