@@ -193,8 +193,6 @@ c
       real*8 eps,epsold
       real*8 epsd,epsp
       real*8 udsum,upsum
-      real*8, allocatable :: field(:,:)
-      real*8, allocatable :: fieldp(:,:)
       logical done
       character*6 mode
 
@@ -209,11 +207,6 @@ c            uinp(j,i) = 0.0d0
 c         end do
 c      end do
       if (.not. use_polar)  return
-c
-c     perform dynamic allocation of some local arrays
-c
-      allocate (field(3,npole))
-      allocate (fieldp(3,npole))
 
 c
 c     get the electrostatic field due to permanent multipoles
@@ -222,9 +215,9 @@ c
       if (use_ewald) then
          call dfield0c !(field,fieldp)
       else if (use_mlist) then
-         call dfield0b (field,fieldp)
+c         call dfield0b (field,fieldp)
       else
-         call dfield0a (field,fieldp)
+c         call dfield0a (field,fieldp)
       end if
 
 c
@@ -288,9 +281,9 @@ c
          if (use_ewald) then
             call ufield0c1 ! (field,fieldp)
          else if (use_mlist) then
-            call ufield0b (field,fieldp)
+c            call ufield0b (field,fieldp)
          else
-            call ufield0a (field,fieldp)
+c            call ufield0a (field,fieldp)
          end if
 
 c
@@ -356,23 +349,10 @@ c
             if (use_ewald) then
                call ufield0c1 !(field,fieldp)
             else if (use_mlist) then
-               call ufield0b (field,fieldp)
+c               call ufield0b (field,fieldp)
             else
-               call ufield0a (field,fieldp)
+c               call ufield0a (field,fieldp)
             end if
-
-!$OMP DO schedule(static,128)
-            do i = 1, npole
-               do j = 1, 3
-                  uind(j,i) = vec_omp(j,i)
-                  uinp(j,i) = vecp_omp(j,i)
-                  vec_omp(j,i) = conj_omp(j,i)/poli_omp(i) 
-     &                 - field_omp(j,i)
-                  vecp_omp(j,i)=conjp_omp(j,i)/poli_omp(i) 
-     &                 - fieldp_omp(j,i)
-               end do
-            end do
-!$OMP end do
 
             a_omp= 0.0d0
             ap_omp= 0.0d0
@@ -382,13 +362,33 @@ c
 !$OMP DO schedule(static,128) reduction(+:a_omp,ap_omp,sum_omp,sump_omp)
             do i = 1, npole
                do j = 1, 3
+                  uind(j,i) = vec_omp(j,i)
+                  uinp(j,i) = vecp_omp(j,i)
+                  vec_omp(j,i) = conj_omp(j,i)/poli_omp(i) 
+     &                 - field_omp(j,i)
+                  vecp_omp(j,i)=conjp_omp(j,i)/poli_omp(i) 
+     &                 - fieldp_omp(j,i)
+
                   a_omp= a_omp+ conj_omp(j,i)*vec_omp(j,i)
                   ap_omp= ap_omp+ conjp_omp(j,i)*vecp_omp(j,i)
                   sum_omp = sum_omp + rsd_omp(j,i)*zrsd_omp(j,i)
                   sump_omp = sump_omp + rsdp_omp(j,i)*zrsdp_omp(j,i)
                end do
             end do
-!$OMP end DO
+!$OMP end do
+
+
+
+C$$$!$OMP DO schedule(static,128) reduction(+:a_omp,ap_omp,sum_omp,sump_omp)
+C$$$            do i = 1, npole
+C$$$               do j = 1, 3
+C$$$                  a_omp= a_omp+ conj_omp(j,i)*vec_omp(j,i)
+C$$$                  ap_omp= ap_omp+ conjp_omp(j,i)*vecp_omp(j,i)
+C$$$                  sum_omp = sum_omp + rsd_omp(j,i)*zrsd_omp(j,i)
+C$$$                  sump_omp = sump_omp + rsdp_omp(j,i)*zrsdp_omp(j,i)
+C$$$               end do
+C$$$            end do
+C$$$!$OMP end DO
 
 !$OMP single
 
@@ -501,11 +501,6 @@ c
 !$OMP end master
       end if
 
-c
-c     perform deallocation of some local arrays
-c
-      deallocate (field)
-      deallocate (fieldp)
       return
       end
 c
