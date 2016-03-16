@@ -501,7 +501,6 @@ c
 !$OMP end master
       end if
 
-
 c
 c     perform deallocation of some local arrays
 c
@@ -1592,7 +1591,6 @@ c
 c
 c     get the real space portion of the electrostatic field
 c
-cc!$OMP master
       if (use_mlist) then
          call umutual2b (field,fieldp)
       else
@@ -1608,9 +1606,6 @@ c
             fieldp(j,i) = fieldp(j,i) + term*uinp(j,i)
          end do
       end do
-cc!$OMP end master 
-cc!$OMP barrier
-cc!$OMP flush
 c
 c     compute the cell dipole boundary correction to the field
 c
@@ -1664,9 +1659,7 @@ c
       real*8 term
       real*8 ucell(3)
       real*8 ucellp(3)
-c      real*8 field(3,*)
-c      real*8 fieldp(3,*)
-c
+
 c
 c     zero out the electrostatic field at each site
 c
@@ -1688,7 +1681,6 @@ c     get the real space portion of the electrostatic field
 c
       if (use_mlist) then
          call umutual2b1 
-c(field,fieldp)
       else
 c         call umutual2a (field,fieldp)
       end if
@@ -1749,7 +1741,7 @@ c     "udirect1" computes the reciprocal space contribution of the
 c     permanent atomic multipole moments to the field
 c
 c
-      subroutine udirect1 !(field)
+      subroutine udirect1
       use sizes
       use bound
       use boxes
@@ -1768,9 +1760,7 @@ c
       real*8 volterm,denom
       real*8 hsq,expterm
       real*8 term,pterm
-c      real*8 field(3,*)
 
-c
 c
 c     return if the Ewald coefficient is zero
 c
@@ -2389,7 +2379,7 @@ c     "udirect2b" computes the real space contribution of the permanent
 c     atomic multipole moments to the field via a neighbor list
 c
 c
-      subroutine udirect2b !(field,fieldp)
+      subroutine udirect2b 
       use sizes
       use atoms
       use boxes
@@ -2410,11 +2400,10 @@ c
       implicit none
       integer i,j,k,m
       integer ii,kk,kkk
-      integer maxlocal !,nlocal
-      integer tid!,toffset0
+      integer maxlocal 
+      integer tid
 !$    integer omp_get_thread_num
       integer, allocatable :: toffset(:)
-c      integer, allocatable :: ilocal(:,:)
       real*8 xr,yr,zr,r,r2
       real*8 rr1,rr2,rr3
       real*8 rr5,rr7
@@ -2437,14 +2426,11 @@ c      integer, allocatable :: ilocal(:,:)
       real*8 bn(0:3),bcn(3)
       real*8 fimd(3),fkmd(3)
       real*8 fimp(3),fkmp(3)
-      real*8, allocatable :: pscale(:)
-      real*8, allocatable :: dscale(:)
-      real*8, allocatable :: uscale(:)
-c      real*8 field(3,*)
-c      real*8 fieldp(3,*)
-      real*8, allocatable :: fieldt(:,:)
-      real*8, allocatable :: fieldtp(:,:)
-c      real*8, allocatable :: dlocal(:,:)
+c      real*8, allocatable :: pscale(:)
+c      real*8, allocatable :: dscale(:)
+c      real*8, allocatable :: uscale(:)
+c      real*8, allocatable :: fieldt(:,:)
+c      real*8, allocatable :: fieldtp(:,:)
       character*6 mode
       external erfc
       integer tmp_nthread
@@ -2461,17 +2447,8 @@ c
       nlocal = 0
       toffset0 = 0
       tmp_nthread = nthread
-c      nthread=1
       maxlocal = int(dble(npole)*dble(maxelst)/dble(nthread))
-c
-c     perform dynamic allocation of some local arrays
-c
-c      allocate (toffset(0:nthread-1))
-c      allocate (pscale(n))
-c      allocate (dscale(n))
-c      allocate (uscale(n))
-c      allocate (fieldt(3,npole))
-c      allocate (fieldtp(3,npole))
+
 c
 c     set arrays needed to scale connected atom interactions
 c
@@ -2480,28 +2457,7 @@ c
          dscale_omp(i) = 1.0d0
          uscale_omp(i) = 1.0d0
       end do
-c
-c     set OpenMP directives for the major loop structure
-c
-C$$$!$OMP PARALLEL default(none) shared(n,npole,ipole,x,y,z,pdamp,thole,
-C$$$!$OMP& rpole,p2scale,p3scale,p4scale,p41scale,p5scale,d1scale,d2scale,
-C$$$!$OMP& d3scale,d4scale,u1scale,u2scale,u3scale,u4scale,n12,i12,n13,i13,
-C$$$!$OMP& n14,i14,n15,i15,np11,ip11,np12,ip12,np13,ip13,np14,ip14,nelst,
-C$$$!$OMP& elst,cut2,aewald,aesq2,aesq2n,poltyp,ntpair,tindex,tdipdip,
-C$$$!$OMP& toffset,toffset0,field,fieldp,fieldt,fieldtp,maxlocal)
-C$$$!$OMP& firstprivate(pscale,dscale,uscale,nlocal)
-C$$$!$OMP& private(ilocal,dlocal,ii,pdi,pti,ci,dix,diy,diz,qixx,qixy,
-C$$$!$OMP& qixz,qiyy,qiyz,qizz,kk,xr,yr,zr,r2,r,rr1,rr2,rr3,rr5,rr7,ck,dkx,
-C$$$!$OMP& dky,dkz,qkxx,qkxy,qkxz,qkyy,qkyz,qkzz,ralpha,bn,exp2a,aefac,bfac,
-C$$$!$OMP& scale3,scale5,scale7,damp,pgamma,expdamp,dir,qix,qiy,qiz,dkr,qkx,
-C$$$!$OMP& qky,qkz,qkr,bcn,fimd,fkmd,qir,fimp,fkmp,tid,m)
-c
-c     perform dynamic allocation of some local arrays
-c
-C$$$      if (poltyp .eq. 'MUTUAL') then
-C$$$         allocate (ilocal(2,maxlocal))
-C$$$         allocate (dlocal(6,maxlocal))
-C$$$      end if
+
 c
 c     initialize local variables for OpenMP calculation
 c
@@ -2733,14 +2689,6 @@ c
 c     transfer the results from local to global arrays
 c
 
-C$$$!$OMP DO collapse(2) schedule(guided)
-C$$$      do i = 1, npole
-C$$$         do j = 1, 3
-C$$$            field(j,i) = fieldt_omp(j,i) + field(j,i)
-C$$$            fieldp(j,i) = fieldtp_omp(j,i) + fieldp(j,i)
-C$$$         end do
-C$$$      end do
-C$$$!$OMP END DO
 c
 c     store terms needed later to compute mutual polarization
 c
@@ -2763,24 +2711,8 @@ c
                tdipdip(j,m) = dlocal_omp(th_id,j,i)
             end do
          end do
-c         deallocate (ilocal)
-c         deallocate (dlocal)
       end if
-c!$OMP end master
-c!$OMP barrier
-c!$OMP flush
-
-c!$OMP END PARALLEL
-c
-c     perform deallocation of some local arrays
-c
       nthread = tmp_nthread
-c      deallocate (toffset)
-c      deallocate (pscale)
-c      deallocate (dscale)
-c      deallocate (uscale)
-c      deallocate (fieldt)
-c      deallocate (fieldtp)
       return
       end
 c
@@ -2796,7 +2728,7 @@ c     "umutual11" computes the reciprocal space contribution of the
 c     induced atomic dipole moments to the field
 c
 c
-      subroutine umutual11 !(field,fieldp)
+      subroutine umutual11
       use sizes
       use boxes
       use ewald
@@ -2837,7 +2769,7 @@ c
 c
 c     assign PME grid and perform 3-D FFT forward transform
 c
-      call grid_uind1 !(fuind,fuinp)
+      call grid_uind1 
 
 !$OMP single 
       call fftfront
@@ -2867,7 +2799,7 @@ c
 !$OMP end single
 !$OMP barrier
 
-      call fphi_uind1 !(fdip_phi1,fdip_phi2,fdip_sum_phi)
+      call fphi_uind1 
 
 c
 c     convert the dipole fields from fractional to Cartesian
@@ -3375,12 +3307,11 @@ c     ##                                                              ##
 c     ##################################################################
 c
 c
-c     "umutual2b" computes the real space contribution of the induced
+c     "umutual2b1" computes the real space contribution of the induced
 c     atomic dipole moments to the field via a neighbor list
 c
 c
       subroutine umutual2b1 
-c(field,fieldp)
       use sizes
       use mpole
       use polar
@@ -3390,29 +3321,15 @@ c(field,fieldp)
       integer i,j,k,m
       real*8 fimd(3),fkmd(3)
       real*8 fimp(3),fkmp(3)
-c      real*8 field(3,*)
-c      real*8 fieldp(3,*)
-c      real*8, allocatable :: fieldt(:,:)
-c      real*8, allocatable :: fieldtp(:,:)
 
-c
 c
 c     check for multipoles and set cutoff coefficients
 c
       if (npole .eq. 0)  return
 c
-c     perform dynamic allocation of some local arrays
-c
-c      allocate (fieldt(3,npole))
-c      allocate (fieldtp(3,npole))
-c
-c     set OpenMP directives for the major loop structure
-c
-ccc!$OMP PARALLEL default(private) shared(npole,uind,uinp,ntpair,tindex,
-ccc!$OMP& tdipdip,field,fieldp,fieldt,fieldtp)
-c
 c     initialize local variables for OpenMP calculation
 c
+
 !$OMP DO collapse(2)
       do i = 1, npole
          do j = 1, 3
@@ -3466,20 +3383,7 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-C$$$ccc!$OMP DO
-C$$$      do i = 1, npole
-C$$$         do j = 1, 3
-C$$$            field(j,i) = fieldt(j,i) + field(j,i)
-C$$$            fieldp(j,i) = fieldtp(j,i) + fieldp(j,i)
-C$$$         end do
-C$$$      end do
-C$$$ccc!$OMP END DO
-C$$$ccc!$OMP END PARALLEL
-c
-c     perform deallocation of some local arrays
-c
-c      deallocate (fieldt)
-c      deallocate (fieldtp)
+
       return
       end
 
@@ -6038,10 +5942,6 @@ c
       real*8 m1,m2,m3
       real*8 m4,m5,m6
       real*8, allocatable :: dscale(:)
-c      real*8 rsd(3,*)
-c      real*8 rsdp(3,*)
-c      real*8 zrsd(3,*)
-c      real*8 zrsdp(3,*)
       real*8, allocatable :: zrsdt(:,:)
       real*8, allocatable :: zrsdtp(:,:)
       character*6 mode
@@ -6240,12 +6140,12 @@ c
 
 c     ###############################################################
 c     ##                                                           ##
-c     ##  subroutine uscale0b  --  dipole preconditioner via list  ##
+c     ##  subroutine uscale0b1  --  dipole preconditioner via list  ##
 c     ##                                                           ##
 c     ###############################################################
 c
 c
-c     "uscale0b" builds and applies a preconditioner for the conjugate
+c     "uscale0b1" builds and applies a preconditioner for the conjugate
 c     gradient induced dipole solver using a neighbor pair list
 c
 c
@@ -6274,24 +6174,12 @@ c
       real*8 scale3,scale5
       real*8 m1,m2,m3
       real*8 m4,m5,m6
-      real*8, allocatable :: dscale(:)
-c      real*8 rsd(3,*)
-c      real*8 rsdp(3,*)
-c      real*8 zrsd(3,*)
-c      real*8 zrsdp(3,*)
-c      real*8, allocatable :: zrsdt(:,:)
-c      real*8, allocatable :: zrsdtp(:,:)
       character*6 mode
 c
 c
 c     apply the preconditioning matrix to the current residual
 c
       if (mode .eq. 'APPLY') then
-c
-c     perform dynamic allocation of some local arrays
-c
-c         allocate (zrsdt(3,npole))
-c         allocate (zrsdtp(3,npole))
 c
 c     use diagonal preconditioner elements as first approximation
 c
@@ -6312,9 +6200,6 @@ c
 c
 c     use the off-diagonal preconditioner elements in second phase
 c
-cc!$OMP PARALLEL default(private) shared(npole,mindex,minv,nulst,ulst,
-cc!$OMP& rsd,rsdp,zrsd,zrsdp,zrsdt,zrsdtp)
-cc!$OMP DO reduction(+:zrsdt,zrsdtp) schedule(guided)
 
 !$OMP DO private(m,k,m1,m2,m3,m4,m5,m6) reduction(+:zrsdt_omp, 
 !$OMP& zrsdtp_omp) schedule(guided)
@@ -6367,13 +6252,6 @@ c
             end do
          end do
 !$OMP END DO
-cc!$OMP END PARALLEL
-c
-c     perform deallocation of some local arrays
-
-c
-c         deallocate (zrsdt)
-c         deallocate (zrsdtp)
 
 c
 c     build the off-diagonal elements of preconditioning matrix
@@ -6389,29 +6267,11 @@ c
 !$OMP barrier
 !$OMP flush
 
-c
-c     perform dynamic allocation of some local arrays
-c
-
-c         allocate (dscale(n))
 
 c
 c     set array needed to scale connected atom interactions
 c
-
-c         do i = 1, n
-c            dscale(i) = 1.0d0
-c         end do
-         
          dscale_omp = 1.0d0
-
-c
-c     set OpenMP directives for the major loop structure
-c
-cc!$OMP PARALLEL default(private) shared(n,npole,ipole,x,y,z,pdamp,
-cc!$OMP& thole,polarity,u1scale,u2scale,u3scale,u4scale,np11,ip11,
-cc!$OMP& np12,ip12,np13,ip13,np14,ip14,nulst,ulst,mindex,minv)
-cc!$OMP& firstprivate (dscale)
 c
 c     determine the off-diagonal elements of the preconditioner
 c
@@ -6488,15 +6348,6 @@ c
             end do
          end do
 !$OMP END DO
-cc!$OMP END PARALLEL
-
-
-
-c
-c     perform deallocation of some local arrays
-c
-c         deallocate (dscale)
-c!$OMP end master
       end if
       return
       end
