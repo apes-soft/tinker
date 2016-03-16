@@ -99,9 +99,9 @@ c
       if (dovlst) then
          dovlst = .false.
          if (octahedron) then
-            call vbuild (xred_th,yred_th,zred_th)
+            call vbuild1 !(xred_th,yred_th,zred_th)
          else
-            call vlight (xred_th,yred_th,zred_th)
+            call vlight1 !(xred_th,yred_th,zred_th)
          end if
          return
       end if
@@ -387,6 +387,81 @@ c
       end
 c
 c
+c
+c     ###########################################################
+c     ##                                                       ##
+c     ##  subroutine vbuild1  --  build vdw list for all sites  ##
+c     ##                                                       ##
+c     ###########################################################
+c
+c
+c     "vbuild1" performs a complete rebuild of the van der Waals
+c     pair neighbor for each site
+c
+c
+      subroutine vbuild1 !(xred,yred,zred)
+      use sizes
+      use bound
+      use iounit
+      use neigh
+      use vdw
+      use openmp
+      implicit none
+      integer i,k
+      real*8 xi,yi,zi
+      real*8 xr,yr,zr,r2
+C$$$      real*8 xred(*)
+C$$$      real*8 yred(*)
+C$$$      real*8 zred(*)
+c
+c
+c     set OpenMP directives for the major loop structure
+c
+!$OMP PARALLEL default(shared) private(i,k,xi,yi,zi,xr,yr,zr,r2)
+!$OMP DO schedule(guided)
+c
+c     store coordinates to reflect update of the site
+c
+      do i = 1, nvdw
+         xi = xred_th(i)
+         yi = yred_th(i)
+         zi = zred_th(i)
+         xvold(i) = xi
+         yvold(i) = yi
+         zvold(i) = zi
+c
+c     generate all neighbors for the site being rebuilt
+c
+         nvlst(i) = 0
+         do k = i+1, nvdw
+            xr = xi - xred_th(k)
+            yr = yi - yred_th(k)
+            zr = zi - zred_th(k)
+            call imagen (xr,yr,zr)
+            r2 = xr*xr + yr*yr + zr*zr
+            if (r2 .le. vbuf2) then
+               nvlst(i) = nvlst(i) + 1
+               vlst(nvlst(i),i) = k
+            end if
+         end do
+c
+c     check to see if the neighbor list is too long
+c
+         if (nvlst(i) .ge. maxvlst) then
+            write (iout,10)
+   10       format (/,' VBUILD  --  Too many Neighbors;',
+     &                 ' Increase MAXVLST')
+            call fatal
+         end if
+      end do
+c
+c     end OpenMP directives for the major loop structure
+c
+!$OMP END DO
+!$OMP END PARALLEL
+      return
+      end
+c
 c     ###########################################################
 c     ##                                                       ##
 c     ##  subroutine vbuild  --  build vdw list for all sites  ##
@@ -461,6 +536,144 @@ c
       end
 c
 c
+c     #############################################################
+c     ##                                                         ##
+c     ##  subroutine vlight1  --  build vdw pair list via lights  ##
+c     ##                                                         ##
+c     #############################################################
+c
+c
+c     "vlight1" performs a complete rebuild of the van der Waals
+c     pair neighbor list for all sites using the method of lights
+c
+c
+      subroutine vlight1 !(xred,yred,zred)
+      use sizes
+      use atoms
+      use bound
+      use cell
+      use iounit
+      use light
+      use neigh
+      use vdw
+      use openmp
+      implicit none
+      integer i,j,k
+      integer kgy,kgz
+      integer start,stop
+      real*8 xi,yi,zi
+      real*8 xr,yr,zr
+      real*8 r2,off
+C$$$      real*8 xred(*)
+C$$$      real*8 yred(*)
+C$$$      real*8 zred(*)
+      real*8, allocatable :: xsort(:)
+      real*8, allocatable :: ysort(:)
+      real*8, allocatable :: zsort(:)
+      logical repeat
+c
+c
+c     perform dynamic allocation of some local arrays
+c
+      allocate (xsort(nvdw))
+      allocate (ysort(nvdw))
+      allocate (zsort(nvdw))
+c
+c     transfer interaction site coordinates to sorting arrays
+c
+      do i = 1, nvdw
+         nvlst(i) = 0
+         xvold(i) = xred_th(i)
+         yvold(i) = yred_th(i)
+         zvold(i) = zred_th(i)
+         xsort(i) = xred_th(i)
+         ysort(i) = yred_th(i)
+         zsort(i) = zred_th(i)
+      end do
+c
+c     use the method of lights to generate neighbors
+c
+      off = sqrt(vbuf2)
+      call lightn (off,nvdw,xsort,ysort,zsort)
+c
+c     perform deallocation of some local arrays
+c
+      deallocate (xsort)
+      deallocate (ysort)
+      deallocate (zsort)
+c
+c     set OpenMP directives for the major loop structure
+c
+!$OMP PARALLEL default(shared) private(i,j,k,xi,yi,zi,
+!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
+!$OMP DO schedule(guided)
+c
+c     loop over all atoms computing the neighbor lists
+c
+      do i = 1, nvdw
+         xi = xred_th(i)
+         yi = yred_th(i)
+         zi = zred_th(i)
+         if (kbx(i) .le. kex(i)) then
+            repeat = .false.
+            start = kbx(i)
+            stop = kex(i)
+         else
+            repeat = .true.
+            start = 1
+            stop = kex(i)
+         end if
+   10    continue
+         do j = start, stop
+            k = locx(j)
+            if (k .le. i)  goto 20
+            kgy = rgy(k)
+            if (kby(i) .le. key(i)) then
+               if (kgy.lt.kby(i) .or. kgy.gt.key(i))  goto 20
+            else
+               if (kgy.lt.kby(i) .and. kgy.gt.key(i))  goto 20
+            end if
+            kgz = rgz(k)
+            if (kbz(i) .le. kez(i)) then
+               if (kgz.lt.kbz(i) .or. kgz.gt.kez(i))  goto 20
+            else
+               if (kgz.lt.kbz(i) .and. kgz.gt.kez(i))  goto 20
+            end if
+            xr = xi - xred_th(k)
+            yr = yi - yred_th(k)
+            zr = zi - zred_th(k)
+            call imagen (xr,yr,zr)
+            r2 = xr*xr + yr*yr + zr*zr
+            if (r2 .le. vbuf2) then
+               nvlst(i) = nvlst(i) + 1
+               vlst(nvlst(i),i) = k
+            end if
+   20       continue
+         end do
+         if (repeat) then
+            repeat = .false.
+            start = kbx(i)
+            stop = nvdw
+            goto 10
+         end if
+c
+c     check to see if the neighbor list is too long
+c
+         if (nvlst(i) .ge. maxvlst) then
+            write (iout,30)
+   30       format (/,' VLIGHT  --  Too many Neighbors;',
+     &                 ' Increase MAXVLST')
+            call fatal
+         end if
+      end do
+c
+c     end OpenMP directives for the major loop structure
+c
+!$OMP END DO
+!$OMP END PARALLEL
+      return
+      end
+
 c     #############################################################
 c     ##                                                         ##
 c     ##  subroutine vlight  --  build vdw pair list via lights  ##
@@ -597,6 +810,7 @@ c
 !$OMP END PARALLEL
       return
       end
+c
 c
 c
 c     ###############################################################
