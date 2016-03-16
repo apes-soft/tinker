@@ -24,7 +24,7 @@ c
 c
 c     update the vdw and electrostatic neighbor lists
 c
-      if (use_vdw .and. use_vlist)  call vlist
+      if (use_vdw .and. use_vlist)  call vlist1
       if ((use_charge.or.use_solv) .and. use_clist)  call clist
       if ((use_mpole.or.use_polar.or.use_solv) .and. use_mlist)
      &      call mlist
@@ -32,7 +32,184 @@ c
       return
       end
 c
+c     ##############################################################
+c     ##                                                          ##
+c     ##  subroutine vlist1  --  get van der Waals neighbor lists  ##
+c     ##                                                          ##
+c     ##############################################################
 c
+c
+c     "vlist1" performs an update or a complete rebuild of the
+c     van der Waals neighbor list
+c
+c
+      subroutine vlist1
+      use sizes
+      use atoms
+      use bound
+      use boxes
+      use iounit
+      use neigh
+      use vdw
+      use openmp
+      implicit none
+      integer i,j,k
+      integer ii,iv
+      real*8 xi,yi,zi
+      real*8 xr,yr,zr
+      real*8 radius
+      real*8 rdn,r2
+c      real*8, allocatable :: xred(:)
+c      real*8, allocatable :: yred(:)
+c      real*8, allocatable :: zred(:)
+      logical, allocatable :: update(:)
+c
+c
+c     perform dynamic allocation of some local arrays
+c
+c      allocate (xred(n))
+c      allocate (yred(n))
+c      allocate (zred(n))
+      allocate (update(n))
+c
+c     apply reduction factors to find coordinates for each site
+c
+      do i = 1, nvdw
+         ii = ivdw(i)
+         iv = ired(ii)
+         rdn = kred(ii)
+         xred_th(i) = rdn*(x(ii)-x(iv)) + x(iv)
+         yred_th(i) = rdn*(y(ii)-y(iv)) + y(iv)
+         zred_th(i) = rdn*(z(ii)-z(iv)) + z(iv)
+      end do
+c
+c     neighbor list cannot be used with the replicates method
+c
+      radius = sqrt(vbuf2)
+      call replica (radius)
+      if (use_replica) then
+         write (iout,10)
+   10    format (/,' VLIST  --  Pairwise Neighbor List cannot',
+     &              ' be used with Replicas')
+         call fatal
+      end if
+c
+c     perform a complete list build instead of an update
+c
+      if (dovlst) then
+         dovlst = .false.
+         if (octahedron) then
+            call vbuild (xred_th,yred_th,zred_th)
+         else
+            call vlight (xred_th,yred_th,zred_th)
+         end if
+         return
+      end if
+c
+c     test sites for displacement exceeding half the buffer, and
+c     rebuild the higher numbered neighbors of updated sites
+c
+!$OMP PARALLEL default(none) shared(nvdw,xred_th,yred_th,
+!$OMP& zred_th,xvold,
+!$OMP& yvold,zvold,update,lbuf2,nvlst,vbuf2,vlst,vbufx,maxvlst,
+!$OMP& iout) private(i,j,k,xi,yi,zi,xr,yr,zr,r2)
+!$OMP DO schedule(guided)
+      do i = 1, nvdw
+         xi = xred_th(i)
+         yi = yred_th(i)
+         zi = zred_th(i)
+         xr = xi - xvold(i)
+         yr = yi - yvold(i)
+         zr = zi - zvold(i)
+         call imagen (xr,yr,zr)
+         r2 = xr*xr + yr*yr + zr*zr
+         update(i) = .false.
+         if (r2 .ge. lbuf2) then
+            update(i) = .true.
+            xvold(i) = xi
+            yvold(i) = yi
+            zvold(i) = zi
+            nvlst(i) = 0
+            do k = i+1, nvdw
+               xr = xi - xred_th(k)
+               yr = yi - yred_th(k)
+               zr = zi - zred_th(k)
+               call imagen (xr,yr,zr)
+               r2 = xr*xr + yr*yr + zr*zr
+               if (r2 .le. vbuf2) then
+                  nvlst(i) = nvlst(i) + 1
+                  vlst(nvlst(i),i) = k
+               end if
+            end do
+         end if
+      end do
+!$OMP END DO
+c
+c     adjust lists of lower numbered neighbors of updated sites
+c
+!$OMP DO schedule(guided)
+      do i = 1, nvdw
+         if (update(i)) then
+            xi = xred_th(i)
+            yi = yred_th(i)
+            zi = zred_th(i)
+            do k = 1, i-1
+               if (.not. update(k)) then
+                  xr = xi - xvold(k)
+                  yr = yi - yvold(k)
+                  zr = zi - zvold(k)
+                  call imagen (xr,yr,zr)
+                  r2 = xr*xr + yr*yr + zr*zr
+                  if (r2 .le. vbuf2) then
+!$OMP CRITICAL
+                     do j = 1, nvlst(k)
+                        if (vlst(j,k) .eq. i)  goto 20
+                     end do
+                     nvlst(k) = nvlst(k) + 1
+                     vlst(nvlst(k),k) = i
+   20                continue
+!$OMP END CRITICAL
+                  else if (r2 .le. vbufx) then
+!$OMP CRITICAL
+                     do j = 1, nvlst(k)
+                        if (vlst(j,k) .eq. i) then
+                           vlst(j,k) = vlst(nvlst(k),k)
+                           nvlst(k) = nvlst(k) - 1
+                           goto 30
+                        end if
+                     end do
+   30                continue
+!$OMP END CRITICAL
+                  end if
+               end if
+            end do
+         end if
+      end do
+!$OMP END DO
+c
+c     check to see if any neighbor lists are too long
+c
+!$OMP DO schedule(guided)
+      do i = 1, nvdw
+         if (nvlst(i) .ge. maxvlst) then
+            write (iout,40)
+   40       format (/,' VLIST  --  Too many Neighbors;',
+     &                 ' Increase MAXVLST')
+            call fatal
+         end if
+      end do
+!$OMP END DO
+!$OMP END PARALLEL
+c
+c     perform deallocation of some local arrays
+c
+c      deallocate (xred)
+c      deallocate (yred)
+c      deallocate (zred)
+      deallocate (update)
+      return
+      end
+
 c     ##############################################################
 c     ##                                                          ##
 c     ##  subroutine vlist  --  get van der Waals neighbor lists  ##
@@ -109,7 +286,9 @@ c
 c     test sites for displacement exceeding half the buffer, and
 c     rebuild the higher numbered neighbors of updated sites
 c
-!$OMP PARALLEL default(shared) private(i,j,k,xi,yi,zi,xr,yr,zr,r2)
+!$OMP PARALLEL default(none) shared(nvdw,xred,yred,zred,xvold,
+!$OMP& yvold,zvold,update,lbuf2,nvlst,vbuf2,vlst,vbufx,maxvlst,
+!$OMP& iout) private(i,j,k,xi,yi,zi,xr,yr,zr,r2)
 !$OMP DO schedule(guided)
       do i = 1, nvdw
          xi = xred(i)
