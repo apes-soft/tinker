@@ -69,6 +69,7 @@ c
       real*8, allocatable :: fphi_omp(:,:)
       real*8, allocatable :: frc_omp(:,:)
       real*8, allocatable :: trq_omp(:,:)
+      logical, allocatable :: update_omp(:)
       real*8 e_omp
       save
 !$OMP threadprivate(th_id)
