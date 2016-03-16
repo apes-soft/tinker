@@ -2814,6 +2814,10 @@ c
             dipfield2_omp(k,i) = a(k,1)*fdip_phi2_omp(2,i)
      &                          + a(k,2)*fdip_phi2_omp(3,i)
      &                          + a(k,3)*fdip_phi2_omp(4,i)
+
+            field_omp(k,i) = field_omp(k,i) - dipfield1_omp(k,i)
+            fieldp_omp(k,i) = fieldp_omp(k,i) - dipfield2_omp(k,i)
+
          end do
       end do
 !$OMP end DO
@@ -2821,14 +2825,14 @@ c
 c     increment the field at each multipole site
 c
 
-!$OMP DO schedule(static,128)      
-      do i = 1, npole
-         do k = 1, 3
-            field_omp(k,i) = field_omp(k,i) - dipfield1_omp(k,i)
-            fieldp_omp(k,i) = fieldp_omp(k,i) - dipfield2_omp(k,i)
-         end do
-      end do
-!$OMP end DO
+C$$$!$OMP DO schedule(static,128)      
+C$$$      do i = 1, npole
+C$$$         do k = 1, 3
+C$$$            field_omp(k,i) = field_omp(k,i) - dipfield1_omp(k,i)
+C$$$            fieldp_omp(k,i) = fieldp_omp(k,i) - dipfield2_omp(k,i)
+C$$$         end do
+C$$$      end do
+C$$$!$OMP end DO
 
       return
       end
@@ -3378,7 +3382,6 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-
       return
       end
 
