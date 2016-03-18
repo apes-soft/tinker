@@ -172,6 +172,9 @@ c         allocate(vscale_th(n))
       if(.not. allocated(trq_omp)) allocate (trq_omp(3,npole))
       if(.not. allocated(fphi_omp)) allocate(fphi_omp(20,npole))
       if(.not. allocated(update_omp)) allocate(update_omp(n))
+
+      if(.not. allocated(do_list)) allocate(do_list(nthread))
+
 c
 c     zero out the virial and the intermolecular energy
 c
@@ -202,7 +205,6 @@ c
 c      if (use_orbit) call picalc ! no omp - not used
         
 
-      if (use_list)  call nblist
 
 
 C$$$!$OMP parallel default(none) shared(n, deb, dea, deba, deub, deaa, 
@@ -221,6 +223,10 @@ C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum)
       
       th_id = 1
 !$      th_id = omp_get_thread_num() + 1
+
+      
+      if (use_list)  call nblist
+      
 
       do i=1,3
          do j=1,3
