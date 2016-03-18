@@ -96,15 +96,15 @@ c
 c      if (dovlst) then
       if(do_list(th_id)) then
          do_list(th_id) = .false.
-!$OMP master
+c!$OMP master
          dovlst = .false.
          if (octahedron) then
             call vbuild1 !(xred_th,yred_th,zred_th)
          else
             call vlight1 !(xred_th,yred_th,zred_th)
          end if
-!$OMP end master
-!$OMP barrier
+c!$OMP end master
+c!$OMP barrier
          return
       end if
 c!$OMP master
@@ -569,6 +569,7 @@ c
 c
 c     perform dynamic allocation of some local arrays
 c
+!$OMP master
       allocate (xsort(nvdw))
       allocate (ysort(nvdw))
       allocate (zsort(nvdw))
@@ -595,12 +596,17 @@ c
       deallocate (xsort)
       deallocate (ysort)
       deallocate (zsort)
+!$OMP end master
+!$OMP barrier
 c
 c     set OpenMP directives for the major loop structure
 c
+c!$OMP master
 c!$OMP PARALLEL default(shared) private(i,j,k,xi,yi,zi,
 c!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
-c!$OMP DO schedule(guided)
+
+!$OMP DO schedule(guided) private(i,j,k,xi,yi,zi,
+!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
 c
 c     loop over all atoms computing the neighbor lists
 c
@@ -663,7 +669,9 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-c!$OMP END DO
+c!$OMP end master
+c!$OMP barrier
+!$OMP END DO
 c!$OMP END PARALLEL
       return
       end
