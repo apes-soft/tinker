@@ -29,10 +29,10 @@ c!$OMP master
       if ((use_charge.or.use_solv) .and. use_clist)  call clist
       if ((use_mpole.or.use_polar.or.use_solv) .and. use_mlist)
      &      call mlist1
-!$OMP master
+c!$OMP master
       if (use_polar .and. use_ulist)  call ulist1
-!$OMP end master
-!$OMP barrier
+c!$OMP end master
+c!$OMP barrier
       return
       end
 c
@@ -1943,6 +1943,7 @@ c      allocate (update(n))
 c
 c     neighbor list cannot be used with the replicates method
 c
+!$OMP master
       radius = sqrt(ubuf2)
       call replica (radius)
       if (use_replica) then
@@ -1951,24 +1952,39 @@ c
      &              ' be used with Replicas')
          call fatal
       end if
+
+      do i=1,nthread
+         do_list(i) = doulst
+      end do
+!$OMP end master
+!$OMP barrier
+
 c
 c     perform a complete list build instead of an update
 c
-      if (doulst) then
+c      if (doulst) then
+
+      if(do_list(th_id))then
+         do_list(th_id) = .false.
+!$OMP master            
          doulst = .false.
          if (octahedron) then
             call ubuild
          else
             call ulight
          end if
+!$OMP end master
+!$OMP barrier
          return
       end if
+c!$OMP master
 c
 c     test sites for displacement exceeding half the buffer, and
 c     rebuild the higher numbered neighbors of updated sites
 c
 c!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
-c!$OMP DO schedule(guided)
+
+!$OMP DO schedule(guided) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
       do i = 1, npole
          ii = ipole(i)
          xi = x(ii)
@@ -2000,11 +2016,11 @@ c!$OMP DO schedule(guided)
             end do
          end if
       end do
-c!$OMP END DO
+!$OMP END DO
 c
 c     adjust lists of lower numbered neighbors of updated sites
 c
-c!$OMP DO schedule(guided)
+!$OMP DO schedule(guided) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
       do i = 1, npole
          if (update_omp(i)) then
             ii = ipole(i)
@@ -2019,16 +2035,16 @@ c!$OMP DO schedule(guided)
                   call imagen (xr,yr,zr)
                   r2 = xr*xr + yr*yr + zr*zr
                   if (r2 .le. ubuf2) then
-c!$OMP CRITICAL
+!$OMP CRITICAL
                      do j = 1, nulst(k)
                         if (ulst(j,k) .eq. i)  goto 20
                      end do
                      nulst(k) = nulst(k) + 1
                      ulst(nulst(k),k) = i
    20                continue
-c!$OMP END CRITICAL
+!$OMP END CRITICAL
                   else if (r2 .le. ubufx) then
-c!$OMP CRITICAL
+!$OMP CRITICAL
                      do j = 1, nulst(k)
                         if (ulst(j,k) .eq. i) then
                            ulst(j,k) = ulst(nulst(k),k)
@@ -2037,17 +2053,17 @@ c!$OMP CRITICAL
                         end if
                      end do
    30                continue
-c!$OMP END CRITICAL
+!$OMP END CRITICAL
                   end if
                end if
             end do
          end if
       end do
-c!$OMP END DO
+!$OMP END DO
 c
 c     check to see if any neighbor lists are too long
 c
-c!$OMP DO schedule(guided)
+!$OMP DO schedule(guided)
       do i = 1, npole
          if (nulst(i) .ge. maxulst) then
             write (iout,40)
@@ -2056,8 +2072,10 @@ c!$OMP DO schedule(guided)
             call fatal
          end if
       end do
-c!$OMP END DO
+!$OMP END DO
 c!$OMP END PARALLEL
+c!$OMP end master
+c!$OMP barrier
 c
 c     perform deallocation of some local arrays
 c
