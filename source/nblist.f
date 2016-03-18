@@ -96,18 +96,14 @@ c
 c      if (dovlst) then
       if(do_list(th_id)) then
          do_list(th_id) = .false.
-c!$OMP master
          dovlst = .false.
          if (octahedron) then
             call vbuild1 !(xred_th,yred_th,zred_th)
          else
             call vlight1 !(xred_th,yred_th,zred_th)
          end if
-c!$OMP end master
-c!$OMP barrier
          return
       end if
-c!$OMP master
 c
 c     test sites for displacement exceeding half the buffer, and
 c     rebuild the higher numbered neighbors of updated sites
@@ -558,9 +554,6 @@ c
       real*8 xi,yi,zi
       real*8 xr,yr,zr
       real*8 r2,off
-C$$$      real*8 xred(*)
-C$$$      real*8 yred(*)
-C$$$      real*8 zred(*)
       real*8, allocatable :: xsort(:)
       real*8, allocatable :: ysort(:)
       real*8, allocatable :: zsort(:)
@@ -601,9 +594,6 @@ c
 c
 c     set OpenMP directives for the major loop structure
 c
-c!$OMP master
-c!$OMP PARALLEL default(shared) private(i,j,k,xi,yi,zi,
-c!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
 
 !$OMP DO schedule(guided) private(i,j,k,xi,yi,zi,
 !$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
@@ -669,10 +659,7 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-c!$OMP end master
-c!$OMP barrier
 !$OMP END DO
-c!$OMP END PARALLEL
       return
       end
 
@@ -1393,15 +1380,12 @@ c
 c      if (domlst) then
       if(do_list(th_id)) then
          do_list(th_id) = .false.
-c!$OMP master
          domlst = .false.
          if (octahedron) then
             call mbuild
          else
             call mlight1
          end if
-c!$OMP end master
-c!$OMP barrier
          return
       end if
 c
@@ -1785,10 +1769,6 @@ c
 !$OMP barrier
 c
 c     set OpenMP directives for the major loop structure
-c
-c!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,
-c!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
-
 
 !$OMP DO schedule(guided)private(i,j,k,ii,kk,xi,yi,zi,
 !$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
@@ -1857,7 +1837,6 @@ c
 c     end OpenMP directives for the major loop structure
 c
 !$OMP END DO
-c!$OMP END PARALLEL
       return
       end
 c
@@ -2065,27 +2044,21 @@ c
 c
 c     perform a complete list build instead of an update
 c
-c      if (doulst) then
-
       if(do_list(th_id))then
-         do_list(th_id) = .false.
-c!$OMP master            
+         do_list(th_id) = .false.     
          doulst = .false.
          if (octahedron) then
             call ubuild
          else
             call ulight1
          end if
-c!$OMP end master
-c!$OMP barrier
          return
       end if
-c!$OMP master
+
 c
 c     test sites for displacement exceeding half the buffer, and
 c     rebuild the higher numbered neighbors of updated sites
 c
-c!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
 
 !$OMP DO schedule(guided) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
       do i = 1, npole
@@ -2463,9 +2436,6 @@ c
 !$OMP barrier
 c
 c     set OpenMP directives for the major loop structure
-c
-c!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,
-c!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
 
 !$OMP DO schedule(guided) private(i,j,k,ii,kk,xi,yi,zi,
 !$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
@@ -2534,7 +2504,6 @@ c
 c     end OpenMP directives for the major loop structure
 c
 !$OMP END DO
-c!$OMP END PARALLEL
       return
       end
 c
