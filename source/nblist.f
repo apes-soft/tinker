@@ -25,10 +25,11 @@ c
 c     update the vdw and electrostatic neighbor lists
 c
       if (use_vdw .and. use_vlist)  call vlist1
-!$OMP master
+c!$OMP master
       if ((use_charge.or.use_solv) .and. use_clist)  call clist
       if ((use_mpole.or.use_polar.or.use_solv) .and. use_mlist)
      &      call mlist1
+!$OMP master
       if (use_polar .and. use_ulist)  call ulist1
 !$OMP end master
 !$OMP barrier
@@ -107,8 +108,6 @@ c
 c
 c     perform a complete list build instead of an update
 c
-c      print*, "hi form before vlight from", th_id
-
 c      if (dovlst) then
       if(do_list(th_id)) then
          do_list(th_id) = .false.
@@ -120,11 +119,9 @@ c      if (dovlst) then
             call vlight1 !(xred_th,yred_th,zred_th)
          end if
 !$OMP end master
-c         print*, "hi form after but in vlight from", th_id
 !$OMP barrier
          return
       end if
-c      print*, "hi form after out before vlight from", th_id
 c!$OMP master
 c
 c     test sites for displacement exceeding half the buffer, and
@@ -1401,6 +1398,7 @@ c      allocate (update(n))
 c
 c     neighbor list cannot be used with the replicates method
 c
+!$OMP master
       radius = sqrt(mbuf2)
       call replica (radius)
       if (use_replica) then
@@ -1409,24 +1407,37 @@ c
      &              ' be used with Replicas')
          call fatal
       end if
+
+      do i=1,nthread
+         do_list(i) = domlst
+      end do
+!$OMP end master
+!$OMP barrier
 c
 c     perform a complete list build instead of an update
 c
-      if (domlst) then
+c      if (domlst) then
+      if(do_list(th_id)) then
+         do_list(th_id) = .false.
+!$OMP master
          domlst = .false.
          if (octahedron) then
             call mbuild
          else
             call mlight
          end if
+!$OMP end master
+!$OMP barrier
          return
       end if
+c!$OMP master
 c
 c     test sites for displacement exceeding half the buffer, and
 c     rebuild the higher numbered neighbors of updated sites
 c
 c!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
-c!$OMP DO schedule(guided)
+
+!$OMP DO schedule(guided) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
       do i = 1, npole
          ii = ipole(i)
          xi = x(ii)
@@ -1458,11 +1469,13 @@ c!$OMP DO schedule(guided)
             end do
          end if
       end do
-c!$OMP END DO
+!$OMP END DO
 c
 c     adjust lists of lower numbered neighbors of updated sites
 c
-c!$OMP DO schedule (guided)
+c!$OMP master
+
+!$OMP DO schedule (guided)
       do i = 1, npole
          if (update_omp(i)) then
             ii = ipole(i)
@@ -1477,16 +1490,16 @@ c!$OMP DO schedule (guided)
                   call imagen (xr,yr,zr)
                   r2 = xr*xr + yr*yr + zr*zr
                   if (r2 .le. mbuf2) then
-c!$OMP CRITICAL
+!$OMP CRITICAL
                      do j = 1, nelst(k)
                         if (elst(j,k) .eq. i)  goto 20
                      end do
                      nelst(k) = nelst(k) + 1
                      elst(nelst(k),k) = i
    20                continue
-c!$OMP END CRITICAL
+!$OMP END CRITICAL
                   else if (r2 .le. mbufx) then
-c!$OMP CRITICAL
+!$OMP CRITICAL
                      do j = 1, nelst(k)
                         if (elst(j,k) .eq. i) then
                            elst(j,k) = elst(nelst(k),k)
@@ -1495,17 +1508,17 @@ c!$OMP CRITICAL
                         end if
                      end do
    30                continue
-c!$OMP END CRITICAL
+!$OMP END CRITICAL
                   end if
                end if
             end do
          end if
       end do
-c!$OMP END DO
+!$OMP END DO
 c
 c     check to see if any neighbor lists are too long
 c
-c!$OMP DO schedule(guided)
+!$OMP DO schedule(guided)
       do i = 1, npole
          if (nelst(i) .ge. maxelst) then
             write (iout,40)
@@ -1514,8 +1527,10 @@ c!$OMP DO schedule(guided)
             call fatal
          end if
       end do
-c!$OMP END DO
+!$OMP END DO
 c!$OMP END PARALLEL
+c!$OMP end master
+c!$OMP barrier
 c
 c     perform deallocation of some local arrays
 c
