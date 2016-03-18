@@ -554,41 +554,44 @@ c
       real*8 xi,yi,zi
       real*8 xr,yr,zr
       real*8 r2,off
-      real*8, allocatable :: xsort(:)
-      real*8, allocatable :: ysort(:)
-      real*8, allocatable :: zsort(:)
+c      real*8, allocatable :: xsort(:)
+c      real*8, allocatable :: ysort(:)
+c      real*8, allocatable :: zsort(:)
       logical repeat
 c
 c
 c     perform dynamic allocation of some local arrays
 c
-!$OMP master
-      allocate (xsort(nvdw))
-      allocate (ysort(nvdw))
-      allocate (zsort(nvdw))
+c!$OMP master
+c      allocate (xsort(nvdw))
+c      allocate (ysort(nvdw))
+c      allocate (zsort(nvdw))
 c
 c     transfer interaction site coordinates to sorting arrays
 c
+!$OMP DO schedule(static,128)
       do i = 1, nvdw
          nvlst(i) = 0
          xvold(i) = xred_th(i)
          yvold(i) = yred_th(i)
          zvold(i) = zred_th(i)
-         xsort(i) = xred_th(i)
-         ysort(i) = yred_th(i)
-         zsort(i) = zred_th(i)
+         xsort_omp(i) = xred_th(i)
+         ysort_omp(i) = yred_th(i)
+         zsort_omp(i) = zred_th(i)
       end do
+!$OMP end DO 
 c
 c     use the method of lights to generate neighbors
 c
+!$OMP master
       off = sqrt(vbuf2)
-      call lightn (off,nvdw,xsort,ysort,zsort)
+      call lightn (off,nvdw,xsort_omp,ysort_omp,zsort_omp)
 c
 c     perform deallocation of some local arrays
 c
-      deallocate (xsort)
-      deallocate (ysort)
-      deallocate (zsort)
+c      deallocate (xsort)
+c      deallocate (ysort)
+c      deallocate (zsort)
 !$OMP end master
 !$OMP barrier
 c
@@ -1721,6 +1724,7 @@ c
       use light
       use mpole
       use neigh
+      use openmp
       implicit none
       integer i,j,k
       integer ii,kk
@@ -1729,44 +1733,49 @@ c
       real*8 xi,yi,zi
       real*8 xr,yr,zr
       real*8 r2,off
-      real*8, allocatable :: xsort(:)
-      real*8, allocatable :: ysort(:)
-      real*8, allocatable :: zsort(:)
+c      real*8, allocatable :: xsort(:)
+c      real*8, allocatable :: ysort(:)
+c      real*8, allocatable :: zsort(:)
       logical repeat
 c
 c
 c     perform dynamic allocation of some local arrays
 c
-!$OMP master
-      allocate (xsort(npole))
-      allocate (ysort(npole))
-      allocate (zsort(npole))
+c!$OMP master
+c      allocate (xsort(npole))
+c      allocate (ysort(npole))
+c      allocate (zsort(npole))
 c
 c     transfer interaction site coordinates to sorting arrays
 c
+!$OMP DO private(ii) schedule(static,128)
       do i = 1, npole
          nelst(i) = 0
          ii = ipole(i)
          xmold(i) = x(ii)
          ymold(i) = y(ii)
          zmold(i) = z(ii)
-         xsort(i) = x(ii)
-         ysort(i) = y(ii)
-         zsort(i) = z(ii)
+         xsort_omp(i) = x(ii)
+         ysort_omp(i) = y(ii)
+         zsort_omp(i) = z(ii)
       end do
+!$OMP end DO 
 c
 c     use the method of lights to generate neighbors
 c
+!$OMP master
       off = sqrt(mbuf2)
-      call lightn (off,npole,xsort,ysort,zsort)
+      call lightn (off,npole,xsort_omp,ysort_omp,zsort_omp)
+!$OMP end master
+!$OMP barrier
 c
 c     perform deallocation of some local arrays
 c
-      deallocate (xsort)
-      deallocate (ysort)
-      deallocate (zsort)
-!$OMP end master
-!$OMP barrier
+c      deallocate (xsort)
+c      deallocate (ysort)
+c      deallocate (zsort)
+c!$OMP end master
+c!$OMP barrier
 c
 c     set OpenMP directives for the major loop structure
 
@@ -2388,6 +2397,7 @@ c
       use light
       use mpole
       use neigh
+      use openmp
       implicit none
       integer i,j,k
       integer ii,kk
@@ -2396,44 +2406,48 @@ c
       real*8 xi,yi,zi
       real*8 xr,yr,zr
       real*8 r2,off
-      real*8, allocatable :: xsort(:)
-      real*8, allocatable :: ysort(:)
-      real*8, allocatable :: zsort(:)
+c      real*8, allocatable :: xsort(:)
+c      real*8, allocatable :: ysort(:)
+c      real*8, allocatable :: zsort(:)
       logical repeat
 c
 c
 c     perform dynamic allocation of some local arrays
 c
-!$OMP master
-      allocate (xsort(npole))
-      allocate (ysort(npole))
-      allocate (zsort(npole))
+c!$OMP master
+c      allocate (xsort(npole))
+c      allocate (ysort(npole))
+c      allocate (zsort(npole))
 c
 c     transfer interaction site coordinates to sorting arrays
 c
+!$OMP DO private(ii) schedule(static,128)
       do i = 1, npole
          nulst(i) = 0
          ii = ipole(i)
          xuold(i) = x(ii)
          yuold(i) = y(ii)
          zuold(i) = z(ii)
-         xsort(i) = x(ii)
-         ysort(i) = y(ii)
-         zsort(i) = z(ii)
+         xsort_omp(i) = x(ii)
+         ysort_omp(i) = y(ii)
+         zsort_omp(i) = z(ii)
       end do
+!$OMP end DO
 c
 c     use the method of lights to generate neighbors
 c
+!$OMP master
       off = sqrt(ubuf2)
-      call lightn (off,npole,xsort,ysort,zsort)
+      call lightn (off,npole,xsort_omp,ysort_omp,zsort_omp)
+!$OMP end master
+!$OMP barrier
 c
 c     perform deallocation of some local arrays
 c
-      deallocate (xsort)
-      deallocate (ysort)
-      deallocate (zsort)
-!$OMP end master
-!$OMP barrier
+c      deallocate (xsort)
+c      deallocate (ysort)
+c      deallocate (zsort)
+
 c
 c     set OpenMP directives for the major loop structure
 

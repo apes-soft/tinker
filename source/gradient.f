@@ -38,6 +38,7 @@ c
       use mpole
       use warp 
       use neigh
+      use vdw
       use polpot
       implicit none
       integer i,j,k
@@ -174,6 +175,12 @@ c         allocate(vscale_th(n))
       if(.not. allocated(update_omp)) allocate(update_omp(n))
 
       if(.not. allocated(do_list)) allocate(do_list(nthread))
+
+      if(.not. allocated(xsort_omp)) then
+         allocate (xsort_omp(nvdw))
+         allocate (ysort_omp(nvdw))
+         allocate (zsort_omp(nvdw))
+      end if
 
 c
 c     zero out the virial and the intermolecular energy

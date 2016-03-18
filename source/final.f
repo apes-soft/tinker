@@ -816,6 +816,14 @@ c
       if(allocated(fphi_omp)) deallocate(fphi_omp)
       if(allocated(update_omp)) deallocate(update_omp)
       if(allocated(do_list)) deallocate(do_list)
+
+      if(allocated(xsort_omp)) then
+         deallocate (xsort_omp)
+         deallocate (ysort_omp)
+         deallocate (zsort_omp)
+      end if
+
+
 c
 c     free memory used by the APBS Poisson-Boltzmann solver
 c
