@@ -1393,15 +1393,15 @@ c
 c      if (domlst) then
       if(do_list(th_id)) then
          do_list(th_id) = .false.
-!$OMP master
+c!$OMP master
          domlst = .false.
          if (octahedron) then
             call mbuild
          else
-            call mlight
+            call mlight1
          end if
-!$OMP end master
-!$OMP barrier
+c!$OMP end master
+c!$OMP barrier
          return
       end if
 c
@@ -1717,6 +1717,150 @@ c!$OMP END PARALLEL
       return
       end
 c
+c     #################################################################
+c     ##                                                             ##
+c     ##  subroutine mlight1  --  get multipole pair list via lights  ##
+c     ##                                                             ##
+c     #################################################################
+c
+c
+c     "mlight1" performs a complete rebuild of the atomic multipole
+c     pair neighbor list for all sites using the method of lights
+c
+c
+      subroutine mlight1
+      use sizes
+      use atoms
+      use bound
+      use cell
+      use iounit
+      use light
+      use mpole
+      use neigh
+      implicit none
+      integer i,j,k
+      integer ii,kk
+      integer kgy,kgz
+      integer start,stop
+      real*8 xi,yi,zi
+      real*8 xr,yr,zr
+      real*8 r2,off
+      real*8, allocatable :: xsort(:)
+      real*8, allocatable :: ysort(:)
+      real*8, allocatable :: zsort(:)
+      logical repeat
+c
+c
+c     perform dynamic allocation of some local arrays
+c
+!$OMP master
+      allocate (xsort(npole))
+      allocate (ysort(npole))
+      allocate (zsort(npole))
+c
+c     transfer interaction site coordinates to sorting arrays
+c
+      do i = 1, npole
+         nelst(i) = 0
+         ii = ipole(i)
+         xmold(i) = x(ii)
+         ymold(i) = y(ii)
+         zmold(i) = z(ii)
+         xsort(i) = x(ii)
+         ysort(i) = y(ii)
+         zsort(i) = z(ii)
+      end do
+c
+c     use the method of lights to generate neighbors
+c
+      off = sqrt(mbuf2)
+      call lightn (off,npole,xsort,ysort,zsort)
+c
+c     perform deallocation of some local arrays
+c
+      deallocate (xsort)
+      deallocate (ysort)
+      deallocate (zsort)
+!$OMP end master
+!$OMP barrier
+c
+c     set OpenMP directives for the major loop structure
+c
+c!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,
+c!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
+
+
+!$OMP DO schedule(guided)private(i,j,k,ii,kk,xi,yi,zi,
+!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
+c
+c     loop over all atoms computing the neighbor lists
+c
+      do i = 1, npole
+         ii = ipole(i)
+         xi = x(ii)
+         yi = y(ii)
+         zi = z(ii)
+         if (kbx(i) .le. kex(i)) then
+            repeat = .false.
+            start = kbx(i)
+            stop = kex(i)
+         else
+            repeat = .true.
+            start = 1
+            stop = kex(i)
+         end if
+   10    continue
+         do j = start, stop
+            k = locx(j)
+            if (k .le. i)  goto 20
+            kk = ipole(k)
+            kgy = rgy(k)
+            if (kby(i) .le. key(i)) then
+               if (kgy.lt.kby(i) .or. kgy.gt.key(i))  goto 20
+            else
+               if (kgy.lt.kby(i) .and. kgy.gt.key(i))  goto 20
+            end if
+            kgz = rgz(k)
+            if (kbz(i) .le. kez(i)) then
+               if (kgz.lt.kbz(i) .or. kgz.gt.kez(i))  goto 20
+            else
+               if (kgz.lt.kbz(i) .and. kgz.gt.kez(i))  goto 20
+            end if
+            xr = xi - x(kk)
+            yr = yi - y(kk)
+            zr = zi - z(kk)
+            call imagen (xr,yr,zr)
+            r2 = xr*xr + yr*yr + zr*zr
+            if (r2 .le. mbuf2) then
+               nelst(i) = nelst(i) + 1
+               elst(nelst(i),i) = k
+            end if
+   20       continue
+         end do
+         if (repeat) then
+            repeat = .false.
+            start = kbx(i)
+            stop = npole
+            goto 10
+         end if
+c
+c     check to see if the neighbor list is too long
+c
+         if (nelst(i) .ge. maxelst) then
+            write (iout,30)
+   30       format (/,' MLIGHT  --  Too many Neighbors;',
+     &                 ' Increase MAXELST')
+            call fatal
+         end if
+      end do
+c
+c     end OpenMP directives for the major loop structure
+c
+!$OMP END DO
+c!$OMP END PARALLEL
+      return
+      end
+c
 c
 c     ###############################################################
 c     ##                                                           ##
@@ -1925,15 +2069,15 @@ c      if (doulst) then
 
       if(do_list(th_id))then
          do_list(th_id) = .false.
-!$OMP master            
+c!$OMP master            
          doulst = .false.
          if (octahedron) then
             call ubuild
          else
-            call ulight
+            call ulight1
          end if
-!$OMP end master
-!$OMP barrier
+c!$OMP end master
+c!$OMP barrier
          return
       end if
 c!$OMP master
@@ -2249,6 +2393,151 @@ c!$OMP END DO
 c!$OMP END PARALLEL
       return
       end
+c
+c     #################################################################
+c     ##                                                             ##
+c     ##  subroutine ulight1  --  get preconditioner list via lights  ##
+c     ##                                                             ##
+c     #################################################################
+c
+c
+c     "ulight1" performs a complete rebuild of the polarization
+c     preconditioner pair neighbor list for all sites using the
+c     method of lights
+c
+c
+      subroutine ulight1
+      use sizes
+      use atoms
+      use bound
+      use cell
+      use iounit
+      use light
+      use mpole
+      use neigh
+      implicit none
+      integer i,j,k
+      integer ii,kk
+      integer kgy,kgz
+      integer start,stop
+      real*8 xi,yi,zi
+      real*8 xr,yr,zr
+      real*8 r2,off
+      real*8, allocatable :: xsort(:)
+      real*8, allocatable :: ysort(:)
+      real*8, allocatable :: zsort(:)
+      logical repeat
+c
+c
+c     perform dynamic allocation of some local arrays
+c
+!$OMP master
+      allocate (xsort(npole))
+      allocate (ysort(npole))
+      allocate (zsort(npole))
+c
+c     transfer interaction site coordinates to sorting arrays
+c
+      do i = 1, npole
+         nulst(i) = 0
+         ii = ipole(i)
+         xuold(i) = x(ii)
+         yuold(i) = y(ii)
+         zuold(i) = z(ii)
+         xsort(i) = x(ii)
+         ysort(i) = y(ii)
+         zsort(i) = z(ii)
+      end do
+c
+c     use the method of lights to generate neighbors
+c
+      off = sqrt(ubuf2)
+      call lightn (off,npole,xsort,ysort,zsort)
+c
+c     perform deallocation of some local arrays
+c
+      deallocate (xsort)
+      deallocate (ysort)
+      deallocate (zsort)
+!$OMP end master
+!$OMP barrier
+c
+c     set OpenMP directives for the major loop structure
+c
+c!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,
+c!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
+
+!$OMP DO schedule(guided) private(i,j,k,ii,kk,xi,yi,zi,
+!$OMP& xr,yr,zr,r2,kgy,kgz,start,stop,repeat)
+c
+c     loop over all atoms computing the neighbor lists
+c
+      do i = 1, npole
+         ii = ipole(i)
+         xi = x(ii)
+         yi = y(ii)
+         zi = z(ii)
+         if (kbx(i) .le. kex(i)) then
+            repeat = .false.
+            start = kbx(i)
+            stop = kex(i)
+         else
+            repeat = .true.
+            start = 1
+            stop = kex(i)
+         end if
+   10    continue
+         do j = start, stop
+            k = locx(j)
+            if (k .le. i)  goto 20
+            kk = ipole(k)
+            kgy = rgy(k)
+            if (kby(i) .le. key(i)) then
+               if (kgy.lt.kby(i) .or. kgy.gt.key(i))  goto 20
+            else
+               if (kgy.lt.kby(i) .and. kgy.gt.key(i))  goto 20
+            end if
+            kgz = rgz(k)
+            if (kbz(i) .le. kez(i)) then
+               if (kgz.lt.kbz(i) .or. kgz.gt.kez(i))  goto 20
+            else
+               if (kgz.lt.kbz(i) .and. kgz.gt.kez(i))  goto 20
+            end if
+            xr = xi - x(kk)
+            yr = yi - y(kk)
+            zr = zi - z(kk)
+            call imagen (xr,yr,zr)
+            r2 = xr*xr + yr*yr + zr*zr
+            if (r2 .le. ubuf2) then
+               nulst(i) = nulst(i) + 1
+               ulst(nulst(i),i) = k
+            end if
+   20       continue
+         end do
+         if (repeat) then
+            repeat = .false.
+            start = kbx(i)
+            stop = npole
+            goto 10
+         end if
+c
+c     check to see if the neighbor list is too long
+c
+         if (nulst(i) .ge. maxulst) then
+            write (iout,30)
+   30       format (/,' ULIGHT  --  Too many Neighbors;',
+     &                 ' Increase MAXULST')
+            call fatal
+         end if
+      end do
+c
+c     end OpenMP directives for the major loop structure
+c
+!$OMP END DO
+c!$OMP END PARALLEL
+      return
+      end
+c
 c
 c
 c     #################################################################
