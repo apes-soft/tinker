@@ -25,14 +25,10 @@ c
 c     update the vdw and electrostatic neighbor lists
 c
       if (use_vdw .and. use_vlist)  call vlist1
-c!$OMP master
       if ((use_charge.or.use_solv) .and. use_clist)  call clist
       if ((use_mpole.or.use_polar.or.use_solv) .and. use_mlist)
      &      call mlist1
-c!$OMP master
       if (use_polar .and. use_ulist)  call ulist1
-c!$OMP end master
-c!$OMP barrier
       return
       end
 c
@@ -63,18 +59,7 @@ c
       real*8 xr,yr,zr
       real*8 radius
       real*8 rdn,r2
-c      real*8, allocatable :: xred(:)
-c      real*8, allocatable :: yred(:)
-c      real*8, allocatable :: zred(:)
-c      logical, allocatable :: update(:)
-c
-c
-c     perform dynamic allocation of some local arrays
-c
-c      allocate (xred(n))
-c      allocate (yred(n))
-c      allocate (zred(n))
-c      allocate (update(n))
+
 c
 c     apply reduction factors to find coordinates for each site
 c
@@ -127,10 +112,6 @@ c
 c     test sites for displacement exceeding half the buffer, and
 c     rebuild the higher numbered neighbors of updated sites
 c
-c!$OMP PARALLEL default(none) shared(nvdw,xred_th,yred_th,
-c!$OMP& zred_th,xvold,maxvlst,iout,
-c!$OMP& yvold,zvold,update_omp,lbuf2,nvlst,vbuf2,vlst,vbufx)
-c!$OMP& private(i,j,k,xi,yi,zi,xr,yr,zr,r2)
 
 !$OMP DO schedule(guided) private(i,j,k,xi,yi,zi,xr,yr,zr,r2)
 
@@ -167,7 +148,6 @@ c!$OMP& private(i,j,k,xi,yi,zi,xr,yr,zr,r2)
 c
 c     adjust lists of lower numbered neighbors of updated sites
 c
-c!$OMP master
 !$OMP DO schedule(guided)
       do i = 1, nvdw
          if (update_omp(i)) then
@@ -220,16 +200,7 @@ c
          end if
       end do
 !$OMP END DO
-c!$OMP END PARALLEL
-c!$OMP end master
-c!$OMP barrier
-c
-c     perform deallocation of some local arrays
-c
-c      deallocate (xred)
-c      deallocate (yred)
-c      deallocate (zred)
-c      deallocate (update)
+
       return
       end
 
@@ -1389,12 +1360,7 @@ c
       real*8 xi,yi,zi
       real*8 xr,yr,zr
       real*8 radius,r2
-c      logical, allocatable :: update(:)
-c
-c
-c     perform dynamic allocation of some local arrays
-c
-c      allocate (update(n))
+
 c
 c     neighbor list cannot be used with the replicates method
 c
@@ -1430,12 +1396,11 @@ c      if (domlst) then
 !$OMP barrier
          return
       end if
-c!$OMP master
 c
 c     test sites for displacement exceeding half the buffer, and
 c     rebuild the higher numbered neighbors of updated sites
 c
-c!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
+
 
 !$OMP DO schedule(guided) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
       do i = 1, npole
@@ -1473,7 +1438,6 @@ c!$OMP PARALLEL default(shared) private(i,j,k,ii,kk,xi,yi,zi,xr,yr,zr,r2)
 c
 c     adjust lists of lower numbered neighbors of updated sites
 c
-c!$OMP master
 
 !$OMP DO schedule (guided)
       do i = 1, npole
@@ -1528,13 +1492,6 @@ c
          end if
       end do
 !$OMP END DO
-c!$OMP END PARALLEL
-c!$OMP end master
-c!$OMP barrier
-c
-c     perform deallocation of some local arrays
-c
-c      deallocate (update)
       return
       end
 c
@@ -1934,12 +1891,6 @@ c
       real*8 xi,yi,zi
       real*8 xr,yr,zr
       real*8 radius,r2
-c      logical, allocatable :: update(:)
-c
-c
-c     perform dynamic allocation of some local arrays
-c
-c      allocate (update(n))
 c
 c     neighbor list cannot be used with the replicates method
 c
@@ -2073,13 +2024,6 @@ c
          end if
       end do
 !$OMP END DO
-c!$OMP END PARALLEL
-c!$OMP end master
-c!$OMP barrier
-c
-c     perform deallocation of some local arrays
-c
-c      deallocate (update)
       return
       end
 c
