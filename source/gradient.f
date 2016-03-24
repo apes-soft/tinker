@@ -100,8 +100,8 @@ c
       if(.not. allocated(en_th)) allocate(en_th(nthread))
       if(.not. allocated(fieldt_omp)) allocate(fieldt_omp(3,n))
       if(.not. allocated(fieldtp_omp)) allocate(fieldtp_omp(3,n))
-      if(.not. allocated(qgrid_omp)) 
-     &     allocate(qgrid_omp(nthread,2,nfft1,nfft2,nfft3))
+c      if(.not. allocated(qgrid_omp)) 
+c     &     allocate(qgrid_omp(nthread,2,nfft1,nfft2,nfft3))
 
       if(.not. allocated(xred_th)) then
          allocate(xred_th(n))

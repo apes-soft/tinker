@@ -823,7 +823,7 @@ c
          deallocate (zsort_omp)
       end if
 
-      if(allocated(qgrid_omp)) deallocate(qgrid_omp)
+c      if(allocated(qgrid_omp)) deallocate(qgrid_omp)
 
 c
 c     free memory used by the APBS Poisson-Boltzmann solver

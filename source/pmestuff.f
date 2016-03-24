@@ -522,14 +522,14 @@ c
 c      qgrip_omp = 0.0d0
       
 
-      do k = 1, nfft3
-         do j = 1, nfft2
-            do i = 1, nfft1
-               qgrid_omp(th_id,1,i,j,k) = 0.0d0
-c               qgrid_omp(th_id,2,i,j,k) = 0.0d0
-            end do
-         end do
-      end do
+C$$$      do k = 1, nfft3
+C$$$         do j = 1, nfft2
+C$$$            do i = 1, nfft1
+C$$$               qgrid_omp(th_id,1,i,j,k) = 0.0d0
+C$$$c               qgrid_omp(th_id,2,i,j,k) = 0.0d0
+C$$$            end do
+C$$$         end do
+C$$$      end do
 
 c
 c     set OpenMP directives for the major loop structure
@@ -538,15 +538,15 @@ c
 !$OMP DO  private(i,j,k,m,ii,jj,kk,ichk,
 !$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
 !$OMP& offsetz,v0,v1,v2,u0,u1,u2,term0,term1,term2,t0,t1,t2)
-!$OMP& schedule(guided) 
+!$OMP& schedule(dynamic,1) 
 c
 c     put the permanent multipole moments onto the grid
 c
-c      do ichk = 1, nchunk
-      do new_iter = 0, nchunk*npole
+      do ichk = 1, nchunk
+c      do new_iter = 0, nchunk*npole
 
-         isite = mod(new_iter,npole)+ 1
-         ichk = new_iter/npole + 1
+c         isite = mod(new_iter,npole)+ 1
+c         ichk = new_iter/npole + 1
 
          cid(1) = mod(ichk-1,nchk1)
          cid(2) = mod(((ichk-1-cid(1))/nchk1),nchk2)
@@ -557,7 +557,7 @@ c      do ichk = 1, nchunk
          cbound(4) = cbound(3) + ngrd2 - 1
          cbound(5) = cid(3)*ngrd3 + 1
          cbound(6) = cbound(5) + ngrd3 - 1
-c         do isite = 1, npole
+         do isite = 1, npole
             iatm = ipole(isite)
             if (pmetable(iatm,ichk) .eq. 1) then
                nearpt(1) = igrid(1,iatm) + grdoff
@@ -606,16 +606,18 @@ c         do isite = 1, npole
                         t0 = thetai1(1,m,iatm)
                         t1 = thetai1(2,m,iatm)
                         t2 = thetai1(3,m,iatm)
-                       qgrid_omp(th_id,1,i,j,k)=qgrid_omp(th_id,1,i,j,k) 
-     &                       + term0*t0 + term1*t1 + term2*t2
+c                       qgrid_omp(th_id,1,i,j,k)=qgrid_omp(th_id,1,i,j,k) 
+c     &                       + term0*t0 + term1*t1 + term2*t2
 c                        qgrip_omp(1,i,j,k)=qgrip_omp(1,i,j,k) 
 c     &                       + term0*t0 + term1*t1 + term2*t2
+                        qgrid(1,i,j,k) = qgrid(1,i,j,k) 
+     &                       + term0*t0 + term1*t1 + term2*t2
                      end do
                   end do
                end do
             end if
          end do
-c      end do
+      end do
 c
 c     end OpenMP directive for the major loop structure
 c
@@ -635,17 +637,17 @@ C$$$!$OMP end critical
          
       
 
-!$OMP DO collapse(3)
-         do k = 1, nfft3
-            do j = 1, nfft2
-               do i = 1, nfft1
-                  do m=1,nthread
-                     qgrid(1,i,j,k) =qgrid(1,i,j,k)+qgrid_omp(m,1,i,j,k)
-                  end do
-               end do
-            end do
-         end do
-!$OMP end DO 
+C$$$!$OMP DO collapse(3)
+C$$$         do k = 1, nfft3
+C$$$            do j = 1, nfft2
+C$$$               do i = 1, nfft1
+C$$$                  do m=1,nthread
+C$$$                     qgrid(1,i,j,k) =qgrid(1,i,j,k)+qgrid_omp(m,1,i,j,k)
+C$$$                  end do
+C$$$               end do
+C$$$            end do
+C$$$         end do
+C$$$!$OMP end DO 
 c      deallocate(qgrip)
 
       return
@@ -831,14 +833,14 @@ c
       end do
 !$OMP end do
 
-      do k = 1, nfft3
-         do j = 1, nfft2
-            do i = 1, nfft1
-               qgrid_omp(th_id,1,i,j,k) = 0.0d0
-               qgrid_omp(th_id,2,i,j,k) = 0.0d0
-            end do
-         end do
-      end do
+C$$$      do k = 1, nfft3
+C$$$         do j = 1, nfft2
+C$$$            do i = 1, nfft1
+C$$$               qgrid_omp(th_id,1,i,j,k) = 0.0d0
+C$$$               qgrid_omp(th_id,2,i,j,k) = 0.0d0
+C$$$            end do
+C$$$         end do
+C$$$      end do
 
 c      qgrid_omp = 0.0d0
 
@@ -846,18 +848,18 @@ c
 c     set OpenMP directives for the major loop structure
 c
 
-!$OMP DO schedule(guided)
+!$OMP DO schedule(dynamic,1)
 !$OMP& private(i,j,k,m,ii,jj,kk,ichk,
 !$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
 !$OMP& offsetz,v0,v1,u0,u1,term01,term11,term02,term12,t0,t1)
 c
 c     put the induced dipole moments onto the grid
 c
-c      do ichk = 1, nchunk
-      do new_iter = 0,nchunk*npole
+      do ichk = 1, nchunk
+c      do new_iter = 0,nchunk*npole
 
-         isite = mod(new_iter,npole)+ 1
-         ichk = new_iter/npole + 1
+c         isite = mod(new_iter,npole)+ 1
+c         ichk = new_iter/npole + 1
  
          cid(1) = mod(ichk-1,nchk1)
          cid(2) = mod(((ichk-1-cid(1))/nchk1),nchk2)
@@ -868,7 +870,7 @@ c      do ichk = 1, nchunk
          cbound(4) = cbound(3) + ngrd2 - 1
          cbound(5) = cid(3)*ngrd3 + 1
          cbound(6) = cbound(5) + ngrd3 - 1
-c         do isite = 1, npole
+         do isite = 1, npole
             iatm = ipole(isite)
             if (pmetable(iatm,ichk) .eq. 1) then
                nearpt(1) = igrid(1,iatm) + grdoff
@@ -911,36 +913,42 @@ c         do isite = 1, npole
                         t0 = thetai1(1,m,iatm)
                         t1 = thetai1(2,m,iatm)
 
-                  qgrid_omp(th_id,1,i,j,k) = qgrid_omp(th_id,1,i,j,k) 
+                  qgrid(1,i,j,k) = qgrid(1,i,j,k) 
      &                       + term01*t0 + term11*t1
 
-                   qgrid_omp(th_id,2,i,j,k) = qgrid_omp(th_id,2,i,j,k) 
+                   qgrid(2,i,j,k) = qgrid(2,i,j,k) 
      &                 + term02*t0 + term12*t1
+C$$$                  qgrid_omp(th_id,1,i,j,k) = qgrid_omp(th_id,1,i,j,k) 
+C$$$     &                       + term01*t0 + term11*t1
+
+C$$$                   qgrid_omp(th_id,2,i,j,k) = qgrid_omp(th_id,2,i,j,k) 
+C$$$     &                 + term02*t0 + term12*t1
                      end do
                   end do
                end do
             end if
          end do
-c      end do
+      end do
 c
 c     end OpenMP directive for the major loop structure
 c
 !$OMP END DO
 
-!$OMP DO collapse(3)
-         do k = 1, nfft3
-            do j = 1, nfft2
-               do i = 1, nfft1
-                  do m=1,nthread
-                     qgrid(1,i,j,k) =qgrid(1,i,j,k)+qgrid_omp(m,1,i,j,k)
-                     qgrid(2,i,j,k) =qgrid(2,i,j,k)+qgrid_omp(m,2,i,j,k)
-                  end do
-               end do
-            end do
-         end do
-!$OMP end DO 
-c!$OMP end single
-c!$OMP barrier         
+C$$$!$OMP DO collapse(3)
+C$$$         do k = 1, nfft3
+C$$$            do j = 1, nfft2
+C$$$               do i = 1, nfft1
+C$$$                  do m=1,nthread
+C$$$                     qgrid(1,i,j,k) =qgrid(1,i,j,k)+qgrid_omp(m,1,i,j,k)
+C$$$                     qgrid(2,i,j,k) =qgrid(2,i,j,k)+qgrid_omp(m,2,i,j,k)
+C$$$                  end do
+C$$$               end do
+C$$$            end do
+C$$$         end do
+C$$$!$OMP end DO 
+C$$$c!$OMP end single
+C$$$c!$OMP barrier    
+         
       return
       end
 
