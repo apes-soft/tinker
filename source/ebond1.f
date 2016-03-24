@@ -150,7 +150,8 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-!$OMP END DO no wait
+!$OMP END DO 
+!no wait
 
       do i=1,3
          do j=1,3
