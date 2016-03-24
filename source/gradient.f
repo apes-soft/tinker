@@ -38,6 +38,7 @@ c
       use mpole
       use warp 
       use neigh
+      use vdw
       use polpot
       implicit none
       integer i,j,k
@@ -65,6 +66,12 @@ c
       ev = 0.0d0
       em = 0.0d0
       ep = 0.0d0
+      vxx_omp = 0.0d0
+      vyx_omp = 0.0d0
+      vzx_omp = 0.0d0
+      vyy_omp = 0.0d0
+      vzy_omp = 0.0d0
+      vzz_omp = 0.0d0
 
 c
 c     perform dynamic allocation of some global arrays
@@ -113,9 +120,36 @@ c         allocate(vscale_th(n))
       field_omp = 0.0d0
       fieldp_omp = 0.0d0
 
-c      if(.not. allocated(uind_omp)) allocate(uind_omp(3,npole))
-c      if(.not. allocated(uind_omp)) allocate(uinp_omp(3,npole))
+      if(.not. allocated(udir_omp)) allocate(udir_omp(3,npole))
+      if(.not. allocated(udirp_omp)) allocate(udirp_omp(3,npole))
+      
+      if(.not. allocated(rsd_omp)) allocate(rsd_omp(3,npole))
+      if(.not. allocated(rsdp_omp)) allocate(rsdp_omp(3,npole))
+      if(.not. allocated(poli_omp)) allocate(poli_omp(npole))
 
+      if(.not. allocated(zrsd_omp)) allocate(zrsd_omp(3,npole))
+      if(.not. allocated(zrsdp_omp)) allocate(zrsdp_omp(3,npole))
+      if(.not. allocated(zrsdt_omp)) allocate(zrsdt_omp(3,npole))
+      if(.not. allocated(zrsdtp_omp)) allocate(zrsdtp_omp(3,npole))
+
+      if(.not. allocated(vec_omp)) allocate(vec_omp(3,npole))
+      if(.not. allocated(vecp_omp)) allocate(vecp_omp(3,npole))
+      
+      if(.not. allocated(conj_omp)) allocate(conj_omp(3,npole))
+      if(.not. allocated(conjp_omp)) allocate(conjp_omp(3,npole))
+
+      if(.not. allocated(fuind_omp)) allocate(fuind_omp(3,npole))
+      if(.not. allocated(fuinp_omp)) allocate(fuinp_omp(3,npole))
+      if(.not. allocated(fdip_phi1_omp)) 
+     &     allocate(fdip_phi1_omp(10,npole))
+      if(.not. allocated(fdip_phi2_omp)) 
+     &     allocate(fdip_phi2_omp(10,npole))
+      if(.not. allocated(fdip_sum_phi_omp))
+     &     allocate(fdip_sum_phi_omp(20,npole))
+      if(.not. allocated(dipfield1_omp)) 
+     &     allocate(dipfield1_omp(3,npole))
+      if(.not. allocated(dipfield2_omp))
+     &     allocate(dipfield2_omp(3,npole))
 
       if(.not. allocated(offset_omp)) allocate(offset_omp(0:nthread-1))
       
@@ -132,6 +166,21 @@ c      if(.not. allocated(uind_omp)) allocate(uinp_omp(3,npole))
          allocate (dep2(3,n))
       end if
 
+      if(.not. allocated(fmp_omp)) allocate(fmp_omp(10,npole))
+      if(.not. allocated(cmp_omp)) allocate(cmp_omp(10,npole))
+      if(.not. allocated(cphi_omp)) allocate(cphi_omp(10,npole))
+      if(.not. allocated(frc_omp)) allocate (frc_omp(3,n))
+      if(.not. allocated(trq_omp)) allocate (trq_omp(3,npole))
+      if(.not. allocated(fphi_omp)) allocate(fphi_omp(20,npole))
+      if(.not. allocated(update_omp)) allocate(update_omp(n))
+
+      if(.not. allocated(do_list)) allocate(do_list(nthread))
+
+      if(.not. allocated(xsort_omp)) then
+         allocate (xsort_omp(nvdw))
+         allocate (ysort_omp(nvdw))
+         allocate (zsort_omp(nvdw))
+      end if
 
 c
 c     zero out the virial and the intermolecular energy
@@ -163,7 +212,6 @@ c
 c      if (use_orbit) call picalc ! no omp - not used
         
 
-      if (use_list)  call nblist
 
 
 C$$$!$OMP parallel default(none) shared(n, deb, dea, deba, deub, deaa, 
@@ -182,6 +230,10 @@ C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum)
       
       th_id = 1
 !$      th_id = omp_get_thread_num() + 1
+
+      
+      if (use_list)  call nblist
+      
 
       do i=1,3
          do j=1,3
@@ -202,7 +254,7 @@ c     zero out each of the first derivative components
 c
 
       
-!$OMP DO schedule(guided)
+!$OMP DO schedule(static,128)
       do i = 1, n
          do j = 1, 3
             dev(j,i) = 0.0d0
@@ -212,12 +264,38 @@ c
             dem2(j,i) = 0.0d0
             dep1(j,i) = 0.0d0
             dep2(j,i) = 0.0d0
+            udir_omp(j,i) = 0.0d0
+            udirp_omp(j,i) = 0.0d0
+            rsd_omp(j,i) = 0.0d0
+            rsdp_omp(j,i) = 0.0d0
+            zrsd_omp(j,i) = 0.0d0
+            zrsdp_omp(j,i) = 0.0d0
+            zrsdt_omp(j,i) = 0.0d0
+            zrsdtp_omp(j,i) = 0.0d0
+            conj_omp(j,i) = 0.0d0
+            conjp_omp(j,i) = 0.0d0
+            vec_omp(j,i) = 0.0d0
+            vecp_omp(j,i) = 0.0d0
+            fuind_omp(j,i) = 0.0d0
+            fuinp_omp(j,i) = 0.0d0
+            dipfield1_omp(j,i) = 0.0d0
+            dipfield2_omp(j,i) = 0.0d0
+            frc_omp(j,i) = 0.0d0
+            trq_omp(j,i) = 0.0d0
          end do
          xred_th(i) = 0.0d0
          yred_th(i) = 0.0d0
          zred_th(i) = 0.0d0
 c         vscale_th(i) = 1.0d0
          iv14_th(i) = 0
+         poli_omp(i) = 0
+         do j=1,10
+            fdip_phi1_omp(j,i) = 0.0d0
+            fdip_phi2_omp(j,i) = 0.0d0
+            cmp_omp(j,i) = 0.0d0
+            fmp_omp(j,i) = 0.0d0
+            cphi_omp(j,i) = 0.0d0
+         end do
       end do
 !$OMP END DO
 
@@ -257,19 +335,12 @@ c
 
       call chkpole
       call rotpole
-      call induce
-      
-  
-!$OMP master
+      call induce ! not everything is parallel
+   
       call emrecip1
-    
-!$OMP end master
-!$OMP barrier
-!$OMP flush
-
 
       call ereal1d(eint)   
-     
+      call empole1d
 
 !$OMP END PARALLEL
 c
@@ -283,9 +354,9 @@ c      call induce
 c      call emrecip1
 c      call ereal1d(eint)
      
-      call empole1d
+c      call empole1d
 
-
+! the below are not used by bench7
 c      if (use_charge)  call echarge1
 c      if (use_chgdpl)  call echgdpl1
 c      if (use_dipole)  call edipole1
@@ -301,7 +372,7 @@ c      if (use_extra)  call extra1
 c
 c     sum up to get the total energy and first derivatives
 
-      einter = einter - eint !eintra_omp !eint
+      einter = einter + em + ep - eint !eintra_omp !eint
 
       esum = ea + eba + eub + eopb 
      &          + et  + ett + ev + ept

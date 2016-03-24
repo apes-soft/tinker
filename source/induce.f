@@ -1,5 +1,6 @@
 c
 c
+c
 c     #############################################################
 c     ##  COPYRIGHT (C) 1999 by Pengyu Ren & Jay William Ponder  ##
 c     ##                   All Rights Reserved                   ##
@@ -184,6 +185,7 @@ c
       use potent
       use units
       use uprior
+      use openmp
       implicit none
       integer i,j,k,iter
       integer maxiter
@@ -191,68 +193,48 @@ c
       real*8 eps,epsold
       real*8 epsd,epsp
       real*8 udsum,upsum
-      real*8 a,ap,b,bp
-      real*8 sum,sump
-      real*8, allocatable :: poli(:)
-      real*8, allocatable :: field(:,:)
-      real*8, allocatable :: fieldp(:,:)
-      real*8, allocatable :: udir(:,:)
-      real*8, allocatable :: udirp(:,:)
-      real*8, allocatable :: rsd(:,:)
-      real*8, allocatable :: rsdp(:,:)
-      real*8, allocatable :: zrsd(:,:)
-      real*8, allocatable :: zrsdp(:,:)
-      real*8, allocatable :: conj(:,:)
-      real*8, allocatable :: conjp(:,:)
-      real*8, allocatable :: vec(:,:)
-      real*8, allocatable :: vecp(:,:)
       logical done
       character*6 mode
+
 c
 c
 c     zero out the induced dipoles at each site
 c
-      do i = 1, npole
-         do j = 1, 3
-            uind(j,i) = 0.0d0
-            uinp(j,i) = 0.0d0
-         end do
-      end do
+c      do i = 1, npole
+c         do j = 1, 3
+c            uind(j,i) = 0.0d0
+c            uinp(j,i) = 0.0d0
+c         end do
+c      end do
       if (.not. use_polar)  return
-c
-c     perform dynamic allocation of some local arrays
-c
-      allocate (field(3,npole))
-      allocate (fieldp(3,npole))
-      allocate (udir(3,npole))
-      allocate (udirp(3,npole))
+
 c
 c     get the electrostatic field due to permanent multipoles
 c
 
       if (use_ewald) then
-         call dfield0c (field,fieldp)
+         call dfield0c !(field,fieldp)
       else if (use_mlist) then
-         call dfield0b (field,fieldp)
+c         call dfield0b (field,fieldp)
       else
-         call dfield0a (field,fieldp)
+c         call dfield0a (field,fieldp)
       end if
 
 c
 c     set induced dipoles to polarizability times direct field
 c
-!$OMP master
+
+!$OMP DO schedule(static,128)
       do i = 1, npole
          do j = 1, 3
-            udir(j,i) = polarity(i) * field(j,i)
-            udirp(j,i) = polarity(i) * fieldp(j,i)
-            uind(j,i) = udir(j,i)
-            uinp(j,i) = udirp(j,i)
+            udir_omp(j,i) = polarity(i) * field_omp(j,i)
+            udirp_omp(j,i) = polarity(i) * fieldp_omp(j,i)
+            uind(j,i) = udir_omp(j,i)
+            uinp(j,i) = udirp_omp(j,i)
          end do
       end do
-!$OMP end master
-!$OMP barrier
-!$OMP flush
+!$OMP END DO 
+
 c
 c     set tolerances for computation of mutual induced dipoles
 c
@@ -268,157 +250,207 @@ c
 c     estimated induced dipoles from polynomial predictor
 c
 
-         if (use_pred .and. nualt.eq.maxualt) then
-!$OMP master
-            call ulspred
-            do i = 1, npole
-               do j = 1, 3
-                  udsum = 0.0d0
-                  upsum = 0.0d0
-                  do k = 1, nualt-1
-                     udsum = udsum + bpred(k)*udalt(k,j,i)
-                     upsum = upsum + bpredp(k)*upalt(k,j,i)
-                  end do
-                  uind(j,i) = udsum
-                  uinp(j,i) = upsum
-               end do
-            end do
-!$OMP end master
-!$OMP barrier
-         end if
-c
-c     perform dynamic allocation of some local arrays
-c
-         allocate (poli(npole))
-         allocate (rsd(3,npole))
-         allocate (rsdp(3,npole))
-         allocate (zrsd(3,npole))
-         allocate (zrsdp(3,npole))
-         allocate (conj(3,npole))
-         allocate (conjp(3,npole))
-         allocate (vec(3,npole))
-         allocate (vecp(3,npole))
+! the below is not used
+
+C$$$         if (use_pred .and. nualt.eq.maxualt) then
+C$$$!$OMP master
+C$$$c            print*, "from master" 
+C$$$            call ulspred
+C$$$            do i = 1, npole
+C$$$               do j = 1, 3
+C$$$                  udsum = 0.0d0
+C$$$                  upsum = 0.0d0
+C$$$                  do k = 1, nualt-1
+C$$$                     udsum = udsum + bpred(k)*udalt(k,j,i)
+C$$$                     upsum = upsum + bpredp(k)*upalt(k,j,i)
+C$$$                  end do
+C$$$c                  uind(j,i) = udsum
+C$$$c                  uinp(j,i) = upsum
+C$$$                  uind(j,i) = udsum
+C$$$                  uinp(j,i) = upsum
+C$$$               end do
+C$$$            end do
+C$$$!$OMP end master
+C$$$!$OMP barrier
+C$$$         end if
+
+
 c
 c     get the electrostatic field due to induced dipoles
 c
          if (use_ewald) then
-            call ufield0c1 (field,fieldp)
+            call ufield0c1 ! (field,fieldp)
          else if (use_mlist) then
-            call ufield0b (field,fieldp)
+c            call ufield0b (field,fieldp)
          else
-            call ufield0a (field,fieldp)
+c            call ufield0a (field,fieldp)
          end if
-!$OMP master
+
 c
 c     set initial conjugate gradient residual and conjugate vector
 c
+
+!$OMP DO schedule(guided)
          do i = 1, npole
-            poli(i) = max(polmin,polarity(i))
+            poli_omp(i) = max(polmin,polarity(i))
             do j = 1, 3
-               rsd(j,i) = (udir(j,i)-uind(j,i))/poli(i)
-     &                       + field(j,i)
-               rsdp(j,i) = (udirp(j,i)-uinp(j,i))/poli(i)
-     &                       + fieldp(j,i)
+               rsd_omp(j,i) = (udir_omp(j,i)-uind(j,i))/poli_omp(i)
+     &                       + field_omp(j,i)
+               rsdp_omp(j,i) =(udirp_omp(j,i)-uinp(j,i))/poli_omp(i)
+     &                       + fieldp_omp(j,i)
             end do
          end do
+!$OMP end do
+        
          mode = 'BUILD'
-ccc!$OMP master
+
          if (use_mlist) then
-            call uscale0b (mode,rsd,rsdp,zrsd,zrsdp)
+            call uscale0b1 (mode)!,rsd,rsdp,zrsd,zrsdp)
             mode = 'APPLY'
-            call uscale0b (mode,rsd,rsdp,zrsd,zrsdp)
+            call uscale0b1 (mode)!,rsd,rsdp,zrsd,zrsdp)
          else
-            call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
-            mode = 'APPLY'
-            call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
+c            call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
+c            mode = 'APPLY'
+c            call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
          end if
-ccc!$OMP end master
-ccc!$OMP barrier
-ccc!$OMP flush
+
+
+!$OMP DO schedule(guided)
          do i = 1, npole
             do j = 1, 3
-               conj(j,i) = zrsd(j,i)
-               conjp(j,i) = zrsdp(j,i)
+               conj_omp(j,i) = zrsd_omp(j,i)
+               conjp_omp(j,i) = zrsdp_omp(j,i)
             end do
          end do
+!$OMP end DO
+
+         done_omp = .false.
+
 c
 c     conjugate gradient iteration of the mutual induced dipoles
 c
-ccc!$OMP master
-         do while (.not. done)
+
+         do while (.not. done_omp)
+!$OMP single
             iter = iter + 1
+!$OMP end single nowait
+
+!$OMP DO schedule(static,128)
             do i = 1, npole
                do j = 1, 3
-                  vec(j,i) = uind(j,i)
-                  vecp(j,i) = uinp(j,i)
-                  uind(j,i) = conj(j,i)
-                  uinp(j,i) = conjp(j,i)
+                  vec_omp(j,i) = uind(j,i)
+                  vecp_omp(j,i) = uinp(j,i)  
+                  uind(j,i) = conj_omp(j,i)
+                  uinp(j,i) = conjp_omp(j,i)
                end do
             end do
+!$OMP end do
+            
             if (use_ewald) then
-               call ufield0c (field,fieldp)
+               call ufield0c1 !(field,fieldp)
             else if (use_mlist) then
-               call ufield0b (field,fieldp)
+c               call ufield0b (field,fieldp)
             else
-               call ufield0a (field,fieldp)
-            end if
-            do i = 1, npole
-               do j = 1, 3
-                  uind(j,i) = vec(j,i)
-                  uinp(j,i) = vecp(j,i)
-                  vec(j,i) = conj(j,i)/poli(i) - field(j,i)
-                  vecp(j,i) = conjp(j,i)/poli(i) - fieldp(j,i)
-               end do
-            end do
-            a = 0.0d0
-            ap = 0.0d0
-            sum = 0.0d0
-            sump = 0.0d0
-            do i = 1, npole
-               do j = 1, 3
-                  a = a + conj(j,i)*vec(j,i)
-                  ap = ap + conjp(j,i)*vecp(j,i)
-                  sum = sum + rsd(j,i)*zrsd(j,i)
-                  sump = sump + rsdp(j,i)*zrsdp(j,i)
-               end do
-            end do
-            if (a .ne. 0.0d0)  a = sum / a
-            if (ap .ne. 0.0d0)  ap = sump / ap
-            do i = 1, npole
-               do j = 1, 3
-                  uind(j,i) = uind(j,i) + a*conj(j,i)
-                  uinp(j,i) = uinp(j,i) + ap*conjp(j,i)
-                  rsd(j,i) = rsd(j,i) - a*vec(j,i)
-                  rsdp(j,i) = rsdp(j,i) - ap*vecp(j,i)
-               end do
-            end do
-ccc!$OMP master
-            if (use_mlist) then
-               call uscale0b (mode,rsd,rsdp,zrsd,zrsdp)
-            else
-               call uscale0a (mode,rsd,rsdp,zrsd,zrsdp)
+c               call ufield0a (field,fieldp)
             end if
 
-            b = 0.0d0
-            bp = 0.0d0
+            a_omp= 0.0d0
+            ap_omp= 0.0d0
+            sum_omp = 0.0d0
+            sump_omp = 0.0d0
+
+!$OMP DO schedule(static,128) reduction(+:a_omp,ap_omp,sum_omp,sump_omp)
             do i = 1, npole
                do j = 1, 3
-                  b = b + rsd(j,i)*zrsd(j,i)
-                  bp = bp + rsdp(j,i)*zrsdp(j,i)
+                  uind(j,i) = vec_omp(j,i)
+                  uinp(j,i) = vecp_omp(j,i)
+                  vec_omp(j,i) = conj_omp(j,i)/poli_omp(i) 
+     &                 - field_omp(j,i)
+                  vecp_omp(j,i)=conjp_omp(j,i)/poli_omp(i) 
+     &                 - fieldp_omp(j,i)
+
+                  a_omp= a_omp+ conj_omp(j,i)*vec_omp(j,i)
+                  ap_omp= ap_omp+ conjp_omp(j,i)*vecp_omp(j,i)
+                  sum_omp = sum_omp + rsd_omp(j,i)*zrsd_omp(j,i)
+                  sump_omp = sump_omp + rsdp_omp(j,i)*zrsdp_omp(j,i)
                end do
             end do
-            if (sum .ne. 0.0d0)  b = b / sum
-            if (sump .ne. 0.0d0)  bp = bp / sump
-            epsd = 0.0d0
-            epsp = 0.0d0
+!$OMP end do
+
+
+
+C$$$!$OMP DO schedule(static,128) reduction(+:a_omp,ap_omp,sum_omp,sump_omp)
+C$$$            do i = 1, npole
+C$$$               do j = 1, 3
+C$$$                  a_omp= a_omp+ conj_omp(j,i)*vec_omp(j,i)
+C$$$                  ap_omp= ap_omp+ conjp_omp(j,i)*vecp_omp(j,i)
+C$$$                  sum_omp = sum_omp + rsd_omp(j,i)*zrsd_omp(j,i)
+C$$$                  sump_omp = sump_omp + rsdp_omp(j,i)*zrsdp_omp(j,i)
+C$$$               end do
+C$$$            end do
+C$$$!$OMP end DO
+
+!$OMP single
+
+            if (a_omp.ne. 0.0d0)  a_omp= sum_omp / a_omp
+            if (ap_omp.ne. 0.0d0)  ap_omp= sump_omp / ap_omp
+!$OMP end single 
+!$OMP barrier
+
+!$OMP DO schedule(static,128)
             do i = 1, npole
                do j = 1, 3
-                  conj(j,i) = zrsd(j,i) + b*conj(j,i)
-                  conjp(j,i) = zrsdp(j,i) + bp*conjp(j,i)
-                  epsd = epsd + rsd(j,i)*rsd(j,i)
-                  epsp = epsp + rsdp(j,i)*rsdp(j,i)
+                  uind(j,i) = uind(j,i) + a_omp*conj_omp(j,i)
+                  uinp(j,i) = uinp(j,i) + ap_omp*conjp_omp(j,i)
+                  rsd_omp(j,i) = rsd_omp(j,i) - a_omp*vec_omp(j,i)
+                  rsdp_omp(j,i) = rsdp_omp(j,i) - ap_omp*vecp_omp(j,i)
                end do
             end do
+!$OMP end do
+
+            if (use_mlist) then
+               call uscale0b1(mode)!,rsd,rsdp,zrsd,zrsdp)
+            else
+               call uscale0a (mode)!,rsd,rsdp,zrsd,zrsdp)
+            end if
+
+            b_omp = 0.0d0
+            bp_omp = 0.0d0
+
+!$OMP DO schedule(static,128) reduction(+:b_omp,bp_omp)
+            do i = 1, npole
+               do j = 1, 3
+                  b_omp = b_omp + rsd_omp(j,i)*zrsd_omp(j,i)
+                  bp_omp = bp_omp + rsdp_omp(j,i)*zrsdp_omp(j,i)
+               end do
+            end do
+!$OMP end DO
+
+
+!$OMP single
+
+            if (sum_omp .ne. 0.0d0)  b_omp = b_omp / sum_omp
+            if (sump_omp .ne. 0.0d0)  bp_omp = bp_omp / sump_omp
+!$OMP end single
+!$OMP barrier
+
+            epsd_omp = 0.0d0
+            epsp_omp = 0.0d0
+
+!$OMP DO schedule(static,128) reduction(+:epsd_omp,epsp_omp)
+            do i = 1, npole
+               do j = 1, 3
+                  conj_omp(j,i) = zrsd_omp(j,i) + b_omp*conj_omp(j,i)
+                  conjp_omp(j,i) = zrsdp_omp(j,i) +bp_omp*conjp_omp(j,i)
+                  epsd_omp = epsd_omp + rsd_omp(j,i)*rsd_omp(j,i)
+                  epsp_omp = epsp_omp + rsdp_omp(j,i)*rsdp_omp(j,i)
+               end do
+            end do
+!$OMP end do
+
+!$OMP master
+            epsd = epsd_omp
+            epsp = epsp_omp
 c
 c     check the convergence of the mutual induced dipoles
 c
@@ -434,36 +466,31 @@ c
                end if
                write (iout,20)  iter,eps
    20          format (i8,7x,f16.10)
-            end if
+            end if 
+
             if (eps .lt. poleps)  done = .true.
             if (eps .gt. epsold)  done = .true.
             if (iter .ge. politer)  done = .true.
+            done_omp = done
+!$OMP end master
+!$OMP barrier
+
          end do
 
 c
-c     perform deallocation of some local arrays
-c
-         deallocate (poli)
-         deallocate (rsd)
-         deallocate (rsdp)
-         deallocate (zrsd)
-         deallocate (zrsdp)
-         deallocate (conj)
-         deallocate (conjp)
-         deallocate (vec)
-         deallocate (vecp)
-c
 c     print the results from the conjugate gradient iteration
 c
+!$OMP single
          if (debug) then
             write (iout,30)  iter,eps
    30       format (/,' Induced Dipoles :',6x,'Iterations',i5,
      &                 6x,'RMS Change',f15.10)
          end if
+!$OMP end single
 c
 c     terminate the calculation if dipoles failed to converge
 c
-ccc!$OMP master
+!$OMP master
          if (iter.ge.maxiter .or. eps.gt.epsold) then
             write (iout,40)
    40       format (/,' INDUCE  --  Warning, Induced Dipoles',
@@ -471,21 +498,9 @@ ccc!$OMP master
             call prterr
             call fatal
          end if
-ccc!$OMP end master
-
 !$OMP end master
-!$OMP barrier
-!$OMP flush
       end if
 
-
-c
-c     perform deallocation of some local arrays
-c
-      deallocate (field)
-      deallocate (fieldp)
-      deallocate (udir)
-      deallocate (udirp)
       return
       end
 c
@@ -1446,7 +1461,7 @@ c     "dfield0c" computes the mutual electrostatic field due to
 c     permanent multipole moments via Ewald summation
 c
 c
-      subroutine dfield0c (field,fieldp)
+      subroutine dfield0c !(field,fieldp)
       use sizes
       use atoms
       use boxes
@@ -1460,61 +1475,51 @@ c
       integer i,j,ii
       real*8 term
       real*8 ucell(3)
-      real*8 field(3,*)
-      real*8 fieldp(3,*)
-c
-c
-c     zero out the value of the field at each site
-c
-      do i = 1, npole
-         do j = 1, 3
-            field(j,i) = 0.0d0
-            fieldp(j,i) = 0.0d0
-         end do
-      end do
+
 c
 c     get the reciprocal space part of the electrostatic field
 c
-!$OMP master
-      call udirect1 (field)
-      do i = 1, npole
-         do j = 1, 3
-            fieldp(j,i) = field(j,i)
-         end do
-      end do
-!$OMP end master
-!$OMP barrier
-!$OMP flush
+      call udirect1 !(field)
+
 c
 c     get the real space portion of the electrostatic field
 c
-
       if (use_mlist) then
-         call udirect2b (field,fieldp)
+         call udirect2b !(field,fieldp)
       else
-         call udirect2a (field,fieldp)
+c         call udirect2a (field,fieldp)
       end if
 
-!$OMP master
 c
 c     get the self-energy portion of the electrostatic field
 c
+
       term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
+!$OMP DO schedule(static,128)
       do i = 1, npole
-         do j = 1, 3
-            field(j,i) = field(j,i) + term*rpole(j+1,i)
-     &           + fieldt_omp(j,i)
-            fieldp(j,i) = fieldp(j,i) + term*rpole(j+1,i)
-     &           + fieldtp_omp(j,i)
-         end do
+c         do j = 1, 3
+            fieldp_omp(1,i) = field_omp(1,i) + term*rpole(2,i)
+     &           + fieldtp_omp(1,i)
+            field_omp(1,i) = field_omp(1,i) + term*rpole(2,i)
+     &           + fieldt_omp(1,i)
+            fieldp_omp(2,i) = field_omp(2,i) + term*rpole(3,i)
+     &           + fieldtp_omp(2,i)
+            field_omp(2,i) = field_omp(2,i) + term*rpole(3,i)
+     &           + fieldt_omp(2,i)
+            fieldp_omp(3,i) = field_omp(3,i) + term*rpole(4,i)
+     &           + fieldtp_omp(3,i)
+            field_omp(3,i) = field_omp(3,i) + term*rpole(4,i)
+     &           + fieldt_omp(3,i)
+
+c         end do
       end do
-!$OMP end master
-!$OMP barrier
-!$OMP flush
+!$OMP end do
+
 c
 c     compute the cell dipole boundary correction to field
 c
       if (boundary .eq. 'VACUUM') then
+!$OMP master
          do i = 1, 3
             ucell(i) = 0.0d0
          end do
@@ -1527,10 +1532,11 @@ c
          term = (4.0d0/3.0d0) * pi/volbox
          do i = 1, npole
             do j = 1, 3
-               field(j,i) = field(j,i) - term*ucell(j)
-               fieldp(j,i) = fieldp(j,i) - term*ucell(j)
+               field_omp(j,i) = field_omp(j,i) - term*ucell(j)
+               fieldp_omp(j,i) = fieldp_omp(j,i) - term*ucell(j)
             end do
          end do
+!$OMP end master
       end if
       return
       end
@@ -1580,7 +1586,6 @@ c
 c
 c     get the real space portion of the electrostatic field
 c
-cc!$OMP master
       if (use_mlist) then
          call umutual2b (field,fieldp)
       else
@@ -1596,9 +1601,6 @@ c
             fieldp(j,i) = fieldp(j,i) + term*uinp(j,i)
          end do
       end do
-cc!$OMP end master 
-cc!$OMP barrier
-cc!$OMP flush
 c
 c     compute the cell dipole boundary correction to the field
 c
@@ -1637,7 +1639,7 @@ c     "ufield0c" computes the mutual electrostatic field due to
 c     induced dipole moments via Ewald summation
 c
 c
-      subroutine ufield0c1 (field,fieldp)
+      subroutine ufield0c1 !(field,fieldp)
       use sizes
       use atoms
       use boxes
@@ -1652,51 +1654,47 @@ c
       real*8 term
       real*8 ucell(3)
       real*8 ucellp(3)
-      real*8 field(3,*)
-      real*8 fieldp(3,*)
-c
+
 c
 c     zero out the electrostatic field at each site
 c
+!$OMP DO collapse(2)
       do i = 1, npole
          do j = 1, 3
-            field(j,i) = 0.0d0
-            fieldp(j,i) = 0.0d0
+            field_omp(j,i) = 0.0d0
+            fieldp_omp(j,i) = 0.0d0
          end do
       end do
+!$OMP end DO 
+
 c
 c     get the reciprocal space part of the electrostatic field
 c
-!$OMP master
-      call umutual1 (field,fieldp)
+      call umutual11 !(field,fieldp)
 c
 c     get the real space portion of the electrostatic field
 c
-!$OMP end master
-!$OMP barrier
-!$OMP flush
       if (use_mlist) then
          call umutual2b1 
-c(field,fieldp)
       else
-         call umutual2a (field,fieldp)
+c         call umutual2a (field,fieldp)
       end if
 
-!$OMP master
 c
 c     get the self-energy portion of the electrostatic field
 c
       term = (4.0d0/3.0d0) * aewald**3 / sqrtpi
+!$OMP DO schedule(static,128)
       do i = 1, npole
          do j = 1, 3
-            field(j,i) = field(j,i) + term*uind(j,i) + fieldt_omp(j,i)
-            fieldp(j,i) = fieldp(j,i) + term*uinp(j,i)+ fieldtp_omp(j,i)
+            field_omp(j,i) = field_omp(j,i) + term*uind(j,i) + 
+     &           fieldt_omp(j,i)
+            fieldp_omp(j,i) = fieldp_omp(j,i) + term*uinp(j,i)+ 
+     &           fieldtp_omp(j,i)
          end do
       end do
+!$OMP end DO
 
-!$OMP end master 
-!$OMP barrier
-!$OMP flush
 c
 c     compute the cell dipole boundary correction to the field
 c
@@ -1715,8 +1713,8 @@ c
          term = (4.0d0/3.0d0) * pi/volbox
          do i = 1, npole
             do j = 1, 3
-               field(j,i) = field(j,i) - term*ucell(j)
-               fieldp(j,i) = fieldp(j,i) - term*ucellp(j)
+               field_omp(j,i) = field_omp(j,i) - term*ucell(j)
+               fieldp_omp(j,i) = fieldp_omp(j,i) - term*ucellp(j)
             end do
          end do
 !$OMP end master
@@ -1738,7 +1736,7 @@ c     "udirect1" computes the reciprocal space contribution of the
 c     permanent atomic multipole moments to the field
 c
 c
-      subroutine udirect1 (field)
+      subroutine udirect1
       use sizes
       use bound
       use boxes
@@ -1746,6 +1744,7 @@ c
       use math
       use mpole
       use pme
+      use openmp
       implicit none
       integer i,j,k,ntot
       integer k1,k2,k3
@@ -1756,51 +1755,52 @@ c
       real*8 volterm,denom
       real*8 hsq,expterm
       real*8 term,pterm
-      real*8 field(3,*)
-      real*8, allocatable :: cmp(:,:)
-      real*8, allocatable :: fmp(:,:)
-      real*8, allocatable :: cphi(:,:)
-      real*8, allocatable :: fphi(:,:)
-c
+
 c
 c     return if the Ewald coefficient is zero
 c
       if (aewald .lt. 1.0d-6)  return
-c
-c     perform dynamic allocation of some local arrays
-c
-      allocate (cmp(10,npole))
-      allocate (fmp(10,npole))
-      allocate (cphi(10,npole))
-      allocate (fphi(20,npole))
+
 c
 c     copy multipole moments and coordinates to local storage
 c
+
+!$OMP DO schedule(static,128)
       do i = 1, npole
-         cmp(1,i) = rpole(1,i)
-         cmp(2,i) = rpole(2,i)
-         cmp(3,i) = rpole(3,i)
-         cmp(4,i) = rpole(4,i)
-         cmp(5,i) = rpole(5,i)
-         cmp(6,i) = rpole(9,i)
-         cmp(7,i) = rpole(13,i)
-         cmp(8,i) = 2.0d0 * rpole(6,i)
-         cmp(9,i) = 2.0d0 * rpole(7,i)
-         cmp(10,i) = 2.0d0 * rpole(10,i)
+         cmp_omp(1,i) = rpole(1,i)
+         cmp_omp(2,i) = rpole(2,i)
+         cmp_omp(3,i) = rpole(3,i)
+         cmp_omp(4,i) = rpole(4,i)
+         cmp_omp(5,i) = rpole(5,i)
+         cmp_omp(6,i) = rpole(9,i)
+         cmp_omp(7,i) = rpole(13,i)
+         cmp_omp(8,i) = 2.0d0 * rpole(6,i)
+         cmp_omp(9,i) = 2.0d0 * rpole(7,i)
+         cmp_omp(10,i) = 2.0d0 * rpole(10,i)
       end do
+!$OMP end DO 
 c
 c     compute B-spline coefficients and spatial decomposition
 c
+!$OMP master
       call bspline_fill
       call table_fill
+!$OMP end master
+!$OMP barrier
+
 c
 c     convert Cartesian multipoles to fractional coordinates
 c
-      call cmp_to_fmp (cmp,fmp)
+      call cmp_to_fmp1 
+
 c
 c     assign PME grid and perform 3-D FFT forward transform
 c
-      call grid_mpole (fmp)
+
+      call grid_mpole1 
+
+!$OMP master
+
       call fftfront
 c
 c     make the scalar summation over reciprocal lattice
@@ -1868,26 +1868,27 @@ c
 c     perform 3-D FFT backward transform and get field
 c
       call fftback
-      call fphi_mpole (fphi)
+     
+!$OMP end master
+!$OMP barrier
+
+      call fphi_mpole1
+      
 c
 c     convert the field from fractional to Cartesian
 c
-      call fphi_to_cphi (fphi,cphi)
+      call fphi_to_cphi1 
+
 c
 c     increment the field at each multipole site
 c
+!$OMP DO schedule(static,128)
       do i = 1, npole
-         field(1,i) = field(1,i) - cphi(2,i)
-         field(2,i) = field(2,i) - cphi(3,i)
-         field(3,i) = field(3,i) - cphi(4,i)
+         field_omp(1,i) = field_omp(1,i) - cphi_omp(2,i)
+         field_omp(2,i) = field_omp(2,i) - cphi_omp(3,i)
+         field_omp(3,i) = field_omp(3,i) - cphi_omp(4,i)
       end do
-c
-c     perform deallocation of some local arrays
-c
-      deallocate (cmp)
-      deallocate (fmp)
-      deallocate (cphi)
-      deallocate (fphi)
+!$OMP end DO 
       return
       end
 c
@@ -2373,7 +2374,7 @@ c     "udirect2b" computes the real space contribution of the permanent
 c     atomic multipole moments to the field via a neighbor list
 c
 c
-      subroutine udirect2b (field,fieldp)
+      subroutine udirect2b 
       use sizes
       use atoms
       use boxes
@@ -2394,11 +2395,10 @@ c
       implicit none
       integer i,j,k,m
       integer ii,kk,kkk
-      integer maxlocal !,nlocal
-      integer tid!,toffset0
+      integer maxlocal 
+      integer tid
 !$    integer omp_get_thread_num
       integer, allocatable :: toffset(:)
-c      integer, allocatable :: ilocal(:,:)
       real*8 xr,yr,zr,r,r2
       real*8 rr1,rr2,rr3
       real*8 rr5,rr7
@@ -2421,14 +2421,11 @@ c      integer, allocatable :: ilocal(:,:)
       real*8 bn(0:3),bcn(3)
       real*8 fimd(3),fkmd(3)
       real*8 fimp(3),fkmp(3)
-      real*8, allocatable :: pscale(:)
-      real*8, allocatable :: dscale(:)
-      real*8, allocatable :: uscale(:)
-      real*8 field(3,*)
-      real*8 fieldp(3,*)
-      real*8, allocatable :: fieldt(:,:)
-      real*8, allocatable :: fieldtp(:,:)
-c      real*8, allocatable :: dlocal(:,:)
+c      real*8, allocatable :: pscale(:)
+c      real*8, allocatable :: dscale(:)
+c      real*8, allocatable :: uscale(:)
+c      real*8, allocatable :: fieldt(:,:)
+c      real*8, allocatable :: fieldtp(:,:)
       character*6 mode
       external erfc
       integer tmp_nthread
@@ -2445,17 +2442,8 @@ c
       nlocal = 0
       toffset0 = 0
       tmp_nthread = nthread
-c      nthread=1
       maxlocal = int(dble(npole)*dble(maxelst)/dble(nthread))
-c
-c     perform dynamic allocation of some local arrays
-c
-c      allocate (toffset(0:nthread-1))
-c      allocate (pscale(n))
-c      allocate (dscale(n))
-c      allocate (uscale(n))
-c      allocate (fieldt(3,npole))
-c      allocate (fieldtp(3,npole))
+
 c
 c     set arrays needed to scale connected atom interactions
 c
@@ -2464,28 +2452,7 @@ c
          dscale_omp(i) = 1.0d0
          uscale_omp(i) = 1.0d0
       end do
-c
-c     set OpenMP directives for the major loop structure
-c
-C$$$!$OMP PARALLEL default(none) shared(n,npole,ipole,x,y,z,pdamp,thole,
-C$$$!$OMP& rpole,p2scale,p3scale,p4scale,p41scale,p5scale,d1scale,d2scale,
-C$$$!$OMP& d3scale,d4scale,u1scale,u2scale,u3scale,u4scale,n12,i12,n13,i13,
-C$$$!$OMP& n14,i14,n15,i15,np11,ip11,np12,ip12,np13,ip13,np14,ip14,nelst,
-C$$$!$OMP& elst,cut2,aewald,aesq2,aesq2n,poltyp,ntpair,tindex,tdipdip,
-C$$$!$OMP& toffset,toffset0,field,fieldp,fieldt,fieldtp,maxlocal)
-C$$$!$OMP& firstprivate(pscale,dscale,uscale,nlocal)
-C$$$!$OMP& private(ilocal,dlocal,ii,pdi,pti,ci,dix,diy,diz,qixx,qixy,
-C$$$!$OMP& qixz,qiyy,qiyz,qizz,kk,xr,yr,zr,r2,r,rr1,rr2,rr3,rr5,rr7,ck,dkx,
-C$$$!$OMP& dky,dkz,qkxx,qkxy,qkxz,qkyy,qkyz,qkzz,ralpha,bn,exp2a,aefac,bfac,
-C$$$!$OMP& scale3,scale5,scale7,damp,pgamma,expdamp,dir,qix,qiy,qiz,dkr,qkx,
-C$$$!$OMP& qky,qkz,qkr,bcn,fimd,fkmd,qir,fimp,fkmp,tid,m)
-c
-c     perform dynamic allocation of some local arrays
-c
-C$$$      if (poltyp .eq. 'MUTUAL') then
-C$$$         allocate (ilocal(2,maxlocal))
-C$$$         allocate (dlocal(6,maxlocal))
-C$$$      end if
+
 c
 c     initialize local variables for OpenMP calculation
 c
@@ -2717,14 +2684,6 @@ c
 c     transfer the results from local to global arrays
 c
 
-C$$$!$OMP DO collapse(2) schedule(guided)
-C$$$      do i = 1, npole
-C$$$         do j = 1, 3
-C$$$            field(j,i) = fieldt_omp(j,i) + field(j,i)
-C$$$            fieldp(j,i) = fieldtp_omp(j,i) + fieldp(j,i)
-C$$$         end do
-C$$$      end do
-C$$$!$OMP END DO
 c
 c     store terms needed later to compute mutual polarization
 c
@@ -2747,27 +2706,139 @@ c
                tdipdip(j,m) = dlocal_omp(th_id,j,i)
             end do
          end do
-c         deallocate (ilocal)
-c         deallocate (dlocal)
       end if
-c!$OMP end master
-c!$OMP barrier
-c!$OMP flush
-
-c!$OMP END PARALLEL
-c
-c     perform deallocation of some local arrays
-c
       nthread = tmp_nthread
-c      deallocate (toffset)
-c      deallocate (pscale)
-c      deallocate (dscale)
-c      deallocate (uscale)
-c      deallocate (fieldt)
-c      deallocate (fieldtp)
       return
       end
 c
+
+c     #################################################################
+c     ##                                                             ##
+c     ##  subroutine umutual11  --  Ewald recip mutual induced field  ##
+c     ##                                                             ##
+c     #################################################################
+c
+c
+c     "umutual11" computes the reciprocal space contribution of the
+c     induced atomic dipole moments to the field
+c
+c
+      subroutine umutual11
+      use sizes
+      use boxes
+      use ewald
+      use math
+      use mpole
+      use pme
+      use polar
+      use openmp
+      implicit none
+      integer i,j,k
+      real*8 term
+      real*8 a(3,3)
+
+c
+c     return if the Ewald coefficient is zero
+c
+      if (aewald .lt. 1.0d-6)  return
+c
+c     convert Cartesian dipoles to fractional coordinates
+c
+
+      do i = 1, 3
+         a(1,i) = dble(nfft1) * recip(i,1)
+         a(2,i) = dble(nfft2) * recip(i,2)
+         a(3,i) = dble(nfft3) * recip(i,3)
+      end do
+
+!$OMP DO schedule(static,128)
+      do i = 1, npole
+         do k = 1, 3
+            fuind_omp(k,i) = a(k,1)*uind(1,i) + a(k,2)*uind(2,i)
+     &                      + a(k,3)*uind(3,i)
+            fuinp_omp(k,i) = a(k,1)*uinp(1,i) + a(k,2)*uinp(2,i)
+     &                      + a(k,3)*uinp(3,i)
+         end do
+      end do
+!$OMP end DO 
+c
+c     assign PME grid and perform 3-D FFT forward transform
+c
+      call grid_uind1 
+
+!$OMP single 
+      call fftfront
+!$OMP end single
+!$OMP barrier
+
+c
+c     complete the transformation of the PME grid
+c
+!$OMP DO collapse(3)
+      do k = 1, nfft3
+         do j = 1, nfft2
+            do i = 1, nfft1
+               term = qfac(i,j,k)
+               qgrid(1,i,j,k) = term * qgrid(1,i,j,k)
+               qgrid(2,i,j,k) = term * qgrid(2,i,j,k)
+            end do
+         end do
+      end do
+!$OMP end DO
+
+c
+c     perform 3-D FFT backward transform and get field
+c
+!$OMP single
+      call fftback
+!$OMP end single
+!$OMP barrier
+
+      call fphi_uind1 
+
+c
+c     convert the dipole fields from fractional to Cartesian
+c
+      do i = 1, 3
+         a(i,1) = dble(nfft1) * recip(i,1)
+         a(i,2) = dble(nfft2) * recip(i,2)
+         a(i,3) = dble(nfft3) * recip(i,3)
+      end do
+
+!$OMP DO schedule(static,128)
+      do i = 1, npole
+         do k = 1, 3
+            dipfield1_omp(k,i) = a(k,1)*fdip_phi1_omp(2,i)
+     &                          + a(k,2)*fdip_phi1_omp(3,i)
+     &                          + a(k,3)*fdip_phi1_omp(4,i)
+            dipfield2_omp(k,i) = a(k,1)*fdip_phi2_omp(2,i)
+     &                          + a(k,2)*fdip_phi2_omp(3,i)
+     &                          + a(k,3)*fdip_phi2_omp(4,i)
+
+            field_omp(k,i) = field_omp(k,i) - dipfield1_omp(k,i)
+            fieldp_omp(k,i) = fieldp_omp(k,i) - dipfield2_omp(k,i)
+
+         end do
+      end do
+!$OMP end DO
+c
+c     increment the field at each multipole site
+c
+
+C$$$!$OMP DO schedule(static,128)      
+C$$$      do i = 1, npole
+C$$$         do k = 1, 3
+C$$$            field_omp(k,i) = field_omp(k,i) - dipfield1_omp(k,i)
+C$$$            fieldp_omp(k,i) = fieldp_omp(k,i) - dipfield2_omp(k,i)
+C$$$         end do
+C$$$      end do
+C$$$!$OMP end DO
+
+      return
+      end
+
+
+
 c
 c     #################################################################
 c     ##                                                             ##
@@ -3235,12 +3306,11 @@ c     ##                                                              ##
 c     ##################################################################
 c
 c
-c     "umutual2b" computes the real space contribution of the induced
+c     "umutual2b1" computes the real space contribution of the induced
 c     atomic dipole moments to the field via a neighbor list
 c
 c
       subroutine umutual2b1 
-c(field,fieldp)
       use sizes
       use mpole
       use polar
@@ -3250,29 +3320,15 @@ c(field,fieldp)
       integer i,j,k,m
       real*8 fimd(3),fkmd(3)
       real*8 fimp(3),fkmp(3)
-c      real*8 field(3,*)
-c      real*8 fieldp(3,*)
-c      real*8, allocatable :: fieldt(:,:)
-c      real*8, allocatable :: fieldtp(:,:)
 
-c
 c
 c     check for multipoles and set cutoff coefficients
 c
       if (npole .eq. 0)  return
 c
-c     perform dynamic allocation of some local arrays
-c
-c      allocate (fieldt(3,npole))
-c      allocate (fieldtp(3,npole))
-c
-c     set OpenMP directives for the major loop structure
-c
-ccc!$OMP PARALLEL default(private) shared(npole,uind,uinp,ntpair,tindex,
-ccc!$OMP& tdipdip,field,fieldp,fieldt,fieldtp)
-c
 c     initialize local variables for OpenMP calculation
 c
+
 !$OMP DO collapse(2)
       do i = 1, npole
          do j = 1, 3
@@ -3288,30 +3344,30 @@ c
       do m = 1, ntpair
          i = tindex(1,m)
          k = tindex(2,m)
-         fimd(1) = tdipdip(1,m)*uind(1,k) + tdipdip(2,m)*uind(2,k)
-     &                + tdipdip(3,m)*uind(3,k)
-         fimd(2) = tdipdip(2,m)*uind(1,k) + tdipdip(4,m)*uind(2,k)
-     &                + tdipdip(5,m)*uind(3,k)
-         fimd(3) = tdipdip(3,m)*uind(1,k) + tdipdip(5,m)*uind(2,k)
-     &                + tdipdip(6,m)*uind(3,k)
-         fkmd(1) = tdipdip(1,m)*uind(1,i) + tdipdip(2,m)*uind(2,i)
-     &                + tdipdip(3,m)*uind(3,i)
-         fkmd(2) = tdipdip(2,m)*uind(1,i) + tdipdip(4,m)*uind(2,i)
-     &                + tdipdip(5,m)*uind(3,i)
-         fkmd(3) = tdipdip(3,m)*uind(1,i) + tdipdip(5,m)*uind(2,i)
-     &                + tdipdip(6,m)*uind(3,i)
-         fimp(1) = tdipdip(1,m)*uinp(1,k) + tdipdip(2,m)*uinp(2,k)
-     &                + tdipdip(3,m)*uinp(3,k)
-         fimp(2) = tdipdip(2,m)*uinp(1,k) + tdipdip(4,m)*uinp(2,k)
-     &                + tdipdip(5,m)*uinp(3,k)
-         fimp(3) = tdipdip(3,m)*uinp(1,k) + tdipdip(5,m)*uinp(2,k)
-     &                + tdipdip(6,m)*uinp(3,k)
-         fkmp(1) = tdipdip(1,m)*uinp(1,i) + tdipdip(2,m)*uinp(2,i)
-     &                + tdipdip(3,m)*uinp(3,i)
-         fkmp(2) = tdipdip(2,m)*uinp(1,i) + tdipdip(4,m)*uinp(2,i)
-     &                + tdipdip(5,m)*uinp(3,i)
-         fkmp(3) = tdipdip(3,m)*uinp(1,i) + tdipdip(5,m)*uinp(2,i)
-     &                + tdipdip(6,m)*uinp(3,i)
+         fimd(1) = tdipdip(1,m)*uind(1,k) + 
+     &        tdipdip(2,m)*uind(2,k) + tdipdip(3,m)*uind(3,k)
+         fimd(2) = tdipdip(2,m)*uind(1,k) + 
+     &        tdipdip(4,m)*uind(2,k) + tdipdip(5,m)*uind(3,k)
+         fimd(3) = tdipdip(3,m)*uind(1,k) + 
+     &        tdipdip(5,m)*uind(2,k) + tdipdip(6,m)*uind(3,k)
+         fkmd(1) = tdipdip(1,m)*uind(1,i) +
+     &        tdipdip(2,m)*uind(2,i) + tdipdip(3,m)*uind(3,i)
+         fkmd(2) = tdipdip(2,m)*uind(1,i) + 
+     &        tdipdip(4,m)*uind(2,i) + tdipdip(5,m)*uind(3,i)
+         fkmd(3) = tdipdip(3,m)*uind(1,i) + 
+     &        tdipdip(5,m)*uind(2,i)  + tdipdip(6,m)*uind(3,i)
+         fimp(1) = tdipdip(1,m)*uinp(1,k) + 
+     &        tdipdip(2,m)*uinp(2,k) + tdipdip(3,m)*uinp(3,k)
+         fimp(2) = tdipdip(2,m)*uinp(1,k) + 
+     &        tdipdip(4,m)*uinp(2,k) + tdipdip(5,m)*uinp(3,k)
+         fimp(3) = tdipdip(3,m)*uinp(1,k) + 
+     &        tdipdip(5,m)*uinp(2,k) + tdipdip(6,m)*uinp(3,k)
+         fkmp(1) = tdipdip(1,m)*uinp(1,i) + 
+     &        tdipdip(2,m)*uinp(2,i) + tdipdip(3,m)*uinp(3,i)
+         fkmp(2) = tdipdip(2,m)*uinp(1,i) + 
+     &        tdipdip(4,m)*uinp(2,i) + tdipdip(5,m)*uinp(3,i)
+         fkmp(3) = tdipdip(3,m)*uinp(1,i) + 
+     &        tdipdip(5,m)*uinp(2,i) + tdipdip(6,m)*uinp(3,i)
 c
 c     increment the field at each site due to this interaction
 c
@@ -3326,20 +3382,6 @@ c
 c
 c     end OpenMP directives for the major loop structure
 c
-C$$$ccc!$OMP DO
-C$$$      do i = 1, npole
-C$$$         do j = 1, 3
-C$$$            field(j,i) = fieldt(j,i) + field(j,i)
-C$$$            fieldp(j,i) = fieldtp(j,i) + fieldp(j,i)
-C$$$         end do
-C$$$      end do
-C$$$ccc!$OMP END DO
-C$$$ccc!$OMP END PARALLEL
-c
-c     perform deallocation of some local arrays
-c
-c      deallocate (fieldt)
-c      deallocate (fieldtp)
       return
       end
 
@@ -5873,7 +5915,7 @@ c     "uscale0b" builds and applies a preconditioner for the conjugate
 c     gradient induced dipole solver using a neighbor pair list
 c
 c
-      subroutine uscale0b (mode,rsd,rsdp,zrsd,zrsdp)
+      subroutine uscale0b (mode)!,rsd,rsdp,zrsd,zrsdp)
       use sizes
       use atoms
       use mpole
@@ -5882,6 +5924,7 @@ c
       use polgrp
       use polpot
       use usolve
+      use openmp
       implicit none
       integer i,j,k,m
       integer ii,kk,kkk
@@ -5897,10 +5940,6 @@ c
       real*8 m1,m2,m3
       real*8 m4,m5,m6
       real*8, allocatable :: dscale(:)
-      real*8 rsd(3,*)
-      real*8 rsdp(3,*)
-      real*8 zrsd(3,*)
-      real*8 zrsdp(3,*)
       real*8, allocatable :: zrsdt(:,:)
       real*8, allocatable :: zrsdtp(:,:)
       character*6 mode
@@ -5921,10 +5960,10 @@ c
          do i = 1, npole
             poli = udiag * max(polmin,polarity(i))
             do j = 1, 3
-               zrsd(j,i) = 0.0d0
-               zrsdp(j,i) = 0.0d0
-               zrsdt(j,i) = poli * rsd(j,i)
-               zrsdtp(j,i) = poli * rsdp(j,i)
+               zrsd_omp(j,i) = 0.0d0
+               zrsdp_omp(j,i) = 0.0d0
+               zrsdt(j,i) = poli * rsd_omp(j,i)
+               zrsdtp(j,i) = poli * rsdp_omp(j,i)
             end do
          end do
 c
@@ -5944,30 +5983,30 @@ cc!$OMP DO reduction(+:zrsdt,zrsdtp) schedule(guided)
                m5 = minv(m+5)
                m6 = minv(m+6)
                m = m + 6
-               zrsdt(1,i) = zrsdt(1,i) + m1*rsd(1,k) + m2*rsd(2,k)
-     &                        + m3*rsd(3,k)
-               zrsdt(2,i) = zrsdt(2,i) + m2*rsd(1,k) + m4*rsd(2,k)
-     &                        + m5*rsd(3,k)
-               zrsdt(3,i) = zrsdt(3,i) + m3*rsd(1,k) + m5*rsd(2,k)
-     &                        + m6*rsd(3,k)
-               zrsdt(1,k) = zrsdt(1,k) + m1*rsd(1,i) + m2*rsd(2,i)
-     &                        + m3*rsd(3,i)
-               zrsdt(2,k) = zrsdt(2,k) + m2*rsd(1,i) + m4*rsd(2,i)
-     &                        + m5*rsd(3,i)
-               zrsdt(3,k) = zrsdt(3,k) + m3*rsd(1,i) + m5*rsd(2,i)
-     &                        + m6*rsd(3,i)
-               zrsdtp(1,i) = zrsdtp(1,i) + m1*rsdp(1,k) + m2*rsdp(2,k)
-     &                         + m3*rsdp(3,k)
-               zrsdtp(2,i) = zrsdtp(2,i) + m2*rsdp(1,k) + m4*rsdp(2,k)
-     &                         + m5*rsdp(3,k)
-               zrsdtp(3,i) = zrsdtp(3,i) + m3*rsdp(1,k) + m5*rsdp(2,k)
-     &                         + m6*rsdp(3,k)
-               zrsdtp(1,k) = zrsdtp(1,k) + m1*rsdp(1,i) + m2*rsdp(2,i)
-     &                         + m3*rsdp(3,i)
-               zrsdtp(2,k) = zrsdtp(2,k) + m2*rsdp(1,i) + m4*rsdp(2,i)
-     &                         + m5*rsdp(3,i)
-               zrsdtp(3,k) = zrsdtp(3,k) + m3*rsdp(1,i) + m5*rsdp(2,i)
-     &                         + m6*rsdp(3,i)
+               zrsdt(1,i) = zrsdt(1,i) + m1*rsd_omp(1,k) + 
+     &              m2*rsd_omp(2,k)  + m3*rsd_omp(3,k)
+               zrsdt(2,i) = zrsdt(2,i) + m2*rsd_omp(1,k) 
+     &              + m4*rsd_omp(2,k)  + m5*rsd_omp(3,k)
+               zrsdt(3,i) = zrsdt(3,i) + m3*rsd_omp(1,k) 
+     &              + m5*rsd_omp(2,k)  + m6*rsd_omp(3,k)
+               zrsdt(1,k) = zrsdt(1,k) + m1*rsd_omp(1,i) 
+     &              + m2*rsd_omp(2,i)  + m3*rsd_omp(3,i)
+               zrsdt(2,k) = zrsdt(2,k) + m2*rsd_omp(1,i) 
+     &              + m4*rsd_omp(2,i)  + m5*rsd_omp(3,i)
+               zrsdt(3,k) = zrsdt(3,k) + m3*rsd_omp(1,i) 
+     &              + m5*rsd_omp(2,i)  + m6*rsd_omp(3,i)
+               zrsdtp(1,i) = zrsdtp(1,i) + m1*rsdp_omp(1,k) 
+     &              + m2*rsdp_omp(2,k)   + m3*rsdp_omp(3,k)
+               zrsdtp(2,i) = zrsdtp(2,i) + m2*rsdp_omp(1,k) 
+     &              + m4*rsdp_omp(2,k)   + m5*rsdp_omp(3,k)
+               zrsdtp(3,i) = zrsdtp(3,i) + m3*rsdp_omp(1,k) 
+     &              + m5*rsdp_omp(2,k)   + m6*rsdp_omp(3,k)
+               zrsdtp(1,k) = zrsdtp(1,k) + m1*rsdp_omp(1,i) 
+     &              + m2*rsdp_omp(2,i)   + m3*rsdp_omp(3,i)
+               zrsdtp(2,k) = zrsdtp(2,k) + m2*rsdp_omp(1,i) 
+     &              + m4*rsdp_omp(2,i)   + m5*rsdp_omp(3,i)
+               zrsdtp(3,k) = zrsdtp(3,k) + m3*rsdp_omp(1,i) 
+     &              + m5*rsdp_omp(2,i)   + m6*rsdp_omp(3,i)
             end do
          end do
 cc!$OMP END DO
@@ -5977,8 +6016,8 @@ c
 cc!$OMP DO
          do i = 1, npole
             do j = 1, 3
-               zrsd(j,i) = zrsdt(j,i) + zrsd(j,i)
-               zrsdp(j,i) = zrsdtp(j,i) + zrsdp(j,i)
+               zrsd_omp(j,i) = zrsdt(j,i) + zrsd_omp(j,i)
+               zrsdp_omp(j,i) = zrsdtp(j,i) + zrsdp_omp(j,i)
             end do
          end do
 cc!$OMP END DO
@@ -6093,6 +6132,220 @@ c
 c     perform deallocation of some local arrays
 c
          deallocate (dscale)
+      end if
+      return
+      end
+
+c     ###############################################################
+c     ##                                                           ##
+c     ##  subroutine uscale0b1  --  dipole preconditioner via list  ##
+c     ##                                                           ##
+c     ###############################################################
+c
+c
+c     "uscale0b1" builds and applies a preconditioner for the conjugate
+c     gradient induced dipole solver using a neighbor pair list
+c
+c
+      subroutine uscale0b1 (mode)
+      use sizes
+      use atoms
+      use mpole
+      use neigh
+      use polar
+      use polgrp
+      use polpot
+      use usolve
+      use openmp
+      use virial
+      implicit none
+      integer i,j,k,m
+      integer ii,kk,kkk
+      real*8 xi,yi,zi
+      real*8 xr,yr,zr
+      real*8 r,r2,rr3,rr5
+      real*8 pdi,pti
+      real*8 polmin
+      real*8 poli,polik
+      real*8 damp,expdamp
+      real*8 pgamma
+      real*8 scale3,scale5
+      real*8 m1,m2,m3
+      real*8 m4,m5,m6
+      character*6 mode
+c
+c
+c     apply the preconditioning matrix to the current residual
+c
+      if (mode .eq. 'APPLY') then
+c
+c     use diagonal preconditioner elements as first approximation
+c
+         polmin = 0.00000001d0
+
+!$OMP DO schedule(guided) private(poli)
+         do i = 1, npole
+            poli = udiag * max(polmin,polarity(i))
+            do j = 1, 3
+               zrsd_omp(j,i) = 0.0d0
+               zrsdp_omp(j,i) = 0.0d0
+               zrsdt_omp(j,i) = poli * rsd_omp(j,i)
+               zrsdtp_omp(j,i) = poli * rsdp_omp(j,i)
+            end do
+         end do
+!$OMP END DO
+
+c
+c     use the off-diagonal preconditioner elements in second phase
+c
+
+!$OMP DO private(m,k,m1,m2,m3,m4,m5,m6) reduction(+:zrsdt_omp, 
+!$OMP& zrsdtp_omp) schedule(guided)
+         do i = 1, npole
+            m = mindex(i)
+            do kk = 1, nulst(i)
+               k = ulst(kk,i)
+               m1 = minv(m+1)
+               m2 = minv(m+2)
+               m3 = minv(m+3)
+               m4 = minv(m+4)
+               m5 = minv(m+5)
+               m6 = minv(m+6)
+               m = m + 6
+               zrsdt_omp(1,i) = zrsdt_omp(1,i) + m1*rsd_omp(1,k) 
+     &              + m2*rsd_omp(2,k)+ m3*rsd_omp(3,k)
+               zrsdt_omp(2,i) = zrsdt_omp(2,i) + m2*rsd_omp(1,k) 
+     &              + m4*rsd_omp(2,k) + m5*rsd_omp(3,k)
+               zrsdt_omp(3,i) = zrsdt_omp(3,i) + m3*rsd_omp(1,k) 
+     &              + m5*rsd_omp(2,k) + m6*rsd_omp(3,k)
+               zrsdt_omp(1,k) = zrsdt_omp(1,k) + m1*rsd_omp(1,i) 
+     &              + m2*rsd_omp(2,i) + m3*rsd_omp(3,i)
+               zrsdt_omp(2,k) = zrsdt_omp(2,k) + m2*rsd_omp(1,i) 
+     &              + m4*rsd_omp(2,i) + m5*rsd_omp(3,i)
+               zrsdt_omp(3,k) = zrsdt_omp(3,k) + m3*rsd_omp(1,i) 
+     &              + m5*rsd_omp(2,i) + m6*rsd_omp(3,i)
+               zrsdtp_omp(1,i) = zrsdtp_omp(1,i) + m1*rsdp_omp(1,k) 
+     &              + m2*rsdp_omp(2,k) + m3*rsdp_omp(3,k)
+               zrsdtp_omp(2,i) = zrsdtp_omp(2,i) + m2*rsdp_omp(1,k) 
+     &              + m4*rsdp_omp(2,k) + m5*rsdp_omp(3,k)
+               zrsdtp_omp(3,i) = zrsdtp_omp(3,i) + m3*rsdp_omp(1,k) 
+     &              + m5*rsdp_omp(2,k) + m6*rsdp_omp(3,k)
+               zrsdtp_omp(1,k) = zrsdtp_omp(1,k) + m1*rsdp_omp(1,i) 
+     &              + m2*rsdp_omp(2,i) + m3*rsdp_omp(3,i)
+               zrsdtp_omp(2,k) = zrsdtp_omp(2,k) + m2*rsdp_omp(1,i) 
+     &              + m4*rsdp_omp(2,i) + m5*rsdp_omp(3,i)
+               zrsdtp_omp(3,k) = zrsdtp_omp(3,k) + m3*rsdp_omp(1,i) 
+     &              + m5*rsdp_omp(2,i) + m6*rsdp_omp(3,i)
+            end do
+         end do
+!$OMP END DO
+c
+c     transfer the results from local to global arrays
+c
+!$OMP DO
+         do i = 1, npole
+            do j = 1, 3
+               zrsd_omp(j,i) = zrsdt_omp(j,i) + zrsd_omp(j,i)
+               zrsdp_omp(j,i) = zrsdtp_omp(j,i) + zrsdp_omp(j,i)
+            end do
+         end do
+!$OMP END DO
+
+c
+c     build the off-diagonal elements of preconditioning matrix
+c
+      else if (mode .eq. 'BUILD') then
+!$OMP master
+         m = 0
+         do i = 1, npole
+            mindex(i) = m
+            m = m + 6*nulst(i)
+         end do
+!$OMP end master
+!$OMP barrier
+!$OMP flush
+
+
+c
+c     set array needed to scale connected atom interactions
+c
+         dscale_omp = 1.0d0
+c
+c     determine the off-diagonal elements of the preconditioner
+c
+!$OMP DO schedule(guided) private(ii, xi,yi,zi,pdi,pti,poli,m,k,kk,
+!$OMP& xr,yr,zr,r2,r,scale3,scale5,damp,pgamma,polik,rr3,rr5,expdamp)
+!$OMP& firstprivate(dscale_omp) 
+         do i = 1, npole
+            ii = ipole(i)
+            xi = x(ii)
+            yi = y(ii)
+            zi = z(ii)
+            pdi = pdamp(i)
+            pti = thole(i)
+            poli = polarity(i)
+            do j = 1, np11(ii)
+               dscale_omp(ip11(j,ii)) = u1scale
+            end do
+            do j = 1, np12(ii)
+               dscale_omp(ip12(j,ii)) = u2scale
+            end do
+            do j = 1, np13(ii)
+               dscale_omp(ip13(j,ii)) = u3scale
+            end do
+            do j = 1, np14(ii)
+               dscale_omp(ip14(j,ii)) = u4scale
+            end do
+            m = mindex(i)
+            do kkk = 1, nulst(i)
+               k = ulst(kkk,i)
+               kk = ipole(k)
+               xr = x(kk) - xi
+               yr = y(kk) - yi
+               zr = z(kk) - zi
+               call image (xr,yr,zr)
+               r2 = xr*xr + yr* yr + zr*zr
+               r = sqrt(r2)
+               scale3 = dscale_omp(kk)
+               scale5 = dscale_omp(kk)
+               damp = pdi * pdamp(k)
+               if (damp .ne. 0.0d0) then
+                  pgamma = min(pti,thole(k))
+                  damp = -pgamma * (r/damp)**3
+                  if (damp .gt. -50.0d0) then
+                     expdamp = exp(damp)
+                     scale3 = scale3 * (1.0d0-expdamp)
+                     scale5 = scale5 * (1.0d0-expdamp*(1.0d0-damp))
+                  end if
+               end if
+               polik = poli * polarity(k)
+               rr3 = scale3 * polik / (r*r2)
+               rr5 = 3.0d0 * scale5 * polik / (r*r2*r2)
+               minv(m+1) = rr5*xr*xr - rr3
+               minv(m+2) = rr5*xr*yr
+               minv(m+3) = rr5*xr*zr
+               minv(m+4) = rr5*yr*yr - rr3
+               minv(m+5) = rr5*yr*zr
+               minv(m+6) = rr5*zr*zr - rr3
+               m = m + 6
+            end do
+c
+c     reset interaction scaling coefficients for connected atoms
+c
+            do j = 1, np11(ii)
+               dscale_omp(ip11(j,ii)) = 1.0d0
+            end do
+            do j = 1, np12(ii)
+               dscale_omp(ip12(j,ii)) = 1.0d0
+            end do
+            do j = 1, np13(ii)
+               dscale_omp(ip13(j,ii)) = 1.0d0
+            end do
+            do j = 1, np14(ii)
+               dscale_omp(ip14(j,ii)) = 1.0d0
+            end do
+         end do
+!$OMP END DO
       end if
       return
       end

@@ -4610,8 +4610,23 @@ c      call ereal1d (eintra)
 c
 c     compute the Ewald self-energy term over all the atoms
 c
-      term = 2.0d0 * aewald * aewald
+c      term = 2.0d0 * aewald * aewald
       fterm = -f * aewald / sqrtpi
+
+C$$$!$OMP parallel default(none)
+C$$$!$OMP& private(ci,dix,diz,diy,qixx,qixy,qixz,qiyy,qiyz,
+C$$$!$OMP& qizz,uix,uiy,uiz,cii,dii,qii,uii,e,ei,trqi,frcx,
+C$$$!$OMP& frcy,frcz,trq,term)
+C$$$!$OMP& shared(em,ep,npole,rpole,uind,fterm,f,aewald,
+C$$$!$OMP& uinp)
+      
+       term = 2.0d0 * aewald * aewald
+
+!$OMP DO 
+!$OMP& private(ci,dix,diz,diy,qixx,qixy,qixz,qiyy,qiyz,
+!$OMP& qizz,uix,uiy,uiz,cii,dii,qii,uii,e,ei)
+c!$OMP& firstprivate(fterm, f, term)
+!$OMP& reduction(+:em,ep)
       do i = 1, npole
          ci = rpole(1,i)
          dix = rpole(2,i)
@@ -4636,6 +4651,8 @@ c
          em = em + e
          ep = ep + ei
       end do
+!$OMP end do
+
 c
 c     compute the self-energy torque term due to induced dipole
 c
@@ -4643,6 +4660,10 @@ c
       trq(2) = 0.0d0
       trq(3) = 0.0d0
       term = (4.0d0/3.0d0) * f * aewald**3 / sqrtpi
+!$OMP DO 
+!$OMP& private(dix,diz,diy,uix,uiy,uiz,trqi,frcx,
+!$OMP& frcy,frcz)
+c!$OMP& firstprivate(trq, term)
       do i = 1, npole
          dix = rpole(2,i)
          diy = rpole(3,i)
@@ -4655,10 +4676,13 @@ c
          trqi(3) = term * (dix*uiy-diy*uix)
          call torque (i,trq,trqi,frcx,frcy,frcz)
       end do
+!$OMP END DO
+c!$OMP end parallel 
 c
 c     compute the cell dipole boundary correction term
 c
       if (boundary .eq. 'VACUUM') then
+!$OMP master
          xd = 0.0d0
          yd = 0.0d0
          zd = 0.0d0
@@ -4747,11 +4771,12 @@ c
             vir(2,2) = vir(2,2) + vterm
             vir(3,3) = vir(3,3) + vterm
          end if
+!$OMP end master
       end if
 c
 c     intermolecular energy is total minus intramolecular part
 c
-      einter = einter + em + ep !- eintra
+c      einter = einter + em + ep !- eintra
       return
       end
 c
@@ -4893,12 +4918,18 @@ c
 c     set arrays needed to scale connected atom interactions
 c
 
-!$OMP DO
+!$OMP DO schedule(dynamic,128)
       do i = 1, n
          mscale_omp(i) = 1.0d0
          pscale_omp(i) = 1.0d0
          dscale_omp(i) = 1.0d0
          uscale_omp(i) = 1.0d0
+         do j = 1, 3
+            dem1(j,i) = 0.0d0
+            dem2(j,i) = 0.0d0
+            dep1(j,i) = 0.0d0
+            dep2(j,i) = 0.0d0
+         end do
       end do
 !$OMP END DO
 c
@@ -4925,16 +4956,16 @@ c      ep = 0.0d0
          end do
       end do
 
-!$OMP DO 
-      do i = 1, n
-         do j = 1, 3
-            dem1(j,i) = 0.0d0
-            dem2(j,i) = 0.0d0
-            dep1(j,i) = 0.0d0
-            dep2(j,i) = 0.0d0
-         end do
-      end do
-!$OMP end DO
+C$$$!$OMP DO 
+C$$$      do i = 1, n
+C$$$         do j = 1, 3
+C$$$            dem1(j,i) = 0.0d0
+C$$$            dem2(j,i) = 0.0d0
+C$$$            dep1(j,i) = 0.0d0
+C$$$            dep2(j,i) = 0.0d0
+C$$$         end do
+C$$$      end do
+C$$$!$OMP end DO
 
 
 c
@@ -4960,7 +4991,7 @@ c
 !$OMP& firstprivate(mscale_omp,pscale_omp,dscale_omp,uscale_omp,
 !$OMP& ff) reduction(+:em_omp,ep_omp,eintra_omp,dem1,dem2,dep1,
 !$OMP& dep2, vir_omp)
-!$OMP& schedule(guided)
+!$OMP& schedule(dynamic,128)
 c
 c     compute the real space portion of the Ewald summation
 c
@@ -5900,6 +5931,7 @@ c
       use polpot
       use potent
       use virial
+      use openmp
       implicit none
       integer i,j,k,ii
       integer j1,j2,j3
@@ -5914,8 +5946,6 @@ c
       real*8 r1,r2,r3
       real*8 h1,h2,h3
       real*8 f1,f2,f3
-      real*8 vxx,vyx,vzx
-      real*8 vyy,vzy,vzz
       real*8 volterm,denom
       real*8 hsq,expterm
       real*8 term,pterm
@@ -5923,17 +5953,7 @@ c
       real*8 cphim(4),cphid(4)
       real*8 cphip(4)
       real*8 a(3,3),ftc(10,10)
-      real*8, allocatable :: frc(:,:)
-      real*8, allocatable :: trq(:,:)
-      real*8, allocatable :: fuind(:,:)
-      real*8, allocatable :: fuinp(:,:)
-      real*8, allocatable :: cmp(:,:)
-      real*8, allocatable :: fmp(:,:)
-      real*8, allocatable :: fphi(:,:)
-      real*8, allocatable :: fphid(:,:)
-      real*8, allocatable :: fphip(:,:)
-      real*8, allocatable :: fphidp(:,:)
-      real*8, allocatable :: cphi(:,:)
+c      real*8, allocatable :: fphi(:,:)
       real*8, allocatable :: qgrip(:,:,:,:)
 c
 c     derivative indices into the fphi and fphidp arrays
@@ -5941,7 +5961,7 @@ c
       data deriv1  / 2, 5,  8,  9, 11, 16, 18, 14, 15, 20 /
       data deriv2  / 3, 8,  6, 10, 14, 12, 19, 16, 20, 17 /
       data deriv3  / 4, 9, 10,  7, 15, 17, 13, 20, 18, 19 /
-c
+
 c
 c     return if the Ewald coefficient is zero
 c
@@ -5949,41 +5969,26 @@ c
 c
 c     perform dynamic allocation of some local arrays
 c
-      allocate (frc(3,n))
-      allocate (trq(3,npole))
-      allocate (fuind(3,npole))
-      allocate (fuinp(3,npole))
-      allocate (cmp(10,npole))
-      allocate (fmp(10,npole))
-      allocate (fphi(20,npole))
-      allocate (fphid(10,npole))
-      allocate (fphip(10,npole))
-      allocate (fphidp(20,npole))
-      allocate (cphi(10,npole))
-c
-c     zero out the temporary virial accumulation variables
-c
-      vxx = 0.0d0
-      vyx = 0.0d0
-      vzx = 0.0d0
-      vyy = 0.0d0
-      vzy = 0.0d0
-      vzz = 0.0d0
+c      allocate (fphi(20,npole))
+
 c
 c     copy multipole moments and coordinates to local storage
 c
+!$OMP DO schedule(static,128)
       do i = 1, npole
-         cmp(1,i) = rpole(1,i)
-         cmp(2,i) = rpole(2,i)
-         cmp(3,i) = rpole(3,i)
-         cmp(4,i) = rpole(4,i)
-         cmp(5,i) = rpole(5,i)
-         cmp(6,i) = rpole(9,i)
-         cmp(7,i) = rpole(13,i)
-         cmp(8,i) = 2.0d0 * rpole(6,i)
-         cmp(9,i) = 2.0d0 * rpole(7,i)
-         cmp(10,i) = 2.0d0 * rpole(10,i)
+         cmp_omp(1,i) = rpole(1,i)
+         cmp_omp(2,i) = rpole(2,i)
+         cmp_omp(3,i) = rpole(3,i)
+         cmp_omp(4,i) = rpole(4,i)
+         cmp_omp(5,i) = rpole(5,i)
+         cmp_omp(6,i) = rpole(9,i)
+         cmp_omp(7,i) = rpole(13,i)
+         cmp_omp(8,i) = 2.0d0 * rpole(6,i)
+         cmp_omp(9,i) = 2.0d0 * rpole(7,i)
+         cmp_omp(10,i) = 2.0d0 * rpole(10,i)
       end do
+!$OMP end do 
+
 c
 c     get the fractional to Cartesian transformation matrix
 c
@@ -5998,19 +6003,28 @@ c
 c
 c     perform dynamic allocation of some local arrays
 c
+!$OMP master
       allocate (qgrip(2,nfft1,nfft2,nfft3))
+!$OMP end master
+
 c
 c     assign permanent and induced multipoles to PME grid
 c     and perform the 3-D FFT forward transformation
 c
       if (use_polar) then
+
+!$OMP DO schedule(static,128)
          do i = 1, npole
             do j = 2, 4
-               cmp(j,i) = cmp(j,i) + uinp(j-1,i)
+               cmp_omp(j,i) = cmp_omp(j,i) + uinp(j-1,i)
             end do
          end do
-         call cmp_to_fmp (cmp,fmp)
-         call grid_mpole (fmp)
+!$OMP end DO 
+
+         call cmp_to_fmp1 
+         call grid_mpole1 
+
+!$OMP master     
          call fftfront
          do k = 1, nfft3
             do j = 1, nfft2
@@ -6020,22 +6034,38 @@ c
                end do
             end do
          end do
+!$OMP end master
+!$OMP barrier
+!$OMP flush
+
+!$OMP DO schedule(static,128)
          do i = 1, npole
             do j = 2, 4
-               cmp(j,i) = cmp(j,i) + uind(j-1,i) - uinp(j-1,i)
+               cmp_omp(j,i) = cmp_omp(j,i) + uind(j-1,i) - uinp(j-1,i)
             end do
          end do
-         call cmp_to_fmp (cmp,fmp)
-         call grid_mpole (fmp)
+!$OMP end DO 
+
+         call cmp_to_fmp1 
+         call grid_mpole1          
+
+!$OMP master
          call fftfront
+!$OMP end master
+
+
+!$OMP DO schedule(static,128)
          do i = 1, npole
             do j = 2, 4
-               cmp(j,i) = cmp(j,i) - uind(j-1,i)
+               cmp_omp(j,i) = cmp_omp(j,i) - uind(j-1,i)
             end do
          end do
+!$OMP end DO 
+
       else
-         call cmp_to_fmp (cmp,fmp)
-         call grid_mpole (fmp)
+!$OMP master
+         call cmp_to_fmp1 
+         call grid_mpole1 
          call fftfront
          do k = 1, nfft3
             do j = 1, nfft2
@@ -6045,10 +6075,13 @@ c
                end do
             end do
          end do
+!$OMP end master
+!$OMP barrier
       end if
 c
 c     make the scalar summation over reciprocal lattice
 c
+!$OMP master
       ntot = nfft1 * nfft2 * nfft3
       pterm = (pi/aewald)**2
       volterm = pi * volbox
@@ -6088,115 +6121,126 @@ c
      &                  + qgrid(2,k1,k2,k3)*qgrip(2,k1,k2,k3)
             eterm = 0.5d0 * electric * expterm * struc2
             vterm = (2.0d0/hsq) * (1.0d0-term) * eterm
-            vxx = vxx + h1*h1*vterm - eterm
-            vyx = vyx + h2*h1*vterm
-            vzx = vzx + h3*h1*vterm
-            vyy = vyy + h2*h2*vterm - eterm
-            vzy = vzy + h3*h2*vterm
-            vzz = vzz + h3*h3*vterm - eterm
+            vxx_omp = vxx_omp + h1*h1*vterm - eterm
+            vyx_omp = vyx_omp + h2*h1*vterm
+            vzx_omp = vzx_omp + h3*h1*vterm
+            vyy_omp = vyy_omp + h2*h2*vterm - eterm
+            vzy_omp = vzy_omp + h3*h2*vterm
+            vzz_omp = vzz_omp + h3*h3*vterm - eterm
          end if
          qfac(k1,k2,k3) = expterm
       end do
+
+
 c
 c     assign just the induced multipoles to PME grid
 c     and perform the 3-D FFT forward transformation
 c
-      if (use_polar .and. poltyp.eq.'DIRECT') then
-         do i = 1, npole
-            do j = 1, 10
-               cmp(j,i) = 0.0d0
-            end do
-            do j = 2, 4
-               cmp(j,i) = uinp(j-1,i)
-            end do
-         end do
-         call cmp_to_fmp (cmp,fmp)
-         call grid_mpole (fmp)
-         call fftfront
-         do k = 1, nfft3
-            do j = 1, nfft2
-               do i = 1, nfft1
-                  qgrip(1,i,j,k) = qgrid(1,i,j,k)
-                  qgrip(2,i,j,k) = qgrid(2,i,j,k)
-               end do
-            end do
-         end do
-         do i = 1, npole
-            do j = 2, 4
-               cmp(j,i) = uind(j-1,i)
-            end do
-         end do
-         call cmp_to_fmp (cmp,fmp)
-         call grid_mpole (fmp)
-         call fftfront
-         do i = 1, npole
-            cmp(1,i) = rpole(1,i)
-            cmp(2,i) = rpole(2,i)
-            cmp(3,i) = rpole(3,i)
-            cmp(4,i) = rpole(4,i)
-            cmp(5,i) = rpole(5,i)
-            cmp(6,i) = rpole(9,i)
-            cmp(7,i) = rpole(13,i)
-            cmp(8,i) = 2.0d0 * rpole(6,i)
-            cmp(9,i) = 2.0d0 * rpole(7,i)
-            cmp(10,i) = 2.0d0 * rpole(10,i)
-         end do
-c
-c     make the scalar summation over reciprocal lattice
-c
-         do i = 1, ntot-1
-            k3 = i/nff + 1
-            j = i - (k3-1)*nff
-            k2 = j/nfft1 + 1
-            k1 = j - (k2-1)*nfft1 + 1
-            m1 = k1 - 1
-            m2 = k2 - 1
-            m3 = k3 - 1
-            if (k1 .gt. nf1)  m1 = m1 - nfft1
-            if (k2 .gt. nf2)  m2 = m2 - nfft2
-            if (k3 .gt. nf3)  m3 = m3 - nfft3
-            r1 = dble(m1)
-            r2 = dble(m2)
-            r3 = dble(m3)
-            h1 = recip(1,1)*r1 + recip(1,2)*r2 + recip(1,3)*r3
-            h2 = recip(2,1)*r1 + recip(2,2)*r2 + recip(2,3)*r3
-            h3 = recip(3,1)*r1 + recip(3,2)*r2 + recip(3,3)*r3
-            hsq = h1*h1 + h2*h2 + h3*h3
-            term = -pterm * hsq
-            expterm = 0.0d0
-            if (term .gt. -50.0d0) then
-               denom = volterm*hsq*bsmod1(k1)*bsmod2(k2)*bsmod3(k3)
-               expterm = exp(term) / denom
-               if (.not. use_bounds) then
-                  expterm = expterm * (1.0d0-cos(pi*xbox*sqrt(hsq)))
-               else if (octahedron) then
-                  if (mod(m1+m2+m3,2) .ne. 0)  expterm = 0.0d0
-               end if
-               struc2 = qgrid(1,k1,k2,k3)*qgrip(1,k1,k2,k3)
-     &                     + qgrid(2,k1,k2,k3)*qgrip(2,k1,k2,k3)
-               eterm = 0.5d0 * electric * expterm * struc2
-               vterm = (2.0d0/hsq) * (1.0d0-term) * eterm
-               vxx = vxx - h1*h1*vterm + eterm
-               vyx = vyx - h2*h1*vterm
-               vzx = vzx - h3*h1*vterm
-               vyy = vyy - h2*h2*vterm + eterm
-               vzy = vzy - h3*h2*vterm
-               vzz = vzz - h3*h3*vterm + eterm
-            end if
-         end do
-      end if
-c
-c     perform deallocation of some local arrays
-c
+C$$$! the below is not used by the dhrf bench
+
+C$$$      if (use_polar .and. poltyp.eq.'DIRECT') then
+C$$$         do i = 1, npole
+C$$$            do j = 1, 10
+C$$$               cmp(j,i) = 0.0d0
+C$$$            end do
+C$$$            do j = 2, 4
+C$$$               cmp(j,i) = uinp(j-1,i)
+C$$$            end do
+C$$$         end do
+C$$$         call cmp_to_fmp (cmp,fmp)
+C$$$         call grid_mpole (fmp)
+C$$$         call fftfront
+C$$$         do k = 1, nfft3
+C$$$            do j = 1, nfft2
+C$$$               do i = 1, nfft1
+C$$$                  qgrip(1,i,j,k) = qgrid(1,i,j,k)
+C$$$                  qgrip(2,i,j,k) = qgrid(2,i,j,k)
+C$$$               end do
+C$$$            end do
+C$$$         end do
+C$$$         do i = 1, npole
+C$$$            do j = 2, 4
+C$$$               cmp(j,i) = uind(j-1,i)
+C$$$            end do
+C$$$         end do
+C$$$         call cmp_to_fmp (cmp,fmp)
+C$$$         call grid_mpole (fmp)
+C$$$         call fftfront
+C$$$         do i = 1, npole
+C$$$            cmp(1,i) = rpole(1,i)
+C$$$            cmp(2,i) = rpole(2,i)
+C$$$            cmp(3,i) = rpole(3,i)
+C$$$            cmp(4,i) = rpole(4,i)
+C$$$            cmp(5,i) = rpole(5,i)
+C$$$            cmp(6,i) = rpole(9,i)
+C$$$            cmp(7,i) = rpole(13,i)
+C$$$            cmp(8,i) = 2.0d0 * rpole(6,i)
+C$$$            cmp(9,i) = 2.0d0 * rpole(7,i)
+C$$$            cmp(10,i) = 2.0d0 * rpole(10,i)
+C$$$         end do
+C$$$c
+C$$$c     make the scalar summation over reciprocal lattice
+C$$$c
+C$$$         do i = 1, ntot-1
+C$$$            k3 = i/nff + 1
+C$$$            j = i - (k3-1)*nff
+C$$$            k2 = j/nfft1 + 1
+C$$$            k1 = j - (k2-1)*nfft1 + 1
+C$$$            m1 = k1 - 1
+C$$$            m2 = k2 - 1
+C$$$            m3 = k3 - 1
+C$$$            if (k1 .gt. nf1)  m1 = m1 - nfft1
+C$$$            if (k2 .gt. nf2)  m2 = m2 - nfft2
+C$$$            if (k3 .gt. nf3)  m3 = m3 - nfft3
+C$$$            r1 = dble(m1)
+C$$$            r2 = dble(m2)
+C$$$            r3 = dble(m3)
+C$$$            h1 = recip(1,1)*r1 + recip(1,2)*r2 + recip(1,3)*r3
+C$$$            h2 = recip(2,1)*r1 + recip(2,2)*r2 + recip(2,3)*r3
+C$$$            h3 = recip(3,1)*r1 + recip(3,2)*r2 + recip(3,3)*r3
+C$$$            hsq = h1*h1 + h2*h2 + h3*h3
+C$$$            term = -pterm * hsq
+C$$$            expterm = 0.0d0
+C$$$            if (term .gt. -50.0d0) then
+C$$$               denom = volterm*hsq*bsmod1(k1)*bsmod2(k2)*bsmod3(k3)
+C$$$               expterm = exp(term) / denom
+C$$$               if (.not. use_bounds) then
+C$$$                  expterm = expterm * (1.0d0-cos(pi*xbox*sqrt(hsq)))
+C$$$               else if (octahedron) then
+C$$$                  if (mod(m1+m2+m3,2) .ne. 0)  expterm = 0.0d0
+C$$$               end if
+C$$$               struc2 = qgrid(1,k1,k2,k3)*qgrip(1,k1,k2,k3)
+C$$$     &                     + qgrid(2,k1,k2,k3)*qgrip(2,k1,k2,k3)
+C$$$               eterm = 0.5d0 * electric * expterm * struc2
+C$$$               vterm = (2.0d0/hsq) * (1.0d0-term) * eterm
+C$$$               vxx = vxx - h1*h1*vterm + eterm
+C$$$               vyx = vyx - h2*h1*vterm
+C$$$               vzx = vzx - h3*h1*vterm
+C$$$               vyy = vyy - h2*h2*vterm + eterm
+C$$$               vzy = vzy - h3*h2*vterm
+C$$$               vzz = vzz - h3*h3*vterm + eterm
+C$$$            end if
+C$$$         end do
+C$$$      end if
+C$$$c
+C$$$c     perform deallocation of some local arrays
+C$$$c
       deallocate (qgrip)
+!$OMP end master
+!$OMP barrier
 c
 c     transform permanent multipoles without induced dipoles
 c
+
       if (use_polar) then
-         call cmp_to_fmp (cmp,fmp)
-         call grid_mpole (fmp)
+         call cmp_to_fmp1 
+         call grid_mpole1 
+!$OMP master
          call fftfront
+!$OMP end master
+!$OMP barrier
       end if
+
 c
 c     account for the zeroth grid point for a finite system
 c
@@ -6207,9 +6251,11 @@ c
          e = 0.5d0 * expterm * struc2
          qfac(1,1,1) = expterm
       end if
+
 c
 c     complete the transformation of the PME grid
 c
+!$OMP DO collapse(3)
       do k = 1, nfft3
          do j = 1, nfft2
             do i = 1, nfft1
@@ -6219,119 +6265,174 @@ c
             end do
          end do
       end do
+!$OMP end do 
+
+
 c
 c     perform 3-D FFT backward transform and get potential
 c
+!$OMP master
       call fftback
-      call fphi_mpole (fphi)
+      e = 0.0d0
+      e_omp = 0.0d0
+!$OMP end master
+!$OMP barrier
+
+      call fphi_mpole1 
+
+!$OMP do schedule(static,128)
       do i = 1, npole
          do j = 1, 20
-            fphi(j,i) = electric * fphi(j,i)
+            fphi_omp(j,i) = electric * fphi_omp(j,i)
          end do
       end do
-      call fphi_to_cphi (fphi,cphi)
+!$OMP end DO
+
+      call fphi_to_cphi1 
+     
 c
 c     increment the permanent multipole energy and gradient
 c
-      e = 0.0d0
+
+!$OMP DO schedule(static,128) reduction(+:e_omp)
       do i = 1, npole
          f1 = 0.0d0
          f2 = 0.0d0
          f3 = 0.0d0
          do k = 1, 10
-            e = e + fmp(k,i)*fphi(k,i)
-            f1 = f1 + fmp(k,i)*fphi(deriv1(k),i)
-            f2 = f2 + fmp(k,i)*fphi(deriv2(k),i)
-            f3 = f3 + fmp(k,i)*fphi(deriv3(k),i)
+c!$OMP atomic
+            e_omp = e_omp + fmp_omp(k,i)*fphi_omp(k,i)
+            f1 = f1 + fmp_omp(k,i)*fphi_omp(deriv1(k),i)
+            f2 = f2 + fmp_omp(k,i)*fphi_omp(deriv2(k),i)
+            f3 = f3 + fmp_omp(k,i)*fphi_omp(deriv3(k),i)
          end do
          f1 = dble(nfft1) * f1
          f2 = dble(nfft2) * f2
          f3 = dble(nfft3) * f3
-         frc(1,i) = recip(1,1)*f1 + recip(1,2)*f2 + recip(1,3)*f3
-         frc(2,i) = recip(2,1)*f1 + recip(2,2)*f2 + recip(2,3)*f3
-         frc(3,i) = recip(3,1)*f1 + recip(3,2)*f2 + recip(3,3)*f3
-      end do
-      e = 0.5d0 * e
-      em = em + e
-      do i = 1, npole
+         frc_omp(1,i) = recip(1,1)*f1 + recip(1,2)*f2 + recip(1,3)*f3
+         frc_omp(2,i) = recip(2,1)*f1 + recip(2,2)*f2 + recip(2,3)*f3
+         frc_omp(3,i) = recip(3,1)*f1 + recip(3,2)*f2 + recip(3,3)*f3
+c merged dem calculation
          ii = ipole(i)
-         dem(1,ii) = dem(1,ii) + frc(1,i)
-         dem(2,ii) = dem(2,ii) + frc(2,i)
-         dem(3,ii) = dem(3,ii) + frc(3,i)
+         dem(1,ii) = dem(1,ii) + frc_omp(1,i)
+         dem(2,ii) = dem(2,ii) + frc_omp(2,i)
+         dem(3,ii) = dem(3,ii) + frc_omp(3,i)
       end do
+!$OMP end DO 
+
 c
 c     distribute torques into the permanent multipole gradient
 c
+
+!$OMP DO schedule(static,128)
       do i = 1, npole
-         trq(1,i) = cmp(4,i)*cphi(3,i) - cmp(3,i)*cphi(4,i)
-     &                 + 2.0d0*(cmp(7,i)-cmp(6,i))*cphi(10,i)
-     &                 + cmp(9,i)*cphi(8,i) + cmp(10,i)*cphi(6,i)
-     &                 - cmp(8,i)*cphi(9,i) - cmp(10,i)*cphi(7,i)
-         trq(2,i) = cmp(2,i)*cphi(4,i) - cmp(4,i)*cphi(2,i)
-     &                 + 2.0d0*(cmp(5,i)-cmp(7,i))*cphi(9,i)
-     &                 + cmp(8,i)*cphi(10,i) + cmp(9,i)*cphi(7,i)
-     &                 - cmp(9,i)*cphi(5,i) - cmp(10,i)*cphi(8,i)
-         trq(3,i) = cmp(3,i)*cphi(2,i) - cmp(2,i)*cphi(3,i)
-     &                 + 2.0d0*(cmp(6,i)-cmp(5,i))*cphi(8,i)
-     &                 + cmp(8,i)*cphi(5,i) + cmp(10,i)*cphi(9,i)
-     &                 - cmp(8,i)*cphi(6,i) - cmp(9,i)*cphi(10,i)
+         trq_omp(1,i) = cmp_omp(4,i)*cphi_omp(3,i) 
+     &        - cmp_omp(3,i)*cphi_omp(4,i)
+     &                 + 2.0d0*(cmp_omp(7,i)-
+     &        cmp_omp(6,i))*cphi_omp(10,i)
+     &                 + cmp_omp(9,i)*cphi_omp(8,i) 
+     &        + cmp_omp(10,i)*cphi_omp(6,i)
+     &                 - cmp_omp(8,i)*cphi_omp(9,i) 
+     &        - cmp_omp(10,i)*cphi_omp(7,i)
+         trq_omp(2,i) = cmp_omp(2,i)*cphi_omp(4,i) 
+     &        - cmp_omp(4,i)*cphi_omp(2,i)
+     &                 + 2.0d0*(cmp_omp(5,i)-cmp_omp(7,i))*cphi_omp(9,i)
+     &                 + cmp_omp(8,i)*cphi_omp(10,i) 
+     &        + cmp_omp(9,i)*cphi_omp(7,i)
+     &                 - cmp_omp(9,i)*cphi_omp(5,i) 
+     &        - cmp_omp(10,i)*cphi_omp(8,i)
+         trq_omp(3,i) = cmp_omp(3,i)*cphi_omp(2,i) 
+     &        - cmp_omp(2,i)*cphi_omp(3,i)
+     &                 + 2.0d0*(cmp_omp(6,i)-cmp_omp(5,i))*cphi_omp(8,i)
+     &                 + cmp_omp(8,i)*cphi_omp(5,i) 
+     &        + cmp_omp(10,i)*cphi_omp(9,i)
+     &                 - cmp_omp(8,i)*cphi_omp(6,i) 
+     &        - cmp_omp(9,i)*cphi_omp(10,i)
+
+c merged frc_omp calculation
+         frc_omp(1,i) = 0.0d0
+         frc_omp(2,i) = 0.0d0
+         frc_omp(3,i) = 0.0d0
       end do
-      do i = 1, n
-         frc(1,i) = 0.0d0
-         frc(2,i) = 0.0d0
-         frc(3,i) = 0.0d0
-      end do
-      call torque2 (trq,frc)
-      do i = 1, n
-         dem(1,i) = dem(1,i) + frc(1,i)
-         dem(2,i) = dem(2,i) + frc(2,i)
-         dem(3,i) = dem(3,i) + frc(3,i)
-      end do
-c
-c     permanent multipole contribution to the internal virial
-c
-      do i = 1, npole
-         vxx = vxx - cmp(2,i)*cphi(2,i) - 2.0d0*cmp(5,i)*cphi(5,i)
-     &             - cmp(8,i)*cphi(8,i) - cmp(9,i)*cphi(9,i)
-         vyx = vyx - 0.5d0*(cmp(3,i)*cphi(2,i)+cmp(2,i)*cphi(3,i))
-     &             - (cmp(5,i)+cmp(6,i))*cphi(8,i)
-     &             - 0.5d0*cmp(8,i)*(cphi(5,i)+cphi(6,i))
-     &             - 0.5d0*(cmp(9,i)*cphi(10,i)+cmp(10,i)*cphi(9,i))
-         vzx = vzx - 0.5d0*(cmp(4,i)*cphi(2,i)+cmp(2,i)*cphi(4,i))
-     &             - (cmp(5,i)+cmp(7,i))*cphi(9,i)
-     &             - 0.5d0*cmp(9,i)*(cphi(5,i)+cphi(7,i))
-     &             - 0.5d0*(cmp(8,i)*cphi(10,i)+cmp(10,i)*cphi(8,i))
-         vyy = vyy - cmp(3,i)*cphi(3,i) - 2.0d0*cmp(6,i)*cphi(6,i)
-     &             - cmp(8,i)*cphi(8,i) - cmp(10,i)*cphi(10,i)
-         vzy = vzy - 0.5d0*(cmp(4,i)*cphi(3,i)+cmp(3,i)*cphi(4,i))
-     &             - (cmp(6,i)+cmp(7,i))*cphi(10,i)
-     &             - 0.5d0*cmp(10,i)*(cphi(6,i)+cphi(7,i))
-     &             - 0.5d0*(cmp(8,i)*cphi(9,i)+cmp(9,i)*cphi(8,i))
-         vzz = vzz - cmp(4,i)*cphi(4,i) - 2.0d0*cmp(7,i)*cphi(7,i)
-     &             - cmp(9,i)*cphi(9,i) - cmp(10,i)*cphi(10,i)
-      end do
+!$OMP end do
+
+      call torque2a
 c
 c     convert Cartesian induced dipoles to fractional coordinates
 c
+c moved up calculation of 'a' to be able to merge fuind calc  
       if (use_polar) then
          do i = 1, 3
             a(1,i) = dble(nfft1) * recip(i,1)
             a(2,i) = dble(nfft2) * recip(i,2)
             a(3,i) = dble(nfft3) * recip(i,3)
          end do
-         do i = 1, npole
-            do j = 1, 3
-               fuind(j,i) = a(j,1)*uind(1,i) + a(j,2)*uind(2,i)
+c
+c     permanent multipole contribution to the internal virial
+c
+!$OMP DO schedule(static,128) reduction(+:vxx_omp,vyx_omp,
+!$OMP& vzx_omp, vyy_omp,vzy_omp,vzz_omp)
+      do i = 1, npole
+
+c merged dem calculation
+         dem(1,i) = dem(1,i) + frc_omp(1,i)
+         dem(2,i) = dem(2,i) + frc_omp(2,i)
+         dem(3,i) = dem(3,i) + frc_omp(3,i)
+
+         vxx_omp = vxx_omp - cmp_omp(2,i)*cphi_omp(2,i) 
+     &        - 2.0d0*cmp_omp(5,i)*cphi_omp(5,i)
+     &             - cmp_omp(8,i)*cphi_omp(8,i) 
+     &        - cmp_omp(9,i)*cphi_omp(9,i)
+         vyx_omp = vyx_omp - 0.5d0*(cmp_omp(3,i)*cphi_omp(2,i)
+     &        + cmp_omp(2,i)*cphi_omp(3,i))
+     &             - (cmp_omp(5,i)+cmp_omp(6,i))*cphi_omp(8,i)
+     &             - 0.5d0*cmp_omp(8,i)*(cphi_omp(5,i)+cphi_omp(6,i))
+     &             - 0.5d0*(cmp_omp(9,i)*cphi_omp(10,i)
+     &        + cmp_omp(10,i)*cphi_omp(9,i))
+         vzx_omp = vzx_omp - 0.5d0*(cmp_omp(4,i)*cphi_omp(2,i)
+     &        + cmp_omp(2,i)*cphi_omp(4,i))
+     &             - (cmp_omp(5,i)+cmp_omp(7,i))*cphi_omp(9,i)
+     &             - 0.5d0*cmp_omp(9,i)*(cphi_omp(5,i)+cphi_omp(7,i))
+     &             - 0.5d0*(cmp_omp(8,i)*cphi_omp(10,i)
+     &        + cmp_omp(10,i)*cphi_omp(8,i))
+         vyy_omp = vyy_omp - cmp_omp(3,i)*cphi_omp(3,i) 
+     &        - 2.0d0*cmp_omp(6,i)*cphi_omp(6,i)
+     &             - cmp_omp(8,i)*cphi_omp(8,i) 
+     &        - cmp_omp(10,i)*cphi_omp(10,i)
+         vzy_omp = vzy_omp - 0.5d0*(cmp_omp(4,i)*cphi_omp(3,i)
+     &        +cmp_omp(3,i)*cphi_omp(4,i))
+     &             - (cmp_omp(6,i)+cmp_omp(7,i))*cphi_omp(10,i)
+     &             - 0.5d0*cmp_omp(10,i)*(cphi_omp(6,i)+cphi_omp(7,i))
+     &             - 0.5d0*(cmp_omp(8,i)*cphi_omp(9,i)
+     &        +cmp_omp(9,i)*cphi_omp(8,i))
+         vzz_omp = vzz_omp - cmp_omp(4,i)*cphi_omp(4,i) 
+     &        - 2.0d0*cmp_omp(7,i)*cphi_omp(7,i)
+     &             - cmp_omp(9,i)*cphi_omp(9,i) 
+     &        - cmp_omp(10,i)*cphi_omp(10,i)
+
+c merged fuind_omp calculation         
+         do j = 1, 3
+            fuind_omp(j,i) = a(j,1)*uind(1,i) + a(j,2)*uind(2,i)
      &                          + a(j,3)*uind(3,i)
-               fuinp(j,i) = a(j,1)*uinp(1,i) + a(j,2)*uinp(2,i)
+            fuinp_omp(j,i) = a(j,1)*uinp(1,i) + a(j,2)*uinp(2,i)
      &                          + a(j,3)*uinp(3,i)
-            end do
          end do
+      end do
+!$OMP end DO 
+
+c         fphi = fdip_sum_phi_omp
 c
 c     assign PME grid and perform 3-D FFT forward transform
 c
-         call grid_uind (fuind,fuinp)
+       
+         call grid_uind1 
+!$OMP master
          call fftfront
+         e = 0.5d0 * e_omp
+         em = em + e
+         e_omp = 0.0d0
+!$OMP end master
+!$OMP barrier
 c
 c     account for the zeroth grid point for a finite system
 c
@@ -6343,6 +6444,7 @@ c
 c
 c     complete the transformation of the PME grid
 c
+!$OMP DO collapse(3)
          do k = 1, nfft3
             do j = 1, nfft2
                do i = 1, nfft1
@@ -6352,25 +6454,32 @@ c
                end do
             end do
          end do
+!$OMP end do 
 c
 c     perform 3-D FFT backward transform and get potential
 c
+!$OMP master
          call fftback
-         call fphi_uind (fphid,fphip,fphidp)
-         do i = 1, npole
-            do j = 1, 10
-               fphid(j,i) = electric * fphid(j,i)
-               fphip(j,i) = electric * fphip(j,i)
-            end do
-            do j = 1, 20
-               fphidp(j,i) = electric * fphidp(j,i)
-            end do
-         end do
+!$OMP end master
+!$OMP barrier
+
+
+         call fphi_uind2 
 c
 c     increment the induced dipole energy and gradient
 c
-         e = 0.0d0
+
+!$OMP DO schedule(static,128)reduction(+:e_omp)
          do i = 1, npole
+c merged fdip_phi calculation 
+            do j = 1, 10
+               fdip_phi1_omp(j,i) = electric * fdip_phi1_omp(j,i)
+               fdip_phi2_omp(j,i) = electric * fdip_phi2_omp(j,i)
+            end do
+            do j = 1, 20
+               fdip_sum_phi_omp(j,i) = electric * fdip_sum_phi_omp(j,i)
+            end do
+
             f1 = 0.0d0
             f2 = 0.0d0
             f3 = 0.0d0
@@ -6378,173 +6487,206 @@ c
                j1 = deriv1(k+1)
                j2 = deriv2(k+1)
                j3 = deriv3(k+1)
-               e = e + fuind(k,i)*fphi(k+1,i)
-               f1 = f1 + (fuind(k,i)+fuinp(k,i))*fphi(j1,i)
-     &                 + fuind(k,i)*fphip(j1,i)
-     &                 + fuinp(k,i)*fphid(j1,i)
-               f2 = f2 + (fuind(k,i)+fuinp(k,i))*fphi(j2,i)
-     &                 + fuind(k,i)*fphip(j2,i)
-     &                 + fuinp(k,i)*fphid(j2,i)
-               f3 = f3 + (fuind(k,i)+fuinp(k,i))*fphi(j3,i)
-     &                 + fuind(k,i)*fphip(j3,i)
-     &                 + fuinp(k,i)*fphid(j3,i)
+c!$OMP atomic               
+               e_omp = e_omp + fuind_omp(k,i)*fphi_omp(k+1,i)
+               f1 = f1 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi_omp(j1,i)
+     &                 + fuind_omp(k,i)*fdip_phi2_omp(j1,i)
+     &                 + fuinp_omp(k,i)*fdip_phi1_omp(j1,i)
+               f2 = f2 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi_omp(j2,i)
+     &                 + fuind_omp(k,i)*fdip_phi2_omp(j2,i)
+     &                 + fuinp_omp(k,i)*fdip_phi1_omp(j2,i)
+               f3 = f3 + (fuind_omp(k,i)+fuinp_omp(k,i))*fphi_omp(j3,i)
+     &                 + fuind_omp(k,i)*fdip_phi2_omp(j3,i)
+     &                 + fuinp_omp(k,i)*fdip_phi1_omp(j3,i)
                if (poltyp .eq. 'DIRECT') then
-                  f1 = f1 - fuind(k,i)*fphip(j1,i)
-     &                    - fuinp(k,i)*fphid(j1,i)
-                  f2 = f2 - fuind(k,i)*fphip(j2,i)
-     &                    - fuinp(k,i)*fphid(j2,i)
-                  f3 = f3 - fuind(k,i)*fphip(j3,i)
-     &                    - fuinp(k,i)*fphid(j3,i)
+                  f1 = f1 - fuind_omp(k,i)*fdip_phi2_omp(j1,i)
+     &                    - fuinp_omp(k,i)*fdip_phi1_omp(j1,i)
+                  f2 = f2 - fuind_omp(k,i)*fdip_phi2_omp(j2,i)
+     &                    - fuinp_omp(k,i)*fdip_phi1_omp(j2,i)
+                  f3 = f3 - fuind_omp(k,i)*fdip_phi2_omp(j3,i)
+     &                    - fuinp_omp(k,i)*fdip_phi1_omp(j3,i)
                end if
             end do
             do k = 1, 10
-               f1 = f1 + fmp(k,i)*fphidp(deriv1(k),i)
-               f2 = f2 + fmp(k,i)*fphidp(deriv2(k),i)
-               f3 = f3 + fmp(k,i)*fphidp(deriv3(k),i)
+               f1 = f1 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv1(k),i)
+               f2 = f2 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv2(k),i)
+               f3 = f3 + fmp_omp(k,i)*fdip_sum_phi_omp(deriv3(k),i)
             end do
             f1 = 0.5d0 * dble(nfft1) * f1
             f2 = 0.5d0 * dble(nfft2) * f2
             f3 = 0.5d0 * dble(nfft3) * f3
-            frc(1,i) = recip(1,1)*f1 + recip(1,2)*f2 + recip(1,3)*f3
-            frc(2,i) = recip(2,1)*f1 + recip(2,2)*f2 + recip(2,3)*f3
-            frc(3,i) = recip(3,1)*f1 + recip(3,2)*f2 + recip(3,3)*f3
-         end do
-         e = 0.5d0 * e
-         ep = ep + e
-         do i = 1, npole
+            frc_omp(1,i) = recip(1,1)*f1 + recip(1,2)*f2 + recip(1,3)*f3
+            frc_omp(2,i) = recip(2,1)*f1 + recip(2,2)*f2 + recip(2,3)*f3
+            frc_omp(3,i) = recip(3,1)*f1 + recip(3,2)*f2 + recip(3,3)*f3
+
+c marged two loops             
             ii = ipole(i)
-            dep(1,ii) = dep(1,ii) + frc(1,i)
-            dep(2,ii) = dep(2,ii) + frc(2,i)
-            dep(3,ii) = dep(3,ii) + frc(3,i)
-         end do
+            dep(1,ii) = dep(1,ii) + frc_omp(1,i)
+            dep(2,ii) = dep(2,ii) + frc_omp(2,i)
+            dep(3,ii) = dep(3,ii) + frc_omp(3,i)
 c
 c     set the potential to be the induced dipole average
 c
-         do i = 1, npole
             do k = 1, 10
-               fphidp(k,i) = 0.5d0 * fphidp(k,i)
+               fdip_sum_phi_omp(k,i) = 0.5d0 * fdip_sum_phi_omp(k,i)
             end do
          end do
-         call fphi_to_cphi (fphidp,cphi)
+!$OMP end DO 
+
+         call fphi_to_cphi2 
 c
 c     distribute torques into the induced dipole gradient
 c
+!$OMP DO schedule(static,128)
          do i = 1, npole
-            trq(1,i) = cmp(4,i)*cphi(3,i) - cmp(3,i)*cphi(4,i)
-     &                    + 2.0d0*(cmp(7,i)-cmp(6,i))*cphi(10,i)
-     &                    + cmp(9,i)*cphi(8,i) + cmp(10,i)*cphi(6,i)
-     &                    - cmp(8,i)*cphi(9,i) - cmp(10,i)*cphi(7,i)
-            trq(2,i) = cmp(2,i)*cphi(4,i) - cmp(4,i)*cphi(2,i)
-     &                    + 2.0d0*(cmp(5,i)-cmp(7,i))*cphi(9,i)
-     &                    + cmp(8,i)*cphi(10,i) + cmp(9,i)*cphi(7,i)
-     &                    - cmp(9,i)*cphi(5,i) - cmp(10,i)*cphi(8,i)
-            trq(3,i) = cmp(3,i)*cphi(2,i) - cmp(2,i)*cphi(3,i)
-     &                    + 2.0d0*(cmp(6,i)-cmp(5,i))*cphi(8,i)
-     &                    + cmp(8,i)*cphi(5,i) + cmp(10,i)*cphi(9,i)
-     &                    - cmp(8,i)*cphi(6,i) - cmp(9,i)*cphi(10,i)
+            trq_omp(1,i) = cmp_omp(4,i)*cphi_omp(3,i) 
+     &           - cmp_omp(3,i)*cphi_omp(4,i)
+     &                    + 2.0d0*(cmp_omp(7,i)
+     &           - cmp_omp(6,i))*cphi_omp(10,i)
+     &                    + cmp_omp(9,i)*cphi_omp(8,i) 
+     &           + cmp_omp(10,i)*cphi_omp(6,i)
+     &                    - cmp_omp(8,i)*cphi_omp(9,i) 
+     &           - cmp_omp(10,i)*cphi_omp(7,i)
+            trq_omp(2,i) = cmp_omp(2,i)*cphi_omp(4,i) 
+     &           - cmp_omp(4,i)*cphi_omp(2,i)
+     &                    + 2.0d0*(cmp_omp(5,i)
+     &           - cmp_omp(7,i))*cphi_omp(9,i)
+     &                    + cmp_omp(8,i)*cphi_omp(10,i) 
+     &           + cmp_omp(9,i)*cphi_omp(7,i)
+     &                    - cmp_omp(9,i)*cphi_omp(5,i) 
+     &           - cmp_omp(10,i)*cphi_omp(8,i)
+            trq_omp(3,i) = cmp_omp(3,i)*cphi_omp(2,i) 
+     &           - cmp_omp(2,i)*cphi_omp(3,i)
+     &                    + 2.0d0*(cmp_omp(6,i)
+     &           - cmp_omp(5,i))*cphi_omp(8,i)
+     &                    + cmp_omp(8,i)*cphi_omp(5,i) 
+     &           + cmp_omp(10,i)*cphi_omp(9,i)
+     &                    - cmp_omp(8,i)*cphi_omp(6,i) 
+     &           - cmp_omp(9,i)*cphi_omp(10,i)
+                   
+            frc_omp(1,i) = 0.0d0
+            frc_omp(2,i) = 0.0d0
+            frc_omp(3,i) = 0.0d0
          end do
-         do i = 1, n
-            frc(1,i) = 0.0d0
-            frc(2,i) = 0.0d0
-            frc(3,i) = 0.0d0
-         end do
-         call torque2 (trq,frc)
-         do i = 1, n
-            dep(1,i) = dep(1,i) + frc(1,i)
-            dep(2,i) = dep(2,i) + frc(2,i)
-            dep(3,i) = dep(3,i) + frc(3,i)
-         end do
+!$OMP end DO
+
+         call torque2a 
 c
 c     induced dipole contribution to the internal virial
 c
+!$OMP DO schedule(static,128) reduction(+:vxx_omp,vyx_omp,
+!$OMP& vzx_omp, vyy_omp,vzy_omp,vzz_omp)
          do i = 1, npole
+c merged dep calculation
+            dep(1,i) = dep(1,i) + frc_omp(1,i)
+            dep(2,i) = dep(2,i) + frc_omp(2,i)
+            dep(3,i) = dep(3,i) + frc_omp(3,i)
             do j = 2, 4
                cphim(j) = 0.0d0
                cphid(j) = 0.0d0
                cphip(j) = 0.0d0
                do k = 2, 4
-                  cphim(j) = cphim(j) + ftc(j,k)*fphi(k,i)
-                  cphid(j) = cphid(j) + ftc(j,k)*fphid(k,i)
-                  cphip(j) = cphip(j) + ftc(j,k)*fphip(k,i)
+                  cphim(j) = cphim(j) + ftc(j,k)*fphi_omp(k,i)
+                  cphid(j) = cphid(j) + ftc(j,k)*fdip_phi1_omp(k,i)
+                  cphip(j) = cphip(j) + ftc(j,k)*fdip_phi2_omp(k,i)
                end do
             end do
-            vxx = vxx - cphi(2,i)*cmp(2,i)
+            vxx_omp = vxx_omp - cphi_omp(2,i)*cmp_omp(2,i)
      &                - 0.5d0*(cphim(2)*(uind(1,i)+uinp(1,i))
      &                        +cphid(2)*uinp(1,i)+cphip(2)*uind(1,i))
-            vyx = vyx - 0.5d0*(cphi(2,i)*cmp(3,i)+cphi(3,i)*cmp(2,i))
+            vyx_omp = vyx_omp - 0.5d0*(cphi_omp(2,i)*cmp_omp(3,i)
+     &           + cphi_omp(3,i)*cmp_omp(2,i))
      &                - 0.25d0*(cphim(2)*(uind(2,i)+uinp(2,i))
      &                         +cphim(3)*(uind(1,i)+uinp(1,i))
      &                         +cphid(2)*uinp(2,i)+cphip(2)*uind(2,i)
      &                         +cphid(3)*uinp(1,i)+cphip(3)*uind(1,i))
-            vzx = vzx - 0.5d0*(cphi(2,i)*cmp(4,i)+cphi(4,i)*cmp(2,i))
+            vzx_omp = vzx_omp - 0.5d0*(cphi_omp(2,i)*cmp_omp(4,i)
+     &           + cphi_omp(4,i)*cmp_omp(2,i))
      &                - 0.25d0*(cphim(2)*(uind(3,i)+uinp(3,i))
      &                         +cphim(4)*(uind(1,i)+uinp(1,i))
      &                         +cphid(2)*uinp(3,i)+cphip(2)*uind(3,i)
      &                         +cphid(4)*uinp(1,i)+cphip(4)*uind(1,i))
-            vyy = vyy - cphi(3,i)*cmp(3,i)
+            vyy_omp = vyy_omp - cphi_omp(3,i)*cmp_omp(3,i)
      &                - 0.5d0*(cphim(3)*(uind(2,i)+uinp(2,i))
      &                        +cphid(3)*uinp(2,i)+cphip(3)*uind(2,i))
-            vzy = vzy - 0.5d0*(cphi(3,i)*cmp(4,i)+cphi(4,i)*cmp(3,i))
+            vzy_omp = vzy_omp - 0.5d0*(cphi_omp(3,i)*cmp_omp(4,i)
+     &           + cphi_omp(4,i)*cmp_omp(3,i))
      &                - 0.25d0*(cphim(3)*(uind(3,i)+uinp(3,i))
      &                         +cphim(4)*(uind(2,i)+uinp(2,i))
      &                         +cphid(3)*uinp(3,i)+cphip(3)*uind(3,i)
      &                         +cphid(4)*uinp(2,i)+cphip(4)*uind(2,i))
-            vzz = vzz - cphi(4,i)*cmp(4,i)
+            vzz_omp = vzz_omp - cphi_omp(4,i)*cmp_omp(4,i)
      &                - 0.5d0*(cphim(4)*(uind(3,i)+uinp(3,i))
      &                        +cphid(4)*uinp(3,i)+cphip(4)*uind(3,i))
-            vxx = vxx - 2.0d0*cmp(5,i)*cphi(5,i) - cmp(8,i)*cphi(8,i)
-     &                - cmp(9,i)*cphi(9,i)
-            vyx = vyx - (cmp(5,i)+cmp(6,i))*cphi(8,i)
-     &                - 0.5d0*(cmp(8,i)*(cphi(6,i)+cphi(5,i))
-     &                     +cmp(9,i)*cphi(10,i)+cmp(10,i)*cphi(9,i))
-            vzx = vzx - (cmp(5,i)+cmp(7,i))*cphi(9,i)
-     &                - 0.5d0*(cmp(9,i)*(cphi(5,i)+cphi(7,i))
-     &                     +cmp(8,i)*cphi(10,i)+cmp(10,i)*cphi(8,i))
-            vyy = vyy - 2.0d0*cmp(6,i)*cphi(6,i) - cmp(8,i)*cphi(8,i)
-     &                - cmp(10,i)*cphi(10,i)
-            vzy = vzy - (cmp(6,i)+cmp(7,i))*cphi(10,i)
-     &                - 0.5d0*(cmp(10,i)*(cphi(6,i)+cphi(7,i))
-     &                     +cmp(8,i)*cphi(9,i)+cmp(9,i)*cphi(8,i))
-            vzz = vzz - 2.0d0*cmp(7,i)*cphi(7,i) - cmp(9,i)*cphi(9,i)
-     &                - cmp(10,i)*cphi(10,i)
+            vxx_omp = vxx_omp - 2.0d0*cmp_omp(5,i)*cphi_omp(5,i) 
+     &           - cmp_omp(8,i)*cphi_omp(8,i)
+     &                - cmp_omp(9,i)*cphi_omp(9,i)
+            vyx_omp = vyx_omp - (cmp_omp(5,i)
+     &           + cmp_omp(6,i))*cphi_omp(8,i)
+     &                - 0.5d0*(cmp_omp(8,i)*(cphi_omp(6,i)
+     &           + cphi_omp(5,i))
+     &                     +cmp_omp(9,i)*cphi_omp(10,i)
+     &           + cmp_omp(10,i)*cphi_omp(9,i))
+            vzx_omp = vzx_omp - (cmp_omp(5,i)
+     &           + cmp_omp(7,i))*cphi_omp(9,i)
+     &                - 0.5d0*(cmp_omp(9,i)*(cphi_omp(5,i)
+     &           + cphi_omp(7,i))
+     &                     +cmp_omp(8,i)*cphi_omp(10,i)
+     &           + cmp_omp(10,i)*cphi_omp(8,i))
+            vyy_omp = vyy_omp - 2.0d0*cmp_omp(6,i)*cphi_omp(6,i) 
+     &           - cmp_omp(8,i)*cphi_omp(8,i)
+     &                - cmp_omp(10,i)*cphi_omp(10,i)
+            vzy_omp = vzy_omp - (cmp_omp(6,i)
+     &           + cmp_omp(7,i))*cphi_omp(10,i)
+     &                - 0.5d0*(cmp_omp(10,i)*(cphi_omp(6,i)
+     &           + cphi_omp(7,i))
+     &                     +cmp_omp(8,i)*cphi_omp(9,i)
+     &           + cmp_omp(9,i)*cphi_omp(8,i))
+            vzz_omp = vzz_omp - 2.0d0*cmp_omp(7,i)*cphi_omp(7,i) 
+     &           - cmp_omp(9,i)*cphi_omp(9,i)
+     &                - cmp_omp(10,i)*cphi_omp(10,i)
             if (poltyp .eq. 'DIRECT') then
-               vxx = vxx + 0.5d0*(cphid(2)*uinp(1,i)+cphip(2)*uind(1,i))
-               vyx = vyx + 0.25d0*(cphid(2)*uinp(2,i)+cphip(2)*uind(2,i)
+               vxx_omp = vxx_omp + 0.5d0*(cphid(2)*uinp(1,i)
+     &              + cphip(2)*uind(1,i))
+               vyx_omp = vyx_omp + 0.25d0*(cphid(2)*uinp(2,i)
+     &              + cphip(2)*uind(2,i)
      &                           +cphid(3)*uinp(1,i)+cphip(3)*uind(1,i))
-               vzx = vzx + 0.25d0*(cphid(2)*uinp(3,i)+cphip(2)*uind(3,i)
+               vzx_omp = vzx_omp + 0.25d0*(cphid(2)*uinp(3,i)
+     &              + cphip(2)*uind(3,i)
      &                           +cphid(4)*uinp(1,i)+cphip(4)*uind(1,i))
-               vyy = vyy + 0.5d0*(cphid(3)*uinp(2,i)+cphip(3)*uind(2,i))
-               vzy = vzy + 0.25d0*(cphid(3)*uinp(3,i)+cphip(3)*uind(3,i)
+               vyy_omp = vyy_omp + 0.5d0*(cphid(3)*uinp(2,i)
+     &              + cphip(3)*uind(2,i))
+               vzy_omp = vzy_omp + 0.25d0*(cphid(3)*uinp(3,i)
+     &              + cphip(3)*uind(3,i)
      &                           +cphid(4)*uinp(2,i)+cphip(4)*uind(2,i))
-               vzz = vzz + 0.5d0*(cphid(4)*uinp(3,i)+cphip(4)*uind(3,i))
+               vzz_omp = vzz_omp + 0.5d0*(cphid(4)*uinp(3,i)
+     &              + cphip(4)*uind(3,i))
             end if
          end do
+!$OMP end DO 
       end if
 c
 c     increment the internal virial tensor components
 c
-      vir(1,1) = vir(1,1) + vxx
-      vir(2,1) = vir(2,1) + vyx
-      vir(3,1) = vir(3,1) + vzx
-      vir(1,2) = vir(1,2) + vyx
-      vir(2,2) = vir(2,2) + vyy
-      vir(3,2) = vir(3,2) + vzy
-      vir(1,3) = vir(1,3) + vzx
-      vir(2,3) = vir(2,3) + vzy
-      vir(3,3) = vir(3,3) + vzz
+!$OMP master
+      e = 0.5d0 * e_omp
+      ep = ep + e
+      vir(1,1) = vir(1,1) + vxx_omp
+      vir(2,1) = vir(2,1) + vyx_omp
+      vir(3,1) = vir(3,1) + vzx_omp
+      vir(1,2) = vir(1,2) + vyx_omp
+      vir(2,2) = vir(2,2) + vyy_omp
+      vir(3,2) = vir(3,2) + vzy_omp
+      vir(1,3) = vir(1,3) + vzx_omp
+      vir(2,3) = vir(2,3) + vzy_omp
+      vir(3,3) = vir(3,3) + vzz_omp
+!$OMP end master
+!$OMP barrier
+!$OMP flush
+
 c
 c     perform deallocation of some local arrays
 c
-      deallocate (frc)
-      deallocate (trq)
-      deallocate (fuind)
-      deallocate (fuinp)
-      deallocate (cmp)
-      deallocate (fmp)
-      deallocate (fphi)
-      deallocate (fphid)
-      deallocate (fphip)
-      deallocate (fphidp)
-      deallocate (cphi)
+c      deallocate (fphi)
       return
       end

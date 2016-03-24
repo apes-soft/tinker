@@ -779,11 +779,51 @@ c
       if(allocated(udir_omp)) deallocate(udir_omp)
       if(allocated(udirp_omp)) deallocate(udirp_omp)
 
+      if(allocated(poli_omp)) deallocate(poli_omp)
+      if(allocated(rsdp_omp)) deallocate(rsdp_omp)
+      if(allocated(rsd_omp)) deallocate(rsd_omp)
+
+      if(allocated(zrsd_omp)) deallocate(zrsd_omp)
+      if(allocated(zrsdp_omp)) deallocate(zrsdp_omp)
+      if(allocated(zrsdtp_omp)) deallocate(zrsdtp_omp)
+      if(allocated(zrsdt_omp)) deallocate(zrsdt_omp)
+
+      if(allocated(conjp_omp)) deallocate(conjp_omp)
+      if(allocated(conj_omp)) deallocate(conj_omp)
+
+      if(allocated(vec_omp)) deallocate(vec_omp)
+      if(allocated(vecp_omp)) deallocate(vecp_omp)
+
+      if(allocated(fuind_omp)) deallocate(fuind_omp)
+      if(allocated(fuinp_omp)) deallocate(fuinp_omp)
+
       if(allocated(dem1)) deallocate(dem1)
       if(allocated(dem2)) deallocate(dem2)
       if(allocated(dep1)) deallocate(dep1)
       if(allocated(dep2)) deallocate(dep2)
-       
+
+      if(allocated(fdip_phi1_omp)) deallocate(fdip_phi1_omp)
+      if(allocated(fdip_phi2_omp)) deallocate (fdip_phi2_omp)
+      if(allocated(fdip_sum_phi_omp)) deallocate (fdip_sum_phi_omp)
+      if(allocated(dipfield1_omp)) deallocate(dipfield1_omp)
+      if(allocated(dipfield2_omp)) deallocate (dipfield2_omp)
+
+      if(allocated(fmp_omp)) deallocate(fmp_omp)
+      if(allocated(cmp_omp)) deallocate(cmp_omp)
+      if(allocated(cphi_omp)) deallocate(cphi_omp)
+      if(allocated(frc_omp)) deallocate (frc_omp)
+      if(allocated(trq_omp)) deallocate (trq_omp)
+      if(allocated(fphi_omp)) deallocate(fphi_omp)
+      if(allocated(update_omp)) deallocate(update_omp)
+      if(allocated(do_list)) deallocate(do_list)
+
+      if(allocated(xsort_omp)) then
+         deallocate (xsort_omp)
+         deallocate (ysort_omp)
+         deallocate (zsort_omp)
+      end if
+
+
 c
 c     free memory used by the APBS Poisson-Boltzmann solver
 c
