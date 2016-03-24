@@ -40,6 +40,7 @@ c
       use neigh
       use vdw
       use polpot
+      use pme
       implicit none
       integer i,j,k
       real*8 energy,cutoff
@@ -47,6 +48,9 @@ c
       real*8 elrc, vlrc
       integer maxlocal
 !$    integer omp_get_thread_num
+
+
+c      allocate(qgrip_omp(2,nfft1,nfft2,nfft3))
 
 
       maxlocal = int(dble(npole)*dble(maxelst)/dble(nthread))
@@ -96,6 +100,8 @@ c
       if(.not. allocated(en_th)) allocate(en_th(nthread))
       if(.not. allocated(fieldt_omp)) allocate(fieldt_omp(3,n))
       if(.not. allocated(fieldtp_omp)) allocate(fieldtp_omp(3,n))
+      if(.not. allocated(qgrid_omp)) 
+     &     allocate(qgrid_omp(nthread,2,nfft1,nfft2,nfft3))
 
       if(.not. allocated(xred_th)) then
          allocate(xred_th(n))
@@ -119,7 +125,7 @@ c         allocate(vscale_th(n))
 
       field_omp = 0.0d0
       fieldp_omp = 0.0d0
-
+      
       if(.not. allocated(udir_omp)) allocate(udir_omp(3,npole))
       if(.not. allocated(udirp_omp)) allocate(udirp_omp(3,npole))
       
@@ -227,6 +233,7 @@ C$$$!$OMP& eb, ea,eba, eub, eaa, eopb, eopd, eid, eit, et, ept, ebt, eat,
 C$$$!$OMP& ett,ev, ec, ecd, ed,em,ep,er,es,elf,eg, ex,energy, desum) 
 
 !$OMP parallel default(shared) 
+cprivate(qgrip_omp)
       
       th_id = 1
 !$      th_id = omp_get_thread_num() + 1
@@ -371,6 +378,8 @@ c      if (use_geom)  call egeom1
 c      if (use_extra)  call extra1
 c
 c     sum up to get the total energy and first derivatives
+
+c      deallocate(qgrip_omp)
 
       einter = einter + em + ep - eint !eintra_omp !eint
 
