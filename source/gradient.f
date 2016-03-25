@@ -111,10 +111,10 @@ c         allocate(vscale_th(n))
          allocate(iv14_th(n))
       end if
 
-      if(.not. allocated(fieldt_tmp)) then
-         allocate(fieldt_tmp(nthread,3,n))
-         allocate(fieldtp_tmp(nthread,3,n))
-      end if
+c      if(.not. allocated(fieldt_tmp)) then
+c         allocate(fieldt_tmp(nthread,3,n))
+c         allocate(fieldtp_tmp(nthread,3,n))
+c      end if
 
 
       if(.not. allocated(pscale_omp)) then
