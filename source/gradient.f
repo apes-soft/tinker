@@ -346,7 +346,7 @@ c
          if (vdwtyp .eq. 'GAUSSIAN')  call egauss1
       end if
 
-      call chkpole
+      call chkpole1
       call rotpole
       call induce ! not everything is parallel
    
