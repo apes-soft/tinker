@@ -823,6 +823,11 @@ c
          deallocate (zsort_omp)
       end if
 
+      if(allocated(fieldt_tmp)) deallocate(fieldt_tmp)
+      if(allocated(fieldtp_tmp)) deallocate(fieldtp_tmp)
+
+
+
 c      if(allocated(qgrid_omp)) deallocate(qgrid_omp)
 
 c

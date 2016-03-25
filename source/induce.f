@@ -3337,10 +3337,19 @@ c
          end do
       end do
 !$OMP END DO
+
+      do i =1,npole
+         do j=1,3
+            fieldt_tmp(th_id,j,i) = 0.0d0
+            fieldtp_tmp(th_id,j,i) = 0.0d0
+         end do
+      end do
+      
 c
 c     find the field terms for each pairwise interaction
 c
-!$OMP DO reduction(+:fieldt_omp,fieldtp_omp) schedule(guided)
+creduction(+:fieldt_omp,fieldtp_omp)
+!$OMP DO schedule(guided)
       do m = 1, ntpair
          i = tindex(1,m)
          k = tindex(2,m)
@@ -3372,13 +3381,35 @@ c
 c     increment the field at each site due to this interaction
 c
          do j = 1, 3
-            fieldt_omp(j,i) = fieldt_omp(j,i) + fimd(j)
-            fieldt_omp(j,k) = fieldt_omp(j,k) + fkmd(j)
-            fieldtp_omp(j,i) = fieldtp_omp(j,i) + fimp(j)
-            fieldtp_omp(j,k) = fieldtp_omp(j,k) + fkmp(j)
+            fieldt_tmp(th_id,j,i) = fieldt_tmp(th_id,j,i) + fimd(j)
+            fieldt_tmp(th_id,j,k) = fieldt_tmp(th_id,j,k) + fkmd(j)
+            fieldtp_tmp(th_id,j,i) = fieldtp_tmp(th_id,j,i) + fimp(j)
+            fieldtp_tmp(th_id,j,k) = fieldtp_tmp(th_id,j,k) + fkmp(j)
          end do
+
+
+
+C$$$         do j = 1, 3
+C$$$            fieldt_omp(j,i) = fieldt_omp(j,i) + fimd(j)
+C$$$            fieldt_omp(j,k) = fieldt_omp(j,k) + fkmd(j)
+C$$$            fieldtp_omp(j,i) = fieldtp_omp(j,i) + fimp(j)
+C$$$            fieldtp_omp(j,k) = fieldtp_omp(j,k) + fkmp(j)
+C$$$         end do
       end do
 !$OMP END DO
+
+!$OMP single
+      do i =1,npole
+         do j = 1,3
+            do k = 1,nthread
+               fieldt_omp(j,i) = fieldt_omp(j,i) + fieldt_tmp(k,j,i)
+               fieldtp_omp(j,i) = fieldtp_omp(j,i) + fieldtp_tmp(k,j,i)
+            end do
+         end do
+      end do
+!$OMP end single
+
+
 c
 c     end OpenMP directives for the major loop structure
 c
