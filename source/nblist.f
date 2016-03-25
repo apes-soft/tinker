@@ -140,7 +140,7 @@ c
             end do
          end if
       end do
-!$OMP END DO
+!$OMP END DO no wait
 c
 c     adjust lists of lower numbered neighbors of updated sites
 c
@@ -186,7 +186,7 @@ c!$OMP END CRITICAL
             end do
          end if
       end do
-!$OMP END DO
+!$OMP END DO no wait
 c
 c     check to see if any neighbor lists are too long
 c
@@ -1433,7 +1433,7 @@ c
             end do
          end if
       end do
-!$OMP END DO
+!$OMP END DO no wait
 c
 c     adjust lists of lower numbered neighbors of updated sites
 c
@@ -1481,7 +1481,7 @@ c!$OMP END CRITICAL
             end do
          end if
       end do
-!$OMP END DO
+!$OMP END DO no wait
 c
 c     check to see if any neighbor lists are too long
 c
@@ -2109,7 +2109,7 @@ c
             end do
          end if
       end do
-!$OMP END DO
+!$OMP END DO no wait
 c
 c     adjust lists of lower numbered neighbors of updated sites
 c
@@ -2156,7 +2156,7 @@ c!$OMP END CRITICAL
             end do
          end if
       end do
-!$OMP END DO
+!$OMP END DO no wait
 c
 c     check to see if any neighbor lists are too long
 c
