@@ -158,7 +158,6 @@ c
                   call imagen (xr,yr,zr)
                   r2 = xr*xr + yr*yr + zr*zr
                   if (r2 .le. vbuf2) then
-c!$OMP CRITICAL
                      do j = 1, nvlst(k)
                         if (vlst(j,k) .eq. i)  goto 20
                      end do
@@ -167,9 +166,7 @@ c!$OMP CRITICAL
                      vlst(nvlst(k),k) = i
 !$OMP end critical
    20                continue
-c!$OMP END CRITICAL
                   else if (r2 .le. vbufx) then
-c!$OMP CRITICAL
                      do j = 1, nvlst(k)
                         if (vlst(j,k) .eq. i) then
 !$OMP critical
@@ -180,7 +177,6 @@ c!$OMP CRITICAL
                         end if
                      end do
    30                continue
-c!$OMP END CRITICAL
                   end if
                end if
             end do
@@ -404,9 +400,6 @@ c
       integer i,k
       real*8 xi,yi,zi
       real*8 xr,yr,zr,r2
-C$$$      real*8 xred(*)
-C$$$      real*8 yred(*)
-C$$$      real*8 zred(*)
 c
 c
 c     set OpenMP directives for the major loop structure
@@ -1453,7 +1446,6 @@ c
                   call imagen (xr,yr,zr)
                   r2 = xr*xr + yr*yr + zr*zr
                   if (r2 .le. mbuf2) then
-c!$OMP CRITICAL
                      do j = 1, nelst(k)
                         if (elst(j,k) .eq. i)  goto 20
                      end do
@@ -1462,9 +1454,7 @@ c!$OMP CRITICAL
                      elst(nelst(k),k) = i
 !$OMP end critical
    20                continue
-c!$OMP END CRITICAL
                   else if (r2 .le. mbufx) then
-c!$OMP CRITICAL
                      do j = 1, nelst(k)
                         if (elst(j,k) .eq. i) then
 !$OMP critical
@@ -1475,7 +1465,6 @@ c!$OMP CRITICAL
                         end if
                      end do
    30                continue
-c!$OMP END CRITICAL
                   end if
                end if
             end do
@@ -2128,7 +2117,6 @@ c
                   call imagen (xr,yr,zr)
                   r2 = xr*xr + yr*yr + zr*zr
                   if (r2 .le. ubuf2) then
-c!$OMP CRITICAL
                      do j = 1, nulst(k)
                         if (ulst(j,k) .eq. i)  goto 20
                      end do
@@ -2137,9 +2125,7 @@ c!$OMP CRITICAL
                      ulst(nulst(k),k) = i
 !$OMP end critical
    20                continue
-c!$OMP END CRITICAL
                   else if (r2 .le. ubufx) then
-c!$OMP CRITICAL
                      do j = 1, nulst(k)
                         if (ulst(j,k) .eq. i) then
 !$OMP critical
@@ -2150,7 +2136,6 @@ c!$OMP CRITICAL
                         end if
                      end do
    30                continue
-c!$OMP END CRITICAL
                   end if
                end if
             end do
