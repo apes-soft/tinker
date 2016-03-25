@@ -3337,19 +3337,10 @@ c
          end do
       end do
 !$OMP END DO
-
-      do i =1,npole
-         do j=1,3
-            fieldt_tmp(th_id,j,i) = 0.0d0
-            fieldtp_tmp(th_id,j,i) = 0.0d0
-         end do
-      end do
-      
 c
 c     find the field terms for each pairwise interaction
 c
-creduction(+:fieldt_omp,fieldtp_omp)
-!$OMP DO schedule(guided)
+!$OMP DO reduction(+:fieldt_omp) schedule(guided)
       do m = 1, ntpair
          i = tindex(1,m)
          k = tindex(2,m)
@@ -3365,6 +3356,46 @@ creduction(+:fieldt_omp,fieldtp_omp)
      &        tdipdip(4,m)*uind(2,i) + tdipdip(5,m)*uind(3,i)
          fkmd(3) = tdipdip(3,m)*uind(1,i) + 
      &        tdipdip(5,m)*uind(2,i)  + tdipdip(6,m)*uind(3,i)
+C$$$         fimp(1) = tdipdip(1,m)*uinp(1,k) + 
+C$$$     &        tdipdip(2,m)*uinp(2,k) + tdipdip(3,m)*uinp(3,k)
+C$$$         fimp(2) = tdipdip(2,m)*uinp(1,k) + 
+C$$$     &        tdipdip(4,m)*uinp(2,k) + tdipdip(5,m)*uinp(3,k)
+C$$$         fimp(3) = tdipdip(3,m)*uinp(1,k) + 
+C$$$     &        tdipdip(5,m)*uinp(2,k) + tdipdip(6,m)*uinp(3,k)
+C$$$         fkmp(1) = tdipdip(1,m)*uinp(1,i) + 
+C$$$     &        tdipdip(2,m)*uinp(2,i) + tdipdip(3,m)*uinp(3,i)
+C$$$         fkmp(2) = tdipdip(2,m)*uinp(1,i) + 
+C$$$     &        tdipdip(4,m)*uinp(2,i) + tdipdip(5,m)*uinp(3,i)
+C$$$         fkmp(3) = tdipdip(3,m)*uinp(1,i) + 
+C$$$     &        tdipdip(5,m)*uinp(2,i) + tdipdip(6,m)*uinp(3,i)
+c
+c     increment the field at each site due to this interaction
+c
+         do j = 1, 3
+            fieldt_omp(j,i) = fieldt_omp(j,i) + fimd(j)
+            fieldt_omp(j,k) = fieldt_omp(j,k) + fkmd(j)
+C$$$            fieldtp_omp(j,i) = fieldtp_omp(j,i) + fimp(j)
+C$$$            fieldtp_omp(j,k) = fieldtp_omp(j,k) + fkmp(j)
+         end do
+      end do
+!$OMP END DO nowait
+
+!$OMP DO reduction(+:fieldtp_omp) schedule(guided)
+      do m = 1, ntpair
+         i = tindex(1,m)
+         k = tindex(2,m)
+C$$$         fimd(1) = tdipdip(1,m)*uind(1,k) + 
+C$$$     &        tdipdip(2,m)*uind(2,k) + tdipdip(3,m)*uind(3,k)
+C$$$         fimd(2) = tdipdip(2,m)*uind(1,k) + 
+C$$$     &        tdipdip(4,m)*uind(2,k) + tdipdip(5,m)*uind(3,k)
+C$$$         fimd(3) = tdipdip(3,m)*uind(1,k) + 
+C$$$     &        tdipdip(5,m)*uind(2,k) + tdipdip(6,m)*uind(3,k)
+C$$$         fkmd(1) = tdipdip(1,m)*uind(1,i) +
+C$$$     &        tdipdip(2,m)*uind(2,i) + tdipdip(3,m)*uind(3,i)
+C$$$         fkmd(2) = tdipdip(2,m)*uind(1,i) + 
+C$$$     &        tdipdip(4,m)*uind(2,i) + tdipdip(5,m)*uind(3,i)
+C$$$         fkmd(3) = tdipdip(3,m)*uind(1,i) + 
+C$$$     &        tdipdip(5,m)*uind(2,i)  + tdipdip(6,m)*uind(3,i)
          fimp(1) = tdipdip(1,m)*uinp(1,k) + 
      &        tdipdip(2,m)*uinp(2,k) + tdipdip(3,m)*uinp(3,k)
          fimp(2) = tdipdip(2,m)*uinp(1,k) + 
@@ -3381,35 +3412,13 @@ c
 c     increment the field at each site due to this interaction
 c
          do j = 1, 3
-            fieldt_tmp(th_id,j,i) = fieldt_tmp(th_id,j,i) + fimd(j)
-            fieldt_tmp(th_id,j,k) = fieldt_tmp(th_id,j,k) + fkmd(j)
-            fieldtp_tmp(th_id,j,i) = fieldtp_tmp(th_id,j,i) + fimp(j)
-            fieldtp_tmp(th_id,j,k) = fieldtp_tmp(th_id,j,k) + fkmp(j)
-         end do
-
-
-
-C$$$         do j = 1, 3
 C$$$            fieldt_omp(j,i) = fieldt_omp(j,i) + fimd(j)
 C$$$            fieldt_omp(j,k) = fieldt_omp(j,k) + fkmd(j)
-C$$$            fieldtp_omp(j,i) = fieldtp_omp(j,i) + fimp(j)
-C$$$            fieldtp_omp(j,k) = fieldtp_omp(j,k) + fkmp(j)
-C$$$         end do
-      end do
-!$OMP END DO
-
-!$OMP single
-      do i =1,npole
-         do j = 1,3
-            do k = 1,nthread
-               fieldt_omp(j,i) = fieldt_omp(j,i) + fieldt_tmp(k,j,i)
-               fieldtp_omp(j,i) = fieldtp_omp(j,i) + fieldtp_tmp(k,j,i)
-            end do
+            fieldtp_omp(j,i) = fieldtp_omp(j,i) + fimp(j)
+            fieldtp_omp(j,k) = fieldtp_omp(j,k) + fkmp(j)
          end do
       end do
-!$OMP end single
-
-
+!$OMP END DO
 c
 c     end OpenMP directives for the major loop structure
 c
@@ -6228,10 +6237,10 @@ c
 
 c
 c     use the off-diagonal preconditioner elements in second phase
-c
-
-!$OMP DO private(m,k,m1,m2,m3,m4,m5,m6) reduction(+:zrsdt_omp, 
-!$OMP& zrsdtp_omp) schedule(guided)
+c  reduction(+:zrsdt_omp, 
+c!$OMP& zrsdtp_omp) 
+!$OMP DO private(m,k,m1,m2,m3,m4,m5,m6) schedule(static)
+!$OMP& reduction(+:zrsdt_omp)
          do i = 1, npole
             m = mindex(i)
             do kk = 1, nulst(i)
@@ -6249,25 +6258,76 @@ c
      &              + m4*rsd_omp(2,k) + m5*rsd_omp(3,k)
                zrsdt_omp(3,i) = zrsdt_omp(3,i) + m3*rsd_omp(1,k) 
      &              + m5*rsd_omp(2,k) + m6*rsd_omp(3,k)
+
                zrsdt_omp(1,k) = zrsdt_omp(1,k) + m1*rsd_omp(1,i) 
      &              + m2*rsd_omp(2,i) + m3*rsd_omp(3,i)
                zrsdt_omp(2,k) = zrsdt_omp(2,k) + m2*rsd_omp(1,i) 
      &              + m4*rsd_omp(2,i) + m5*rsd_omp(3,i)
                zrsdt_omp(3,k) = zrsdt_omp(3,k) + m3*rsd_omp(1,i) 
      &              + m5*rsd_omp(2,i) + m6*rsd_omp(3,i)
+
+C$$$               zrsdtp_omp(1,i) = zrsdtp_omp(1,i) + m1*rsdp_omp(1,k) 
+C$$$     &              + m2*rsdp_omp(2,k) + m3*rsdp_omp(3,k)
+C$$$               zrsdtp_omp(2,i) = zrsdtp_omp(2,i) + m2*rsdp_omp(1,k) 
+C$$$     &              + m4*rsdp_omp(2,k) + m5*rsdp_omp(3,k)
+C$$$               zrsdtp_omp(3,i) = zrsdtp_omp(3,i) + m3*rsdp_omp(1,k) 
+C$$$     &              + m5*rsdp_omp(2,k) + m6*rsdp_omp(3,k)
+
+C$$$               zrsdtp_omp(1,k) = zrsdtp_omp(1,k) + m1*rsdp_omp(1,i) 
+C$$$     &              + m2*rsdp_omp(2,i) + m3*rsdp_omp(3,i)
+C$$$               zrsdtp_omp(2,k) = zrsdtp_omp(2,k) + m2*rsdp_omp(1,i) 
+C$$$     &              + m4*rsdp_omp(2,i) + m5*rsdp_omp(3,i)
+C$$$               zrsdtp_omp(3,k) = zrsdtp_omp(3,k) + m3*rsdp_omp(1,i) 
+C$$$     &              + m5*rsdp_omp(2,i) + m6*rsdp_omp(3,i)
+            end do
+         end do
+!$OMP END DO no wait
+creduction(+:zrsdt_omp, 
+c!$OMP& zrsdtp_omp)
+
+!$OMP DO private(m,k,m1,m2,m3,m4,m5,m6) schedule(guided)
+!$OMP& reduction(+:zrsdtp_omp)
+         do i = 1, npole
+            m = mindex(i)
+            do kk = 1, nulst(i)
+               k = ulst(kk,i)
+               m1 = minv(m+1)
+               m2 = minv(m+2)
+               m3 = minv(m+3)
+               m4 = minv(m+4)
+               m5 = minv(m+5)
+               m6 = minv(m+6)
+               m = m + 6
+C$$$               zrsdt_omp(1,i) = zrsdt_omp(1,i) + m1*rsd_omp(1,k) 
+C$$$     &              + m2*rsd_omp(2,k)+ m3*rsd_omp(3,k)
+C$$$               zrsdt_omp(2,i) = zrsdt_omp(2,i) + m2*rsd_omp(1,k) 
+C$$$     &              + m4*rsd_omp(2,k) + m5*rsd_omp(3,k)
+C$$$               zrsdt_omp(3,i) = zrsdt_omp(3,i) + m3*rsd_omp(1,k) 
+C$$$     &              + m5*rsd_omp(2,k) + m6*rsd_omp(3,k)
+
+C$$$               zrsdt_omp(1,k) = zrsdt_omp(1,k) + m1*rsd_omp(1,i) 
+C$$$     &              + m2*rsd_omp(2,i) + m3*rsd_omp(3,i)
+C$$$               zrsdt_omp(2,k) = zrsdt_omp(2,k) + m2*rsd_omp(1,i) 
+C$$$     &              + m4*rsd_omp(2,i) + m5*rsd_omp(3,i)
+C$$$               zrsdt_omp(3,k) = zrsdt_omp(3,k) + m3*rsd_omp(1,i) 
+C$$$     &              + m5*rsd_omp(2,i) + m6*rsd_omp(3,i)
+
+
                zrsdtp_omp(1,i) = zrsdtp_omp(1,i) + m1*rsdp_omp(1,k) 
      &              + m2*rsdp_omp(2,k) + m3*rsdp_omp(3,k)
                zrsdtp_omp(2,i) = zrsdtp_omp(2,i) + m2*rsdp_omp(1,k) 
      &              + m4*rsdp_omp(2,k) + m5*rsdp_omp(3,k)
                zrsdtp_omp(3,i) = zrsdtp_omp(3,i) + m3*rsdp_omp(1,k) 
      &              + m5*rsdp_omp(2,k) + m6*rsdp_omp(3,k)
+
                zrsdtp_omp(1,k) = zrsdtp_omp(1,k) + m1*rsdp_omp(1,i) 
      &              + m2*rsdp_omp(2,i) + m3*rsdp_omp(3,i)
                zrsdtp_omp(2,k) = zrsdtp_omp(2,k) + m2*rsdp_omp(1,i) 
      &              + m4*rsdp_omp(2,i) + m5*rsdp_omp(3,i)
                zrsdtp_omp(3,k) = zrsdtp_omp(3,k) + m3*rsdp_omp(1,i) 
      &              + m5*rsdp_omp(2,i) + m6*rsdp_omp(3,i)
-            end do
+
+            end do           
          end do
 !$OMP END DO
 c
