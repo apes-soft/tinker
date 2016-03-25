@@ -1765,7 +1765,7 @@ c
 c     copy multipole moments and coordinates to local storage
 c
 
-!$OMP DO schedule(static,128)
+!$OMP DO schedule(guided)
       do i = 1, npole
          cmp_omp(1,i) = rpole(1,i)
          cmp_omp(2,i) = rpole(2,i)
@@ -1778,7 +1778,7 @@ c
          cmp_omp(9,i) = 2.0d0 * rpole(7,i)
          cmp_omp(10,i) = 2.0d0 * rpole(10,i)
       end do
-!$OMP end DO 
+!$OMP end DO nowait
 c
 c     compute B-spline coefficients and spatial decomposition
 c
@@ -6282,8 +6282,6 @@ C$$$     &              + m5*rsdp_omp(2,i) + m6*rsdp_omp(3,i)
             end do
          end do
 !$OMP END DO no wait
-creduction(+:zrsdt_omp, 
-c!$OMP& zrsdtp_omp)
 
 !$OMP DO private(m,k,m1,m2,m3,m4,m5,m6) schedule(guided)
 !$OMP& reduction(+:zrsdtp_omp)
