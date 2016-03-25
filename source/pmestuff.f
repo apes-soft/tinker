@@ -519,18 +519,6 @@ c
       end do
 !$OMP end DO
       
-c      qgrip_omp = 0.0d0
-      
-
-C$$$      do k = 1, nfft3
-C$$$         do j = 1, nfft2
-C$$$            do i = 1, nfft1
-C$$$               qgrid_omp(th_id,1,i,j,k) = 0.0d0
-C$$$c               qgrid_omp(th_id,2,i,j,k) = 0.0d0
-C$$$            end do
-C$$$         end do
-C$$$      end do
-
 c
 c     set OpenMP directives for the major loop structure
 c
@@ -543,11 +531,6 @@ c
 c     put the permanent multipole moments onto the grid
 c
       do ichk = 1, nchunk
-c      do new_iter = 0, nchunk*npole
-
-c         isite = mod(new_iter,npole)+ 1
-c         ichk = new_iter/npole + 1
-
          cid(1) = mod(ichk-1,nchk1)
          cid(2) = mod(((ichk-1-cid(1))/nchk1),nchk2)
          cid(3) = mod((ichk-1)/(nchk1*nchk2),nchk3)
@@ -606,10 +589,6 @@ c         ichk = new_iter/npole + 1
                         t0 = thetai1(1,m,iatm)
                         t1 = thetai1(2,m,iatm)
                         t2 = thetai1(3,m,iatm)
-c                       qgrid_omp(th_id,1,i,j,k)=qgrid_omp(th_id,1,i,j,k) 
-c     &                       + term0*t0 + term1*t1 + term2*t2
-c                        qgrip_omp(1,i,j,k)=qgrip_omp(1,i,j,k) 
-c     &                       + term0*t0 + term1*t1 + term2*t2
                         qgrid(1,i,j,k) = qgrid(1,i,j,k) 
      &                       + term0*t0 + term1*t1 + term2*t2
                      end do
@@ -622,33 +601,6 @@ c
 c     end OpenMP directive for the major loop structure
 c
 !$OMP END DO
-
-         
-
-C$$$!$OMP critical
-C$$$          do k = 1, nfft3
-C$$$            do j = 1, nfft2
-C$$$               do i = 1, nfft1
-C$$$                  qgrid(1,i,j,k) = qgrid(1,i,j,k) + qgrip_omp(1,i,j,k)
-C$$$               end do
-C$$$            end do
-C$$$         end do
-C$$$!$OMP end critical
-         
-      
-
-C$$$!$OMP DO collapse(3)
-C$$$         do k = 1, nfft3
-C$$$            do j = 1, nfft2
-C$$$               do i = 1, nfft1
-C$$$                  do m=1,nthread
-C$$$                     qgrid(1,i,j,k) =qgrid(1,i,j,k)+qgrid_omp(m,1,i,j,k)
-C$$$                  end do
-C$$$               end do
-C$$$            end do
-C$$$         end do
-C$$$!$OMP end DO 
-c      deallocate(qgrip)
 
       return
       end
@@ -833,17 +785,6 @@ c
       end do
 !$OMP end do
 
-C$$$      do k = 1, nfft3
-C$$$         do j = 1, nfft2
-C$$$            do i = 1, nfft1
-C$$$               qgrid_omp(th_id,1,i,j,k) = 0.0d0
-C$$$               qgrid_omp(th_id,2,i,j,k) = 0.0d0
-C$$$            end do
-C$$$         end do
-C$$$      end do
-
-c      qgrid_omp = 0.0d0
-
 c
 c     set OpenMP directives for the major loop structure
 c
@@ -856,11 +797,6 @@ c
 c     put the induced dipole moments onto the grid
 c
       do ichk = 1, nchunk
-c      do new_iter = 0,nchunk*npole
-
-c         isite = mod(new_iter,npole)+ 1
-c         ichk = new_iter/npole + 1
- 
          cid(1) = mod(ichk-1,nchk1)
          cid(2) = mod(((ichk-1-cid(1))/nchk1),nchk2)
          cid(3) = mod((ichk-1)/(nchk1*nchk2),nchk3)
@@ -918,11 +854,6 @@ c         ichk = new_iter/npole + 1
 
                    qgrid(2,i,j,k) = qgrid(2,i,j,k) 
      &                 + term02*t0 + term12*t1
-C$$$                  qgrid_omp(th_id,1,i,j,k) = qgrid_omp(th_id,1,i,j,k) 
-C$$$     &                       + term01*t0 + term11*t1
-
-C$$$                   qgrid_omp(th_id,2,i,j,k) = qgrid_omp(th_id,2,i,j,k) 
-C$$$     &                 + term02*t0 + term12*t1
                      end do
                   end do
                end do
@@ -932,22 +863,7 @@ C$$$     &                 + term02*t0 + term12*t1
 c
 c     end OpenMP directive for the major loop structure
 c
-!$OMP END DO
-
-C$$$!$OMP DO collapse(3)
-C$$$         do k = 1, nfft3
-C$$$            do j = 1, nfft2
-C$$$               do i = 1, nfft1
-C$$$                  do m=1,nthread
-C$$$                     qgrid(1,i,j,k) =qgrid(1,i,j,k)+qgrid_omp(m,1,i,j,k)
-C$$$                     qgrid(2,i,j,k) =qgrid(2,i,j,k)+qgrid_omp(m,2,i,j,k)
-C$$$                  end do
-C$$$               end do
-C$$$            end do
-C$$$         end do
-C$$$!$OMP end DO 
-C$$$c!$OMP end single
-C$$$c!$OMP barrier    
+!$OMP END DO 
          
       return
       end
