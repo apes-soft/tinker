@@ -158,25 +158,29 @@ c
                   call imagen (xr,yr,zr)
                   r2 = xr*xr + yr*yr + zr*zr
                   if (r2 .le. vbuf2) then
-!$OMP CRITICAL
+c!$OMP CRITICAL
                      do j = 1, nvlst(k)
                         if (vlst(j,k) .eq. i)  goto 20
                      end do
+!$OMP critical
                      nvlst(k) = nvlst(k) + 1
                      vlst(nvlst(k),k) = i
+!$OMP end critical
    20                continue
-!$OMP END CRITICAL
+c!$OMP END CRITICAL
                   else if (r2 .le. vbufx) then
-!$OMP CRITICAL
+c!$OMP CRITICAL
                      do j = 1, nvlst(k)
                         if (vlst(j,k) .eq. i) then
+!$OMP critical
                            vlst(j,k) = vlst(nvlst(k),k)
                            nvlst(k) = nvlst(k) - 1
+!$OMP end critical
                            goto 30
                         end if
                      end do
    30                continue
-!$OMP END CRITICAL
+c!$OMP END CRITICAL
                   end if
                end if
             end do
@@ -1449,25 +1453,29 @@ c
                   call imagen (xr,yr,zr)
                   r2 = xr*xr + yr*yr + zr*zr
                   if (r2 .le. mbuf2) then
-!$OMP CRITICAL
+c!$OMP CRITICAL
                      do j = 1, nelst(k)
                         if (elst(j,k) .eq. i)  goto 20
                      end do
+!$OMP critical
                      nelst(k) = nelst(k) + 1
                      elst(nelst(k),k) = i
+!$OMP end critical
    20                continue
-!$OMP END CRITICAL
+c!$OMP END CRITICAL
                   else if (r2 .le. mbufx) then
-!$OMP CRITICAL
+c!$OMP CRITICAL
                      do j = 1, nelst(k)
                         if (elst(j,k) .eq. i) then
+!$OMP critical
                            elst(j,k) = elst(nelst(k),k)
                            nelst(k) = nelst(k) - 1
+!$OMP end critical
                            goto 30
                         end if
                      end do
    30                continue
-!$OMP END CRITICAL
+c!$OMP END CRITICAL
                   end if
                end if
             end do
@@ -2120,25 +2128,29 @@ c
                   call imagen (xr,yr,zr)
                   r2 = xr*xr + yr*yr + zr*zr
                   if (r2 .le. ubuf2) then
-!$OMP CRITICAL
+c!$OMP CRITICAL
                      do j = 1, nulst(k)
                         if (ulst(j,k) .eq. i)  goto 20
                      end do
+!$OMP critical
                      nulst(k) = nulst(k) + 1
                      ulst(nulst(k),k) = i
+!$OMP end critical
    20                continue
-!$OMP END CRITICAL
+c!$OMP END CRITICAL
                   else if (r2 .le. ubufx) then
-!$OMP CRITICAL
+c!$OMP CRITICAL
                      do j = 1, nulst(k)
                         if (ulst(j,k) .eq. i) then
+!$OMP critical
                            ulst(j,k) = ulst(nulst(k),k)
                            nulst(k) = nulst(k) - 1
+!$OMP end critical
                            goto 30
                         end if
                      end do
    30                continue
-!$OMP END CRITICAL
+c!$OMP END CRITICAL
                   end if
                end if
             end do
