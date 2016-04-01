@@ -1571,7 +1571,7 @@ cell.o:
 center.o: align.o
 charge.o:
 chgpot.o:
-chkpole.o: atoms.o mpole.o sizes.o
+chkpole.o: atoms.o mpole.o sizes.o openmp.o
 chkring.o: couple.o
 chkxyz.o: atoms.o iounit.o sizes.o
 cholesky.o:
