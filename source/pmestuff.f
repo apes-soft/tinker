@@ -500,6 +500,9 @@ c
       real*8 v2,u2,t2
       real*8 term0,term1,term2
       integer new_iter
+c      real*8, allocatable :: qgrip(:,:,:,:)
+
+c      allocate(qgrip(2,nfft1,nfft2,nfft3))
 c      real*8 fmp(10,*)
 c
 c
@@ -515,23 +518,19 @@ c
          end do
       end do
 !$OMP end DO
+      
 c
 c     set OpenMP directives for the major loop structure
 c
 
-!$OMP DO reduction(+:qgrid)  private(i,j,k,m,ii,jj,kk,ichk,
+!$OMP DO  private(i,j,k,m,ii,jj,kk,ichk,
 !$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
 !$OMP& offsetz,v0,v1,v2,u0,u1,u2,term0,term1,term2,t0,t1,t2)
-!$OMP& schedule(dynamic,128)
+!$OMP& schedule(dynamic,1) 
 c
 c     put the permanent multipole moments onto the grid
 c
-c      do ichk = 1, nchunk
-      do new_iter = 0, nchunk*npole
-
-         isite = mod(new_iter,npole)+ 1
-         ichk = new_iter/npole + 1
-
+      do ichk = 1, nchunk
          cid(1) = mod(ichk-1,nchk1)
          cid(2) = mod(((ichk-1-cid(1))/nchk1),nchk2)
          cid(3) = mod((ichk-1)/(nchk1*nchk2),nchk3)
@@ -541,7 +540,7 @@ c      do ichk = 1, nchunk
          cbound(4) = cbound(3) + ngrd2 - 1
          cbound(5) = cid(3)*ngrd3 + 1
          cbound(6) = cbound(5) + ngrd3 - 1
-c         do isite = 1, npole
+         do isite = 1, npole
             iatm = ipole(isite)
             if (pmetable(iatm,ichk) .eq. 1) then
                nearpt(1) = igrid(1,iatm) + grdoff
@@ -590,18 +589,19 @@ c         do isite = 1, npole
                         t0 = thetai1(1,m,iatm)
                         t1 = thetai1(2,m,iatm)
                         t2 = thetai1(3,m,iatm)
-                        qgrid(1,i,j,k) = qgrid(1,i,j,k) + term0*t0
-     &                                      + term1*t1 + term2*t2
+                        qgrid(1,i,j,k) = qgrid(1,i,j,k) 
+     &                       + term0*t0 + term1*t1 + term2*t2
                      end do
                   end do
                end do
             end if
          end do
-c      end do
+      end do
 c
 c     end OpenMP directive for the major loop structure
 c
 !$OMP END DO
+
       return
       end
 
@@ -789,19 +789,14 @@ c
 c     set OpenMP directives for the major loop structure
 c
 
-!$OMP DO schedule(dynamic,128)
-!$OMP& reduction(+:qgrid) private(i,j,k,m,ii,jj,kk,ichk,
+!$OMP DO schedule(dynamic,1)
+!$OMP& private(i,j,k,m,ii,jj,kk,ichk,
 !$OMP& isite,iatm,cid,nearpt,cbound,abound,offsetx,offsety,
 !$OMP& offsetz,v0,v1,u0,u1,term01,term11,term02,term12,t0,t1)
 c
 c     put the induced dipole moments onto the grid
 c
-c      do ichk = 1, nchunk
-      do new_iter = 0,nchunk*npole
-
-         isite = mod(new_iter,npole)+ 1
-         ichk = new_iter/npole + 1
- 
+      do ichk = 1, nchunk
          cid(1) = mod(ichk-1,nchk1)
          cid(2) = mod(((ichk-1-cid(1))/nchk1),nchk2)
          cid(3) = mod((ichk-1)/(nchk1*nchk2),nchk3)
@@ -811,7 +806,7 @@ c      do ichk = 1, nchunk
          cbound(4) = cbound(3) + ngrd2 - 1
          cbound(5) = cid(3)*ngrd3 + 1
          cbound(6) = cbound(5) + ngrd3 - 1
-c         do isite = 1, npole
+         do isite = 1, npole
             iatm = ipole(isite)
             if (pmetable(iatm,ichk) .eq. 1) then
                nearpt(1) = igrid(1,iatm) + grdoff
@@ -853,20 +848,23 @@ c         do isite = 1, npole
                         if (i .lt. 1)  i = i + nfft1
                         t0 = thetai1(1,m,iatm)
                         t1 = thetai1(2,m,iatm)
-                        qgrid(1,i,j,k) = qgrid(1,i,j,k) + term01*t0
-     &                                      + term11*t1
-                        qgrid(2,i,j,k) = qgrid(2,i,j,k) + term02*t0
-     &                                      + term12*t1
+
+                  qgrid(1,i,j,k) = qgrid(1,i,j,k) 
+     &                       + term01*t0 + term11*t1
+
+                   qgrid(2,i,j,k) = qgrid(2,i,j,k) 
+     &                 + term02*t0 + term12*t1
                      end do
                   end do
                end do
             end if
          end do
-c      end do
+      end do
 c
 c     end OpenMP directive for the major loop structure
 c
-!$OMP END DO
+!$OMP END DO 
+         
       return
       end
 

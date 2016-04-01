@@ -74,6 +74,10 @@ c
       real*8, allocatable :: xsort_omp(:)
       real*8, allocatable :: ysort_omp(:)
       real*8, allocatable :: zsort_omp(:)
+c      real*8, allocatable :: qgrid_omp(:,:,:,:,:)
+c      real*8, allocatable :: qgrip_omp(:,:,:,:)
+c      real*8, allocatable :: fieldt_tmp(:,:,:)
+c      real*8, allocatable :: fieldtp_tmp(:,:,:)
       real*8 e_omp
       save
 !$OMP threadprivate(th_id)
