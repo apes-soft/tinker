@@ -166,8 +166,8 @@ else ifeq ($(COMPARCH),MPILinuxIntelOpenMP)
   #LIBS      = -L ../thirdparty/fftw/lib -lfftw3_omp -lfftw3
   LIBS      = -L ../thirdparty/fftw/lib -lfftw3_threads -lfftw3
   FCFLAGS   = -c -xHost -warn all,nointerfaces
-  OPTFLAGS  = -g  -fp-stack-check -check all -traceback -openmp
-  #OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive -openmp
+  OPTFLAGS  = -g  -fp-stack-check -check all -traceback -qopenmp
+  #OPTFLAGS  = -O3 -g -no-ipo -no-prec-div -recursive -qopenmp
   LIBFLAGS  = -crus
   RANLIB    = ranlib
   LINKFLAGS =  -openmp -g #-static-libgcc -static-intel
